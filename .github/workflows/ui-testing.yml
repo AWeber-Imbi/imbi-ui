@@ -19,6 +19,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Setup Environment
-      run: yarn run install
+      run: yarn install
     - name: Run Tests
-      run: yarn run test
+      run: yarn test
