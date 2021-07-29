@@ -18,7 +18,7 @@ module.exports = {
     inline: true,
     lazy: false,
     headers: {
-      "Access-Control-Allow-Origin": "*"
+      'Access-Control-Allow-Origin': '*'
     }
   },
   devtool: dev ? 'eval-cheap-module-source-map' : 'source-map',
