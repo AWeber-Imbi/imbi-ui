@@ -39,6 +39,11 @@ const Reducer = (state, action) => {
         ...state,
         errorMessage: action.payload
       }
+    case 'SET_INTEGRATIONS':
+      return {
+        ...state,
+        integrations: action.payload
+      }
     case 'SET_METADATA':
       return {
         ...state,
@@ -59,6 +64,7 @@ const initialState = {
   },
   errorMessage: null,
   handleLogout: () => {},
+  integrations: undefined,
   metadata: undefined,
   refreshMetadata: () => {}
 }
@@ -67,6 +73,9 @@ const State = ({
   baseURL,
   fetchMethod,
   handleLogout,
+  integrations,
+  metadata,
+  refreshMetadata,
   setErrorMessage,
   children
 }) => {
@@ -74,7 +83,10 @@ const State = ({
     ...initialState,
     baseURL: baseURL,
     fetch: fetchMethod,
+    integrations: integrations,
+    metadata: metadata,
     handleLogout: handleLogout,
+    refreshMetadata: refreshMetadata,
     setErrorMessage: setErrorMessage
   })
   return (
@@ -89,6 +101,9 @@ State.propTypes = {
   ]),
   fetchMethod: PropTypes.func.isRequired,
   handleLogout: PropTypes.func.isRequired,
+  integrations: PropTypes.object,
+  metadata: PropTypes.object,
+  refreshMetadata: PropTypes.func,
   setErrorMessage: PropTypes.func.isRequired
 }
 const Context = createContext(initialState)

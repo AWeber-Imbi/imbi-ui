@@ -11,6 +11,7 @@ import { NewEntry, OperationsLog } from './OperationsLog/'
 import { Project } from './Project/'
 import { Projects } from './Projects/'
 import { Reports } from './Reports/Reports'
+import { useIntegrations } from '../integrations'
 import { useMetadata } from '../metadata'
 import { User as UserSchema } from '../schema'
 
@@ -20,7 +21,17 @@ function Main({ user }) {
     content: <Loading />,
     refreshMetadata: false
   })
+  const integrations = useIntegrations()
   const metadata = useMetadata(state.refreshMetadata)
+
+  useEffect(() => {
+    if (integrations !== undefined) {
+      dispatch({
+        type: 'SET_INTEGRATIONS',
+        payload: integrations
+      })
+    }
+  }, [integrations])
 
   useEffect(() => {
     if (metadata !== undefined) {
@@ -33,7 +44,10 @@ function Main({ user }) {
   }, [metadata])
 
   useEffect(() => {
-    if (globalState.metadata !== undefined)
+    if (
+      globalState.integrations !== undefined &&
+      globalState.metadata !== undefined
+    )
       setState({
         ...state,
         content: (
