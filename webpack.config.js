@@ -9,7 +9,7 @@ if (dev) publicPath = 'http://127.0.0.1:8000/static/'
 module.exports = {
   entry: ['babel-polyfill', __dirname + '/src/js/index.jsx'],
   output: {
-    path: path.resolve(__dirname, '../imbi/static/'),
+    path: path.resolve(__dirname, 'build'),
     publicPath: publicPath,
     filename: 'imbi.js'
   },
