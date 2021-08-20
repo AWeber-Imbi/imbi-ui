@@ -22,7 +22,7 @@ export const jsonSchema = {
       minLength: 3
     },
     description: {
-      type: 'string'
+      oneOf: [{ type: 'string' }, { type: 'null' }]
     },
     environments: {
       oneOf: [
