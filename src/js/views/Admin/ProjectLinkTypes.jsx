@@ -1,9 +1,9 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { jsonSchema } from '../../schema/ProjectLinkType'
-
 import { CRUD } from '../../components'
+import { Icon } from '../../components'
+import { jsonSchema } from '../../schema/ProjectLinkType'
 
 export function ProjectLinkTypes() {
   const { t } = useTranslation()
@@ -30,7 +30,7 @@ export function ProjectLinkTypes() {
           default: 'fas external-link-alt',
           tableOptions: {
             className: 'text-center',
-            headerClassName: 'w-1/12'
+            headerClassName: 'text-center w-1/12'
           }
         },
         {
@@ -39,7 +39,21 @@ export function ProjectLinkTypes() {
           type: 'text',
           tableOptions: {
             className: 'truncate',
-            headerClassName: 'w-10/12'
+            headerClassName: 'w-8/12'
+          }
+        },
+        {
+          title: t('admin.projectLinkTypes.isPrimaryRepository'),
+          name: 'is_primary_repository',
+          type: 'toggle',
+          default: false,
+          tableOptions: {
+            className: 'text-center',
+            headerClassName: 'text-center w-2/12',
+            lookupFunction: (value) => {
+              if (value === true)
+                return <Icon className="text-green-700" icon="fas check" />
+            }
           }
         }
       ]}

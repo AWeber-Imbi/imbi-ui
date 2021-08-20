@@ -13,6 +13,9 @@ export const jsonSchema = {
     },
     icon_class: {
       type: 'string'
+    },
+    is_primary_repository: {
+      type: 'boolean'
     }
   },
   additionalProperties: false,
@@ -21,5 +24,6 @@ export const jsonSchema = {
 
 export const propTypes = {
   link_type: PropTypes.string.isRequired,
-  icon_class: PropTypes.string
+  icon_class: PropTypes.string,
+  is_primary_repository: PropTypes.bool
 }
