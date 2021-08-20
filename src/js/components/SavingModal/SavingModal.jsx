@@ -10,29 +10,28 @@ function SavingModal({ title, steps, onSaveComplete }) {
   return (
     <Modal>
       <Modal.Title>{title}</Modal.Title>
-      <Modal.Body>
+      <div className="text-gray-500">
         <ul className="m-5 mb-0">
           {steps.map((step, index) => {
+            let icon = step.isComplete ? 'fas check-circle' : 'fas circle'
+            let label = step.isComplete
+              ? step.completedLabel
+              : step.pendingLabel
+            let status = step.isComplete ? 'text-green-500' : 'text-gray-300'
             return (
               <li className="text-gray-500" key={'saving-step-' + index}>
                 {index > 0 && (
                   <div className="m-2 border-l border-gray-300 h-3">&nbsp;</div>
                 )}
                 <div>
-                  <Icon
-                    icon={step.isComplete ? 'fas check-circle' : 'fas circle'}
-                    className={
-                      'mr-2 ' +
-                      (step.isComplete ? 'text-green-500' : 'text-gray-300')
-                    }
-                  />
-                  {step.isComplete ? step.completedLabel : step.pendingLabel}
+                  <Icon icon={icon} className={`mr-2 ${status}`} />
+                  {label}
                 </div>
               </li>
             )
           })}
         </ul>
-      </Modal.Body>
+      </div>
       <Modal.Footer>
         <Button
           className={completed ? 'btn-white' : 'btn-disabled'}
