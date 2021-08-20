@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
 import { useContext, useEffect, useState } from 'react'
 
-import { httpGet } from './utils'
 import { Context } from './state'
+import { httpGet } from './utils'
 
 function useIntegrations() {
   const [globalState] = useContext(Context)
@@ -13,6 +13,15 @@ function useIntegrations() {
       authorizationEndpoint: null,
       clientId: null,
       redirectURI: null
+    },
+    grafana: {
+      enabled: false
+    },
+    sentry: {
+      enabled: false
+    },
+    sonarqube: {
+      enabled: false
     }
   })
 
@@ -34,7 +43,6 @@ function useIntegrations() {
     get(
       '/integrations/gitlab',
       (data) => {
-        console.log('on success')
         setState({
           ...state,
           gitlab: {
@@ -61,9 +69,5 @@ function useIntegrations() {
     )
   }, [])
   return state
-}
-
-useIntegrations.propTypes = {
-  refresh: PropTypes.boolean
 }
 export { useIntegrations }
