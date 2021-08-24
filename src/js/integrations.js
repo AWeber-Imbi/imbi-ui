@@ -5,23 +5,27 @@ import { Context } from './state'
 import { httpGet } from './utils'
 
 function useIntegrations() {
-  const [globalState] = useContext(Context)
+  const [globalState, dispatch] = useContext(Context)
   const [state, setState] = useState({
     gitlab: {
       enabled: false,
       error: null,
       authorizationEndpoint: null,
       clientId: null,
-      redirectURI: null
+      redirectURI: null,
+      project_link_type_id: null
     },
     grafana: {
-      enabled: false
+      enabled: false,
+      project_link_type_id: null
     },
     sentry: {
-      enabled: false
+      enabled: false,
+      project_link_type_id: null
     },
     sonarqube: {
-      enabled: false
+      enabled: false,
+      project_link_type_id: null
     }
   })
 
@@ -40,33 +44,40 @@ function useIntegrations() {
   }
 
   useEffect(() => {
+    const newState = {
+      ...state
+    }
+    get('/ui/settings', (data) => {
+      newState.gitlab = {
+        ...state.gitlab,
+        project_link_type_id: data.integrations.gitlab.project_link_type_id
+      }
+      newState.grafana = data.integrations.grafana
+      newState.sentry = data.integrations.sentry
+      newState.sonarqube = data.integrations.sonarqube
+      dispatch({
+        type: 'SET_PROJECT_URL_TEMPLATE',
+        payload: data.project_url_template
+      })
+    })
     get(
       '/integrations/gitlab',
       (data) => {
-        setState({
-          ...state,
-          gitlab: {
-            enabled: true,
-            error: null,
-            authorizationEndpoint: data.authorization_endpoint,
-            clientId: data.client_id,
-            redirectURI: data.callback_url
-          }
-        })
+        newState.gitlab = {
+          ...newState.gitlab,
+          enabled: true,
+          error: null,
+          authorizationEndpoint: data.authorization_endpoint,
+          clientId: data.client_id,
+          redirectURI: data.callback_url
+        }
       },
       (message) => {
-        setState({
-          ...state,
-          gitlab: {
-            enabled: false,
-            error: message,
-            authorizationEndpoint: null,
-            clientId: null,
-            redirectURI: null
-          }
-        })
+        newState.gitlab.enabled = false
+        newState.gitlab.error = message
       }
     )
+    setState(newState)
   }, [])
   return state
 }

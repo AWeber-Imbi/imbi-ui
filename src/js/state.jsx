@@ -50,6 +50,11 @@ const Reducer = (state, action) => {
         metadata: action.payload[1],
         refreshMetadata: action.payload[0]
       }
+    case 'SET_PROJECT_URL_TEMPLATE':
+      return {
+        ...state,
+        projectURLTemplate: action.payload
+      }
     default:
       return state
   }
@@ -66,6 +71,7 @@ const initialState = {
   handleLogout: () => {},
   integrations: undefined,
   metadata: undefined,
+  projectURLTemplate: '',
   refreshMetadata: () => {}
 }
 
@@ -103,6 +109,7 @@ State.propTypes = {
   handleLogout: PropTypes.func.isRequired,
   integrations: PropTypes.object,
   metadata: PropTypes.object,
+  projectURLTemplate: PropTypes.string,
   refreshMetadata: PropTypes.func,
   setErrorMessage: PropTypes.func.isRequired
 }

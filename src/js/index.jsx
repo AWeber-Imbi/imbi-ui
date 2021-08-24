@@ -32,6 +32,7 @@ function App({
   logo,
   sentry_dsn,
   service,
+  sonarqubeEnabled,
   url,
   version
 }) {
@@ -113,7 +114,9 @@ function App({
         <Login onLoginCallback={setUserData} useLDAP={ldap === 'true'} />
       )
     } else if (userState.authenticated) {
-      setContent(<Main user={user} />)
+      setContent(
+        <Main sonarqubeEnabled={sonarqubeEnabled === 'true'} user={user} />
+      )
     }
   }, [user, userState])
 
@@ -151,8 +154,10 @@ App.propTypes = {
   footerUrl: PropTypes.string,
   ldap: PropTypes.string,
   logo: PropTypes.string,
+  projectUrlTemplate: PropTypes.string,
   service: PropTypes.string,
   sentry_dsn: PropTypes.string,
+  sonarqubeEnabled: PropTypes.string,
   url: PropTypes.string,
   version: PropTypes.string
 }
