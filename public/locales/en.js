@@ -145,9 +145,9 @@ export default {
             uniqueViolation: 'A namespace with the same name already exists'
           },
           gitLabGroupName: {
-            title: 'GitLab Group Name',
+            title: 'GitLab Group Path',
             description:
-              'GitLab group that new projects for this namespace will be created in'
+              'GitLab group slug/path that new projects for this namespace will be created in'
           }
         },
         projectFactTypes: {
@@ -183,6 +183,8 @@ export default {
           linkType: 'Link Type',
           collectionName: 'Project Link Types',
           itemName: 'Project Link Type',
+          isPrimaryRepository: 'Primary Repository',
+          createdByAutomation: 'Created by Automation',
           errors: {
             uniqueViolation:
               'A project link type with the same name already exists'
@@ -238,8 +240,10 @@ export default {
         archived: 'This project is archived and is read-only.',
         attributes: 'Attributes',
         automations: 'Automations',
+        createError: 'Error creating project: {{message}}',
         createGitLabRepository: 'Create GitLab Repository',
         createSentryProject: 'Create Project in Sentry',
+        createSonarqubeProject: 'Create Project in Sonarqube',
         dashboardCookieCutter: 'Dashboard Cookie Cutter',
         dependencies: 'Dependencies',
         dependenciesSaved: 'Dependencies Saved',
@@ -251,6 +255,9 @@ export default {
         environments: 'Environments',
         factHistory: 'Fact History',
         gitlab: {
+          connect: 'Connect to GitLab',
+          notConnected:
+            'You must connect to GitLab to enable project creation automation features.',
           namespace: 'Gitlab Folder',
           project: 'Gitlab Project',
           creatingInitialCommit: 'Creating Initial Commit',
@@ -279,6 +286,14 @@ export default {
         savingProject: 'Saving Project',
         savingURLs: 'Saving Per-Environment URLs',
         selectNamespace: 'Select a Namespace',
+        sentry: {
+          creatingProject: 'Creating project in Sentry',
+          projectCreated: 'Project created in Sentry'
+        },
+        sonarqube: {
+          creatingProject: 'Creating project in Sonarqube',
+          projectCreated: 'Project created in Sonarqube'
+        },
         specifyEnvironments:
           'Environments are required to enter per-environment URLs',
         updateFacts: 'Update Facts',

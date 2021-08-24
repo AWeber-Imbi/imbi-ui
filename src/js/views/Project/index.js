@@ -1,4 +1,4 @@
-import { Create } from './Create'
+import { Create } from './Create/Create'
 import { GitlabImport } from './GitlabImport'
 import { Project as Detail } from './Project'
 
