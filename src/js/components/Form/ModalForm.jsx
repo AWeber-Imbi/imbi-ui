@@ -87,7 +87,7 @@ function ModalForm({
     <Modal>
       <form onSubmit={handleSubmit}>
         <Modal.Title>{saving ? savingTitle : title}</Modal.Title>
-        <Modal.Body>
+        <div className="text-gray-500">
           {ignoreErrors !== true && errorMessage !== null && (
             <Alert className="mb-3" level="error">
               {errorMessage}
@@ -105,7 +105,7 @@ function ModalForm({
               />
             )
           })}
-        </Modal.Body>
+        </div>
         <Modal.Footer>
           <Button
             className={'btn-white'}
