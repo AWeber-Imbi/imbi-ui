@@ -3,7 +3,7 @@
   "description": "Imbi Service Management Platform UI",
   "main": "src/js/index.js",
   "scripts": {
-    "build": "webpack --progress --mode=production --config webpack.config.js",
+    "build": "mkdir -p build && webpack --progress --mode=production --config webpack.config.js",
     "depcheck": "depcheck",
     "dev-build": "webpack --progress --mode=development --config webpack.config.js",
     "eslint": "eslint src/js/**",
