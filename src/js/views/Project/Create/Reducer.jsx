@@ -21,28 +21,28 @@ const initialState = {
   linksReady: true,
   projectCookieCutter: null,
   creating: {
+    gitlabInitialCommit: false,
     gitlabRepository: false,
+    grafanaDashboard: false,
     sentryProject: false,
     sonarqubeProject: false
   },
   created: {
+    gitlabInitialCommit: false,
     gitlabRepository: false,
+    grafanaDashboard: false,
     sentryProject: false,
     sonarqubeProject: false
   },
   projectId: null,
   saving: {
     attributes: false,
-    dashboardCookieCutter: false,
     links: false,
-    projectCookieCutter: false,
     urls: false
   },
   saved: {
     attributes: false,
-    dashboardCookieCutter: false,
     links: false,
-    projectCookieCutter: false,
     urls: false
   },
   urls: {},
@@ -90,17 +90,33 @@ function reducer(state, action) {
     case 'SET_CREATED_GITLAB_INITIAL_COMMIT':
       return {
         ...state,
-        saved: {
-          ...state.saved,
-          dashboardCookieCutter: action.payload
+        created: {
+          ...state.created,
+          gitlabInitialCommit: action.payload
         }
       }
     case 'SET_CREATING_GITLAB_INITIAL_COMMIT':
       return {
         ...state,
-        saving: {
-          ...state.saving,
-          dashboardCookieCutter: action.payload
+        creating: {
+          ...state.creating,
+          gitlabInitialCommit: action.payload
+        }
+      }
+    case 'SET_CREATING_GRAFANA_DASHBOARD':
+      return {
+        ...state,
+        creating: {
+          ...state.creating,
+          grafanaDashboard: action.payload
+        }
+      }
+    case 'SET_CREATED_GRAFANA_DASHBOARD':
+      return {
+        ...state,
+        created: {
+          ...state.created,
+          grafanaDashboard: action.payload
         }
       }
     case 'SET_CREATE_SENTRY_PROJECT':

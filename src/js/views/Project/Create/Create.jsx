@@ -130,9 +130,9 @@ function Create({ user }) {
           complete={{
             attributes: localState.saved.attributes,
             gitlab: localState.created.gitlabRepository,
-            grafanaCookieCutter: localState.saved.grafanaCookieCutter,
+            grafanaCookieCutter: localState.created.grafanaDashboard,
             links: localState.saved.links,
-            projectCookieCutter: localState.saved.projectCookieCutter,
+            projectCookieCutter: localState.created.gitlabInitialCommit,
             sentry: localState.created.sentryProject,
             sonarqube: localState.created.sonarqubeProject,
             urls: localState.saved.urls

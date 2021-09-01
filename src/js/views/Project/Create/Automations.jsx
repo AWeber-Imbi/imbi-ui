@@ -127,6 +127,9 @@ function Automations({ localDispatch, localState, user }) {
 
   // Project cookie-cutter / initial commit to be run after gitlab and/or sonarqube
   useEffect(() => {
+    console.log(
+      `${localState.isSaving} ${localState.projectCookieCutter} ${localState.created.gitlabRepository} ${localState.createSonarqubeProject} ${localState.created.sonarqubeProject}`
+    )
     if (
       localState.isSaving &&
       localState.projectCookieCutter !== null &&
@@ -142,6 +145,50 @@ function Automations({ localDispatch, localState, user }) {
       })
     }
   }, [localState.created.gitlabRepository, localState.created.sonarqubeProject])
+
+  // Create initial commit in the Gitlab repo
+  useEffect(() => {
+    async function createInitialCommit() {
+      let result = await httpPost(
+        globalState.fetch,
+        new URL('/ui/automations/gitlab/commit', globalState.baseURL),
+        {
+          cookie_cutter: localState.projectCookieCutter,
+          project_id: localState.projectId
+        }
+      )
+      if (result.success) {
+        localDispatch({
+          type: 'SET_CREATED_GITLAB_INITIAL_COMMIT',
+          payload: true
+        })
+        localDispatch({
+          type: 'SET_CREATING_GITLAB_INITIAL_COMMIT',
+          payload: false
+        })
+      } else {
+        localDispatch({
+          type: 'SET_CREATING_GITLAB_INITIAL_COMMIT',
+          payload: false
+        })
+        localDispatch({
+          type: 'SET_ERROR_MESSAGE',
+          payload: result.data
+        })
+        localDispatch({
+          type: 'SET_IS_SAVING',
+          payload: false
+        })
+      }
+    }
+    if (
+      localState.isSaving &&
+      localState.creating.gitlabInitialCommit &&
+      !localState.created.gitlabInitialCommit
+    ) {
+      createInitialCommit()
+    }
+  }, [localState.creating.gitlabInitialCommit])
 
   // Create Sonarqube Project
   useEffect(() => {
