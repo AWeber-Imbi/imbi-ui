@@ -42,10 +42,10 @@ function SimpleForm({
           {saving
             ? submitSavingText
               ? submitSavingText
-              : t('common.save')
+              : t('common.saving')
             : submitButtonText
             ? submitButtonText
-            : t('common.saving')}
+            : t('common.save')}
         </Button>
       </div>
     </form>
