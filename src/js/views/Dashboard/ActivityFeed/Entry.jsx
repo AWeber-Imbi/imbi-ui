@@ -30,20 +30,23 @@ function Entry({ entry }) {
             <span>{{ action }}</span> the{' '}
             <Link
               to={`/ui/projects/${entry.project_id}`}
-              className="font-medium text-blue-700 hover:text-blue-800">
+              className="font-medium text-blue-700 hover:text-blue-800"
+            >
               {{ project }}
             </Link>{' '}
             project in the{' '}
             <Link
               to={`/ui/projects?namespace_id=${entry.namespace_id}`}
-              className="font-medium text-blue-700 hover:text-blue-800">
+              className="font-medium text-blue-700 hover:text-blue-800"
+            >
               {{ namespace }}
             </Link>{' '}
             namespace.
           </Trans>
           <p
             className="mt-0.5 text-sm text-gray-500"
-            title={when.toLocaleString(DateTime.DATETIME_MED)}>
+            title={when.toLocaleString(DateTime.DATETIME_MED)}
+          >
             {when.toRelative()}
           </p>
         </div>

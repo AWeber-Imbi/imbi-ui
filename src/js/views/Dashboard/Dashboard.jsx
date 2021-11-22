@@ -63,7 +63,8 @@ export function Dashboard() {
             <div className="mr-2 pb-3 text-right">
               <Link
                 to="/ui/reports/project-type-definitions"
-                className="italic text-sm text-gray-600 hover:text-blue-600">
+                className="italic text-sm text-gray-600 hover:text-blue-600"
+              >
                 <Icon icon="fas book-open" className="mr-2" />
                 {t('reports.projectTypeDefinitions.title')}
               </Link>

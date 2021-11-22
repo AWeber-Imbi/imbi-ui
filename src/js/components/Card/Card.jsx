@@ -7,7 +7,8 @@ class Card extends React.PureComponent {
       <div
         className={`bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6 ${
           this.props.className !== undefined ? this.props.className : ''
-        }`}>
+        }`}
+      >
         {this.props.children}
       </div>
     )

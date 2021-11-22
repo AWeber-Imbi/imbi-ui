@@ -22,7 +22,8 @@ function Toggle({ name, className, disabled, onChange, title, value }) {
           : value
           ? t('common.turnOff')
           : t('common.turnOn')
-      }>
+      }
+    >
       <span className="sr-only">
         Toggle {value ? t('common.off') : t('common.on')}
       </span>

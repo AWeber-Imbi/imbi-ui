@@ -80,16 +80,19 @@ function ProjectPage({ project, factTypes, refresh }) {
           <div className="flex-1 flex justify-end">
             <div
               className="flex-shrink mr-2"
-              style={{ height: '60px', width: '60px' }}>
+              style={{ height: '60px', width: '60px' }}
+            >
               <Tooltip
                 value={t('project.projectHealthScore')}
-                arrowPosition="right">
+                arrowPosition="right"
+              >
                 <CircularProgressbarWithChildren
                   value={project.project_score}
                   styles={buildStyles({
                     pathColor: color,
                     trailColor: '#ccc'
-                  })}>
+                  })}
+                >
                   <div className="absolute text-gray-600 font-semibold text-lg">
                     {parseInt(project.project_score)}
                   </div>
@@ -103,7 +106,8 @@ function ProjectPage({ project, factTypes, refresh }) {
         </Markdown>
         <nav
           className="relative z-0 rounded-lg shadow flex divide-x divide-gray-200"
-          aria-label="Tabs">
+          aria-label="Tabs"
+        >
           <Tab to={baseURL} isFirst={true}>
             {t('common.overview')}
           </Tab>

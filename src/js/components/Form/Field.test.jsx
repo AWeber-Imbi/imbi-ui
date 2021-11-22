@@ -13,8 +13,8 @@ describe('Field', () => {
     )
     const label = screen.getByTestId('field').children[0].children[0]
     expect(label).toHaveTextContent('Field Text')
-    const field = screen.getByTestId('field').children[0].children[1]
-      .children[1]
+    const field =
+      screen.getByTestId('field').children[0].children[1].children[1]
     expect(field).toBeInstanceOf(HTMLSelectElement)
   })
   it('should render a NumericInput', () => {
@@ -25,8 +25,8 @@ describe('Field', () => {
     )
     const label = screen.getByTestId('field').children[0].children[0]
     expect(label).toHaveTextContent('Number Test')
-    const field = screen.getByTestId('field').children[0].children[1]
-      .children[0]
+    const field =
+      screen.getByTestId('field').children[0].children[1].children[0]
     expect(field).toBeInstanceOf(HTMLInputElement)
     expect(field).toHaveValue(10)
   })
@@ -44,8 +44,8 @@ describe('Field', () => {
     )
     const label = screen.getByTestId('field').children[0].children[0]
     expect(label).toHaveTextContent('Select Test')
-    const field = screen.getByTestId('field').children[0].children[1]
-      .children[0]
+    const field =
+      screen.getByTestId('field').children[0].children[1].children[0]
     expect(field).toBeInstanceOf(HTMLSelectElement)
   })
 
@@ -57,8 +57,8 @@ describe('Field', () => {
     )
     const label = screen.getByTestId('field').children[0].children[0]
     expect(label).toHaveTextContent('TextArea Test')
-    const field = screen.getByTestId('field').children[0].children[1]
-      .children[0]
+    const field =
+      screen.getByTestId('field').children[0].children[1].children[0]
     expect(field).toBeInstanceOf(HTMLTextAreaElement)
     expect(field).toHaveValue('foo')
   })
@@ -71,8 +71,8 @@ describe('Field', () => {
     )
     const label = screen.getByTestId('field').children[0].children[0]
     expect(label).toHaveTextContent('Text Test')
-    const field = screen.getByTestId('field').children[0].children[1]
-      .children[0]
+    const field =
+      screen.getByTestId('field').children[0].children[1].children[0]
     expect(field).toBeInstanceOf(HTMLInputElement)
     expect(field).toHaveValue('foo')
   })

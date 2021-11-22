@@ -98,7 +98,8 @@ function Create({ user }) {
         }}
         submitButtonText={
           localState.isSaving ? t('common.saving') : t('common.save')
-        }>
+        }
+      >
         <Fragment>
           <Attributes localDispatch={localDispatch} localState={localState} />
           {automationsEnabled && (

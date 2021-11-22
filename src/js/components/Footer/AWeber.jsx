@@ -7,7 +7,8 @@ function Logo({ className, style }) {
       className={className}
       style={style}
       viewBox="5.604 12.058 488.7 477.8"
-      xmlns="http://www.w3.org/2000/svg">
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <linearGradient
         id="SVGID_1_"
         gradientUnits="userSpaceOnUse"
@@ -15,7 +16,8 @@ function Logo({ className, style }) {
         y1="22.2806"
         x2="244.3984"
         y2="500"
-        gradientTransform="matrix(1, 0, 0, 1, 5.604095, -10.241504)">
+        gradientTransform="matrix(1, 0, 0, 1, 5.604095, -10.241504)"
+      >
         <stop offset="0" style={{ stopColor: '#246BE8' }} />
         <stop offset="0.9995" style={{ stopColor: '#3293F2' }} />
       </linearGradient>

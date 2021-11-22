@@ -90,11 +90,13 @@ function Settings() {
             label: t('user.settings.authenticationTokens.title')
           }
         ]}
-        sideBarTitle="Available Settings">
+        sideBarTitle="Available Settings"
+      >
         <Form.Section
           name="api"
           title={t('user.settings.authenticationTokens.title')}
-          firstSection={true}>
+          firstSection={true}
+        >
           <Fragment>
             <div className="flex items-center justify-between my-3">
               <div
@@ -110,7 +112,8 @@ function Settings() {
                   onClick={(event) => {
                     event.preventDefault()
                     setShowTokenForm(true)
-                  }}>
+                  }}
+                >
                   <Fragment>
                     <Icon className="mr-3" icon="fas plus-circle" />
                     {t('user.settings.authenticationTokens.buttonText')}
@@ -236,7 +239,8 @@ function Settings() {
                   const newToken = document.getElementById('new-token')
                   newToken.select()
                   document.execCommand('copy')
-                }}>
+                }}
+              >
                 <Icon icon="fas clipboard" />
               </button>
             </div>
@@ -247,7 +251,8 @@ function Settings() {
               onClick={(event) => {
                 event.preventDefault()
                 setNewAuthToken(null)
-              }}>
+              }}
+            >
               {t('common.done')}
             </Button>
           </Modal.Footer>

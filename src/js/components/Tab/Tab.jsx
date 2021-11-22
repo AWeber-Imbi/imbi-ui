@@ -24,7 +24,8 @@ function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
         className={`cursor-not-allowed ${match ? active : inactive} ${
           isFirst ? first : ''
         } ${isLast ? last : ''} ${shrink ? 'flex-shrink' : 'flex-1'}`}
-        title="Not Implemented">
+        title="Not Implemented"
+      >
         {children}
       </div>
     )
@@ -33,7 +34,8 @@ function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
       className={`${match ? active : inactive} ${isFirst ? first : ''} ${
         isLast ? last : ''
       } ${shrink ? 'flex-shrink' : 'flex-1'}`}
-      to={to}>
+      to={to}
+    >
       {children}
       <span aria-hidden="true" className={match ? spanActive : spanInactive} />
     </NavLink>

@@ -10,7 +10,8 @@ class Button extends React.PureComponent {
           className={
             !this.props.disabled ? this.props.className : 'btn-disabled'
           }
-          to={this.props.destination}>
+          to={this.props.destination}
+        >
           {this.props.children}
         </NavLink>
       )
@@ -24,7 +25,8 @@ class Button extends React.PureComponent {
             this.props.onClick(event)
           }
         }}
-        type={this.props.type}>
+        type={this.props.type}
+      >
         {this.props.children}
       </button>
     )

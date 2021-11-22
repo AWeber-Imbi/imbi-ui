@@ -86,7 +86,8 @@ function DataTable({
         const value = (currentPage - 1) * pageSize
         setOffset(value)
       }}
-      setPageSize={setPageSize}>
+      setPageSize={setPageSize}
+    >
       <Table
         columns={columns}
         data={data}

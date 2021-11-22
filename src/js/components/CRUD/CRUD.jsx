@@ -174,7 +174,8 @@ function CRUD({
             className="btn-green"
             onClick={() => {
               setShowForm(true)
-            }}>
+            }}
+          >
             <Icon className="mr-2" icon="fas plus-circle" />
             {t('admin.crud.newTitle', {
               itemName: itemName,
@@ -234,7 +235,8 @@ function CRUD({
               setItemToDelete(null)
               setShowDeleteConfirmation(null)
             }}
-            onConfirm={deleteItem}>
+            onConfirm={deleteItem}
+          >
             {t('admin.crud.deleteConfirmation.text', {
               value: itemToDelete,
               ...strings

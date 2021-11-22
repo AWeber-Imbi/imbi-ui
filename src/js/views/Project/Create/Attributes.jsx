@@ -78,7 +78,8 @@ function Attributes({ localState, localDispatch }) {
     <Form.Section
       name="attributes"
       title={t('project.projectAttributes')}
-      firstSection={true}>
+      firstSection={true}
+    >
       <Form.Field
         title={t('project.namespace')}
         name="namespace_id"

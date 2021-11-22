@@ -77,7 +77,8 @@ function Settings({ project, refresh, urlPath }) {
           }
           onConfirm={onArchive}
           title={`Archive ${project.name}?`}
-          confirmationButtonText={`Archive ${project.name}`}>
+          confirmationButtonText={`Archive ${project.name}`}
+        >
           <div className="space-y-4">
             <p>Archiving the project will make it entirely read only.</p>
             <p>
@@ -97,7 +98,8 @@ function Settings({ project, refresh, urlPath }) {
           onCancel={() => setState({ ...state, showDeleteConfirmation: false })}
           onConfirm={onDelete}
           title={`Delete ${project.name}?`}
-          confirmationButtonText={`Delete ${project.name}`}>
+          confirmationButtonText={`Delete ${project.name}`}
+        >
           <div className="space-y-4">
             <p>
               This action will immediately and permanently delete the project,
@@ -126,7 +128,8 @@ function Settings({ project, refresh, urlPath }) {
             className="btn-yellow text-sm"
             onClick={() => {
               setState({ ...state, showArchiveConfirmation: true })
-            }}>
+            }}
+          >
             Archive Project
           </Button>
         </div>
@@ -155,7 +158,8 @@ function Settings({ project, refresh, urlPath }) {
             className="btn-red text-sm"
             onClick={() => {
               setState({ ...state, showDeleteConfirmation: true })
-            }}>
+            }}
+          >
             Delete Project
           </Button>
         </div>

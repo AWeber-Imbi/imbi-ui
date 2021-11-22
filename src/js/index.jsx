@@ -129,7 +129,8 @@ function App({
       baseURL={new URL(url)}
       fetchMethod={authenticatedFetch}
       handleLogout={logout}
-      setErrorMessage={setErrorMessage}>
+      setErrorMessage={setErrorMessage}
+    >
       <Header
         authenticated={userState.authenticated}
         logo={logo}

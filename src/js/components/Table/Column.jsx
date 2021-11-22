@@ -20,7 +20,8 @@ function Column({ definition, children, linkTo }) {
       <td>
         <Link
           className={`align-middle h-full inline-block px-5 py-1.5 w-full whitespace-nowrap ${clsName}`}
-          to={linkTo}>
+          to={linkTo}
+        >
           {definition !== undefined && definition.type === 'icon' && (
             <Icon className="mr-2" icon={children} title={children} />
           )}

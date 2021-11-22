@@ -27,7 +27,8 @@ class Badge extends React.PureComponent {
             (this.props.className !== undefined
               ? ` ${this.props.className}`
               : '')
-          }>
+          }
+        >
           {this.props.children}
         </a>
       )
@@ -38,7 +39,8 @@ class Badge extends React.PureComponent {
             colors[this.props.color]
           }` +
           (this.props.className !== undefined ? ` ${this.props.className}` : '')
-        }>
+        }
+      >
         {this.props.children}
       </div>
     )

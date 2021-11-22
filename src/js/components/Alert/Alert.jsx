@@ -25,7 +25,8 @@ class Alert extends React.PureComponent {
       <div
         className={`border px-6 py-4 rounded-lg text-sm ${
           alertClass[this.props.level]
-        } ${className}`}>
+        } ${className}`}
+      >
         <div className="flex">
           <div className="flex-shrink-0">
             <Icon icon={icons[this.props.level]} />

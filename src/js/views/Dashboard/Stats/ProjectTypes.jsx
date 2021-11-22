@@ -46,7 +46,8 @@ function ProjectTypes({ onReady }) {
           className="flex-grow pt-0"
           pageIcon="fas cubes"
           pageTitle={t('dashboard.projectTypes')}
-          setPageTitle={false}>
+          setPageTitle={false}
+        >
           {state.errorMessage !== null && (
             <Alert level="error">{state.errorMessage}</Alert>
           )}

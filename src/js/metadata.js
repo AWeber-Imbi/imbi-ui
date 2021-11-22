@@ -26,24 +26,31 @@ function useMetadata(externalRefresh = false) {
   const [projectFactTypes, setProjectFactTypes] = useState(null)
   const [projectLinkTypes, setProjectLinkTypes] = useState(null)
   const [projectTypes, setProjectTypes] = useState(null)
-  const [errors, setErrors] = useState({
-    cookieCutters: null,
-    environments: null,
-    groups: null,
-    namespaces: null,
-    projectFactTypes: null,
-    projectLinkTypes: null,
-    projectTypes: null
-  })
+  const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [timerHandle, setTimerHandle] = useState(null)
   const [refresh, setRefresh] = useState(true)
   const [values, setValues] = useState(undefined)
 
-  function get(path, onSuccess, key) {
-    httpGet(state.fetch, new URL(path, state.baseURL), onSuccess, (error) => {
-      setErrors({ ...errors, [key]: error })
-    })
+  function get(path) {
+    httpGet(
+      state.fetch,
+      new URL(path, state.baseURL),
+      (data) => {
+        setCookieCutters(data.cookie_cutters)
+        setEnvironments(data.environments)
+        setGroups(data.groups)
+        setNamespaces(data.namespaces)
+        setProjectFactTypes(data.project_fact_types)
+        setProjectLinkTypes(data.project_link_types)
+        setProjectTypes(data.project_types)
+        setLastUpdated(Date.now())
+        setRefresh(false)
+      },
+      (error) => {
+        setError(error)
+      }
+    )
   }
   get.propTypes = {
     path: PropTypes.string.isRequired,
@@ -53,15 +60,7 @@ function useMetadata(externalRefresh = false) {
 
   useEffect(() => {
     if (lastUpdated === null || externalRefresh === true || refresh === true) {
-      get('/cookie-cutters', setCookieCutters, 'cookieCutters')
-      get('/environments', setEnvironments, 'environments')
-      get('/groups', setGroups, 'groups')
-      get('/namespaces', setNamespaces, 'namespaces')
-      get('/project-fact-types', setProjectFactTypes, 'projectFactTypes')
-      get('/project-link-types', setProjectLinkTypes, 'projectLinkTypes')
-      get('/project-types', setProjectTypes, 'projectTypes')
-      setLastUpdated(Date.now())
-      setRefresh(false)
+      get('/ui/metadata')
     }
   }, [externalRefresh, refresh])
 

@@ -302,7 +302,8 @@ function Edit({ project, onEditFinished }) {
           onCancel={onEditFinished}
           onSubmit={onSubmit}
           ready={state.linksReady && state.projectReady && state.urlsReady}
-          saving={state.saving}>
+          saving={state.saving}
+        >
           <Form.Field
             title={t('project.namespace')}
             name="namespace_id"

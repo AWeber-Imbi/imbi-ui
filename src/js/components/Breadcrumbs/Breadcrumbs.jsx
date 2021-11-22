@@ -16,7 +16,8 @@ export function Breadcrumbs() {
       setContent(
         <nav
           className="bg-white border-b border-gray-200 p-x-2 shadow"
-          aria-label="Breadcrumb">
+          aria-label="Breadcrumb"
+        >
           <ol className="flex-1 flex bg-white max-w-screen-xl w-full text-gray-500 px-4 py-3 space-x-4">
             {state.breadcrumbs.crumbs.map((crumb, offset) => {
               const hasParams =
@@ -33,7 +34,8 @@ export function Breadcrumbs() {
                 return (
                   <li
                     className="space-x-2 text-gray-700"
-                    key={`breadcrumb-${offset}`}>
+                    key={`breadcrumb-${offset}`}
+                  >
                     {crumb.icon && <Icon icon={crumb.icon} />}
                     {crumb.hideTitle !== true && t(crumb.title)}
                   </li>

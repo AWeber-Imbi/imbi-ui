@@ -13,7 +13,8 @@ function Definition({ term, icon, children, className }) {
       <dd
         className={`mt-1 items-start sm:mt-0 truncate ${
           className !== undefined ? className : ''
-        }`}>
+        }`}
+      >
         {icon && <Icon icon={icon} className="mr-2 " />}
         {children}
       </dd>
@@ -58,12 +59,14 @@ function Display({ project, onEditClick, shouldGrow }) {
               return (
                 <Definition
                   key={`display-${environment}-url`}
-                  term={`${environment} URL`}>
+                  term={`${environment} URL`}
+                >
                   <a
                     className="text-blue-800 hover:text-blue-700"
                     title={project.urls[environment]}
                     href={project.urls[environment]}
-                    target="_new">
+                    target="_new"
+                  >
                     <Icon icon="fas external-link-alt" className="mr-2" />
                     {project.urls[environment]}{' '}
                   </a>
@@ -77,7 +80,8 @@ function Display({ project, onEditClick, shouldGrow }) {
                   className="text-blue-800 hover:text-blue-700"
                   href={link.url}
                   title={link.url}
-                  target="_new">
+                  target="_new"
+                >
                   <Icon icon="fas external-link-alt" className="mr-2" />
                   {link.url}{' '}
                 </a>

@@ -113,13 +113,15 @@ function ModalForm({
             onClick={() => {
               setIgnoreErrors(true)
               onClose()
-            }}>
+            }}
+          >
             {t('common.cancel')}
           </Button>
           <Button
             className={'btn-green'}
             disabled={!formReady && !saving}
-            type="submit">
+            type="submit"
+          >
             {saving ? t('common.saving') : t('common.save')}
           </Button>
         </Modal.Footer>

@@ -46,7 +46,8 @@ function Feed({ onReady }) {
           className="flex flex-col lg:h-full pl-0"
           pageIcon="fas rss"
           pageTitle={t('dashboard.activityFeed.recentActivity')}
-          setPageTitle={false}>
+          setPageTitle={false}
+        >
           <Panel className="flex-grow overflow-hidden pb-5">
             {state.errorMessage !== null && (
               <Alert level="error">{state.errorMessage}</Alert>

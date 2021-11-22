@@ -15,7 +15,8 @@ function Value({ title, icon, value, url }) {
       onMouseLeave={() => {
         setHovering(false)
       }}
-      to={url}>
+      to={url}
+    >
       <div className="flex-grow px-4 py-5 sm:p-6">
         <div className="flex items-center">
           <div className="bg-gray-200 flex-shrink-0 rounded-md p-3 text-blue-600">

@@ -19,7 +19,8 @@ describe('Alert', () => {
           onCancel={mockOnCancel}
           onConfirm={mockOnConfirm}
           title="Are You Sure?"
-          confirmationButtonText="Let's do it!">
+          confirmationButtonText="Let's do it!"
+        >
           There is no turning back!
         </ConfirmationDialog>
       </div>

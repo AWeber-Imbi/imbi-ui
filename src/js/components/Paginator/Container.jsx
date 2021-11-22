@@ -37,7 +37,8 @@ function Container({
         setCurrentPage: setCurrentPage,
         setPageSize: setPageSize,
         startPage: startPage
-      }}>
+      }}
+    >
       {children}
     </Context.Provider>
   )

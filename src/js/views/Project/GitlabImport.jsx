@@ -154,7 +154,8 @@ function GitlabImport() {
         submitSavingText={t('common.importing')}
         saving={formState.saving}
         onCancel={() => {}}
-        onSubmit={importProject}>
+        onSubmit={importProject}
+      >
         <Form.Field
           title={t('project.gitlab.namespace')}
           name="gitlab_namespace_id"

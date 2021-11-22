@@ -21,7 +21,8 @@ function SimpleForm({
       onSubmit={(event) => {
         event.preventDefault()
         onSubmit()
-      }}>
+      }}
+    >
       {errorMessage !== null && (
         <Alert className="mb-3" level="error">
           {errorMessage}
@@ -32,13 +33,15 @@ function SimpleForm({
         <Button
           className={'btn-white'}
           disabled={saving === true}
-          onClick={onCancel}>
+          onClick={onCancel}
+        >
           {t('common.cancel')}
         </Button>
         <Button
           className={'btn-green'}
           disabled={ready === false || saving === true}
-          type="submit">
+          type="submit"
+        >
           {saving
             ? submitSavingText
               ? submitSavingText

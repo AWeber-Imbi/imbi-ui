@@ -37,7 +37,8 @@ function Field({
     <div className="grid grid-cols-3 gap-4 items-start pt-5">
       <label
         htmlFor={'field-' + name}
-        className="block text-sm mt-2 font-medium text-gray-700 whitespace-nowrap">
+        className="block text-sm mt-2 font-medium text-gray-700 whitespace-nowrap"
+      >
         {title}
         {required === true && <sup>*</sup>}
       </label>

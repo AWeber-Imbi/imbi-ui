@@ -17,7 +17,8 @@ export function Buttons() {
   return (
     <nav
       className="relative z-0 inline-flex shadow-sm -space-x-px"
-      aria-label="Controls">
+      aria-label="Controls"
+    >
       {context.itemCount > 0 && context.currentPage === 1 && (
         <div className={`${disabledButton} rounded-l-md`}>
           <span className="sr-only">{t('paginator.previous')}</span>
@@ -30,7 +31,8 @@ export function Buttons() {
           onClick={(event) => {
             event.preventDefault()
             context.setCurrentPage(context.prevPage)
-          }}>
+          }}
+        >
           <span className="sr-only">{t('paginator.previous')}</span>
           <Icon icon="fas chevron-left" />
         </button>
@@ -41,7 +43,8 @@ export function Buttons() {
           onClick={(event) => {
             event.preventDefault()
             context.setCurrentPage(1)
-          }}>
+          }}
+        >
           1
         </button>
       )}
@@ -63,7 +66,8 @@ export function Buttons() {
             onClick={(event) => {
               event.preventDefault()
               context.setCurrentPage(page)
-            }}>
+            }}
+          >
             {page}
           </button>
         )
@@ -77,7 +81,8 @@ export function Buttons() {
           onClick={(event) => {
             event.preventDefault()
             context.setCurrentPage(context.pageCount)
-          }}>
+          }}
+        >
           {context.pageCount}
         </button>
       )}
@@ -93,7 +98,8 @@ export function Buttons() {
           onClick={(event) => {
             event.preventDefault()
             context.setCurrentPage(context.nextPage)
-          }}>
+          }}
+        >
           <span className="sr-only">{t('paginator.next')}</span>
           <Icon icon="fas chevron-right" />
         </button>

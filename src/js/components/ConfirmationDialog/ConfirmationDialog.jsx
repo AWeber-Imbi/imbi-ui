@@ -41,13 +41,15 @@ function ConfirmationDialog({
           className={
             iconBackgroundClassName[mode] +
             ' mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10'
-          }>
+          }
+        >
           <Icon icon={icons[mode]} />
         </div>
         <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
           <h3
             className="text-lg leading-6 mt-2 font-medium text-gray-900"
-            role="heading">
+            role="heading"
+          >
             {title}
           </h3>
           <div className="mt-2">{children}</div>
@@ -60,7 +62,8 @@ function ConfirmationDialog({
             onConfirm(e)
           }}
           role="button"
-          type="button">
+          type="button"
+        >
           {confirmationButtonText}
         </button>
         <button
@@ -69,7 +72,8 @@ function ConfirmationDialog({
             onCancel(e)
           }}
           role="button"
-          type="button">
+          type="button"
+        >
           {t('common.cancel')}
         </button>
       </Modal.Footer>

@@ -27,7 +27,8 @@ class PopupGraph extends React.PureComponent {
         <Modal.Title
           icon={this.props.icon}
           showClose={true}
-          onClose={this.props.onClose}>
+          onClose={this.props.onClose}
+        >
           {this.props.title}
         </Modal.Title>
         <Chart.Line data={data} minValue={0} maxValue={100} />

@@ -7,7 +7,8 @@ class Panel extends React.PureComponent {
       <div
         className={`bg-white shadow rounded-lg p-3 ${
           this.props.className !== undefined ? this.props.className : ''
-        }`}>
+        }`}
+      >
         {this.props.children}
       </div>
     )

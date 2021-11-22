@@ -96,8 +96,7 @@ export default {
         crud: {
           deleteConfirmation: {
             title: 'Delete {{itemName}}?',
-            text:
-              'Are you sure you would like to delete "{{value}}" from the available {{collectionName}}?',
+            text: 'Are you sure you would like to delete "{{value}}" from the available {{collectionName}}?',
             button: 'Delete'
           },
           itemAdded:

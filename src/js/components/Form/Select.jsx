@@ -77,7 +77,8 @@ function Select({
       }}
       placeholder={placeholder}
       ref={ref}
-      required={required}>
+      required={required}
+    >
       {multiple !== true && (
         <option value="">{placeholder !== undefined ? placeholder : ''}</option>
       )}
@@ -87,7 +88,8 @@ function Select({
             key={name + '-' + option.value}
             value={
               option.value !== null ? option.value.toString() : option.value
-            }>
+            }
+          >
             {option.label}
           </option>
         )

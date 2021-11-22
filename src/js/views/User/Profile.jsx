@@ -15,7 +15,8 @@ function Groups({ groups }) {
           <Link
             className="inline-flex items-center px-2.5 py-0.5 mr-2 rounded-full text-xs font-medium bg-blue-700 text-white"
             key={group}
-            to={'/ui/admin/groups#' + group}>
+            to={'/ui/admin/groups#' + group}
+          >
             {group}
           </Link>
         )

@@ -77,7 +77,8 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
           onCancel={onEditFinished}
           onSubmit={onSubmit}
           ready={state.ready}
-          saving={state.saving}>
+          saving={state.saving}
+        >
           {factTypes.map((factType) => {
             let step = undefined
             let fieldType = 'text'

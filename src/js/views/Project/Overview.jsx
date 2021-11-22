@@ -24,7 +24,8 @@ function Overview({ factTypes, project, refresh, urlPath }) {
           editing.details === false && editing.facts === false
             ? 'lg:items-stretch'
             : ''
-        }`}>
+        }`}
+      >
         <div
           className={`flex-1 ${
             factTypes.length > 0 ? 'lg:w-6/12' : ''
@@ -32,7 +33,8 @@ function Overview({ factTypes, project, refresh, urlPath }) {
             editing.details === false && editing.facts === false
               ? 'lg:flex-grow'
               : ''
-          }`}>
+          }`}
+        >
           <Details
             project={project}
             editing={editing.details}
@@ -49,7 +51,8 @@ function Overview({ factTypes, project, refresh, urlPath }) {
               editing.details === false && editing.facts === false
                 ? 'lg:flex-grow'
                 : ''
-            }`}>
+            }`}
+          >
             <Facts
               project={project}
               factTypes={factTypes}
