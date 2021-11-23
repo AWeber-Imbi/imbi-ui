@@ -26,7 +26,6 @@ function useMetadata(externalRefresh = false) {
   const [projectFactTypes, setProjectFactTypes] = useState(null)
   const [projectLinkTypes, setProjectLinkTypes] = useState(null)
   const [projectTypes, setProjectTypes] = useState(null)
-  const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [timerHandle, setTimerHandle] = useState(null)
   const [refresh, setRefresh] = useState(true)
@@ -48,7 +47,7 @@ function useMetadata(externalRefresh = false) {
         setRefresh(false)
       },
       (error) => {
-        setError(error)
+        console.log('Metadata fetch error', error)
       }
     )
   }

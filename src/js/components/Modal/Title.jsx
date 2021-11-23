@@ -8,24 +8,20 @@ class Title extends React.PureComponent {
   render() {
     return (
       <Dialog.Title>
-        <div className="static">
-          <h1 className="text-xl text-gray-500 border-b border-gray-400 pb-2 mb-5">
-            {this.props.icon && (
-              <Icon className="mr-2" icon={this.props.icon} />
-            )}
-            {this.props.children}
-          </h1>
-          {this.props.showClose && (
-            <div className="absolute top-2 right-2">
-              <button
-                className="text-gray-400 hover:text-blue-700"
-                onClick={this.props.onClose}
-              >
-                <Icon icon="fas times-circle" />
-              </button>
-            </div>
-          )}
+        <div className="text-xl text-gray-500 border-b border-gray-400 pb-2 mb-5">
+          {this.props.icon && <Icon className="mr-2" icon={this.props.icon} />}
+          {this.props.children}
         </div>
+        {this.props.showClose && (
+          <div className="absolute top-3 right-6">
+            <button
+              className="text-gray-400 hover:text-blue-700"
+              onClick={this.props.onClose}
+            >
+              <Icon icon="fas times-circle" />
+            </button>
+          </div>
+        )}
       </Dialog.Title>
     )
   }
