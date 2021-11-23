@@ -11,7 +11,8 @@
     "prettier-check": "prettier -c src public",
     "serve": "webpack serve --hot --inline --progress --mode=development --config webpack.config.js",
     "test": "yarn run eslint && yarn run prettier-check && yarn run depcheck && yarn run jest",
-    "watch": "webpack --progress --mode=development --config webpack.config.js --watch"
+    "watch": "webpack --progress --mode=development --config webpack.config.js --watch",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -54,7 +55,7 @@
     "fast-json-patch": "^3.0.0-1",
     "file-loader": "^6.2.0",
     "hosted-git-info": "^2.8.9",
-    "husky": ">=4",
+    "husky": "^7.0.0",
     "i18next": "^19.3.4",
     "id128": "^1.6.3",
     "identity-obj-proxy": "^3.0.0",
