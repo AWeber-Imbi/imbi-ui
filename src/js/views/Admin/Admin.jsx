@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Fragment } from 'react'
-import { Route } from 'react-router-dom'
+import { Outlet, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { Error } from '../'
@@ -82,29 +82,26 @@ function Admin({ user }) {
         </Sidebar.Section>
       </Sidebar>
       <div className="flex-grow py-3 px-4">
-        <Route path="/ui/admin" exact={true} component={Dashboard} />
-        <Route path="/ui/admin/cookie-cutters" component={CookieCutters} />
-        <Route path="/ui/admin/environments" component={Environments} />
-        <Route path="/ui/admin/groups" component={Groups} />
-        <Route path="/ui/admin/namespaces" component={Namespaces} />
-        <Route
-          path="/ui/admin/project-fact-types"
-          component={ProjectFactTypes}
-        />
-        <Route
-          path="/ui/admin/project-fact-type-enums"
-          component={ProjectFactTypeEnums}
-        />
-        <Route
-          path="/ui/admin/project-fact-type-ranges"
-          component={ProjectFactTypeRanges}
-        />
-        <Route
-          path="/ui/admin/project-link-types"
-          component={ProjectLinkTypes}
-        />
-        <Route path="/ui/admin/project-types" component={ProjectTypes} />
-        <Route path="/ui/admin/users" component={Users} />
+        <Routes>
+          <Route path="" exact={true} element={<Dashboard />} />
+          <Route path="cookie-cutters" element={<CookieCutters />} />
+          <Route path="environments" element={<Environments />} />
+          <Route path="groups" element={<Groups />} />
+          <Route path="namespaces" element={<Namespaces />} />
+          <Route path="project-fact-types" element={<ProjectFactTypes />} />
+          <Route
+            path="project-fact-type-enums"
+            element={<ProjectFactTypeEnums />}
+          />
+          <Route
+            path="project-fact-type-ranges"
+            element={<ProjectFactTypeRanges />}
+          />
+          <Route path="project-link-types" element={<ProjectLinkTypes />} />
+          <Route path="project-types" element={<ProjectTypes />} />
+          <Route path="users" element={<Users />} />
+        </Routes>
+        <Outlet />
       </div>
       <div className="hidden">{new Date().toISOString()}</div>
     </Fragment>
