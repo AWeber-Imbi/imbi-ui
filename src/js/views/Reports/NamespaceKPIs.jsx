@@ -142,8 +142,7 @@ function NamespaceKPIs() {
     <ContentArea
       className="flex-grow"
       pageIcon="fas chart-line"
-      pageTitle="Namespace KPIs"
-    >
+      pageTitle="Namespace KPIs">
       <Table columns={columns} data={state.data} />
       <div className="italic text-gray-600 text-right text-xs">
         {t('reports.lastUpdated', { lastUpdated: new Date().toString() })}

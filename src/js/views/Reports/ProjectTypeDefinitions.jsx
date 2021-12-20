@@ -19,8 +19,7 @@ function ProjectTypeDefinitions() {
   return (
     <ContentArea
       pageTitle={t('reports.projectTypeDefinitions.title')}
-      pageIcon="fas book-open"
-    >
+      pageIcon="fas book-open">
       <Card className="font-normal px-4 text-gray-600">
         <dl className="space-y-3">
           {state.metadata.projectTypes.map((projectType, offset) => {
