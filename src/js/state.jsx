@@ -4,6 +4,7 @@ import React, { createContext, useReducer } from 'react'
 import { processBreadcrumbs } from './components/Breadcrumbs'
 
 const Reducer = (state, action) => {
+  console.log(`Received "${state}" with action`, action)
   switch (action.type) {
     case 'SET_CURRENT_PAGE':
       return {
@@ -47,13 +48,22 @@ const Reducer = (state, action) => {
     case 'SET_METADATA':
       return {
         ...state,
-        metadata: action.payload[1],
-        refreshMetadata: action.payload[0]
+        metadata: action.payload
+      }
+    case 'SET_OPENSEARCH':
+      return {
+        ...state,
+        openSearch: action.payload
       }
     case 'SET_PROJECT_URL_TEMPLATE':
       return {
         ...state,
         projectURLTemplate: action.payload
+      }
+    case 'SET_REFRESH_SETTINGS':
+      return {
+        ...state,
+        refreshSettings: action.payload
       }
     default:
       return state
@@ -71,8 +81,9 @@ const initialState = {
   handleLogout: () => {},
   integrations: undefined,
   metadata: undefined,
+  openSearch: undefined,
   projectURLTemplate: '',
-  refreshMetadata: () => {}
+  refreshSettings: true
 }
 
 const State = ({
@@ -81,7 +92,7 @@ const State = ({
   handleLogout,
   integrations,
   metadata,
-  refreshMetadata,
+  openSearch,
   setErrorMessage,
   children
 }) => {
@@ -91,8 +102,9 @@ const State = ({
     fetch: fetchMethod,
     integrations: integrations,
     metadata: metadata,
+    openSearch: openSearch,
     handleLogout: handleLogout,
-    refreshMetadata: refreshMetadata,
+    refreshSettings: true,
     setErrorMessage: setErrorMessage
   })
   return (
@@ -109,8 +121,9 @@ State.propTypes = {
   handleLogout: PropTypes.func.isRequired,
   integrations: PropTypes.object,
   metadata: PropTypes.object,
+  openSearch: PropTypes.arrayOf(PropTypes.object),
   projectURLTemplate: PropTypes.string,
-  refreshMetadata: PropTypes.func,
+  refreshSettings: PropTypes.bool,
   setErrorMessage: PropTypes.func.isRequired
 }
 const Context = createContext(initialState)

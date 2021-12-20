@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 import { Admin, NotFound, User } from '.'
 import { Breadcrumbs, ErrorBoundary, Loading } from '../components'
@@ -11,42 +11,22 @@ import { NewEntry, OperationsLog } from './OperationsLog/'
 import { Project } from './Project/'
 import { Projects } from './Projects/'
 import { Reports } from './Reports/Reports'
-import { useIntegrations } from '../integrations'
-import { useMetadata } from '../metadata'
+import { useSettings } from '../settings'
 import { User as UserSchema } from '../schema'
 
 function Main({ user }) {
-  const [globalState, dispatch] = useContext(Context)
+  const [globalState] = useContext(Context)
   const [state, setState] = useState({
-    content: <Loading />,
-    refreshMetadata: false
+    content: <Loading />
   })
-  const integrations = useIntegrations()
-  const metadata = useMetadata(state.refreshMetadata)
 
-  useEffect(() => {
-    if (integrations !== undefined) {
-      dispatch({
-        type: 'SET_INTEGRATIONS',
-        payload: integrations
-      })
-    }
-  }, [integrations])
-
-  useEffect(() => {
-    if (metadata !== undefined) {
-      dispatch({
-        type: 'SET_METADATA',
-        payload: [refreshMetadata, metadata]
-      })
-    }
-    setState({ ...state, refreshMetadata: false })
-  }, [metadata])
+  useSettings()
 
   useEffect(() => {
     if (
       globalState.integrations !== undefined &&
-      globalState.metadata !== undefined
+      globalState.metadata !== undefined &&
+      globalState.openSearch !== undefined
     )
       setState({
         ...state,
@@ -54,56 +34,42 @@ function Main({ user }) {
           <ErrorBoundary>
             <Breadcrumbs />
             <main className="flex-grow flex flex-row z-10">
-              <Switch>
+              <Routes>
                 {user.permissions.includes('admin') && (
-                  <Route path="/ui/admin">
-                    <Admin user={user} />
-                  </Route>
+                  <Route path="/ui/admin/*" element={<Admin user={user} />} />
                 )}
-                <Route path="/ui/components">
-                  <ComponentPreviews />
-                </Route>
-                <Route path="/ui/operations-log/create">
-                  <NewEntry user={user} />
-                </Route>
-                <Route path="/ui/operations-log">
-                  <OperationsLog user={user} />
-                </Route>
-                <Route path="/ui/projects/create">
-                  <Project.Create user={user} />
-                </Route>
-                <Route path="/ui/projects/import">
-                  <Project.GitlabImport user={user} />
-                </Route>
-                <Route path="/ui/projects/:projectId">
-                  <Project.Detail user={user} />
-                </Route>
-                <Route path="/ui/projects">
-                  <Projects user={user} />
-                </Route>
-                <Route path="/ui/reports">
-                  <Reports user={user} />
-                </Route>
-                <Route path="/ui/user">
-                  <User user={user} />
-                </Route>
-                <Route path="/ui/">
-                  <Dashboard user={user} />
-                </Route>
-                <Route path="*">
-                  <NotFound />
-                </Route>
-              </Switch>
+                <Route path="/ui/components" element={<ComponentPreviews />} />
+                <Route
+                  path="/ui/operations-log/create"
+                  element={<NewEntry user={user} />}
+                />
+                <Route
+                  path="/ui/operations-log"
+                  element={<OperationsLog user={user} />}
+                />
+                <Route
+                  path="/ui/projects/create"
+                  element={<Project.Create user={user} />}
+                />
+                <Route
+                  path="/ui/projects/import"
+                  element={<Project.GitlabImport user={user} />}
+                />
+                <Route
+                  path="/ui/projects/:projectId"
+                  element={<Project.Detail user={user} />}
+                />
+                <Route path="/ui/projects" element={<Projects user={user} />} />
+                <Route path="/ui/reports" element={<Reports user={user} />} />
+                <Route path="/ui/user" element={<User user={user} />} />
+                <Route path="/ui/" element={<Dashboard user={user} />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </main>
           </ErrorBoundary>
         )
       })
-  }, [globalState.metadata])
-
-  function refreshMetadata() {
-    if (state.refreshMetadata === false)
-      setState({ ...state, refreshMetadata: true })
-  }
+  }, [globalState.integrations, globalState.metadata, globalState.openSearch])
 
   return state.content
 }
