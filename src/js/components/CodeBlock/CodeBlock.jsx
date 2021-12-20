@@ -18,8 +18,7 @@ class CodeBlock extends React.PureComponent {
       <SyntaxHighlighter
         className="p-2 rounded"
         language={this.props.language}
-        style={github}
-      >
+        style={github}>
         {this.props.value}
       </SyntaxHighlighter>
     )
