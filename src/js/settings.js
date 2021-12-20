@@ -43,13 +43,13 @@ function useSettings() {
   })
   const [lastUpdated, setLastUpdated] = useState(null)
   const [metadata, setMetadata] = useState({
-    cookie_cutters: [],
+    cookieCutters: [],
     environments: [],
     groups: [],
     namespaces: [],
-    project_fact_types: [],
-    project_link_types: [],
-    project_types: []
+    projectFactTypes: [],
+    projectLinkTypes: [],
+    projectTypes: []
   })
   const [openSearch, setOpenSearch] = useState(null)
   const [projectURLTemplate, setProjectURLTemplate] = useState(null)
@@ -69,7 +69,15 @@ function useSettings() {
         (data) => {
           console.log('Retrieved settings')
           setIntegrations(data.integrations)
-          setMetadata(data.metadata)
+          setMetadata({
+            cookieCutters: data.metadata.cookie_cutters,
+            environments: data.metadata.environments,
+            groups: data.metadata.groups,
+            namespaces: data.metadata.namespaces,
+            projectFactTypes: data.metadata.project_fact_types,
+            projectLinkTypes: data.metadata.project_link_types,
+            projectTypes: data.metadata.project_types
+          })
           setOpenSearch(data.opensearch)
           setProjectURLTemplate(data.project_url_template)
           setLastUpdated(Date.now())
