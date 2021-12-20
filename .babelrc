@@ -4,7 +4,9 @@
     "@babel/preset-react"
   ],
   "plugins": [
+    "babel-plugin-dynamic-import-webpack",
     "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-syntax-dynamic-import",
     "transform-regenerator"
   ]
 }

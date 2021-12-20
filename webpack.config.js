@@ -15,8 +15,6 @@ module.exports = {
   },
   devServer: {
     hot: true,
-    inline: true,
-    lazy: false,
     headers: {
       'Access-Control-Allow-Origin': '*'
     }
@@ -54,7 +52,6 @@ module.exports = {
         use: [
           'style-loader',
           'css-loader',
-          'resolve-url-loader',
           'postcss-loader'
         ]
       }
