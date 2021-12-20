@@ -80,7 +80,7 @@
     "react-gravatar": "^2.6.3",
     "react-hot-loader": "^4.13.0",
     "react-i18next": "^11.3.4",
-    "react-markdown": "^7.1.1",
+    "react-markdown": "^6.0.3",
     "react-router-dom": "^6.2.1",
     "react-select": "^5.2.1",
     "react-sparklines": "^1.7.0",
@@ -101,10 +101,15 @@
     }
   },
   "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "jsx"
+    ],
     "moduleNameMapper": {
       "\\.(svg)$": "<rootDir>/empty-module.js",
       "\\.(css|less|scss|sass)$": "identity-obj-proxy"
     },
+    "testEnvironment": "jsdom",
     "verbose": true
   },
   "lint-staged": {
