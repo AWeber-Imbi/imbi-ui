@@ -3,15 +3,15 @@
   "description": "Imbi Service Management Platform UI",
   "main": "src/js/index.js",
   "scripts": {
-    "build": "mkdir -p build && webpack --progress --mode=production --config webpack.config.js",
+    "build": "mkdir -p build && webpack --progress --config webpack.production.js",
     "depcheck": "depcheck",
-    "dev-build": "webpack --progress --mode=development --config webpack.config.js",
+    "dev-build": "webpack --progress --config webpack.dev.js",
     "eslint": "eslint src/js/**",
-    "prettier": "prettier -w src public",
+    "prettier": "prettier -w src public *.js",
     "prettier-check": "prettier -c src public",
-    "serve": "webpack serve --hot --mode=development --config webpack.config.js",
+    "serve": "webpack serve --hot --config webpack.dev.js",
     "test": "yarn run eslint && yarn run prettier-check && yarn run depcheck && yarn run jest",
-    "watch": "webpack --progress --mode=development --config webpack.config.js --watch",
+    "watch": "webpack --progress --config webpack.dev.js --watch",
     "prepare": "husky install"
   },
   "repository": {
