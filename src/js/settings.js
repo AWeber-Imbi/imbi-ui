@@ -56,18 +56,15 @@ function useSettings() {
   const [timerHandle, setTimerHandle] = useState(null)
 
   useEffect(() => {
-    console.log('globalState.refreshSettings', globalState.refreshSettings)
     if (globalState.refreshSettings === true) {
       dispatch({
         type: 'SET_REFRESH_SETTINGS',
         payload: false
       })
-      console.log('Getting settings')
       httpGet(
         globalState.fetch,
         new URL('/ui/settings', globalState.baseURL),
         (data) => {
-          console.log('Retrieved settings')
           setIntegrations(data.integrations)
           setMetadata({
             cookieCutters: data.metadata.cookie_cutters,

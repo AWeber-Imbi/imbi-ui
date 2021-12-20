@@ -4,7 +4,6 @@ import React, { createContext, useReducer } from 'react'
 import { processBreadcrumbs } from './components/Breadcrumbs'
 
 const Reducer = (state, action) => {
-  console.log(`Received "${state}" with action`, action)
   switch (action.type) {
     case 'SET_CURRENT_PAGE':
       return {

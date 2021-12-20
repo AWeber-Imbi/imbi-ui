@@ -59,6 +59,10 @@ function Main({ user }) {
                   path="/ui/projects/:projectId"
                   element={<Project.Detail user={user} />}
                 />
+                <Route
+                  path="/ui/projects/:projectId/*"
+                  element={<Project.Detail user={user} />}
+                />
                 <Route path="/ui/projects" element={<Projects user={user} />} />
                 <Route path="/ui/reports" element={<Reports user={user} />} />
                 <Route path="/ui/user" element={<User user={user} />} />

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { Route, useParams } from 'react-router-dom'
+import { Outlet, Route, Routes, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   buildStyles,
@@ -121,37 +121,44 @@ function ProjectPage({ project, factTypes, refresh }) {
             </Tab>
           )}
         </nav>
-        <Fragment>
-          <Route path={`/ui/projects/${project.id}`} exact>
-            <Overview
-              factTypes={factTypes}
-              project={project}
-              refresh={refresh}
-              urlPath={baseURL}
-            />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/configuration`}>
-            <Configuration urlPath={baseURL} />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/dependencies`}>
-            <Dependencies urlPath={baseURL} />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/fact-history`}>
-            <FactHistory urlPath={baseURL} />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/logs`}>
-            <Logs urlPath={baseURL} />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/notes`}>
-            <Notes urlPath={baseURL} />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/operations-log`}>
-            <OpsLog urlPath={baseURL} />
-          </Route>
-          <Route path={`/ui/projects/${project.id}/settings`}>
-            <Settings project={project} refresh={refresh} urlPath={baseURL} />
-          </Route>
-        </Fragment>
+        <Routes>
+          <Route
+            path={''}
+            element={
+              <Overview
+                factTypes={factTypes}
+                project={project}
+                refresh={refresh}
+                urlPath={baseURL}
+              />
+            }
+          />
+          <Route
+            path={`configuration`}
+            element={<Configuration urlPath={baseURL} />}
+          />
+          <Route
+            path={`dependencies`}
+            element={<Dependencies urlPath={baseURL} />}
+          />
+          <Route
+            path={`fact-history`}
+            element={<FactHistory urlPath={baseURL} />}
+          />
+          <Route path={`logs`} element={<Logs urlPath={baseURL} />} />
+          <Route path={`notes`} element={<Notes urlPath={baseURL} />} />
+          <Route
+            path={`operations-log`}
+            element={<OpsLog urlPath={baseURL} />}
+          />
+          <Route
+            path={`settings`}
+            element={
+              <Settings project={project} refresh={refresh} urlPath={baseURL} />
+            }
+          />
+        </Routes>
+        <Outlet />
       </div>
     </ErrorBoundary>
   )
