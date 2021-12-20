@@ -11,19 +11,15 @@ function Error({ children, className }) {
       className={`container font-normal font-sans mx-auto my-auto max-w-2xl bg-red-50 shadow rounded-lg p-5 text-base text-red-700 ${
         className !== undefined ? className : ''
       }`}>
-      <Icon icon="fas exclamation-circle" />
-      <span className="pl-1">
+      <div className="pl-1">
+        <Icon icon="fas exclamation-circle" className="mr-1" />
         <span className="font-bold">{t('error.title')}:</span> {children}
-      </span>
+      </div>
     </div>
   )
 }
 Error.propTypes = {
-  children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.element),
-    PropTypes.element,
-    PropTypes.string
-  ]).isRequired,
+  children: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   className: PropTypes.string
 }
 export { Error }
