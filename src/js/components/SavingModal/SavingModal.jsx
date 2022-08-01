@@ -37,8 +37,7 @@ function SavingModal({ title, steps, onSaveComplete }) {
           className={completed ? 'btn-white' : 'btn-disabled'}
           disabled={!completed}
           key="modal-close"
-          onClick={onSaveComplete}
-        >
+          onClick={onSaveComplete}>
           {t('common.close')}
         </Button>
       </Modal.Footer>

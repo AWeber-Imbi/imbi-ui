@@ -23,8 +23,7 @@ function PageHeader({
           <Button
             className={buttonClass}
             destination={buttonDestination}
-            onClick={buttonOnClick}
-          >
+            onClick={buttonOnClick}>
             <Fragment>
               <Icon className="mr-3" icon={buttonIcon} />
               {buttonTitle}

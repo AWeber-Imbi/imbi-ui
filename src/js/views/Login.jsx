@@ -66,8 +66,7 @@ function Login({ onLoginCallback, useLDAP }) {
                 <div className="mb-4">
                   <label
                     htmlFor="username"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                    className="block text-sm font-medium text-gray-700 mb-1">
                     {(useLDAP ? 'LDAP ' : '') + t('login.username')}
                   </label>
                   <input
@@ -94,8 +93,7 @@ function Login({ onLoginCallback, useLDAP }) {
                 <div className="mb-4">
                   <label
                     htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                    className="block text-sm font-medium text-gray-700 mb-1">
                     {t('login.password')}
                   </label>
                   <input
@@ -125,8 +123,7 @@ function Login({ onLoginCallback, useLDAP }) {
                       state.submitting ||
                       state.credentials.username === null ||
                       state.credentials.password === null
-                    }
-                  >
+                    }>
                     {t('login.signIn')}
                   </button>
                 </div>

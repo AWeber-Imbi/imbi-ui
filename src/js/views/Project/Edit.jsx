@@ -4,7 +4,7 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { default as slugify } from 'slugify'
 import { useTranslation } from 'react-i18next'
 
-import { asOptions } from '../../metadata'
+import { metadataAsOptions } from '../../settings'
 import { Card, ErrorBoundary, Form, Icon } from '../../components'
 import { Context } from '../../state'
 import { jsonSchema } from '../../schema/Project'
@@ -302,15 +302,14 @@ function Edit({ project, onEditFinished }) {
           onCancel={onEditFinished}
           onSubmit={onSubmit}
           ready={state.linksReady && state.projectReady && state.urlsReady}
-          saving={state.saving}
-        >
+          saving={state.saving}>
           <Form.Field
             title={t('project.namespace')}
             name="namespace_id"
             type="select"
             autoFocus={true}
             castTo="number"
-            options={asOptions(globalState.metadata.namespaces)}
+            options={metadataAsOptions(globalState.metadata.namespaces)}
             onChange={onValueChange}
             errorMessage={state.projectErrors.namespace_id}
             required={true}
@@ -321,7 +320,7 @@ function Edit({ project, onEditFinished }) {
             name="project_type_id"
             type="select"
             castTo="number"
-            options={asOptions(globalState.metadata.projectTypes)}
+            options={metadataAsOptions(globalState.metadata.projectTypes)}
             onChange={onValueChange}
             errorMessage={state.projectErrors.project_type_id}
             required={true}
@@ -360,7 +359,7 @@ function Edit({ project, onEditFinished }) {
             name="environments"
             type="select"
             multiple={true}
-            options={asOptions(
+            options={metadatametadataAsOptions(
               globalState.metadata.environments,
               'name',
               'name'

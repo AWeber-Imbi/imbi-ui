@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Context } from '../../state'
 import { CRUD } from '../../components'
 import { displayLabelValue } from '../../utils'
-import { asOptions } from '../../metadata'
+import { metadataAsOptions } from '../../settings'
 import { jsonSchema } from '../../schema/ProjectFactType'
 
 export function ProjectFactTypes() {
@@ -55,7 +55,7 @@ export function ProjectFactTypes() {
           name: 'project_type_ids',
           type: 'select',
           castTo: 'number',
-          options: asOptions(state.metadata.projectTypes),
+          options: metadataAsOptions(state.metadata.projectTypes),
           multiple: true,
           tableOptions: {
             className: 'truncate',

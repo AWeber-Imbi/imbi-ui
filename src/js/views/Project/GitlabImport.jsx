@@ -3,10 +3,10 @@ import React, { useContext, useEffect, useState } from 'react'
 import { User } from '../../schema'
 import { ErrorBoundary, Form } from '../../components'
 import { useTranslation } from 'react-i18next'
-import { asOptions } from '../../metadata'
+import { metadataAsOptions } from '../../settings'
 import { Context } from '../../state'
 import { httpGet, httpPatch, httpPost } from '../../utils'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 function GitlabImport() {
   const emptyErrors = {
@@ -18,7 +18,7 @@ function GitlabImport() {
   }
   const [errors, setErrors] = useState(emptyErrors)
   const [state] = useContext(Context)
-  const history = useHistory()
+  const history = useNavigate()
   const { t } = useTranslation()
   const [formReady, setFormReady] = useState(false)
   const [formValues, setFormValues] = useState({
@@ -154,14 +154,13 @@ function GitlabImport() {
         submitSavingText={t('common.importing')}
         saving={formState.saving}
         onCancel={() => {}}
-        onSubmit={importProject}
-      >
+        onSubmit={importProject}>
         <Form.Field
           title={t('project.gitlab.namespace')}
           name="gitlab_namespace_id"
           type="select"
           castTo="number"
-          options={asOptions(namespaces)}
+          options={metadataAsOptions(namespaces)}
           onChange={onValueChange}
           errorMessage={errors.gitlab_namespace_id}
           required={true}
@@ -171,7 +170,7 @@ function GitlabImport() {
           name="gitlab_project_id"
           type="select"
           castTo="number"
-          options={asOptions(projects)}
+          options={metadataAsOptions(projects)}
           onChange={onValueChange}
           errorMessage={errors.gitlab_project_id}
           required={true}
@@ -184,7 +183,7 @@ function GitlabImport() {
           type="select"
           autoFocus={true}
           castTo="number"
-          options={asOptions(state.metadata.namespaces)}
+          options={metadataAsOptions(state.metadata.namespaces)}
           onChange={onValueChange}
           errorMessage={errors.namespace_id}
           required={true}
@@ -194,7 +193,7 @@ function GitlabImport() {
           name="project_type_id"
           type="select"
           castTo="number"
-          options={asOptions(state.metadata.projectTypes)}
+          options={metadataAsOptions(state.metadata.projectTypes)}
           onChange={onValueChange}
           errorMessage={errors.project_type_id}
           required={true}

@@ -1,4 +1,4 @@
-import { NavLink, useRouteMatch } from 'react-router-dom'
+import { NavLink, useMatch } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import React from 'react'
 
@@ -14,7 +14,7 @@ const first = 'rounded-l-lg'
 const last = 'rounded-r-lg'
 
 function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
-  let match = useRouteMatch({
+  let match = useMatch({
     path: to,
     exact: true
   })
@@ -24,8 +24,7 @@ function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
         className={`cursor-not-allowed ${match ? active : inactive} ${
           isFirst ? first : ''
         } ${isLast ? last : ''} ${shrink ? 'flex-shrink' : 'flex-1'}`}
-        title="Not Implemented"
-      >
+        title="Not Implemented">
         {children}
       </div>
     )
@@ -34,8 +33,7 @@ function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
       className={`${match ? active : inactive} ${isFirst ? first : ''} ${
         isLast ? last : ''
       } ${shrink ? 'flex-shrink' : 'flex-1'}`}
-      to={to}
-    >
+      to={to}>
       {children}
       <span aria-hidden="true" className={match ? spanActive : spanInactive} />
     </NavLink>

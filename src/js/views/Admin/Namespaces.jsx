@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { asOptions } from '../../metadata'
+import { metadataAsOptions } from '../../settings'
 import { Context } from '../../state'
 import { CRUD } from '../../components'
 import { jsonSchema } from '../../schema/Namespace'
@@ -61,7 +61,7 @@ export function Namespaces() {
           default: [],
           description: t('admin.namespaces.maintainedBy.description'),
           multiple: true,
-          options: asOptions(state.metadata.groups, 'name', 'name'),
+          options: metadataAsOptions(state.metadata.groups, 'name', 'name'),
           type: 'select',
           tableOptions: {
             hide: true

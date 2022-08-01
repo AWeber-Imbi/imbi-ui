@@ -9,8 +9,7 @@ class Link extends React.PureComponent {
         href={this.props.href}
         className="text-blue-600 hover:text-blue-800"
         rel="noreferrer"
-        target="_blank"
-      >
+        target="_blank">
         {this.props.children}
       </a>
     )
@@ -52,8 +51,7 @@ class Markdown extends React.PureComponent {
         components={{
           a: ({ ...props }) => <Link {...props} />,
           ul: ({ ...props }) => <UL {...props} />
-        }}
-      >
+        }}>
         {this.props.children}
       </ReactMarkdown>
     )

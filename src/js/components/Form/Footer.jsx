@@ -14,8 +14,7 @@ function Footer({ children, disabled, instructions, onSubmitClick }) {
           className="btn-green"
           onClick={onSubmitClick}
           disabled={disabled}
-          type="submit"
-        >
+          type="submit">
           {children === undefined ? t('common.submit') : children}
         </Button>
       </div>

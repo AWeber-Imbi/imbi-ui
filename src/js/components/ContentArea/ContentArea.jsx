@@ -21,8 +21,7 @@ function ContentArea({
   if (setPageTitle === true) setDocumentTitle(pageTitle)
   return (
     <div
-      className={`p-4 space-y-3 ${className !== undefined ? className : ''}`}
-    >
+      className={`p-4 space-y-3 ${className !== undefined ? className : ''}`}>
       {showHeader && (
         <PageHeader
           buttonClass={buttonClass}

@@ -43,8 +43,7 @@ function Row({
       onClick={(event) => {
         event.preventDefault()
         if (onClick !== undefined) onClick(data)
-      }}
-    >
+      }}>
       {toRender.map((column) => {
         colOffset += 1
         let to =
@@ -57,8 +56,7 @@ function Row({
           <Column
             definition={column}
             key={'table-row-' + index + '-col-' + colOffset}
-            linkTo={to}
-          >
+            linkTo={to}>
             {data[column.name]}
           </Column>
         )
@@ -70,15 +68,13 @@ function Row({
             title: 'Edit / Delete',
             tableOptions: { className: 'text-center' },
             type: 'internal'
-          }}
-        >
+          }}>
           <Fragment>
             {onEditClick !== undefined && (
               <button
                 type="button"
                 className="text-center text-gray-400 hover:text-blue-700 focus:outline-none"
-                onClick={editOnClick}
-              >
+                onClick={editOnClick}>
                 {t('common.edit')}
               </button>
             )}
@@ -89,8 +85,7 @@ function Row({
               <button
                 type="button"
                 className="text-center text-gray-400 hover:text-red-700 focus:outline-none"
-                onClick={deleteOnClick}
-              >
+                onClick={deleteOnClick}>
                 {t('common.delete')}
               </button>
             )}

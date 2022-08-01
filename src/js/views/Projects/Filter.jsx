@@ -129,8 +129,7 @@ function Filter({
       <Link
         to="/ui/reports/project-type-definitions"
         className="hidden md:inline-block pl-2 hover:text-blue-600"
-        title={t('reports.projectTypeDefinitions.title')}
-      >
+        title={t('reports.projectTypeDefinitions.title')}>
         <Icon icon="fas book-open" />
       </Link>
       <div className="hidden md:inline-block pl-2 pt-1">

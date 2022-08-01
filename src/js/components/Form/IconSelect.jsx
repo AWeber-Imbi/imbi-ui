@@ -48,8 +48,7 @@ function IconSelect({
         }}
         placeholder={placeholder}
         ref={ref}
-        required={required}
-      >
+        required={required}>
         <option value="" />
         {icons.map((icon) => {
           return (

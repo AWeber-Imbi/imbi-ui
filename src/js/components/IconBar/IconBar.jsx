@@ -12,14 +12,12 @@ function IconBar({ icons }) {
             <Tooltip
               className="ml-1.5"
               key={`icon-${icon.title}`}
-              value={icon.title}
-            >
+              value={icon.title}>
               <a
                 href={icon.url}
                 className="mr-3 hover:text-blue-700"
                 key={`icon-${icon.title}`}
-                target="_new"
-              >
+                target="_new">
                 <Icon icon={icon.icon} />
               </a>
             </Tooltip>
@@ -28,8 +26,7 @@ function IconBar({ icons }) {
           <Tooltip
             className="ml-1.5"
             key={`icon-${icon.title}`}
-            value={icon.title}
-          >
+            value={icon.title}>
             <Icon className="mr-3" icon={icon.icon} />
           </Tooltip>
         )

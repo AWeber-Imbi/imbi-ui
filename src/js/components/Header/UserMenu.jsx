@@ -15,8 +15,7 @@ function UserMenuItem({ value, to, icon }) {
       <NavLink
         className="user-menu-link"
         key={to.replace(/\//gi, '_') + '-nav-item'}
-        to={to}
-      >
+        to={to}>
         <div className="inline-block w-6 mr-2 text-center">
           <Icon icon={icon} />
         </div>
@@ -40,8 +39,7 @@ function UserMenu({ user }) {
       <Menu.Button as={React.Fragment}>
         <button
           className="bg-gray-800 flex my-1 text-sm rounded-full focus:outline-none"
-          title={t('headerNavItems.userMenu')}
-        >
+          title={t('headerNavItems.userMenu')}>
           <span className="sr-only">{t('headerNavItems.openUserMenu')}</span>
           <Gravatar
             className="h-8 w-8 rounded-full"
@@ -54,8 +52,7 @@ function UserMenu({ user }) {
       <Menu.Items
         aria-labelledby="user-menu"
         aria-orientation="vertical"
-        className="origin-top-right absolute right-3 mt-1 w-48 rounded-md shadow-lg py-1 focus:outline-none bg-white ring-1 ring-gray-300 ring-opacity-5 z-40"
-      >
+        className="origin-top-right absolute right-3 mt-1 w-48 rounded-md shadow-lg py-1 focus:outline-none bg-white ring-1 ring-gray-300 ring-opacity-5 z-40">
         <UserMenuItem
           to="/ui/user/profile"
           icon="fas id-card"
@@ -73,8 +70,7 @@ function UserMenu({ user }) {
             onClick={(event) => {
               event.preventDefault()
               state.handleLogout()
-            }}
-          >
+            }}>
             <div className="inline-block w-6 mr-2 text-center">
               <Icon icon="fas sign-out-alt" />
             </div>

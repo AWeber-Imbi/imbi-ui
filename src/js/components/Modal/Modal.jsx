@@ -19,14 +19,12 @@ class Modal extends React.PureComponent {
         initialFocus={this.dialogRef}
         open={this.state.isOpen}
         onClose={() => this.setState({ isOpen: false })}
-        className="fixed font-sans z-10 inset-0 overflow-y-auto text-base"
-      >
+        className="fixed font-sans z-10 inset-0 overflow-y-auto text-base">
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
           <div
             className={`align-bottom sm:align-middle bg-white cursor-default focus:outline-none focus:ring-0 inline-block sm:max-w-2xl sm:my-8 overflow-hidden px-4 py-5 rounded-lg sm:p-6 shadow-xl text-left transform transition-all sm:w-full ${this.props.className}`}
-            ref={this.dialogRef}
-          >
+            ref={this.dialogRef}>
             {this.props.children}
           </div>
         </div>

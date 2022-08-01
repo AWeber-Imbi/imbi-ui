@@ -1,8 +1,10 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
-  purge: ['./**/*.{js,jsx,ts,tsx}'],
+  content: ['./src/js/**/*.{html,js,jsx}'],
   darkMode: 'media',
+  mode: 'jit',
+  plugins: [require('@tailwindcss/forms')],
   theme: {
     extend: {
       fontFamily: {
@@ -21,6 +23,5 @@ module.exports = {
       backgroundColor: ['disabled']
     },
     display: ['responsive', 'hover', 'focus']
-  },
-  plugins: [require('@tailwindcss/forms')]
+  }
 }
