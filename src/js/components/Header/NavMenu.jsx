@@ -1,4 +1,4 @@
-import { Link, NavLink, useRouteMatch } from 'react-router-dom'
+import { Link, NavLink, useMatch } from 'react-router-dom'
 import { Menu } from '@headlessui/react'
 import React from 'react'
 import PropTypes from 'prop-types'
@@ -22,7 +22,7 @@ MenuItem.propTypes = {
 }
 
 function NavMenu({ user }) {
-  const match = useRouteMatch({
+  const match = useMatch({
     path: '/ui/',
     exact: true
   })

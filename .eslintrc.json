@@ -1,0 +1,36 @@
+{
+  "parser": "@babel/eslint-parser",
+  "env": {
+  "browser": true,
+    "es6": true,
+    "jest": true
+},
+  "extends": [
+  "eslint:recommended",
+  "plugin:jest/recommended",
+  "plugin:react/recommended"
+],
+  "rules": {
+  "strict": 0,
+    "react-hooks/rules-of-hooks": "error",
+    "react/display-name": 0
+},
+  "parserOptions": {
+    "sourceType": "module",
+    "allowImportExportEverywhere": true
+  },
+  "plugins": ["react", "react-hooks"],
+  "settings": {
+  "react": {
+    "createClass": "createReactClass",
+      "pragma": "React",
+      "version": "17.0"
+  }
+},
+  "overrides": [{
+  "files": "tailwind.config.js",
+  "env": {
+    "node": true
+  }
+}]
+}

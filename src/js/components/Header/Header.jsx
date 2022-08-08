@@ -12,8 +12,7 @@ function Header({ logo, service, authenticated, user }) {
     <header
       className={
         'flex-shrink bg-blue-700 h-13' + (authenticated !== true ? ' pb-1' : '')
-      }
-    >
+      }>
       <nav className="p-2 flex flex-row">
         <Link to="/ui/" className="ml-2 h-8 w-8 flex-shrink">
           <img
@@ -25,8 +24,7 @@ function Header({ logo, service, authenticated, user }) {
         {authenticated !== true && (
           <Link
             to="/ui/"
-            className="ml-3 mt-2 flex-1 text-xl text-white hover:text-white"
-          >
+            className="ml-3 mt-2 flex-1 text-xl text-white hover:text-white">
             {service}
           </Link>
         )}

@@ -6,7 +6,7 @@ import React, {
   useReducer,
   useState
 } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { Context } from '../../../state'
@@ -29,7 +29,7 @@ function Create({ user }) {
     href: '#automations',
     label: t('project.automations')
   }
-  const history = useHistory()
+  const navigate = useNavigate()
   const linksLink = { href: '#links', label: t('project.links') }
   const urlsLink = { href: '#urls', label: t('project.urls') }
   const [globalState, globalDispatch] = useContext(Context)
@@ -98,8 +98,7 @@ function Create({ user }) {
         }}
         submitButtonText={
           localState.isSaving ? t('common.saving') : t('common.save')
-        }
-      >
+        }>
         <Fragment>
           <Attributes localDispatch={localDispatch} localState={localState} />
           {automationsEnabled && (
@@ -151,7 +150,7 @@ function Create({ user }) {
           }}
           onSaveComplete={(event) => {
             event.preventDefault()
-            history.push(`/ui/projects/${localState.projectId}`)
+            navigate(`/ui/projects/${localState.projectId}`)
           }}
           translate={t}
         />

@@ -4,7 +4,7 @@ import { default as slugify } from 'slugify'
 import { useTranslation } from 'react-i18next'
 import { validate } from 'jsonschema'
 
-import { asOptions } from '../../../metadata'
+import { metadataAsOptions } from '../../../settings'
 import { Form } from '../../../components'
 import { httpPost } from '../../../utils'
 import { jsonSchema } from '../../../schema/Project'
@@ -78,15 +78,14 @@ function Attributes({ localState, localDispatch }) {
     <Form.Section
       name="attributes"
       title={t('project.projectAttributes')}
-      firstSection={true}
-    >
+      firstSection={true}>
       <Form.Field
         title={t('project.namespace')}
         name="namespace_id"
         type="select"
         autoFocus={true}
         castTo="number"
-        options={asOptions(globalState.metadata.namespaces)}
+        options={metadataAsOptions(globalState.metadata.namespaces)}
         onChange={onChange}
         errorMessage={errors.namespace_id}
         required={true}
@@ -96,7 +95,7 @@ function Attributes({ localState, localDispatch }) {
         name="project_type_id"
         type="select"
         castTo="number"
-        options={asOptions(globalState.metadata.projectTypes)}
+        options={metadataAsOptions(globalState.metadata.projectTypes)}
         onChange={onChange}
         errorMessage={errors.project_type_id}
         required={true}
@@ -132,7 +131,11 @@ function Attributes({ localState, localDispatch }) {
         name="environments"
         type="select"
         multiple={true}
-        options={asOptions(globalState.metadata.environments, 'name', 'name')}
+        options={metadataAsOptions(
+          globalState.metadata.environments,
+          'name',
+          'name'
+        )}
         onChange={onChange}
         errorMessage={errors.environments}
       />

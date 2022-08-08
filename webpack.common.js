@@ -1,30 +1,23 @@
 const path = require('path')
-const process = require('process')
-
-const dev = process.env.NODE_ENV !== 'production'
-
-let publicPath = '/static/'
-if (dev) publicPath = 'http://127.0.0.1:8000/static/'
 
 module.exports = {
-  entry: ['babel-polyfill', __dirname + '/src/js/index.jsx'],
+  entry: ['./src/js/index.jsx'],
   output: {
-    path: path.resolve(__dirname, 'build'),
-    publicPath: publicPath,
+    path: path.resolve('.', 'build'),
     filename: 'imbi.js'
   },
   devServer: {
     hot: true,
-    inline: true,
-    lazy: false,
     headers: {
       'Access-Control-Allow-Origin': '*'
     }
   },
-  devtool: dev ? 'eval-cheap-module-source-map' : 'source-map',
   performance: { hints: false },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    fallback: {
+      url: require.resolve('url/url')
+    }
   },
   module: {
     rules: [
@@ -51,16 +44,10 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: [
-          'style-loader',
-          'css-loader',
-          'resolve-url-loader',
-          'postcss-loader'
-        ]
+        use: ['style-loader', 'css-loader', 'postcss-loader']
       }
     ]
   },
-  plugins: [],
   watchOptions: {
     aggregateTimeout: 1000,
     ignored: 'node_modules/**',

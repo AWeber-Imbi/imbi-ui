@@ -65,8 +65,7 @@ function HeadColumn({ column, children, className, disabled, srOnly }) {
     <th
       scope="col"
       className={`${ColClassName} ${clsName}`}
-      onClick={onSortClick}
-    >
+      onClick={onSortClick}>
       {column.sortCallback !== undefined && (
         <Icon
           icon={SortIcon[sortDirection]}

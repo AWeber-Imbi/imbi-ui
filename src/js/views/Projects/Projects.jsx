@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { Alert, Icon, Loading } from '../../components'
@@ -8,7 +8,8 @@ import { httpGet } from '../../utils'
 
 import { DataTable } from './DataTable'
 import { Filter } from './Filter'
-import { asOptions } from '../../metadata'
+
+import { metadataAsOptions } from '../../settings'
 
 function buildSortDefault(sort) {
   const value = {}
@@ -31,7 +32,7 @@ function buildSortDefault(sort) {
 function Projects() {
   const [errorMessage, setErrorMessage] = useState(null)
   const [globalState, dispatch] = useContext(Context)
-  const history = useHistory()
+  const navigate = useNavigate()
   const query = new URLSearchParams(useLocation().search)
   const sortOrder = ['namespace', 'project_type', 'name', 'project_score']
   const [state, setState] = useState({
@@ -81,9 +82,7 @@ function Projects() {
               title: 'projects.title'
             }
           })
-          history.push(
-            `${stateURL.pathname}?${stateURL.searchParams.toString()}`
-          )
+          navigate(`${stateURL.pathname}?${stateURL.searchParams.toString()}`)
           setState({
             ...state,
             data: result.data,
@@ -180,8 +179,8 @@ function Projects() {
       <div className="flex items-center space-x-2 md:space-x-10">
         <Filter
           disabled={state.fetching}
-          namespaces={asOptions(globalState.metadata.namespaces)}
-          projectTypes={asOptions(globalState.metadata.projectTypes)}
+          namespaces={metadataAsOptions(globalState.metadata.namespaces)}
+          projectTypes={metadataAsOptions(globalState.metadata.projectTypes)}
           setFilterValues={(values) => {
             setState({ ...state, filter: values })
           }}

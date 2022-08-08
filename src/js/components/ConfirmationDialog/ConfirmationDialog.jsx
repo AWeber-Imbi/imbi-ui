@@ -33,8 +33,7 @@ function ConfirmationDialog({
             onConfirm(e)
           }}
           role="button"
-          type="button"
-        >
+          type="button">
           {confirmationButtonText}
         </button>
         <button
@@ -43,8 +42,7 @@ function ConfirmationDialog({
             onCancel(e)
           }}
           role="button"
-          type="button"
-        >
+          type="button">
           {t('common.cancel')}
         </button>
       </Modal.Footer>

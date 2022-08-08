@@ -21,8 +21,7 @@ function Fact({ fact, offset }) {
       key={`fact-${fact.fact_type_id}`}
       className={`${
         offset % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-      } px-2 py-1 flex flex-row sm:px-6 border-l-4 mb-1 text-gray-900 ${color}`}
-    >
+      } px-2 py-1 flex flex-row sm:px-6 border-l-4 mb-1 text-gray-900 ${color}`}>
       <dt className="font-medium text-gray-500 w-6/12">{fact.name}</dt>
       <dd className="w-6/12 mt-1 items-start sm:mt-0 truncate">
         <Tooltip value={`${t('terms.score')}: ${fact.score}`}>

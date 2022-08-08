@@ -1,14 +1,13 @@
-import { BrowserRouter as Router } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { render } from 'react-dom'
 import * as Sentry from '@sentry/react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 require('./i18n')
 require('./icons')
 require('../css/imbi.css')
-require('typeface-inter')
 
 import { httpGet, isURL } from './utils'
 import { Header, Footer } from './components'
@@ -44,7 +43,7 @@ function App({
     })
   const [content, setContent] = useState(<Initializing />)
   const [errorMessage, setErrorMessage] = useState(null)
-  const history = useHistory()
+  const navigate = useNavigate()
   const [user, setUser] = useState(loggedOutUser)
   const [userState, setUserState] = useState({
     authenticated: false,
@@ -65,7 +64,7 @@ function App({
   const logout = () => {
     fetch(new URL('/ui/logout', url).toString()).then(() => {
       resetState()
-      history.push(`/ui/`)
+      navigate(`/ui/`)
     })
   }
 
@@ -129,8 +128,7 @@ function App({
       baseURL={new URL(url)}
       fetchMethod={authenticatedFetch}
       handleLogout={logout}
-      setErrorMessage={setErrorMessage}
-    >
+      setErrorMessage={setErrorMessage}>
       <Header
         authenticated={userState.authenticated}
         logo={logo}
@@ -165,8 +163,8 @@ App.propTypes = {
 
 const root = document.getElementById('app')
 render(
-  <Router>
+  <BrowserRouter>
     <App {...root.dataset} />
-  </Router>,
+  </BrowserRouter>,
   root
 )

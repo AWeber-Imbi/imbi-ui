@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
 import { Sparklines, SparklinesLine } from 'react-sparklines'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -22,7 +22,7 @@ function formatNumber(value) {
 
 function Namespaces({ onReady }) {
   const [globalState] = useContext(Context)
-  const history = useHistory()
+  const navigate = useNavigate()
   const [state, setState] = useState({
     chart: null,
     fetchedNamespaces: false,
@@ -184,8 +184,7 @@ function Namespaces({ onReady }) {
         className="flex flex-col lg:h-full pr-0"
         pageIcon="fas boxes"
         pageTitle={t('dashboard.namespaces.title')}
-        setPageTitle={false}
-      >
+        setPageTitle={false}>
         {state.namespaceErrorMessage !== null && (
           <Alert level="error">{state.namespaceErrorMessage}</Alert>
         )}
@@ -201,38 +200,33 @@ function Namespaces({ onReady }) {
                   state.kpiHistory[namespace.namespace_id] || []
                 ).map((entry) => entry.value)
                 const handleClick = () =>
-                  history.push(
+                  navigate(
                     `/ui/projects?namespace_id=${namespace.namespace_id}`
                   )
                 return (
                   <tr
                     className="hover:bg-gray-100 cursor-pointer hover:text-blue-700"
-                    key={`namespace-${namespace.namespace_id}`}
-                  >
+                    key={`namespace-${namespace.namespace_id}`}>
                     <td
                       className="px-5 py-1.5 whitespace-nowrap w-4/12"
-                      onClick={handleClick}
-                    >
+                      onClick={handleClick}>
                       {namespace.namespace}
                     </td>
                     <td
                       className="px-5 py-1.5 text-center w-2/12"
-                      onClick={handleClick}
-                    >
+                      onClick={handleClick}>
                       {formatNumber(namespace.projects)}
                     </td>
                     <td
                       className="px-5 py-1.5 text-center w-2/12"
-                      onClick={handleClick}
-                    >
+                      onClick={handleClick}>
                       <ScoreBadge
                         value={Math.round(namespace.stack_health_score)}
                       />
                     </td>
                     <td
                       className="p-0 pr-5 text-center w-4/12"
-                      onClick={() => onShowChart(namespace.namespace_id)}
-                    >
+                      onClick={() => onShowChart(namespace.namespace_id)}>
                       <div className="border border-gray-100 rounded sparkline">
                         {values && (
                           <Sparklines data={values} height={20} margin={5}>

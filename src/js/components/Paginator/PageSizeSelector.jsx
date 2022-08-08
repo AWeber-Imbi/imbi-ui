@@ -27,8 +27,7 @@ function PageSizeSelector({ display }) {
                 onClick={(event) => {
                   event.preventDefault()
                   if (size !== context.pageSize) context.setPageSize(size)
-                }}
-              >
+                }}>
                 {size}
               </button>
             )}

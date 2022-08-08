@@ -9,29 +9,25 @@ function Tooltip({ always, arrowPosition, children, className, value }) {
     <div
       className="inline-block"
       onMouseOver={() => setShowTooltip(true)}
-      onMouseOut={() => setShowTooltip(always ? true : false)}
-    >
+      onMouseOut={() => setShowTooltip(always ? true : false)}>
       {children}
       <div
         className={
           (showTooltip === true ? 'visible' : 'hidden') +
           ` absolute z-50 mt text-xs ${className}`
         }
-        role="tooltip"
-      >
+        role="tooltip">
         <svg
           className="text-black bottom-full"
           x="0px"
           y="0px"
           height="10px"
           width="10px"
-          xmlSpace="preserve"
-        >
+          xmlSpace="preserve">
           <polygon className="fill-current" points="0,10 5,5 10,10" />
         </svg>
         <div
-          className={`bg-black z-50 cursor-default text-center rounded text-white px-3 py-2 ${position}`}
-        >
+          className={`bg-black z-50 cursor-default text-center rounded text-white px-3 py-2 ${position}`}>
           {value}
         </div>
       </div>

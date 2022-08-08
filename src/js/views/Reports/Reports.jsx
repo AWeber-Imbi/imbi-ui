@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '../../components'
 import { Context } from '../../state'
 
-import { NamespaceKPIs } from './NamespaceKPIs'
-import { ProjectTypeDefinitions } from './ProjectTypeDefinitions'
+export { NamespaceKPIs } from './NamespaceKPIs'
+export { ProjectTypeDefinitions } from './ProjectTypeDefinitions'
 
-function Index() {
+function Reports() {
   const { t } = useTranslation()
   const [state, dispatch] = useContext(Context)
   useEffect(() => {
@@ -41,16 +41,4 @@ function Index() {
   )
 }
 
-function Reports() {
-  return (
-    <Fragment>
-      <Route path="/ui/reports/" exact={true} component={Index} />
-      <Route path="/ui/reports/namespace-kpis" component={NamespaceKPIs} />
-      <Route
-        path="/ui/reports/project-type-definitions"
-        component={ProjectTypeDefinitions}
-      />
-    </Fragment>
-  )
-}
 export { Reports }

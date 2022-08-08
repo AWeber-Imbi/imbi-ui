@@ -1,7 +1,7 @@
 import { compare } from 'fast-json-patch'
 import PropTypes from 'prop-types'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Backdrop, Button, Card, ConfirmationDialog } from '../../components'
 import { Context } from '../../state'
@@ -27,7 +27,7 @@ async function archiveProject(globalState, project) {
 
 function Settings({ project, refresh, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
-  const history = useHistory()
+  const navigate = useNavigate()
   const [state, setState] = useState({
     showArchiveConfirmation: false,
     showBackdrop: false,
@@ -47,7 +47,7 @@ function Settings({ project, refresh, urlPath }) {
     setState({ ...state, showArchiveConfirmation: false, showBackdrop: true })
     await archiveProject(globalState, project)
     refresh()
-    history.push(urlPath)
+    navigate(urlPath)
   }
 
   async function onDelete() {
@@ -56,7 +56,7 @@ function Settings({ project, refresh, urlPath }) {
     const result = await httpDelete(globalState.fetch, projectURL)
     if (result.success === false) {
       refresh()
-      return history.push(urlPath)
+      return navigate(urlPath)
     }
     const url = new URL('/ui/projects/', globalState.baseURL)
     url.searchParams.append(
@@ -77,8 +77,7 @@ function Settings({ project, refresh, urlPath }) {
           }
           onConfirm={onArchive}
           title={`Archive ${project.name}?`}
-          confirmationButtonText={`Archive ${project.name}`}
-        >
+          confirmationButtonText={`Archive ${project.name}`}>
           <div className="space-y-4">
             <p>Archiving the project will make it entirely read only.</p>
             <p>
@@ -98,8 +97,7 @@ function Settings({ project, refresh, urlPath }) {
           onCancel={() => setState({ ...state, showDeleteConfirmation: false })}
           onConfirm={onDelete}
           title={`Delete ${project.name}?`}
-          confirmationButtonText={`Delete ${project.name}`}
-        >
+          confirmationButtonText={`Delete ${project.name}`}>
           <div className="space-y-4">
             <p>
               This action will immediately and permanently delete the project,
@@ -128,8 +126,7 @@ function Settings({ project, refresh, urlPath }) {
             className="btn-yellow text-sm"
             onClick={() => {
               setState({ ...state, showArchiveConfirmation: true })
-            }}
-          >
+            }}>
             Archive Project
           </Button>
         </div>
@@ -158,8 +155,7 @@ function Settings({ project, refresh, urlPath }) {
             className="btn-red text-sm"
             onClick={() => {
               setState({ ...state, showDeleteConfirmation: true })
-            }}
-          >
+            }}>
             Delete Project
           </Button>
         </div>

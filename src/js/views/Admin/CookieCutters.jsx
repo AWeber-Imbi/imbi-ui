@@ -1,13 +1,13 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { asOptions } from '../../metadata'
+import { metadataAsOptions } from '../../settings'
 import { Context } from '../../state'
 import { CRUD } from '../../components'
 import { jsonSchema } from '../../schema/CookieCutter'
 
 export function CookieCutters() {
-  const [state] = useContext(Context)
+  const [globalState] = useContext(Context)
   const { t } = useTranslation()
 
   const options = [
@@ -51,13 +51,13 @@ export function CookieCutters() {
           name: 'project_type_id',
           type: 'select',
           castTo: 'number',
-          options: asOptions(state.metadata.projectTypes),
+          options: metadataAsOptions(globalState.metadata.projectTypes),
           tableOptions: {
             className: 'truncate',
             headerClassName: 'w-2/12',
             lookupFunction: (value) => {
               let displayValue = null
-              state.metadata.projectTypes.forEach((item) => {
+              globalState.metadata.projectTypes.forEach((item) => {
                 if (item.id === value) displayValue = item.name
               })
               return displayValue

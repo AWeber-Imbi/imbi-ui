@@ -29,8 +29,7 @@ function Head({ columns, disabled, includeEdit }) {
             key="column-edit"
             className="w-2/12"
             disabled={disabled}
-            srOnly={true}
-          >
+            srOnly={true}>
             {t('common.edit')}
           </HeadColumn>
         )}

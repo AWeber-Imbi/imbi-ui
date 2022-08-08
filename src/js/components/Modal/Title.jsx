@@ -16,8 +16,7 @@ class Title extends React.PureComponent {
           <div className="absolute top-3 right-6">
             <button
               className="text-gray-400 hover:text-blue-700"
-              onClick={this.props.onClose}
-            >
+              onClick={this.props.onClose}>
               <Icon icon="fas times-circle" />
             </button>
           </div>
