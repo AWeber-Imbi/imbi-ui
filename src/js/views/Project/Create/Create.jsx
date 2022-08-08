@@ -29,7 +29,7 @@ function Create({ user }) {
     href: '#automations',
     label: t('project.automations')
   }
-  const history = useNavigate()
+  const navigate = useNavigate()
   const linksLink = { href: '#links', label: t('project.links') }
   const urlsLink = { href: '#urls', label: t('project.urls') }
   const [globalState, globalDispatch] = useContext(Context)
@@ -150,7 +150,7 @@ function Create({ user }) {
           }}
           onSaveComplete={(event) => {
             event.preventDefault()
-            history.push(`/ui/projects/${localState.projectId}`)
+            navigate(`/ui/projects/${localState.projectId}`)
           }}
           translate={t}
         />

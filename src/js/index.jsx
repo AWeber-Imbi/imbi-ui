@@ -43,7 +43,7 @@ function App({
     })
   const [content, setContent] = useState(<Initializing />)
   const [errorMessage, setErrorMessage] = useState(null)
-  const history = useNavigate()
+  const navigate = useNavigate()
   const [user, setUser] = useState(loggedOutUser)
   const [userState, setUserState] = useState({
     authenticated: false,
@@ -64,7 +64,7 @@ function App({
   const logout = () => {
     fetch(new URL('/ui/logout', url).toString()).then(() => {
       resetState()
-      history.push(`/ui/`)
+      navigate(`/ui/`)
     })
   }
 

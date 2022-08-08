@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-  entry: ['babel-polyfill', './src/js/index.jsx'],
+  entry: ['./src/js/index.jsx'],
   output: {
     path: path.resolve('.', 'build'),
     filename: 'imbi.js'
@@ -14,7 +14,10 @@ module.exports = {
   },
   performance: { hints: false },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    fallback: {
+      url: require.resolve('url/url')
+    }
   },
   module: {
     rules: [

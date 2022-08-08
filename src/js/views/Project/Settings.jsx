@@ -27,7 +27,7 @@ async function archiveProject(globalState, project) {
 
 function Settings({ project, refresh, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
-  const history = useNavigate()
+  const navigate = useNavigate()
   const [state, setState] = useState({
     showArchiveConfirmation: false,
     showBackdrop: false,
@@ -47,7 +47,7 @@ function Settings({ project, refresh, urlPath }) {
     setState({ ...state, showArchiveConfirmation: false, showBackdrop: true })
     await archiveProject(globalState, project)
     refresh()
-    history.push(urlPath)
+    navigate(urlPath)
   }
 
   async function onDelete() {
@@ -56,7 +56,7 @@ function Settings({ project, refresh, urlPath }) {
     const result = await httpDelete(globalState.fetch, projectURL)
     if (result.success === false) {
       refresh()
-      return history.push(urlPath)
+      return navigate(urlPath)
     }
     const url = new URL('/ui/projects/', globalState.baseURL)
     url.searchParams.append(

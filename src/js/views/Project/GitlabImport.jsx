@@ -18,7 +18,7 @@ function GitlabImport() {
   }
   const [errors, setErrors] = useState(emptyErrors)
   const [state] = useContext(Context)
-  const history = useNavigate()
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const [formReady, setFormReady] = useState(false)
   const [formValues, setFormValues] = useState({
@@ -132,7 +132,7 @@ function GitlabImport() {
           ]
         ).then(({ success }) => {
           if (success === true) {
-            history.push(`/ui/projects/${projectId}`)
+            navigate(`/ui/projects/${projectId}`)
           } else {
             setErrors({ ...errors, top_level: data })
           }

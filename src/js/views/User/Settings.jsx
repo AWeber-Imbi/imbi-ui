@@ -1,4 +1,4 @@
-import DateTime from 'luxon/src/datetime'
+import { DateTime } from 'luxon'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 

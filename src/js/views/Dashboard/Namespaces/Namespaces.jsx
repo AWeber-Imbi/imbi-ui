@@ -22,7 +22,7 @@ function formatNumber(value) {
 
 function Namespaces({ onReady }) {
   const [globalState] = useContext(Context)
-  const history = useNavigate()
+  const navigate = useNavigate()
   const [state, setState] = useState({
     chart: null,
     fetchedNamespaces: false,
@@ -200,7 +200,7 @@ function Namespaces({ onReady }) {
                   state.kpiHistory[namespace.namespace_id] || []
                 ).map((entry) => entry.value)
                 const handleClick = () =>
-                  history.push(
+                  navigate(
                     `/ui/projects?namespace_id=${namespace.namespace_id}`
                   )
                 return (
