@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Outlet, Route, Routes } from 'react-router-dom'
 
 import { Admin, NotFound } from '.'
 import { Breadcrumbs, ErrorBoundary, Loading } from '../components'
@@ -10,7 +10,11 @@ import { Dashboard } from './Dashboard/Dashboard'
 import { NewEntry, OperationsLog } from './OperationsLog/'
 import { Project } from './Project/'
 import { Projects } from './Projects/'
-import { Reports } from './Reports/Reports'
+import {
+  NamespaceKPIs,
+  ProjectTypeDefinitions,
+  Reports
+} from './Reports/Reports'
 import { UserProfile, UserSettings } from './User'
 
 import { useSettings } from '../settings'
@@ -66,7 +70,15 @@ function Main({ user }) {
                   element={<Project.Detail user={user} />}
                 />
                 <Route path="/ui/projects" element={<Projects user={user} />} />
-                <Route path="/ui/reports" element={<Reports user={user} />} />
+                <Route path="/ui/reports" element={<Reports />} />
+                <Route
+                  path="/ui/reports/namespace-kpis"
+                  element={<NamespaceKPIs />}
+                />
+                <Route
+                  path="/ui/reports/project-type-definitions"
+                  element={<ProjectTypeDefinitions />}
+                />
                 <Route path="/ui/user">
                   <Route path="profile" element={<UserProfile user={user} />} />
                   <Route
