@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -40,6 +40,15 @@ function buildSortDefault(sort) {
 function NamespaceKPIs() {
   const [globalState, dispatch] = useContext(Context)
   const query = new URLSearchParams(useLocation().search)
+  const history = useHistory()
+  const columnSortOrder = [
+    'namespace',
+    'stack_health_score',
+    'percent_of_tpps',
+    'projects',
+    'total_possible_project_score',
+    'total_project_score'
+  ]
   const [state, setState] = useState({
     data: [],
     lookup: {},
@@ -54,10 +63,22 @@ function NamespaceKPIs() {
       type: 'SET_CURRENT_PAGE',
       payload: {
         title: t('reports.namespaceKPIs.title'),
-        url: new URL('/ui/reports/namespace-kpis', globalState.baseURL)
+        url: buildURL()
       }
     })
   }, [])
+
+  useEffect(() => {
+    const stateURL = buildURL()
+    dispatch({
+      type: 'SET_CURRENT_PAGE',
+      payload: {
+        title: t('reports.namespaceKPIs.title'),
+        url: stateURL
+      }
+    })
+    history.push(`${stateURL.pathname}?${stateURL.searchParams.toString()}`)
+  }, [state.sort])
 
   useEffect(() => {
     if (state.fetched === false) {
@@ -100,6 +121,16 @@ function NamespaceKPIs() {
     if (state.sort !== sort) {
       setState({ ...state, sort: sort })
     }
+  }
+
+  function buildURL(path = '/ui/reports/namespace-kpis') {
+    const url = new URL(path, globalState.baseURL)
+    const sortValues = columnSortOrder
+      .filter((column) => state.sort[column])
+      .map((column) => `${column} ${state.sort[column]}`)
+    if (sortValues.length > 0)
+      url.searchParams.append('sort', sortValues.join(','))
+    return url
   }
 
   const columns = [
