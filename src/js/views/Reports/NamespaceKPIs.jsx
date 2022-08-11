@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -23,13 +23,29 @@ function formatNumber(value) {
   return value.toLocaleString()
 }
 
+function buildSortDefault(sort) {
+  const value = {}
+  const sortMatches = sort.match(
+    /(?:(namespace|projects|stack_health_score|total_project_score|total_possible_project_score|percent_of_tpps) (asc|desc))/g
+  )
+  if (sortMatches !== null) {
+    sortMatches.map((match) => {
+      const [column, direction] = match.split(' ')
+      value[column] = direction
+    })
+  }
+  return value
+}
+
 function NamespaceKPIs() {
   const [globalState, dispatch] = useContext(Context)
+  const query = new URLSearchParams(useLocation().search)
   const [state, setState] = useState({
     data: [],
     lookup: {},
     fetched: false,
-    errorMessage: null
+    errorMessage: null,
+    sort: buildSortDefault(query.get('sort') || '')
   })
   const { t } = useTranslation()
 
@@ -57,20 +73,41 @@ function NamespaceKPIs() {
             data: result,
             fetched: true,
             lookup: lookup,
-            errorMessage: null
+            errorMessage: null,
+            sort: state.sort
           })
         },
         (error) => {
-          setState({ data: [], fetched: true, lookup: {}, errorMessage: error })
+          setState({
+            data: [],
+            fetched: true,
+            lookup: {},
+            errorMessage: error,
+            sort: state.sort
+          })
         }
       )
     }
   }, [state.fetched])
 
+  function onSortDirection(column, direction) {
+    const sort = { ...state.sort }
+    if (direction === null) {
+      if (sort[column] !== undefined) delete sort[column]
+    } else if (state.sort[column] !== direction) {
+      sort[column] = direction
+    }
+    if (state.sort !== sort) {
+      setState({ ...state, sort: sort })
+    }
+  }
+
   const columns = [
     {
       title: t('terms.namespace'),
       name: 'namespace',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.namespace ? state.sort.namespace : null,
       type: 'text',
       tableOptions: {
         className: 'truncate',
@@ -87,6 +124,8 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.projects'),
       name: 'projects',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.projects ? state.sort.projects : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
@@ -97,6 +136,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.stackHealthScore'),
       name: 'stack_health_score',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.stack_health_score
+        ? state.sort.stack_health_score
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-center',
@@ -107,6 +150,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.totalProjectScore'),
       name: 'total_project_score',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.total_project_score
+        ? state.sort.total_project_score
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
@@ -117,6 +164,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.totalPossibleProjectScore'),
       name: 'total_possible_project_score',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.total_possible_project_score
+        ? state.sort.total_possible_project_score
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
@@ -127,6 +178,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.totalProjectScorePercentage'),
       name: 'percent_of_tpps',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.percent_of_tpps
+        ? state.sort.percent_of_tpps
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
