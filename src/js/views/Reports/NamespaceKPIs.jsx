@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -23,32 +23,8 @@ function formatNumber(value) {
   return value.toLocaleString()
 }
 
-function buildSortDefault(sort) {
-  const value = {}
-  const sortMatches = sort.match(
-    /(?:(namespace|projects|stack_health_score|total_project_score|total_possible_project_score|percent_of_tpps) (asc|desc))/g
-  )
-  if (sortMatches !== null) {
-    sortMatches.map((match) => {
-      const [column, direction] = match.split(' ')
-      value[column] = direction
-    })
-  }
-  return value
-}
-
-function buildSearchParams(columnSortOrder, sortDirections) {
-  const params = new URLSearchParams()
-  const sortValues = columnSortOrder
-    .filter((column) => sortDirections[column])
-    .map((column) => `${column} ${sortDirections[column]}`)
-  if (sortValues.length > 0) params.append('sort', sortValues.join(','))
-  return params
-}
-
 function NamespaceKPIs() {
   const [globalState, dispatch] = useContext(Context)
-  const [searchParams, setSearchParams] = useSearchParams()
   const columnSortOrder = [
     'namespace',
     'stack_health_score',
@@ -62,7 +38,7 @@ function NamespaceKPIs() {
     lookup: {},
     fetched: false,
     errorMessage: null,
-    sort: buildSortDefault(searchParams.get('sort') || '')
+    sort: {}
   })
   const { t } = useTranslation()
 
@@ -88,7 +64,6 @@ function NamespaceKPIs() {
       return 0
     })
     setState({ ...state, data })
-    setSearchParams(buildSearchParams(columnSortOrder, state.sort))
   }, [state.sort])
 
   useEffect(() => {
