@@ -78,6 +78,18 @@ function NamespaceKPIs() {
       }
     })
     history.push(`${stateURL.pathname}?${stateURL.searchParams.toString()}`)
+
+    const sortBy = columnSortOrder
+      .filter((column) => state.sort[column])
+      .map((column) => ({ column: column, order: state.sort[column] }))
+    const data = [...state.data].sort((a, b) => {
+      for (let { column, order } of sortBy) {
+        if (a[column] < b[column]) return order === 'asc' ? -1 : 1
+        if (b[column] < a[column]) return order === 'asc' ? 1 : -1
+      }
+      return 0
+    })
+    setState({ ...state, data })
   }, [state.sort])
 
   useEffect(() => {
