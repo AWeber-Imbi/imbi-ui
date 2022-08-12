@@ -1,4 +1,4 @@
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -49,7 +49,6 @@ function buildSearchParams(columnSortOrder, sortDirections) {
 function NamespaceKPIs() {
   const [globalState, dispatch] = useContext(Context)
   const [searchParams, setSearchParams] = useSearchParams()
-  const query = new URLSearchParams(useLocation().search)
   const columnSortOrder = [
     'namespace',
     'stack_health_score',
@@ -63,7 +62,7 @@ function NamespaceKPIs() {
     lookup: {},
     fetched: false,
     errorMessage: null,
-    sort: buildSortDefault(query.get('sort') || '')
+    sort: buildSortDefault(searchParams.get('sort') || '')
   })
   const { t } = useTranslation()
 
