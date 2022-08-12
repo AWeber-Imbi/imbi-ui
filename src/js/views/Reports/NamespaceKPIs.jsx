@@ -70,13 +70,6 @@ function NamespaceKPIs() {
 
   useEffect(() => {
     const stateURL = buildURL()
-    dispatch({
-      type: 'SET_CURRENT_PAGE',
-      payload: {
-        title: t('reports.namespaceKPIs.title'),
-        url: stateURL
-      }
-    })
     history.push(`${stateURL.pathname}?${stateURL.searchParams.toString()}`)
 
     const sortBy = columnSortOrder
