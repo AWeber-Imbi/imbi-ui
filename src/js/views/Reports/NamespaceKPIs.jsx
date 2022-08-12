@@ -1,4 +1,4 @@
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -37,10 +37,19 @@ function buildSortDefault(sort) {
   return value
 }
 
+function buildSearchParams(columnSortOrder, sortDirections) {
+  const params = new URLSearchParams()
+  const sortValues = columnSortOrder
+    .filter((column) => sortDirections[column])
+    .map((column) => `${column} ${sortDirections[column]}`)
+  if (sortValues.length > 0) params.append('sort', sortValues.join(','))
+  return params
+}
+
 function NamespaceKPIs() {
   const [globalState, dispatch] = useContext(Context)
+  const [searchParams, setSearchParams] = useSearchParams()
   const query = new URLSearchParams(useLocation().search)
-  const history = useHistory()
   const columnSortOrder = [
     'namespace',
     'stack_health_score',
@@ -63,15 +72,12 @@ function NamespaceKPIs() {
       type: 'SET_CURRENT_PAGE',
       payload: {
         title: t('reports.namespaceKPIs.title'),
-        url: buildURL()
+        url: new URL('/ui/reports/namespace-kpis', globalState.baseURL)
       }
     })
   }, [])
 
   useEffect(() => {
-    const stateURL = buildURL()
-    history.push(`${stateURL.pathname}?${stateURL.searchParams.toString()}`)
-
     const sortBy = columnSortOrder
       .filter((column) => state.sort[column])
       .map((column) => ({ column: column, order: state.sort[column] }))
@@ -83,6 +89,7 @@ function NamespaceKPIs() {
       return 0
     })
     setState({ ...state, data })
+    setSearchParams(buildSearchParams(columnSortOrder, state.sort))
   }, [state.sort])
 
   useEffect(() => {
@@ -126,16 +133,6 @@ function NamespaceKPIs() {
     if (state.sort !== sort) {
       setState({ ...state, sort: sort })
     }
-  }
-
-  function buildURL(path = '/ui/reports/namespace-kpis') {
-    const url = new URL(path, globalState.baseURL)
-    const sortValues = columnSortOrder
-      .filter((column) => state.sort[column])
-      .map((column) => `${column} ${state.sort[column]}`)
-    if (sortValues.length > 0)
-      url.searchParams.append('sort', sortValues.join(','))
-    return url
   }
 
   const columns = [
