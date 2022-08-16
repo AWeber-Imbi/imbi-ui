@@ -77,20 +77,20 @@ function NamespaceKPIs() {
             result.map((row) => [row.namespace, row.namespace_id])
           )
           setState({
+            ...state,
             data: result,
             fetched: true,
             lookup: lookup,
-            errorMessage: null,
-            sort: state.sort
+            errorMessage: null
           })
         },
         (error) => {
           setState({
+            ...state,
             data: [],
             fetched: true,
             lookup: {},
-            errorMessage: error,
-            sort: state.sort
+            errorMessage: error
           })
         }
       )
