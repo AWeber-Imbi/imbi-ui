@@ -25,11 +25,20 @@ function formatNumber(value) {
 
 function NamespaceKPIs() {
   const [globalState, dispatch] = useContext(Context)
+  const columnSortOrder = [
+    'namespace',
+    'stack_health_score',
+    'percent_of_tpps',
+    'projects',
+    'total_possible_project_score',
+    'total_project_score'
+  ]
   const [state, setState] = useState({
     data: [],
     lookup: {},
     fetched: false,
-    errorMessage: null
+    errorMessage: null,
+    sort: {}
   })
   const { t } = useTranslation()
 
@@ -44,6 +53,20 @@ function NamespaceKPIs() {
   }, [])
 
   useEffect(() => {
+    const sortBy = columnSortOrder
+      .filter((column) => state.sort[column])
+      .map((column) => ({ column: column, order: state.sort[column] }))
+    const data = [...state.data].sort((a, b) => {
+      for (let { column, order } of sortBy) {
+        if (a[column] < b[column]) return order === 'asc' ? -1 : 1
+        if (b[column] < a[column]) return order === 'asc' ? 1 : -1
+      }
+      return 0
+    })
+    setState({ ...state, data })
+  }, [state.sort])
+
+  useEffect(() => {
     if (state.fetched === false) {
       const url = new URL('/reports/namespace-kpis', globalState.baseURL)
       httpGet(
@@ -54,6 +77,7 @@ function NamespaceKPIs() {
             result.map((row) => [row.namespace, row.namespace_id])
           )
           setState({
+            ...state,
             data: result,
             fetched: true,
             lookup: lookup,
@@ -61,16 +85,36 @@ function NamespaceKPIs() {
           })
         },
         (error) => {
-          setState({ data: [], fetched: true, lookup: {}, errorMessage: error })
+          setState({
+            ...state,
+            data: [],
+            fetched: true,
+            lookup: {},
+            errorMessage: error
+          })
         }
       )
     }
   }, [state.fetched])
 
+  function onSortDirection(column, direction) {
+    const sort = { ...state.sort }
+    if (direction === null) {
+      if (sort[column] !== undefined) delete sort[column]
+    } else if (state.sort[column] !== direction) {
+      sort[column] = direction
+    }
+    if (state.sort !== sort) {
+      setState({ ...state, sort: sort })
+    }
+  }
+
   const columns = [
     {
       title: t('terms.namespace'),
       name: 'namespace',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.namespace ? state.sort.namespace : null,
       type: 'text',
       tableOptions: {
         className: 'truncate',
@@ -87,6 +131,8 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.projects'),
       name: 'projects',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.projects ? state.sort.projects : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
@@ -97,6 +143,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.stackHealthScore'),
       name: 'stack_health_score',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.stack_health_score
+        ? state.sort.stack_health_score
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-center',
@@ -107,6 +157,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.totalProjectScore'),
       name: 'total_project_score',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.total_project_score
+        ? state.sort.total_project_score
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
@@ -117,6 +171,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.totalPossibleProjectScore'),
       name: 'total_possible_project_score',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.total_possible_project_score
+        ? state.sort.total_possible_project_score
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
@@ -127,6 +185,10 @@ function NamespaceKPIs() {
     {
       title: t('reports.namespaceKPIs.totalProjectScorePercentage'),
       name: 'percent_of_tpps',
+      sortCallback: onSortDirection,
+      sortDirection: state.sort.percent_of_tpps
+        ? state.sort.percent_of_tpps
+        : null,
       type: 'text',
       tableOptions: {
         className: 'text-right',
