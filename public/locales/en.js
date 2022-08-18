@@ -28,9 +28,11 @@ export default {
         off: 'Off',
         on: 'On',
         overview: 'Overview',
+        refresh: 'Refresh',
         required: 'Required Field',
         save: 'Save',
         saving: 'Saving ...',
+        search: 'Search',
         settings: 'Settings',
         slug: 'Slug',
         slugDescription:
