@@ -359,7 +359,7 @@ function Edit({ project, onEditFinished }) {
             name="environments"
             type="select"
             multiple={true}
-            options={metadatametadataAsOptions(
+            options={metadataAsOptions(
               globalState.metadata.environments,
               'name',
               'name'
