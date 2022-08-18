@@ -225,7 +225,6 @@ function Projects() {
 
   // Re-sort the table data when the sort settings change
   useEffect(() => {
-    buildColumns()
     setState({
       ...state,
       columns: buildColumns(),
