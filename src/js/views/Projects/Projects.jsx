@@ -203,25 +203,32 @@ function Projects() {
               }
               tableData.push(values)
             })
-
-            setState({
-              ...state,
-              data: sortTableData(tableData, globalState.projects.sort),
-              fetching: false,
-              refresh: false
-            })
+            onTableData(tableData)
           } else {
-            setErrorMessage(t('projects.requestError', { error: data }))
-            setState({
-              ...state,
-              fetching: false,
-              refresh: false
-            })
+            onRequestError(data)
           }
         }
       )
     }
   }, [globalState.projects.fields, globalState.projects.filter, state.refresh])
+
+  function onTableData(data) {
+    setState({
+      ...state,
+      data: sortTableData(data, globalState.projects.sort),
+      fetching: false,
+      refresh: false
+    })
+  }
+
+  function onRequestError(data) {
+    setErrorMessage(t('projects.requestError', { error: data }))
+    setState({
+      ...state,
+      fetching: false,
+      refresh: false
+    })
+  }
 
   // Re-sort the table data when the sort settings change
   useEffect(() => {
