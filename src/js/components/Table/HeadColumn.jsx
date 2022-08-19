@@ -59,15 +59,20 @@ function HeadColumn({ column, children, className, disabled, srOnly }) {
     <th
       scope="col"
       className={`${ColClassName} ${clsName} ${
-        sortDirection !== null ? 'text-blue-700' : 'text-gray-500'
+        column.sortDirection !== null && column.sortDirection !== undefined
+          ? 'text-blue-700'
+          : 'text-gray-500'
       }`}
       onClick={onSortClick}>
-      {column.sortCallback !== undefined && (
-        <Icon
-          icon={SortIcon[sortDirection]}
-          className={`mr-2 ${sortDirection !== null ? ' text-blue-700' : ''}`}
-        />
-      )}
+      {column.sortCallback !== undefined &&
+        column.sortDirection !== undefined && (
+          <Icon
+            icon={SortIcon[column.sortDirection]}
+            className={`mr-2 ${
+              column.sortDirection !== null ? ' text-blue-700' : ''
+            }`}
+          />
+        )}
       {children !== undefined && children}
       {column.title !== undefined && column.title}
     </th>
