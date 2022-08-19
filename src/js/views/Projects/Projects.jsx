@@ -9,10 +9,10 @@ import { byString, byNumber, byValues } from 'sort-es'
 import { Alert, ScoreBadge, Table } from '../../components'
 import { Context } from '../../state'
 import { httpPost } from '../../utils'
+import { metadataAsOptions } from '../../settings'
 
 import { Filter } from './Filter'
-
-import { metadataAsOptions } from '../../settings'
+import { HelpDialog } from './HelpDialog'
 
 const sortMap = {
   namespace: byString,
@@ -150,7 +150,8 @@ function Projects() {
     columns: buildColumns(),
     data: [],
     fetching: false,
-    refresh: false
+    refresh: false,
+    showHelp: false
   })
 
   useEffect(() => {
@@ -203,32 +204,24 @@ function Projects() {
               }
               tableData.push(values)
             })
-            onTableData(tableData)
+            setState((prevState) => ({
+              ...prevState,
+              data: sortTableData(tableData, globalState.projects.sort),
+              fetching: false,
+              refresh: false
+            }))
           } else {
-            onRequestError(data)
+            setErrorMessage(t('projects.requestError', { error: data }))
+            setState((prevState) => ({
+              ...prevState,
+              fetching: false,
+              refresh: false
+            }))
           }
         }
       )
     }
   }, [globalState.projects.fields, globalState.projects.filter, state.refresh])
-
-  function onTableData(data) {
-    setState({
-      ...state,
-      data: sortTableData(data, globalState.projects.sort),
-      fetching: false,
-      refresh: false
-    })
-  }
-
-  function onRequestError(data) {
-    setErrorMessage(t('projects.requestError', { error: data }))
-    setState({
-      ...state,
-      fetching: false,
-      refresh: false
-    })
-  }
 
   // Re-sort the table data when the sort settings change
   useEffect(() => {
@@ -263,6 +256,7 @@ function Projects() {
           disabled={state.fetching}
           onChange={onFilterChange}
           onRefresh={onRefresh}
+          onShowHelp={() => setState({ ...state, showHelp: true })}
           value={globalState.projects.filter}
         />
       </div>
@@ -271,6 +265,9 @@ function Projects() {
         data={state.data}
         rowURL={(data) => `/ui/projects/${data.id}`}
       />
+      {state.showHelp && (
+        <HelpDialog onClose={() => setState({ ...state, showHelp: false })} />
+      )}
     </div>
   )
 }

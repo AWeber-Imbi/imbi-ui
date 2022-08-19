@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Icon } from '../../components'
 
-function Filter({ disabled, onChange, onRefresh, value }) {
+function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
   const { t } = useTranslation()
 
   return (
@@ -31,18 +31,22 @@ function Filter({ disabled, onChange, onRefresh, value }) {
         />
         <button
           type="button"
-          className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-0">
-          DQL
+          className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 hover:text-blue-600 focus:outline-0"
+          onClick={onShowHelp}>
+          <Icon icon="fas question-circle" />
         </button>
       </div>
       <button
         type="button"
-        className="ml-3 text-sm font-medium whitespace-nowrap"
+        className="ml-3 text-sm font-medium whitespace-nowrap hover:text-blue-600"
         disabled={disabled}
         onClick={() => {
           onRefresh()
         }}>
-        <Icon className="lg:mr-2" icon="fas redo" />
+        <Icon
+          className={`lg:mr-2` + (disabled === true ? ' fa-spin' : '')}
+          icon="fas redo"
+        />
         <span className="hidden lg:inline-block">{t('common.refresh')}</span>
       </button>
     </form>
@@ -53,6 +57,7 @@ Filter.propTypes = {
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
   onRefresh: PropTypes.func,
+  onShowHelp: PropTypes.func,
   value: PropTypes.string
 }
 export { Filter }
