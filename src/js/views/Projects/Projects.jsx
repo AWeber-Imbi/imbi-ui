@@ -69,7 +69,7 @@ function Projects() {
     } else if (globalState.projects.sort[column] !== direction) {
       sort[column] = direction
     }
-    if (globalState.projects.sort !== sort) {
+    if (JSON.stringify(globalState.projects.sort) !== JSON.stringify(sort)) {
       dispatch({
         type: 'SET_PROJECTS_SORT',
         payload: sort
