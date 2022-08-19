@@ -20,7 +20,7 @@ function HelpDialog({ onClose }) {
             })
           }}
         />
-        <h1 className="my-4 font-bold">Searchable Fields</h1>
+        <h1 className="my-4 font-bold">{t('projects.searchHelpFields')}</h1>
         <ul className="list-disc list-inside max-h-36 ml-5 font-mono overflow-scroll">
           {globalState.openSearch.fields.map((field) => {
             rowOffset += 1
