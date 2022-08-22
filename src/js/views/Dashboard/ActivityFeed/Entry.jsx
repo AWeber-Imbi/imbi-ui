@@ -2,11 +2,16 @@ import { DateTime } from 'luxon'
 import Gravatar from 'react-gravatar'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useContext } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+
+import { Context } from '../../../state'
+import { lookupNamespaceByID } from '../../../utils'
 
 function Entry({ entry }) {
   const { t, i18n } = useTranslation()
+  const [globalState] = useContext(Context)
+
   let action = t('dashboard.activityFeed.created')
   if (entry.what === 'updated') action = t('dashboard.activityFeed.updated')
   if (entry.what === 'updated facts')
@@ -15,6 +20,12 @@ function Entry({ entry }) {
   const namespace = entry.namespace
   const project = entry.project_name
   const displayName = entry.display_name
+  const filter = encodeURIComponent(
+    `namespace_slug:${
+      lookupNamespaceByID(globalState.metadata.namespaces, entry.namespace_id)
+        .slug
+    }`
+  )
   return (
     <li className="flex p-2 space-x-3 border-b border-gray-200">
       <Gravatar
@@ -35,7 +46,7 @@ function Entry({ entry }) {
             </Link>{' '}
             project in the{' '}
             <Link
-              to={`/ui/projects?namespace_id=${entry.namespace_id}`}
+              to={`/ui/projects?f=${filter}`}
               className="font-medium text-blue-700 hover:text-blue-800">
               {{ namespace }}
             </Link>{' '}

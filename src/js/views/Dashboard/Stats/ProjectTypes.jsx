@@ -11,7 +11,9 @@ import PropTypes from 'prop-types'
 
 function ProjectTypes({ onReady }) {
   const [state, setState] = useState({
-    data: [],
+    data: {
+      project_types: []
+    },
     fetched: false,
     errorMessage: null
   })
@@ -31,7 +33,11 @@ function ProjectTypes({ onReady }) {
           })
         },
         (error) => {
-          setState({ data: [], fetched: true, errorMessage: error })
+          setState({
+            data: { project_types: [] },
+            fetched: true,
+            errorMessage: error
+          })
         }
       )
     } else {
@@ -41,30 +47,31 @@ function ProjectTypes({ onReady }) {
 
   return (
     <ErrorBoundary>
-      {state.fetched && (
-        <ContentArea
-          className="flex-grow pt-0"
-          pageIcon="fas cubes"
-          pageTitle={t('dashboard.projectTypes')}
-          setPageTitle={false}>
-          {state.errorMessage !== null && (
-            <Alert level="error">{state.errorMessage}</Alert>
-          )}
-          <Container>
-            {state.data.project_types.map((row) => {
-              return (
-                <Value
-                  key={`stats-${row.name}`}
-                  title={row.count === 1 ? row.name : row.plural}
-                  icon={row.icon}
-                  url={`/ui/projects?project_type_id=${row.project_type_id}`}
-                  value={row.count}
-                />
-              )
-            })}
-          </Container>
-        </ContentArea>
-      )}
+      <ContentArea
+        className="flex-grow pt-0"
+        pageIcon="fas cubes"
+        pageTitle={t('dashboard.projectTypes')}
+        setPageTitle={false}>
+        {state.errorMessage !== null && (
+          <Alert level="error">{state.errorMessage}</Alert>
+        )}
+        <Container>
+          {state.data.project_types.map((row) => {
+            return (
+              <Value
+                key={`stats-${row.name}`}
+                title={row.count === 1 ? row.name : row.plural}
+                icon={row.icon}
+                url={
+                  '/ui/projects?f=' +
+                  encodeURIComponent('project_type_slug:' + row.slug)
+                }
+                value={row.count}
+              />
+            )
+          })}
+        </Container>
+      </ContentArea>
     </ErrorBoundary>
   )
 }

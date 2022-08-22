@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Icon, Loading } from '../../components/'
+import { Icon } from '../../components/'
 import { Context } from '../../state'
 
 import { Feed } from './ActivityFeed/'
@@ -28,14 +28,9 @@ export function Dashboard() {
     })
   }, [])
   setDocumentTitle(t('dashboard.title'))
-  const loading =
-    state.feedReady !== true &&
-    state.namespacesReady !== true &&
-    state.projectTypesReady !== true
   return (
     <Fragment>
-      {loading && <Loading />}
-      <div className={`flex-1 ${loading ? 'hidden' : ''}`}>
+      <div className="flex-1">
         <div className="flex flex-col lg:flex-row lg:items-stretch lg:h-screen-1/2 space-x-0 lg:space-x-3 space-y-3 lg:space-y-0">
           <div className="flex-auto lg:h-full lg:w-8/12 w-full">
             <Namespaces
