@@ -115,7 +115,7 @@ const initialState = {
   openSearch: undefined,
   projects: {
     filter: '',
-    fields: ['id', 'namespace', 'type', 'name', 'project_score'],
+    fields: ['id', 'namespace', 'project_type', 'name', 'project_score'],
     sort: {
       namespace: 'asc',
       name: 'asc'

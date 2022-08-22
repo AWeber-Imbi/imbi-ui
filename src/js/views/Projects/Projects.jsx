@@ -18,17 +18,7 @@ const sortMap = {
   namespace: byString,
   name: byString,
   project_score: byNumber,
-  type: byString
-}
-
-function slugToName(items, slug) {
-  let value = slug
-  items.forEach((item) => {
-    if (item.slug === slug) {
-      value = item.name
-    }
-  })
-  return value
+  project_type: byString
 }
 
 function sortTableData(data, columns) {
@@ -109,11 +99,11 @@ function Projects() {
       },
       {
         title: t('terms.projectType'),
-        name: 'type',
+        name: 'project_type',
         sortCallback: onSortChange,
         sortDirection:
-          globalState.projects.sort.type !== undefined
-            ? globalState.projects.sort.type
+          globalState.projects.sort.project_type !== undefined
+            ? globalState.projects.sort.project_type
             : null,
         type: 'text',
         tableOptions: {
@@ -139,11 +129,6 @@ function Projects() {
         }
       }
     ]
-  }
-
-  const slugToNameMap = {
-    namespace: globalState.metadata.namespaces,
-    type: globalState.metadata.projectTypes
   }
 
   const [state, setState] = useState({
@@ -196,11 +181,7 @@ function Projects() {
             data.hits.hits.forEach((row) => {
               const values = {}
               for (const [key, value] of Object.entries(row.fields)) {
-                if (slugToNameMap[key] !== undefined) {
-                  values[key] = slugToName(slugToNameMap[key], value[0])
-                } else {
-                  values[key] = value[0]
-                }
+                values[key] = value[0]
               }
               tableData.push(values)
             })
