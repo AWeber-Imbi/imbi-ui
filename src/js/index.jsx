@@ -1,4 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
+import { Chart, registerables } from 'chart.js'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { render } from 'react-dom'
@@ -13,6 +14,8 @@ import { httpGet, isURL } from './utils'
 import { Header, Footer } from './components'
 import { Error, Initializing, Login, Main } from './views'
 import State from './state'
+
+Chart.register(...registerables)
 
 export const loggedOutUser = {
   username: null,
