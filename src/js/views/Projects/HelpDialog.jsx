@@ -8,7 +8,9 @@ import { Context } from '../../state'
 function HelpDialog({ onClose }) {
   const { t } = useTranslation()
   const [globalState] = useContext(Context)
-  let rowOffset = -1
+  const fields = Array.from(
+    new Set(globalState.openSearch.fields.map((field) => field.name))
+  )
   return (
     <Modal onClose={onClose}>
       <Modal.Title>{t('projects.searchHelpTitle')}</Modal.Title>
@@ -22,9 +24,8 @@ function HelpDialog({ onClose }) {
         />
         <h1 className="my-4 font-bold">{t('projects.searchHelpFields')}</h1>
         <ul className="list-disc list-inside max-h-36 ml-5 font-mono overflow-scroll">
-          {globalState.openSearch.fields.map((field) => {
-            rowOffset += 1
-            return <li key={`field-` + rowOffset}>{field.name}</li>
+          {fields.map((field) => {
+            return <li key={`field-` + field}>{field}</li>
           })}
         </ul>
       </div>
