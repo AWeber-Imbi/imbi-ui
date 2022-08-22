@@ -11,7 +11,8 @@ function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
     <form className="flex flex-row items-center md:space-x-2 mr-2 text-gray-500 sm:w-full md:w-full">
       <div className="relative flex items-stretch rounded-md shadow-sm flex-grow focus-within:z-10">
         <input
-          className="block w-full rounded-none rounded-l-md pl-10 sm:text-sm border-gray-300 focus:outline-0"
+          autoFocus={true}
+          className="block w-full rounded-none rounded-l-md pl-10 sm:text-sm border-gray-300 focus:border-gray-300 focus:outline-0 focus:ring-0"
           type="text"
           autoComplete="off"
           defaultValue={value !== '' ? value : undefined}

@@ -4,6 +4,7 @@ import React, { Fragment } from 'react'
 
 import { NavMenu } from './NavMenu'
 import { NewMenu } from './NewMenu'
+import { ProjectSearch } from './ProjectSearch'
 import { UserMenu } from './UserMenu'
 import { User } from '../../schema'
 
@@ -31,6 +32,7 @@ function Header({ logo, service, authenticated, user }) {
         {authenticated === true && (
           <Fragment>
             <NavMenu user={user} />
+            <ProjectSearch />
             <NewMenu user={user} />
             <UserMenu user={user} />
           </Fragment>
