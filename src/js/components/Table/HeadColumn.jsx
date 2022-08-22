@@ -14,7 +14,7 @@ const SortIcon = {
 }
 
 const ColClassName =
-  'align-middle px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap'
+  'align-middle px-6 py-2 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap'
 
 function HeadColumn({ column, children, className, disabled, srOnly }) {
   function onSortClick(event) {
@@ -58,16 +58,21 @@ function HeadColumn({ column, children, className, disabled, srOnly }) {
   return (
     <th
       scope="col"
-      className={`${ColClassName} ${clsName}`}
+      className={`${ColClassName} ${clsName} ${
+        column.sortDirection !== null && column.sortDirection !== undefined
+          ? 'text-blue-700'
+          : 'text-gray-500'
+      }`}
       onClick={onSortClick}>
-      {column.sortCallback !== undefined && (
-        <Icon
-          icon={SortIcon[column.sortDirection]}
-          className={`mr-2 ${
-            column.sortDirection !== null ? 'text-blue-600' : ''
-          }`}
-        />
-      )}
+      {column.sortCallback !== undefined &&
+        column.sortDirection !== undefined && (
+          <Icon
+            icon={SortIcon[column.sortDirection]}
+            className={`mr-2 ${
+              column.sortDirection !== null ? ' text-blue-700' : ''
+            }`}
+          />
+        )}
       {children !== undefined && children}
       {column.title !== undefined && column.title}
     </th>

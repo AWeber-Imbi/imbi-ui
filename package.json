@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/AWeber/imbi"
+    "url": "https://github.com/AWeber-Imbi/imbi-ui/"
   },
   "author": "Gavin M. Roy",
   "license": "BSD-3-Clause",
@@ -27,6 +27,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.2.0",
     "@babel/preset-react": "^7.0.0",
+    "@cybernetex/kbn-es-query": "^1.0.2",
     "@fortawesome/fontawesome-svg-core": "^1.3.0",
     "@fortawesome/free-brands-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
@@ -80,10 +81,10 @@
     "react-i18next": "^11.3.4",
     "react-markdown": "^6.0.3",
     "react-router-dom": "^6.3.0",
-    "react-select": "^5.2.1",
     "react-sparklines": "^1.7.0",
     "react-syntax-highlighter": "^15.4.3",
     "slugify": "^1.6.4",
+    "sort-es": "^1.5.1",
     "ssri": "^8.0.1",
     "style-loader": "^3.3.1",
     "tailwindcss": "^3.1.8",
@@ -114,6 +115,5 @@
   "lint-staged": {
     "*.{css,js,json,jsx}": "prettier --write",
     "*.{js,jsx}": "eslint --cache --fix"
-  },
-  "dependencies": {}
+  }
 }

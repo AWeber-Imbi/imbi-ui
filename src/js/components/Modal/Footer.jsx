@@ -23,7 +23,7 @@ Footer.propTypes = {
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.element),
     PropTypes.element
-  ]).isRequired,
+  ]),
   className: PropTypes.string,
   closeText: PropTypes.string,
   onClose: PropTypes.func

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
-import { Outlet, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 
 import { Admin, NotFound } from '.'
 import { Breadcrumbs, ErrorBoundary, Loading } from '../components'
@@ -60,10 +60,6 @@ function Main({ user }) {
                 <Route
                   path="/ui/projects/import"
                   element={<Project.GitlabImport user={user} />}
-                />
-                <Route
-                  path="/ui/projects/:projectId"
-                  element={<Project.Detail user={user} />}
                 />
                 <Route
                   path="/ui/projects/:projectId/*"
