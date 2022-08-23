@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
+import { byString, byValue } from 'sort-es'
 
 import { Modal } from '../../components'
 import { Context } from '../../state'
@@ -24,7 +25,7 @@ function HelpDialog({ onClose }) {
         />
         <h1 className="my-4 font-bold">{t('projects.searchHelpFields')}</h1>
         <ul className="list-disc list-inside max-h-36 ml-5 font-mono overflow-scroll">
-          {fields.map((field) => {
+          {fields.sort(byString()).map((field) => {
             return <li key={`field-` + field}>{field}</li>
           })}
         </ul>

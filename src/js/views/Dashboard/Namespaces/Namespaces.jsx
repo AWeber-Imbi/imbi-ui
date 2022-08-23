@@ -13,6 +13,7 @@ import {
 import { Head } from '../../../components/Table/'
 import { Context } from '../../../state'
 import { httpGet } from '../../../utils'
+import { lookupNamespaceByID } from '../../../utils'
 
 import { PopupGraph } from './PopupGraph'
 
@@ -161,9 +162,6 @@ function Namespaces({ onReady }) {
       }
     })
   }
-
-  if (state.fetchedNamespaces !== true || state.fetchedKPIHistory !== true)
-    return <div />
   return (
     <ErrorBoundary>
       {state.chart !== null && (
@@ -201,7 +199,15 @@ function Namespaces({ onReady }) {
                 ).map((entry) => entry.value)
                 const handleClick = () =>
                   navigate(
-                    `/ui/projects?namespace_id=${namespace.namespace_id}`
+                    '/ui/projects?f=' +
+                      encodeURIComponent(
+                        `namespace_slug:${
+                          lookupNamespaceByID(
+                            globalState.metadata.namespaces,
+                            namespace.namespace_id
+                          ).slug
+                        }`
+                      )
                   )
                 return (
                   <tr

@@ -41,26 +41,26 @@ function Feed({ onReady }) {
 
   return (
     <ErrorBoundary>
-      {state.fetched && (
-        <ContentArea
-          className="flex flex-col lg:h-full pl-0"
-          pageIcon="fas rss"
-          pageTitle={t('dashboard.activityFeed.recentActivity')}
-          setPageTitle={false}>
-          <Panel className="flex-grow overflow-hidden pb-5">
-            {state.errorMessage !== null && (
-              <Alert level="error">{state.errorMessage}</Alert>
-            )}
-            <div className="h-full overflow-y-scroll">
-              <ul className="space-y-3">
-                {state.data.map((entry, offset) => {
+      <ContentArea
+        className="flex flex-col lg:h-full pl-0"
+        pageIcon="fas rss"
+        pageTitle={t('dashboard.activityFeed.recentActivity')}
+        setPageTitle={false}>
+        <Panel className="flex-grow overflow-hidden pb-5">
+          {state.errorMessage !== null && (
+            <Alert level="error">{state.errorMessage}</Alert>
+          )}
+          <div className="h-full overflow-y-scroll">
+            <ul className="space-y-3">
+              {state.data
+                .filter((e) => e.display_name !== 'SonarQube')
+                .map((entry, offset) => {
                   return <Entry key={`entry-${offset}`} entry={entry} />
                 })}
-              </ul>
-            </div>
-          </Panel>
-        </ContentArea>
-      )}
+            </ul>
+          </div>
+        </Panel>
+      </ContentArea>
     </ErrorBoundary>
   )
 }

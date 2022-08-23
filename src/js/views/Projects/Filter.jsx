@@ -1,33 +1,47 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '../../components'
 
 function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
+  const [filter, setFilter] = useState(value)
+  const location = useLocation()
+  const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop)
+  })
   const { t } = useTranslation()
 
+  function handleSubmit(event) {
+    event.preventDefault()
+    onChange(filter)
+  }
+
+  // Change the filter if the top search box changes it
+  useEffect(() => {
+    const filterParam = decodeURIComponent(params.f)
+    if (filterParam !== filter) setFilter(filterParam)
+  }, [location])
+
   return (
-    <form className="flex flex-row items-center md:space-x-2 mr-2 text-gray-500 sm:w-full md:w-full">
+    <form
+      className="flex flex-row items-center md:space-x-2 mr-2 text-gray-500 sm:w-full md:w-full"
+      onSubmit={handleSubmit}>
       <div className="relative flex items-stretch rounded-md shadow-sm flex-grow focus-within:z-10">
         <input
-          className="block w-full rounded-none rounded-l-md pl-10 sm:text-sm border-gray-300 focus:outline-0"
+          autoFocus={true}
+          className="block w-full rounded-none rounded-l-md pl-10 sm:text-sm border-gray-300 focus:border-gray-300 focus:outline-0 focus:ring-0"
           type="text"
           autoComplete="off"
-          defaultValue={value !== '' ? value : undefined}
           disabled={disabled}
           name="search"
+          onChange={(event) => {
+            setFilter(event.target.value)
+          }}
           placeholder={t('common.search')}
           style={{ padding: '.575rem' }}
-          onBlur={(event) => {
-            onChange(event.target.value)
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              onChange(event.target.value)
-            }
-          }}
+          value={filter}
         />
         <button
           type="button"

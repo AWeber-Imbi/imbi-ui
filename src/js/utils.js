@@ -79,6 +79,10 @@ export function isURL(value) {
   return urlRegexp.test(value)
 }
 
+export function lookupNamespaceByID(namespaces, namespace_id) {
+  return namespaces.find((e) => e.id === namespace_id)
+}
+
 export function setDocumentTitle(value) {
   document.title = 'Imbi - ' + value
 }

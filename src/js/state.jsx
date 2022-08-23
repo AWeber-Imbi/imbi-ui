@@ -59,38 +59,6 @@ const Reducer = (state, action) => {
         ...state,
         projectURLTemplate: action.payload
       }
-    case 'SET_PROJECTS_FIELDS':
-      return {
-        ...state,
-        projects: {
-          ...state.projects,
-          fields: action.payload
-        }
-      }
-    case 'SET_PROJECTS_FILTER':
-      return {
-        ...state,
-        projects: {
-          ...state.projects,
-          filter: action.payload
-        }
-      }
-    case 'SET_PROJECTS_INCLUDE_ARCHIVED':
-      return {
-        ...state,
-        projects: {
-          ...state.projects,
-          includeArchived: action.payload
-        }
-      }
-    case 'SET_PROJECTS_SORT':
-      return {
-        ...state,
-        projects: {
-          ...state.projects,
-          sort: action.payload
-        }
-      }
     case 'SET_REFRESH_SETTINGS':
       return {
         ...state,
@@ -113,14 +81,6 @@ const initialState = {
   integrations: undefined,
   metadata: undefined,
   openSearch: undefined,
-  projects: {
-    filter: '',
-    fields: ['id', 'namespace', 'type', 'name', 'project_score'],
-    sort: {
-      namespace: 'asc',
-      name: 'asc'
-    }
-  },
   projectURLTemplate: '',
   refreshSettings: true
 }

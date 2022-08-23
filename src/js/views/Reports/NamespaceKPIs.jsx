@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Context } from '../../state'
 import { httpGet } from '../../utils'
 import { Alert, Badge, ContentArea, Loading, Table } from '../../components'
+import { lookupNamespaceByID } from '../../utils'
 
 function colorizeValue(value) {
   value = parseInt(value)
@@ -120,8 +121,14 @@ function NamespaceKPIs() {
         className: 'truncate',
         headerClassName: 'w-3/12',
         lookupFunction: (namespace) => {
+          const filter =
+            'namespace_slug:' +
+            lookupNamespaceByID(
+              globalState.metadata.namespaces,
+              state.lookup[namespace]
+            ).slug
           return (
-            <Link to={`/ui/projects?namespace_id=${state.lookup[namespace]}`}>
+            <Link to={`/ui/projects?f=${encodeURIComponent(filter)}`}>
               {namespace}
             </Link>
           )
