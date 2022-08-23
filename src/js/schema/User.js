@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 
 export const User = {
-  authenticated: PropTypes.bool,
   created_at: PropTypes.string,
   username: PropTypes.string,
   display_name: PropTypes.string,

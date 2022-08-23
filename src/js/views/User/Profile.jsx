@@ -4,8 +4,8 @@ import React, { Fragment, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Context } from '../../state'
+import { GitlabConnectButton } from '../../components'
 import { User } from '../../schema'
-import { Button } from '../../components'
 
 function Groups({ groups }) {
   return (
@@ -51,17 +51,6 @@ function Profile({ user }) {
   const [state, dispatch] = useContext(Context)
   const { t } = useTranslation()
 
-  function redirectToGitlab(e) {
-    e.preventDefault()
-    document.location =
-      `${state.metadata.gitlabDetails.authorizationEndpoint}` +
-      `?client_id=${state.metadata.gitlabDetails.clientId}` +
-      `&redirect_uri=${state.metadata.gitlabDetails.redirectURI}` +
-      `&response_type=code` +
-      `&state=${user.username}` +
-      `&scope=api`
-  }
-
   useEffect(() => {
     dispatch({
       type: 'SET_PAGE',
@@ -104,7 +93,9 @@ function Profile({ user }) {
             value={user.integrations.join()}
           />
           {!user.integrations.includes('gitlab') && (
-            <Button onClick={redirectToGitlab}>Connect to gitlab</Button>
+            <div className="py-3 px-5 text-sm font-medium">
+              <GitlabConnectButton user={user} />
+            </div>
           )}
         </dl>
       </div>
