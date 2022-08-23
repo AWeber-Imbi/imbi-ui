@@ -5,7 +5,7 @@ import {
   toElasticsearchQuery
 } from '@cybernetex/kbn-es-query'
 import { byString, byNumber, byValues } from 'sort-es'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Alert, ScoreBadge, Table } from '../../components'
 import { Context } from '../../state'
@@ -31,17 +31,18 @@ function sortTableData(data, columns) {
 }
 
 function Projects() {
-  const [errorMessage, setErrorMessage] = useState(null)
   const [globalState, dispatch] = useContext(Context)
+  const location = useLocation()
   const navigate = useNavigate()
-  const { t } = useTranslation()
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop)
   })
+  const { t } = useTranslation()
 
   const [state, setState] = useState({
     columns: [],
     data: [],
+    errorMessage: null,
     fetching: false,
     fields: ['id', 'namespace', 'project_type', 'name', 'project_score'],
     filter: params.f !== null ? decodeURIComponent(params.f) : '',
@@ -205,13 +206,14 @@ function Projects() {
             setState((prevState) => ({
               ...prevState,
               data: sortTableData(tableData, state.sort),
+              errorMessage: null,
               fetching: false,
               refresh: false
             }))
           } else {
-            setErrorMessage(t('projects.requestError', { error: data }))
             setState((prevState) => ({
               ...prevState,
+              errorMessage: t('projects.requestError', { error: data }),
               fetching: false,
               refresh: false
             }))
@@ -237,21 +239,27 @@ function Projects() {
 
   // Remove the error message after 30 seconds
   useEffect(() => {
-    if (errorMessage !== null) {
+    if (state.errorMessage !== null) {
       const timerHandle = setTimeout(() => {
-        setErrorMessage(null)
+        state.setErrorMessage(null)
       }, 30000)
       return () => {
         clearTimeout(timerHandle)
       }
     }
-  }, [errorMessage])
+  }, [state.errorMessage])
+
+  // Change the filter if the top search box changes it
+  useEffect(() => {
+    const value = decodeURIComponent(params.f)
+    if (value !== state.filter) onFilterChange(value)
+  }, [location])
 
   return (
     <div className="m-0 px-4 py-3 space-y-3">
-      {errorMessage !== null && (
+      {state.errorMessage !== null && (
         <Alert className="mt-3" level="error">
-          {errorMessage}
+          {state.errorMessage}
         </Alert>
       )}
       <div className="flex items-center space-x-2 md:space-x-10 w-100">
