@@ -25,7 +25,7 @@ function HelpDialog({ onClose }) {
         />
         <h1 className="my-4 font-bold">{t('projects.searchHelpFields')}</h1>
         <ul className="list-disc list-inside max-h-36 ml-5 font-mono overflow-scroll">
-          {fields.sort(byValue((f) => f, byString())).map((field) => {
+          {fields.sort(byString()).map((field) => {
             return <li key={`field-` + field}>{field}</li>
           })}
         </ul>
