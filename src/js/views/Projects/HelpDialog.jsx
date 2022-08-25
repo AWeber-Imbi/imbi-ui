@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { byString, byValue } from 'sort-es'
+import { byString } from 'sort-es'
 
 import { Modal } from '../../components'
 import { Context } from '../../state'

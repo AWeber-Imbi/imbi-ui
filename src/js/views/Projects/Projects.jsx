@@ -62,7 +62,7 @@ function Projects() {
       setState((prevState) => ({
         ...prevState,
         data: [],
-        filter: value
+        filter: value === null ? '' : value
       }))
       setURL(
         `/ui/projects?f=${encodeURIComponent(value)}&s=${encodeURIComponent(
@@ -251,7 +251,7 @@ function Projects() {
 
   // Change the filter if the top search box changes it
   useEffect(() => {
-    const value = decodeURIComponent(params.f)
+    const value = params.f !== null ? decodeURIComponent(params.f) : ''
     if (value !== state.filter) onFilterChange(value)
   }, [location])
 

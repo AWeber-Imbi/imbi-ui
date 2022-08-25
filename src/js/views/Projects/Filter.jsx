@@ -20,7 +20,7 @@ function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
 
   // Change the filter if the top search box changes it
   useEffect(() => {
-    const filterParam = decodeURIComponent(params.f)
+    const filterParam = params.f !== null ? decodeURIComponent(params.f) : ''
     if (filterParam !== filter) setFilter(filterParam)
   }, [location])
 
