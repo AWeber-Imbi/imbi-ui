@@ -255,6 +255,7 @@ export default {
         editProject: 'Edit Project',
         environments: 'Environments',
         factHistory: 'Fact History',
+        feed: 'Project Feed',
         gitlab: {
           connect: 'Connect to GitLab',
           notConnected:
