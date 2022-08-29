@@ -116,7 +116,7 @@ function ProjectFeed({ projectID, factTypes }) {
           loader={<Loading />}
           dataLength={factHistory.entries.length}
           scrollableTarget="project-feed-list"
-          scrollThreshold="0.7">
+          scrollThreshold={0.7}>
           {entries}
         </InfiniteScroll>
       </ul>
