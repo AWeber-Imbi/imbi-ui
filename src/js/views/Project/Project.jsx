@@ -16,7 +16,6 @@ import {
   ErrorBoundary,
   Icon,
   IconBar,
-  Loading,
   Markdown,
   Tab,
   Tooltip
@@ -208,8 +207,7 @@ function Project() {
     setDocumentTitle(t('common.notFound'))
     return <Error>{t('error.notFound')}</Error>
   } else if (state.project === null || state.loading) {
-    setDocumentTitle(t('common.loading'))
-    return <Loading />
+    return <></>
   } else
     return (
       <ProjectPage
