@@ -24,7 +24,6 @@ import {
 
 import { Configuration } from './Configuration'
 import { Dependencies } from './Dependencies'
-import { FactHistory } from './FactHistory'
 import { Logs } from './Logs'
 import { Notes } from './Notes'
 import { OpsLog } from './OpsLog'
@@ -109,7 +108,6 @@ function ProjectPage({ project, factTypes, refresh }) {
           </Tab>
           <Tab to={`${baseURL}/configuration`}>{t('common.configuration')}</Tab>
           <Tab to={`${baseURL}/dependencies`}>{t('project.dependencies')}</Tab>
-          <Tab to={`${baseURL}/fact-history`}>{t('project.factHistory')}</Tab>
           <Tab to={`${baseURL}/logs`}>{t('common.logs')}</Tab>
           <Tab to={`${baseURL}/notes`}>{t('common.notes')}</Tab>
           <Tab to={`${baseURL}/operations-log`} isLast={project.archived}>
@@ -140,10 +138,6 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Route
             path={`dependencies`}
             element={<Dependencies urlPath={baseURL} />}
-          />
-          <Route
-            path={`fact-history`}
-            element={<FactHistory urlPath={baseURL} />}
           />
           <Route path={`logs`} element={<Logs urlPath={baseURL} />} />
           <Route path={`notes`} element={<Notes urlPath={baseURL} />} />
