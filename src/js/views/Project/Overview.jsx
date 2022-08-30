@@ -1,12 +1,15 @@
 import PropTypes from 'prop-types'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react'
 
 import { Details } from './Details'
 import { Facts } from './Facts'
 import { Context } from '../../state'
+import { ProjectFeed } from './ProjectFeed/ProjectFeed'
 
 function Overview({ factTypes, project, refresh, urlPath }) {
   const [state, dispatch] = useContext(Context)
+  const [height, setHeight] = useState()
+  const projectInfoDiv = useRef()
   useEffect(() => {
     dispatch({
       type: 'SET_CURRENT_PAGE',
@@ -15,8 +18,12 @@ function Overview({ factTypes, project, refresh, urlPath }) {
         title: project.name
       }
     })
+
+    const infoHeight = projectInfoDiv.current.clientHeight
+    setHeight(`${infoHeight}px`)
   }, [])
   const [editing, setEditing] = useState({ details: false, facts: false })
+
   return (
     <Fragment>
       <div
@@ -26,7 +33,8 @@ function Overview({ factTypes, project, refresh, urlPath }) {
             : ''
         }`}>
         <div
-          className={`flex-1 ${
+          ref={projectInfoDiv}
+          className={`flex-auto ${
             factTypes.length > 0 ? 'lg:w-6/12' : ''
           } w-full ${
             editing.details === false && editing.facts === false
@@ -45,7 +53,7 @@ function Overview({ factTypes, project, refresh, urlPath }) {
         </div>
         {factTypes.length > 0 && (
           <div
-            className={`flex-1 lg:w-6/12 w-full ${
+            className={`flex-auto lg:w-6/12 w-full ${
               editing.details === false && editing.facts === false
                 ? 'lg:flex-grow'
                 : ''
@@ -62,6 +70,11 @@ function Overview({ factTypes, project, refresh, urlPath }) {
             />
           </div>
         )}
+        <div
+          className="flex-auto lg:w-6/12 w-full"
+          style={height ? { height: height } : null}>
+          <ProjectFeed factTypes={factTypes} projectID={project.id} />
+        </div>
       </div>
     </Fragment>
   )

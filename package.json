@@ -79,6 +79,7 @@
     "react-gravatar": "^2.6.3",
     "react-hot-loader": "^4.13.0",
     "react-i18next": "^11.3.4",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-markdown": "^6.0.3",
     "react-router-dom": "^6.3.0",
     "react-sparklines": "^1.7.0",
