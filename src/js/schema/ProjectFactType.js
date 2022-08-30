@@ -29,7 +29,12 @@ export const jsonSchema = {
       type: 'array',
       items: {
         type: 'string',
-        enum: ['display-as-badge', 'display-as-percentage', 'hidden']
+        enum: [
+          'display-as-badge',
+          'display-as-percentage',
+          'hidden',
+          'read-only'
+        ]
       }
     },
     description: {
@@ -65,7 +70,12 @@ export const propTypes = {
     'timestamp'
   ]).isRequired,
   ui_options: PropTypes.arrayOf(
-    PropTypes.oneOf(['display-as-badge', 'display-as-percentage', 'hidden'])
+    PropTypes.oneOf([
+      'display-as-badge',
+      'display-as-percentage',
+      'hidden',
+      'read-only'
+    ])
   ).isRequired,
   description: PropTypes.string,
   weight: PropTypes.number.isRequired

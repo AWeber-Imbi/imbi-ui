@@ -109,7 +109,8 @@ export function ProjectFactTypes() {
               label: 'Display as Percentage',
               value: 'display-as-percentage'
             },
-            { label: 'Hidden', value: 'hidden' }
+            { label: 'Hidden', value: 'hidden' },
+            { label: 'Read-only', value: 'read-only' }
           ],
           multiple: true,
           tableOptions: {
