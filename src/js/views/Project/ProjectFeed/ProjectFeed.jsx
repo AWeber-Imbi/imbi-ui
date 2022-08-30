@@ -72,10 +72,12 @@ function ProjectFeed({ projectID, factTypes }) {
   if (errorMessage) {
     content = <Alert level="error">{errorMessage}</Alert>
   } else if (factHistory.entries.length === 0) {
-    content = (
+    content = factHistory.hasMore ? (
       <div className="flex flex-col justify-items-center content-center h-full">
         <Loading />
       </div>
+    ) : (
+      <></>
     )
   } else {
     const entries = factHistory.entries.map((fact, index) => (
