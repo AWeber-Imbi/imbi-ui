@@ -326,6 +326,12 @@ function Automations({ localDispatch, localState, user }) {
         </Fragment>
       </Form.Section>
     )
+  } else {
+    return (
+      <Form.Section name="automations" title={t('project.projectAutomations')}>
+        <Fragment>No automations available</Fragment>
+      </Form.Section>
+    )
   }
 }
 Automations.propTypes = {
