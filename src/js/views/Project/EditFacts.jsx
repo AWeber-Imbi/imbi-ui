@@ -53,13 +53,13 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   async function onSubmit() {
     setState({ ...state, saving: true })
     const payload = []
-    const url = new URL(`/projects/${projectId}/facts`, globalState.baseURL)
     for (let [factTypeId, value] of Object.entries(state.facts)) {
       if (value !== originalValues[factTypeId]) {
         payload.push({ fact_type_id: Number(factTypeId), value: value })
       }
     }
     if (payload.length > 0) {
+      const url = new URL(`/projects/${projectId}/facts`, globalState.baseURL)
       const result = await httpPost(globalState.fetch, url, payload)
       if (result.success === false) {
         console.error(`Error: ${result.data}`)
