@@ -75,6 +75,15 @@ export function Namespaces() {
           tableOptions: {
             headerClassName: 'w-4/12'
           }
+        },
+        {
+          title: t('admin.namespaces.sentryTeamSlug.title'),
+          name: 'sentry_team_slug',
+          description: t('admin.namespaces.sentryTeamSlug.description'),
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-2/12'
+          }
         }
       ]}
       errorStrings={{
