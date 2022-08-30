@@ -64,7 +64,6 @@ function CRUD({
       )
     }
     setShowDeleteConfirmation(false)
-    state.refreshMetadata()
   }
 
   function onDeleteClick(value) {
