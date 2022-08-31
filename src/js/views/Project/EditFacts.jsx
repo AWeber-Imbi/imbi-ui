@@ -89,6 +89,8 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
               fieldType = 'number'
               step = '0.01'
               value = Number(value)
+            } else if (factType.data_type === 'date') {
+              fieldType = 'date'
             } else if (factType.fact_type === 'enum') fieldType = 'select'
             const name = `fact-${factType.id}`
             return (

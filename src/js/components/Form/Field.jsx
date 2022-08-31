@@ -9,6 +9,7 @@ import { SelectOptions } from '../../schema/PropTypes'
 import { TextInput } from './TextInput'
 import { TextArea } from './TextArea'
 import { Toggle } from './Toggle'
+import { DatePicker } from './DatePicker'
 
 function Field({
   autoFocus,
@@ -115,6 +116,18 @@ function Field({
             className="mt-2"
             disabled={disabled}
             onChange={onChange}
+            value={value}
+          />
+        )}
+        {type === 'date' && (
+          <DatePicker
+            autoFocus={autoFocus}
+            disabled={disabled}
+            hasError={errorMessage !== null}
+            name={name}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
             value={value}
           />
         )}
