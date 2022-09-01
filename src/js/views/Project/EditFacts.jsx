@@ -102,6 +102,10 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
             if (factType.data_type === 'boolean') {
               fieldType = 'toggle'
               value = value === 'true'
+            } else if (factType.data_type === 'integer') {
+              fieldType = 'number'
+              step = '1'
+              value = Number(value)
             } else if (factType.data_type === 'decimal') {
               fieldType = 'number'
               step = '0.01'
