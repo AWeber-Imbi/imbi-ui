@@ -191,7 +191,9 @@ Field.propTypes = {
     'text',
     'textarea',
     'toggle',
-    'url'
+    'url',
+    'date',
+    'datetime'
   ]).isRequired,
   value: PropTypes.oneOfType([
     PropTypes.bool,
