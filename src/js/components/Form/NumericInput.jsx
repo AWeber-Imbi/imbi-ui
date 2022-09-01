@@ -21,6 +21,7 @@ function NumericInput({
       ref.current.focus()
     }
   }, [])
+  const parse = parseFloat(step) % 1 === 0 ? parseInt : parseFloat
   return (
     <input
       autoComplete={name}
@@ -40,7 +41,7 @@ function NumericInput({
         if (onChange !== undefined)
           onChange(
             name,
-            event.target.value === '' ? null : parseInt(event.target.value)
+            event.target.value === '' ? null : parse(event.target.value)
           )
         setHasFocus(false)
       }}
@@ -49,7 +50,7 @@ function NumericInput({
         if (onChange !== undefined)
           onChange(
             name,
-            event.target.value === '' ? null : parseInt(event.target.value)
+            event.target.value === '' ? null : parse(event.target.value)
           )
       }}
       onFocus={(event) => {
