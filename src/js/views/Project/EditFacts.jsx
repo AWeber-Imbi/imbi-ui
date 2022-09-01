@@ -6,11 +6,28 @@ import { Card, ErrorBoundary, Form } from '../../components'
 import { Context } from '../../state'
 import { httpPost } from '../../utils'
 
+function ISO8601ToDatetimeLocal(isoDate) {
+  if (!isoDate) return isoDate
+  const msOffset = new Date().getTimezoneOffset() * 60 * 1000
+  return new Date(new Date(isoDate).getTime() - msOffset)
+    .toISOString()
+    .slice(0, -1)
+}
+
+function convertFactToFieldValue(fact, factType) {
+  if (factType.data_type === 'timestamp') return ISO8601ToDatetimeLocal(fact)
+  return fact
+}
+
 function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   const [globalState] = useContext(Context)
+  const factTypeById = Object.fromEntries(factTypes.map((t) => [t.id, t]))
   const originalValues = Object.fromEntries(
     facts.map((fact) => {
-      return [fact.fact_type_id, fact.value]
+      return [
+        fact.fact_type_id,
+        convertFactToFieldValue(fact.value, factTypeById[fact.fact_type_id])
+      ]
     })
   )
   const { t } = useTranslation()
@@ -21,11 +38,7 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
       })
     ),
     errorMessage: null,
-    facts: Object.fromEntries(
-      facts.map((fact) => {
-        return [fact.fact_type_id, fact.value]
-      })
-    ),
+    facts: originalValues,
     ready: false,
     saving: false
   })
@@ -55,7 +68,11 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
     const payload = []
     for (let [factTypeId, value] of Object.entries(state.facts)) {
       if (value !== originalValues[factTypeId]) {
-        payload.push({ fact_type_id: Number(factTypeId), value: value })
+        const fact =
+          factTypeById[factTypeId].data_type === 'timestamp' && value
+            ? new Date(value).toISOString()
+            : value
+        payload.push({ fact_type_id: Number(factTypeId), value: fact })
       }
     }
     if (payload.length > 0) {
@@ -91,6 +108,8 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
               value = Number(value)
             } else if (factType.data_type === 'date') {
               fieldType = 'date'
+            } else if (factType.data_type === 'timestamp') {
+              fieldType = 'datetime'
             } else if (factType.fact_type === 'enum') fieldType = 'select'
             const name = `fact-${factType.id}`
             return (

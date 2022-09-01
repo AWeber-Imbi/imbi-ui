@@ -10,6 +10,7 @@ import { TextInput } from './TextInput'
 import { TextArea } from './TextArea'
 import { Toggle } from './Toggle'
 import { DatePicker } from './DatePicker'
+import { DateTimePicker } from './DateTimePicker'
 
 function Field({
   autoFocus,
@@ -121,6 +122,18 @@ function Field({
         )}
         {type === 'date' && (
           <DatePicker
+            autoFocus={autoFocus}
+            disabled={disabled}
+            hasError={errorMessage !== null}
+            name={name}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
+            value={value}
+          />
+        )}
+        {type === 'datetime' && (
+          <DateTimePicker
             autoFocus={autoFocus}
             disabled={disabled}
             hasError={errorMessage !== null}
