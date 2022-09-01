@@ -22,7 +22,8 @@ function DateTimePicker({
     <input
       className={
         'form-input' +
-        (hasFocus === false && hasError === true ? ' border-red-700' : '')
+        (hasFocus === false && hasError === true ? ' border-red-700' : '') +
+        (disabled ? ' cursor-not-allowed' : '')
       }
       type="datetime-local"
       defaultValue={value}
