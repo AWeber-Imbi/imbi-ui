@@ -38,26 +38,26 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
       })
     ),
     errorMessage: null,
-    facts: originalValues,
+    fieldValues: originalValues,
     ready: false,
     saving: false
   })
 
   useEffect(() => {
     let ready = false
-    Object.entries(state.facts).forEach((value) => {
+    Object.entries(state.fieldValues).forEach((value) => {
       if (value[1] !== originalValues[value[0]] && ready === false) ready = true
     })
     if (state.ready !== ready) setState({ ...state, ready: ready })
-  }, [state.facts])
+  }, [state.fieldValues])
 
   function onChange(name, value) {
     const key = parseInt(name.split('-')[1])
-    if (state.facts[key] !== value)
+    if (state.fieldValues[key] !== value)
       setState({
         ...state,
-        facts: {
-          ...state.facts,
+        fieldValues: {
+          ...state.fieldValues,
           [key]: value !== null ? value.toString() : null
         }
       })
@@ -66,7 +66,7 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   async function onSubmit() {
     setState({ ...state, saving: true })
     const payload = []
-    for (let [factTypeId, value] of Object.entries(state.facts)) {
+    for (let [factTypeId, value] of Object.entries(state.fieldValues)) {
       if (value !== originalValues[factTypeId]) {
         const fact =
           factTypeById[factTypeId].data_type === 'timestamp' && value
@@ -98,7 +98,7 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
           {factTypes.map((factType) => {
             let step = undefined
             let fieldType = 'text'
-            let value = state.facts[factType.id]
+            let value = state.fieldValues[factType.id]
             if (factType.data_type === 'boolean') {
               fieldType = 'toggle'
               value = value === 'true'
