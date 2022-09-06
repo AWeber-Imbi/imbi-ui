@@ -33,11 +33,13 @@ function DatePicker({
       onBlur={(event) => {
         event.preventDefault()
         setHasFocus(false)
-        if (onChange !== undefined) onChange(name, event.target.value)
+        if (onChange !== undefined)
+          onChange(name, event.target.value === '' ? null : event.target.value)
       }}
       onChange={(event) => {
         event.preventDefault()
-        if (onChange !== undefined) onChange(name, event.target.value)
+        if (onChange !== undefined)
+          onChange(name, event.target.value === '' ? null : event.target.value)
       }}
       onFocus={(event) => {
         event.preventDefault()
