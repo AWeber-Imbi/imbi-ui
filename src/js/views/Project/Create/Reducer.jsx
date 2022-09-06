@@ -124,6 +124,23 @@ function reducer(state, action) {
         ...state,
         createSentryProject: action.payload
       }
+    case 'SET_CREATING_SENTRY_PROJECT':
+      return {
+        ...state,
+        creating: {
+          ...state.creating,
+          sentryProject: action.payload
+        }
+      }
+    case 'SET_CREATED_SENTRY_PROJECT':
+      return {
+        ...state,
+        created: {
+          ...state.created,
+          sentryProject: action.payload
+        }
+      }
+
     case 'SET_CREATE_SONARQUBE_PROJECT':
       return {
         ...state,

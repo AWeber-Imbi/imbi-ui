@@ -37,6 +37,16 @@ function Automations({ localDispatch, localState, user }) {
     'project'
   )
 
+  const namespace = localState.attributes.namespace_id
+    ? globalState.metadata.namespaces.filter(
+        (n) => n.id === localState.attributes.namespace_id
+      )[0]
+    : undefined
+  const sentryEnabled =
+    namespace &&
+    namespace.sentry_team_slug &&
+    globalState.integrations.sentry.enabled
+
   function manageAutomationLinks(automationEnabled, project_link_type_id) {
     const automationLinks = new Set(localState.automationLinks)
     if (automationEnabled && project_link_type_id !== null)
@@ -66,6 +76,7 @@ function Automations({ localDispatch, localState, user }) {
     if (localState.isSaving && localState.saved.attributes) {
       if (localState.createGitlabRepository)
         localDispatch({ type: 'SET_CREATING_GITLAB_REPOSITORY', payload: true })
+      else localDispatch({ type: 'SET_CREATING_SENTRY_PROJECT', payload: true })
     }
   }, [localState.saved.attributes])
 
@@ -230,10 +241,39 @@ function Automations({ localDispatch, localState, user }) {
     }
   }, [localState.creating.sonarqubeProject])
 
+  // Create Sentry Project
+  useEffect(() => {
+    async function createSentryProject() {
+      let result = await httpPost(
+        globalState.fetch,
+        new URL('/ui/automations/sentry/create', globalState.baseURL),
+        {
+          project_id: localState.projectId
+        }
+      )
+      if (result.success) {
+        localDispatch({ type: 'SET_CREATED_SENTRY_PROJECT', payload: true })
+        localDispatch({ type: 'SET_CREATING_SENTRY_PROJECT', payload: false })
+      } else {
+        localDispatch({ type: 'SET_CREATING_SENTRY_PROJECT', payload: false })
+        localDispatch({ type: 'SET_ERROR_MESSAGE', payload: result.data })
+        localDispatch({ type: 'SET_IS_SAVING', payload: false })
+      }
+    }
+    if (
+      localState.isSaving &&
+      localState.creating.sentryProject &&
+      !localState.created.sentryProject
+    ) {
+      createSentryProject()
+    }
+  }, [localState.creating.sentryProject])
+
   if (
     gitlabEnabled ||
     globalState.integrations.sonarqube.enabled ||
-    grafanaEnabled
+    grafanaEnabled ||
+    sentryEnabled
   ) {
     return (
       <Form.Section name="automations" title={t('project.projectAutomations')}>
@@ -267,7 +307,7 @@ function Automations({ localDispatch, localState, user }) {
               value={localState.createSonarqubeProject}
             />
           )}
-          {globalState.integrations.sentry.enabled && (
+          {sentryEnabled && (
             <Form.Field
               title={t('project.createSentryProject')}
               name="createSentryProject"
@@ -324,6 +364,12 @@ function Automations({ localDispatch, localState, user }) {
             />
           )}
         </Fragment>
+      </Form.Section>
+    )
+  } else {
+    return (
+      <Form.Section name="automations" title={t('project.projectAutomations')}>
+        <Fragment>No automations available</Fragment>
       </Form.Section>
     )
   }

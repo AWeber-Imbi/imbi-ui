@@ -149,6 +149,11 @@ export default {
             title: 'GitLab Group Path',
             description:
               'GitLab group slug/path that new projects for this namespace will be created in'
+          },
+          sentryTeamSlug: {
+            title: 'Sentry Team Slug',
+            description:
+              'Sentry team that new projects for this namespace will be created in'
           }
         },
         projectFactTypes: {

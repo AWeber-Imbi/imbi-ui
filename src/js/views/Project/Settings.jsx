@@ -63,7 +63,7 @@ function Settings({ project, refresh, urlPath }) {
       'message',
       `${project.name} was successfully deleted.`
     )
-    history.replace(`${url.pathname}${url.search}`)
+    navigate(`${url.pathname}${url.search}`)
   }
 
   return (
