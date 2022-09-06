@@ -21,7 +21,7 @@ function NumericInput({
       ref.current.focus()
     }
   }, [])
-  const parse = parseFloat(step) % 1 === 0 ? parseInt : parseFloat
+  const parse = parseFloat(step) % 1 === 0 ? parseInt : (i) => i
   return (
     <input
       autoComplete={name}
@@ -83,6 +83,6 @@ NumericInput.propTypes = {
   placeholder: PropTypes.string,
   required: PropTypes.bool,
   step: PropTypes.string,
-  value: PropTypes.number
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
 export { NumericInput }
