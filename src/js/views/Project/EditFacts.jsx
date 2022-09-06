@@ -14,21 +14,37 @@ function ISO8601ToDatetimeLocal(isoDate) {
     .slice(0, -1)
 }
 
-function convertFactToFieldValue(fact, factType) {
-  if (factType.data_type === 'timestamp') return ISO8601ToDatetimeLocal(fact)
-  return fact
+function isDifferent(factValue, fieldValue, factDataType) {
+  function normalizedFact() {
+    if (factDataType === 'timestamp') return ISO8601ToDatetimeLocal(factValue)
+    if (factDataType === 'decimal') return parseFloat(factValue)
+    return factValue
+  }
+
+  function normalizedField() {
+    if (factDataType === 'decimal') return parseFloat(fieldValue)
+    return fieldValue
+  }
+
+  return normalizedFact() !== normalizedField()
+}
+
+function convertFieldToFact(value, factDataType) {
+  if (factDataType === 'timestamp') return new Date(value).toISOString()
+  if (factDataType === 'decimal') return parseFloat(value).toFixed(2)
+  return value
+}
+
+function convertFactToField(value, factDataType) {
+  if (factDataType === 'timestamp') return ISO8601ToDatetimeLocal(value)
+  return value
 }
 
 function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   const [globalState] = useContext(Context)
   const factTypeById = Object.fromEntries(factTypes.map((t) => [t.id, t]))
-  const originalValues = Object.fromEntries(
-    facts.map((fact) => {
-      return [
-        fact.fact_type_id,
-        convertFactToFieldValue(fact.value, factTypeById[fact.fact_type_id])
-      ]
-    })
+  const factByFactTypeId = Object.fromEntries(
+    facts.map((fact) => [fact.fact_type_id, fact])
   )
   const { t } = useTranslation()
   const [state, setState] = useState({
@@ -38,16 +54,30 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
       })
     ),
     errorMessage: null,
-    fieldValues: originalValues,
+    fieldValues: Object.fromEntries(
+      Object.entries(factByFactTypeId).map(([factTypeId, fact]) => [
+        factTypeId,
+        convertFactToField(fact.value, factTypeById[factTypeId].data_type)
+      ])
+    ),
     ready: false,
     saving: false
   })
 
   useEffect(() => {
     let ready = false
-    Object.entries(state.fieldValues).forEach((value) => {
-      if (value[1] !== originalValues[value[0]] && ready === false) ready = true
-    })
+    for (const [factTypeId, fieldValue] of Object.entries(state.fieldValues)) {
+      if (
+        isDifferent(
+          factByFactTypeId[factTypeId].value,
+          fieldValue,
+          factTypeById[factTypeId].data_type
+        )
+      ) {
+        ready = true
+        break
+      }
+    }
     if (state.ready !== ready) setState({ ...state, ready: ready })
   }, [state.fieldValues])
 
@@ -66,13 +96,21 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   async function onSubmit() {
     setState({ ...state, saving: true })
     const payload = []
-    for (let [factTypeId, value] of Object.entries(state.fieldValues)) {
-      if (value !== originalValues[factTypeId]) {
-        const fact =
-          factTypeById[factTypeId].data_type === 'timestamp' && value
-            ? new Date(value).toISOString()
-            : value
-        payload.push({ fact_type_id: Number(factTypeId), value: fact })
+    for (const [factTypeId, fieldValue] of Object.entries(state.fieldValues)) {
+      if (
+        isDifferent(
+          factByFactTypeId[factTypeId].value,
+          fieldValue,
+          factTypeById[factTypeId].data_type
+        )
+      ) {
+        payload.push({
+          fact_type_id: Number(factTypeId),
+          value: convertFieldToFact(
+            fieldValue,
+            factTypeById[factTypeId].data_type
+          )
+        })
       }
     }
     if (payload.length > 0) {
@@ -105,11 +143,9 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
             } else if (factType.data_type === 'integer') {
               fieldType = 'number'
               step = '1'
-              value = Number(value)
             } else if (factType.data_type === 'decimal') {
               fieldType = 'number'
               step = '0.01'
-              value = Number(value)
             } else if (factType.data_type === 'date') {
               fieldType = 'date'
             } else if (factType.data_type === 'timestamp') {
@@ -123,7 +159,10 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
                 title={factType.name}
                 type={fieldType}
                 description={factType.description}
-                disabled={factType.ui_options.includes('read-only')}
+                disabled={
+                  factType.ui_options &&
+                  factType.ui_options.includes('read-only')
+                }
                 errorMessage={state.errors[factType.id]}
                 options={
                   factType.enum_values === null
