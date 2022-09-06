@@ -9,6 +9,8 @@ import { SelectOptions } from '../../schema/PropTypes'
 import { TextInput } from './TextInput'
 import { TextArea } from './TextArea'
 import { Toggle } from './Toggle'
+import { DatePicker } from './DatePicker'
+import { DateTimePicker } from './DateTimePicker'
 
 function Field({
   autoFocus,
@@ -37,7 +39,7 @@ function Field({
     <div className="grid grid-cols-3 gap-4 items-start pt-5">
       <label
         htmlFor={'field-' + name}
-        className="block text-sm mt-2 font-medium text-gray-700 whitespace-nowrap">
+        className="block text-sm mt-2 font-medium text-gray-700">
         {title}
         {required === true && <sup>*</sup>}
       </label>
@@ -118,6 +120,30 @@ function Field({
             value={value}
           />
         )}
+        {type === 'date' && (
+          <DatePicker
+            autoFocus={autoFocus}
+            disabled={disabled}
+            hasError={errorMessage !== null}
+            name={name}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
+            value={value}
+          />
+        )}
+        {type === 'datetime' && (
+          <DateTimePicker
+            autoFocus={autoFocus}
+            disabled={disabled}
+            hasError={errorMessage !== null}
+            name={name}
+            onChange={onChange}
+            placeholder={placeholder}
+            required={required}
+            value={value}
+          />
+        )}
         {errorMessage !== null && (
           <p className="ml-2 mt-2 text-sm text-red-700 col-span-2">
             {errorMessage}
@@ -165,7 +191,9 @@ Field.propTypes = {
     'text',
     'textarea',
     'toggle',
-    'url'
+    'url',
+    'date',
+    'datetime'
   ]).isRequired,
   value: PropTypes.oneOfType([
     PropTypes.bool,

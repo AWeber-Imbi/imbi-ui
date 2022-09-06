@@ -6,7 +6,8 @@ import '@testing-library/jest-dom/extend-expect'
 import { Tooltip } from './Tooltip'
 
 describe('Tooltip', () => {
-  it('should change the visibility on mouse over/out', () => {
+  it('should change the visibility on mouse over/out', async () => {
+    const user = userEvent.setup()
     render(
       <div data-testid="trigger">
         <Tooltip value="Tooltip">
@@ -18,10 +19,10 @@ describe('Tooltip', () => {
     const trigger = screen.getByTestId('trigger').getElementsByTagName('div')[0]
     expect(tooltip).toHaveClass('hidden')
     expect(tooltip).not.toHaveClass('visible')
-    userEvent.hover(trigger)
+    await user.hover(trigger)
     expect(tooltip).not.toHaveClass('hidden')
     expect(tooltip).toHaveClass('visible')
-    userEvent.unhover(trigger)
+    await user.unhover(trigger)
     expect(tooltip).toHaveClass('hidden')
     expect(tooltip).not.toHaveClass('visible')
   })

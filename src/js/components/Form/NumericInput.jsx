@@ -21,12 +21,14 @@ function NumericInput({
       ref.current.focus()
     }
   }, [])
+  const parse = parseFloat(step) % 1 === 0 ? parseInt : (i) => i
   return (
     <input
       autoComplete={name}
       className={
         'form-input' +
-        (hasFocus === false && hasError === true ? ' border-red-700' : '')
+        (hasFocus === false && hasError === true ? ' border-red-700' : '') +
+        (disabled ? ' cursor-not-allowed' : '')
       }
       disabled={disabled}
       value={value !== undefined && value !== null ? value.toString() : ''}
@@ -39,7 +41,7 @@ function NumericInput({
         if (onChange !== undefined)
           onChange(
             name,
-            event.target.value === '' ? null : parseInt(event.target.value)
+            event.target.value === '' ? null : parse(event.target.value)
           )
         setHasFocus(false)
       }}
@@ -48,7 +50,7 @@ function NumericInput({
         if (onChange !== undefined)
           onChange(
             name,
-            event.target.value === '' ? null : parseInt(event.target.value)
+            event.target.value === '' ? null : parse(event.target.value)
           )
       }}
       onFocus={(event) => {
@@ -81,6 +83,6 @@ NumericInput.propTypes = {
   placeholder: PropTypes.string,
   required: PropTypes.bool,
   step: PropTypes.string,
-  value: PropTypes.number
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }
 export { NumericInput }

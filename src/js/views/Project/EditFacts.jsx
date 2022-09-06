@@ -6,12 +6,45 @@ import { Card, ErrorBoundary, Form } from '../../components'
 import { Context } from '../../state'
 import { httpPost } from '../../utils'
 
+function ISO8601ToDatetimeLocal(isoDate) {
+  if (!isoDate) return isoDate
+  const msOffset = new Date().getTimezoneOffset() * 60 * 1000
+  return new Date(new Date(isoDate).getTime() - msOffset)
+    .toISOString()
+    .slice(0, -1)
+}
+
+function isDifferent(factValue, fieldValue, factDataType) {
+  function normalizedFact() {
+    if (factDataType === 'timestamp') return ISO8601ToDatetimeLocal(factValue)
+    if (factDataType === 'decimal') return parseFloat(factValue)
+    return factValue
+  }
+
+  function normalizedField() {
+    if (factDataType === 'decimal') return parseFloat(fieldValue)
+    return fieldValue
+  }
+
+  return normalizedFact() !== normalizedField()
+}
+
+function convertFieldToFact(value, factDataType) {
+  if (factDataType === 'timestamp') return new Date(value).toISOString()
+  if (factDataType === 'decimal') return parseFloat(value).toFixed(2)
+  return value
+}
+
+function convertFactToField(value, factDataType) {
+  if (factDataType === 'timestamp') return ISO8601ToDatetimeLocal(value)
+  return value
+}
+
 function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   const [globalState] = useContext(Context)
-  const originalValues = Object.fromEntries(
-    facts.map((fact) => {
-      return [fact.fact_type_id, fact.value]
-    })
+  const factTypeById = Object.fromEntries(factTypes.map((t) => [t.id, t]))
+  const factByFactTypeId = Object.fromEntries(
+    facts.map((fact) => [fact.fact_type_id, fact])
   )
   const { t } = useTranslation()
   const [state, setState] = useState({
@@ -21,10 +54,11 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
       })
     ),
     errorMessage: null,
-    facts: Object.fromEntries(
-      facts.map((fact) => {
-        return [fact.fact_type_id, fact.value]
-      })
+    fieldValues: Object.fromEntries(
+      Object.entries(factByFactTypeId).map(([factTypeId, fact]) => [
+        factTypeId,
+        convertFactToField(fact.value, factTypeById[factTypeId].data_type)
+      ])
     ),
     ready: false,
     saving: false
@@ -32,19 +66,28 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
 
   useEffect(() => {
     let ready = false
-    Object.entries(state.facts).forEach((value) => {
-      if (value[1] !== originalValues[value[0]] && ready === false) ready = true
-    })
+    for (const [factTypeId, fieldValue] of Object.entries(state.fieldValues)) {
+      if (
+        isDifferent(
+          factByFactTypeId[factTypeId].value,
+          fieldValue,
+          factTypeById[factTypeId].data_type
+        )
+      ) {
+        ready = true
+        break
+      }
+    }
     if (state.ready !== ready) setState({ ...state, ready: ready })
-  }, [state.facts])
+  }, [state.fieldValues])
 
   function onChange(name, value) {
     const key = parseInt(name.split('-')[1])
-    if (state.facts[key] !== value)
+    if (state.fieldValues[key] !== value)
       setState({
         ...state,
-        facts: {
-          ...state.facts,
+        fieldValues: {
+          ...state.fieldValues,
           [key]: value !== null ? value.toString() : null
         }
       })
@@ -53,13 +96,25 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
   async function onSubmit() {
     setState({ ...state, saving: true })
     const payload = []
-    const url = new URL(`/projects/${projectId}/facts`, globalState.baseURL)
-    for (let [factTypeId, value] of Object.entries(state.facts)) {
-      if (value !== originalValues[factTypeId]) {
-        payload.push({ fact_type_id: Number(factTypeId), value: value })
+    for (const [factTypeId, fieldValue] of Object.entries(state.fieldValues)) {
+      if (
+        isDifferent(
+          factByFactTypeId[factTypeId].value,
+          fieldValue,
+          factTypeById[factTypeId].data_type
+        )
+      ) {
+        payload.push({
+          fact_type_id: Number(factTypeId),
+          value: convertFieldToFact(
+            fieldValue,
+            factTypeById[factTypeId].data_type
+          )
+        })
       }
     }
     if (payload.length > 0) {
+      const url = new URL(`/projects/${projectId}/facts`, globalState.baseURL)
       const result = await httpPost(globalState.fetch, url, payload)
       if (result.success === false) {
         console.error(`Error: ${result.data}`)
@@ -81,14 +136,20 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
           {factTypes.map((factType) => {
             let step = undefined
             let fieldType = 'text'
-            let value = state.facts[factType.id]
+            let value = state.fieldValues[factType.id]
             if (factType.data_type === 'boolean') {
               fieldType = 'toggle'
               value = value === 'true'
+            } else if (factType.data_type === 'integer') {
+              fieldType = 'number'
+              step = '1'
             } else if (factType.data_type === 'decimal') {
               fieldType = 'number'
               step = '0.01'
-              value = Number(value)
+            } else if (factType.data_type === 'date') {
+              fieldType = 'date'
+            } else if (factType.data_type === 'timestamp') {
+              fieldType = 'datetime'
             } else if (factType.fact_type === 'enum') fieldType = 'select'
             const name = `fact-${factType.id}`
             return (
@@ -98,6 +159,10 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
                 title={factType.name}
                 type={fieldType}
                 description={factType.description}
+                disabled={
+                  factType.ui_options &&
+                  factType.ui_options.includes('read-only')
+                }
                 errorMessage={state.errors[factType.id]}
                 options={
                   factType.enum_values === null

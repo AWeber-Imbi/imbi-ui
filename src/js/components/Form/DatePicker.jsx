@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
-function TextInput({
+function DatePicker({
   autoFocus,
   disabled,
   hasError,
@@ -9,7 +9,6 @@ function TextInput({
   onChange,
   placeholder,
   required,
-  type,
   value
 }) {
   const [hasFocus, setHasFocus] = useState(false)
@@ -21,23 +20,26 @@ function TextInput({
   }, [])
   return (
     <input
-      autoComplete={name}
       className={
         'form-input' +
         (hasFocus === false && hasError === true ? ' border-red-700' : '') +
         (disabled ? ' cursor-not-allowed' : '')
       }
+      type="date"
+      defaultValue={value}
       disabled={disabled}
       id={'field-' + name}
       name={name}
       onBlur={(event) => {
         event.preventDefault()
         setHasFocus(false)
-        if (onChange !== undefined) onChange(name, event.target.value)
+        if (onChange !== undefined)
+          onChange(name, event.target.value === '' ? null : event.target.value)
       }}
       onChange={(event) => {
         event.preventDefault()
-        if (onChange !== undefined) onChange(name, event.target.value)
+        if (onChange !== undefined)
+          onChange(name, event.target.value === '' ? null : event.target.value)
       }}
       onFocus={(event) => {
         event.preventDefault()
@@ -46,18 +48,16 @@ function TextInput({
       placeholder={placeholder}
       ref={ref}
       required={required}
-      type={type}
-      value={value !== null ? value : ''}
     />
   )
 }
-TextInput.defaultProps = {
+DatePicker.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
   required: false
 }
-TextInput.propTypes = {
+DatePicker.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,
   hasError: PropTypes.bool,
@@ -65,7 +65,6 @@ TextInput.propTypes = {
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
   required: PropTypes.bool,
-  type: PropTypes.oneOf(['email', 'text', 'url']),
   value: PropTypes.string
 }
-export { TextInput }
+export { DatePicker }
