@@ -10,15 +10,16 @@ class Modal extends React.PureComponent {
   constructor(props) {
     super(props)
     this.dialogRef = React.createRef()
-    this.state = { isOpen: true }
   }
 
   render() {
     return (
       <Dialog
         initialFocus={this.dialogRef}
-        open={this.state.isOpen}
-        onClose={() => this.setState({ isOpen: false })}
+        open={true}
+        onClose={() => {
+          this.props.onClose && this.props.onClose()
+        }}
         className="fixed font-sans z-10 inset-0 overflow-y-auto text-base">
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
