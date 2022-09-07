@@ -84,7 +84,7 @@ function ModalForm({
   }
 
   return (
-    <Modal>
+    <Modal onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <Modal.Title>{saving ? savingTitle : title}</Modal.Title>
         <div className="text-gray-500">

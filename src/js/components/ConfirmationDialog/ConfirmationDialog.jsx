@@ -21,7 +21,7 @@ function ConfirmationDialog({
 }) {
   const { t } = useTranslation()
   return (
-    <Modal>
+    <Modal onClose={onCancel}>
       <Modal.Title onClose={onCancel} showClose={true}>
         {title}
       </Modal.Title>
