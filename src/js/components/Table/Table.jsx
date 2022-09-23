@@ -15,6 +15,9 @@ function Table({
   onRowClick,
   rowURL
 }) {
+  const colCount =
+    columns.filter((c) => !c.tableOptions?.hide).length +
+    (onEditClick !== undefined ? 1 : 0)
   return (
     <div className="shadow bg-gray-50 overflow-hidden border-b border-gray-200 rounded-lg">
       <table className="bg-gray-50 divide-y divide-gray-200 table-fixed w-full">
@@ -33,9 +36,7 @@ function Table({
           onRowClick={onRowClick}
           rowURL={rowURL}
         />
-        <Footer
-          columns={columns.length + (onEditClick !== undefined ? 1 : 0)}
-        />
+        <Footer columns={colCount} />
       </table>
     </div>
   )
