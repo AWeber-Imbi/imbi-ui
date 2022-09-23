@@ -8,6 +8,7 @@ function DateTimePicker({
   name,
   onChange,
   placeholder,
+  readOnly,
   required,
   value
 }) {
@@ -46,6 +47,7 @@ function DateTimePicker({
         setHasFocus(true)
       }}
       placeholder={placeholder}
+      readOnly={readOnly}
       ref={ref}
       required={required}
     />
@@ -55,6 +57,7 @@ DateTimePicker.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
+  readOnly: false,
   required: false
 }
 DateTimePicker.propTypes = {
@@ -64,6 +67,7 @@ DateTimePicker.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   value: PropTypes.string
 }

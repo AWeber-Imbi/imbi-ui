@@ -8,6 +8,7 @@ function TextInput({
   name,
   onChange,
   placeholder,
+  readOnly,
   required,
   type,
   value
@@ -44,6 +45,7 @@ function TextInput({
         setHasFocus(true)
       }}
       placeholder={placeholder}
+      readOnly={readOnly}
       ref={ref}
       required={required}
       type={type}
@@ -55,6 +57,7 @@ TextInput.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
+  readOnly: false,
   required: false
 }
 TextInput.propTypes = {
@@ -64,6 +67,7 @@ TextInput.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   type: PropTypes.oneOf(['email', 'text', 'url']),
   value: PropTypes.string

@@ -10,6 +10,7 @@ function NumericInput({
   name,
   onChange,
   placeholder,
+  readOnly,
   required,
   step,
   value
@@ -58,6 +59,7 @@ function NumericInput({
         setHasFocus(true)
       }}
       placeholder={placeholder}
+      readOnly={readOnly}
       ref={ref}
       required={required}
       step={step}
@@ -69,6 +71,7 @@ NumericInput.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
+  readOnly: false,
   required: false,
   step: '1'
 }
@@ -81,6 +84,7 @@ NumericInput.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   step: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])

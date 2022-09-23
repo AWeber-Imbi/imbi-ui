@@ -25,6 +25,7 @@ function Field({
   onChange,
   options,
   placeholder,
+  readOnly,
   required,
   step,
   title,
@@ -52,6 +53,7 @@ function Field({
             name={name}
             onChange={onChange}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             value={value}
           />
@@ -66,6 +68,7 @@ function Field({
             name={name}
             onChange={onChange}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             step={step}
             value={value}
@@ -82,6 +85,7 @@ function Field({
             onChange={onChange}
             options={options}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             value={value}
           />
@@ -94,6 +98,7 @@ function Field({
             name={name}
             onChange={onChange}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             type={type}
             value={value}
@@ -107,6 +112,7 @@ function Field({
             name={name}
             onChange={onChange}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             value={value}
           />
@@ -117,6 +123,7 @@ function Field({
             className="mt-2"
             disabled={disabled}
             onChange={onChange}
+            readOnly={readOnly}
             value={value}
           />
         )}
@@ -128,6 +135,7 @@ function Field({
             name={name}
             onChange={onChange}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             value={value}
           />
@@ -140,6 +148,7 @@ function Field({
             name={name}
             onChange={onChange}
             placeholder={placeholder}
+            readOnly={readOnly}
             required={required}
             value={value}
           />
@@ -179,6 +188,7 @@ Field.propTypes = {
   onChange: PropTypes.func,
   options: SelectOptions,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   step: PropTypes.string,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,

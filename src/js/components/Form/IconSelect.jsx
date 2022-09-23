@@ -11,6 +11,7 @@ function IconSelect({
   name,
   onChange,
   placeholder,
+  readOnly,
   required,
   value
 }) {
@@ -31,7 +32,7 @@ function IconSelect({
           (hasFocus === false && hasError === true ? ' border-red-700' : '')
         }
         defaultValue={value}
-        disabled={disabled}
+        disabled={disabled || readOnly}
         id={'field-' + name}
         onBlur={(event) => {
           event.preventDefault()
@@ -65,6 +66,7 @@ IconSelect.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
+  readOnly: false,
   required: false
 }
 IconSelect.propTypes = {
@@ -74,6 +76,7 @@ IconSelect.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   value: PropTypes.string.isRequired
 }
