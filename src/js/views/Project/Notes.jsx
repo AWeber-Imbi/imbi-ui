@@ -61,7 +61,7 @@ function Notes({ project, urlPath }) {
         {
           title: t('project.notes.content'),
           name: 'content',
-          type: 'textarea',
+          type: 'markdown',
           tableOptions: { className: 'truncate' }
         },
         {
