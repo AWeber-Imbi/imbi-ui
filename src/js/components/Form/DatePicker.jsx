@@ -24,7 +24,7 @@ function DatePicker({
       className={
         'form-input' +
         (hasFocus === false && hasError === true ? ' border-red-700' : '') +
-        (disabled ? ' cursor-not-allowed' : '')
+        (disabled || readOnly ? ' cursor-not-allowed' : '')
       }
       type="date"
       defaultValue={value}
