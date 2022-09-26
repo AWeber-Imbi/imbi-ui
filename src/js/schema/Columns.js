@@ -42,6 +42,7 @@ export const Column = {
     'hidden',
     'icon',
     'internal',
+    'markdown',
     'number',
     'select',
     'text',
