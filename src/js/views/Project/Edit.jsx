@@ -349,7 +349,7 @@ function Edit({ project, onEditFinished }) {
             title={t('common.description')}
             name="description"
             description={t('project.descriptionDescription')}
-            type="textarea"
+            type="markdown"
             onChange={onValueChange}
             errorMessage={state.projectErrors.description}
             value={state.values.description}
