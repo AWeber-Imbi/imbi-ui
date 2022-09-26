@@ -2,7 +2,15 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 
-function Toggle({ name, className, disabled, onChange, title, value }) {
+function Toggle({
+  name,
+  className,
+  disabled,
+  onChange,
+  readOnly,
+  title,
+  value
+}) {
   const { t } = useTranslation()
   return (
     <button
@@ -11,7 +19,7 @@ function Toggle({ name, className, disabled, onChange, title, value }) {
         value ? 'bg-blue-600' : 'bg-gray-400'
       } relative inline-flex flex-shrink-0 h-5 w-9 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none ${className}`}
       aria-pressed="false"
-      disabled={disabled}
+      disabled={disabled || readOnly}
       onClick={(event) => {
         event.preventDefault()
         onChange(name, !value)
@@ -35,9 +43,11 @@ function Toggle({ name, className, disabled, onChange, title, value }) {
     </button>
   )
 }
+
 Toggle.defaultProps = {
   className: '',
   disabled: false,
+  readOnly: false,
   value: false
 }
 Toggle.propTypes = {
@@ -45,6 +55,7 @@ Toggle.propTypes = {
   className: PropTypes.string,
   disabled: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool,
   title: PropTypes.string,
   value: PropTypes.bool
 }

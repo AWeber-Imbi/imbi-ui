@@ -13,6 +13,7 @@ function Select({
   onChange,
   options,
   placeholder,
+  readOnly,
   required,
   value
 }) {
@@ -48,7 +49,7 @@ function Select({
         (hasFocus === false && hasError === true ? ' border-red-700' : '')
       }
       defaultValue={currentValue === null ? '' : currentValue}
-      disabled={disabled}
+      disabled={disabled || readOnly}
       id={'field-' + name}
       multiple={multiple}
       name={name}
@@ -100,6 +101,7 @@ Select.defaultProps = {
   disabled: false,
   hasError: false,
   multiple: false,
+  readOnly: false,
   required: false
 }
 Select.propTypes = {
@@ -112,6 +114,7 @@ Select.propTypes = {
   onChange: PropTypes.func,
   options: SelectOptions,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   value: PropTypes.oneOfType([
     PropTypes.array,

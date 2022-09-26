@@ -8,6 +8,7 @@ function DatePicker({
   name,
   onChange,
   placeholder,
+  readOnly,
   required,
   value
 }) {
@@ -23,7 +24,7 @@ function DatePicker({
       className={
         'form-input' +
         (hasFocus === false && hasError === true ? ' border-red-700' : '') +
-        (disabled ? ' cursor-not-allowed' : '')
+        (disabled || readOnly ? ' cursor-not-allowed' : '')
       }
       type="date"
       defaultValue={value}
@@ -46,6 +47,7 @@ function DatePicker({
         setHasFocus(true)
       }}
       placeholder={placeholder}
+      readOnly={readOnly}
       ref={ref}
       required={required}
     />
@@ -55,6 +57,7 @@ DatePicker.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
+  readOnly: false,
   required: false
 }
 DatePicker.propTypes = {
@@ -64,6 +67,7 @@ DatePicker.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   value: PropTypes.string
 }

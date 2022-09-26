@@ -8,6 +8,7 @@ function TextArea({
   name,
   onChange,
   placeholder,
+  readOnly,
   required,
   rows,
   value
@@ -24,7 +25,7 @@ function TextArea({
       className={
         'form-input' +
         (hasFocus === false && hasError === true ? ' border-red-700' : '') +
-        (disabled ? ' cursor-not-allowed' : '')
+        (disabled || readOnly ? ' cursor-not-allowed' : '')
       }
       defaultValue={value}
       disabled={disabled}
@@ -44,6 +45,7 @@ function TextArea({
         setHasFocus(true)
       }}
       placeholder={placeholder}
+      readOnly={readOnly}
       ref={ref}
       required={required}
       rows={rows}
@@ -54,6 +56,7 @@ TextArea.defaultProps = {
   autoFocus: false,
   disabled: false,
   hasError: false,
+  readOnly: false,
   required: false,
   rows: 3
 }
@@ -64,6 +67,7 @@ TextArea.propTypes = {
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
+  readOnly: PropTypes.bool,
   required: PropTypes.bool,
   rows: PropTypes.number,
   value: PropTypes.string
