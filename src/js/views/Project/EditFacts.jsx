@@ -159,10 +159,6 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
                 title={factType.name}
                 type={fieldType}
                 description={factType.description}
-                disabled={
-                  factType.ui_options &&
-                  factType.ui_options.includes('read-only')
-                }
                 errorMessage={state.errors[factType.id]}
                 options={
                   factType.enum_values === null
@@ -174,6 +170,10 @@ function EditFacts({ projectId, facts, factTypes, onEditFinished }) {
                 maximum={factType.max_value}
                 minimum={factType.min_value}
                 onChange={onChange}
+                readOnly={
+                  factType.ui_options &&
+                  factType.ui_options.includes('read-only')
+                }
                 step={step}
                 value={value}
               />
