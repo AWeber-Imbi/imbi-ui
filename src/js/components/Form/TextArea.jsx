@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 function TextArea({
   autoFocus,
+  className,
   disabled,
   hasError,
   name,
@@ -20,13 +21,21 @@ function TextArea({
       ref.current.focus()
     }
   }, [])
+
+  let uiClassName = 'form-input'
+  if (className) {
+    uiClassName += ` ${className}`
+  }
+  if (hasFocus === false && hasError === true) {
+    uiClassName += ' border-red-700'
+  }
+  if (disabled || readOnly) {
+    uiClassName += ' cursor-not-allowed'
+  }
+
   return (
     <textarea
-      className={
-        'form-input' +
-        (hasFocus === false && hasError === true ? ' border-red-700' : '') +
-        (disabled || readOnly ? ' cursor-not-allowed' : '')
-      }
+      className={uiClassName}
       defaultValue={value}
       disabled={disabled}
       id={'field-' + name}
@@ -62,6 +71,7 @@ TextArea.defaultProps = {
 }
 TextArea.propTypes = {
   autoFocus: PropTypes.bool,
+  className: PropTypes.string,
   disabled: PropTypes.bool,
   hasError: PropTypes.bool,
   name: PropTypes.string.isRequired,

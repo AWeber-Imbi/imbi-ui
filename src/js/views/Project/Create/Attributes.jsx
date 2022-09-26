@@ -122,9 +122,10 @@ function Attributes({ localState, localDispatch }) {
         title={t('common.description')}
         name="description"
         description={t('project.descriptionDescription')}
-        type="textarea"
+        type="markdown"
         onChange={onChange}
         errorMessage={errors.description}
+        value={localState.attributes.description}
       />
       <Form.Field
         title={t('project.environments')}

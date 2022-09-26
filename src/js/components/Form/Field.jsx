@@ -11,6 +11,7 @@ import { TextArea } from './TextArea'
 import { Toggle } from './Toggle'
 import { DatePicker } from './DatePicker'
 import { DateTimePicker } from './DateTimePicker'
+import { MarkdownField } from '../Markdown/MarkdownField'
 
 function Field({
   autoFocus,
@@ -101,6 +102,20 @@ function Field({
             readOnly={readOnly}
             required={required}
             type={type}
+            value={value}
+          />
+        )}
+        {type === 'markdown' && (
+          <MarkdownField
+            autoFocus={autoFocus}
+            description={description}
+            disabled={disabled}
+            errorMessage={errorMessage}
+            name={name}
+            onChange={onChange}
+            placeholder={placeholder}
+            readOnly={readOnly}
+            required={required}
             value={value}
           />
         )}
@@ -196,6 +211,7 @@ Field.propTypes = {
     'email',
     'hidden',
     'icon',
+    'markdown',
     'number',
     'select',
     'text',
