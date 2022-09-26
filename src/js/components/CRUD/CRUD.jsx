@@ -27,7 +27,8 @@ function CRUD({
   itemName,
   itemPath,
   itemTitle,
-  jsonSchema
+  jsonSchema,
+  onRowClick
 }) {
   const [state, dispatch] = useContext(Context)
   const [data, setData] = useState([])
@@ -216,6 +217,7 @@ function CRUD({
           itemKey={itemKey}
           onDeleteClick={onDeleteClick}
           onEditClick={onEditClick}
+          onRowClick={onRowClick}
         />
         {fetching && <Backdrop wait={true} />}
         {showDeleteConfirmation === true && (
@@ -262,6 +264,7 @@ CRUD.propTypes = {
   itemPath: PropTypes.string.isRequired,
   itemTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   jsonSchema: PropTypes.object.isRequired,
-  omitOnAdd: PropTypes.arrayOf(PropTypes.string)
+  omitOnAdd: PropTypes.arrayOf(PropTypes.string),
+  onRowClick: PropTypes.func
 }
 export { CRUD }
