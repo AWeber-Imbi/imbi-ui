@@ -1,12 +1,14 @@
 import PropTypes from 'prop-types'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Context } from '../../state'
 import { CRUD } from '../../components'
 import { jsonSchema } from '../../schema/ProjectNotes'
+import { ViewNote } from './ViewNote'
 
 function Notes({ project, urlPath }) {
+  const collectionPath = `/projects/${project.id}/notes`
   const [state, dispatch] = useContext(Context)
   const { t } = useTranslation()
 
@@ -20,7 +22,18 @@ function Notes({ project, urlPath }) {
     })
   }, [])
 
-  const collectionPath = `/projects/${project.id}/notes`
+  const [shownNoteId, setShownNoteId] = useState(null)
+  const showNote = (noteData) => {
+    setShownNoteId(noteData.id)
+  }
+  if (shownNoteId !== null) {
+    return (
+      <ViewNote
+        onClose={() => setShownNoteId(null)}
+        urlPath={`${collectionPath}/${shownNoteId}`}
+      />
+    )
+  }
 
   return (
     <CRUD
@@ -32,6 +45,7 @@ function Notes({ project, urlPath }) {
       collectionPath={collectionPath}
       jsonSchema={jsonSchema}
       errorStrings={{}}
+      onRowClick={showNote}
       columns={[
         {
           title: t('id'),
