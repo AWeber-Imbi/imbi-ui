@@ -41,8 +41,12 @@ function Row({
         'hover:bg-gray-100 hover:text-blue-700'
       }
       onClick={(event) => {
-        event.preventDefault()
-        if (onClick !== undefined) onClick(data)
+        // Let elements with an explicit onclick do their thing
+        // This is necessary for the Edit and Delete buttons ;)
+        if (event.target.onclick === null) {
+          event.preventDefault()
+          if (onClick !== undefined) onClick(data)
+        }
       }}>
       {toRender.map((column) => {
         colOffset += 1
