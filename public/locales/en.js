@@ -6,6 +6,7 @@ export default {
         cancel: 'Cancel',
         close: 'Close',
         configuration: 'Configuration',
+        createdBy: 'Created By',
         description: 'Description',
         delete: 'Delete',
         done: 'Done',
@@ -40,6 +41,7 @@ export default {
         textClass: 'Text Class',
         turnOff: 'Turn Off',
         turnOn: 'Turn On',
+        updatedBy: 'Updated By',
         value: 'Value',
         welcome: 'Welcome'
       },
@@ -63,6 +65,8 @@ export default {
         projects: 'Projects',
         projectInfo: 'Project Information',
         projectFacts: 'Project Facts',
+        projectNote: 'Note',
+        projectNotes: 'Notes',
         projectType: 'Project Type',
         record: 'record',
         records: 'records',
@@ -272,11 +276,16 @@ export default {
           creatingRepo: 'Creating GitLab Repository',
           repoCreated: 'GitLab Repository Created'
         },
+        id: 'Project ID',
         links: 'Links',
         linksSaved: 'Links Saved',
         logs: 'Logs',
         name: 'Name',
         namespace: 'Namespace',
+        notes: {
+          content: 'Content',
+          new: 'New Note'
+        },
         overview: 'Overview',
         projectAttributes: 'Project Attributes',
         projectAutomations: 'Project Automations',
