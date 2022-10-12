@@ -1,28 +1,23 @@
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Icon } from '../../components'
 
-function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
-  const [filter, setFilter] = useState(value)
-  const location = useLocation()
-  const params = new Proxy(new URLSearchParams(window.location.search), {
-    get: (searchParams, prop) => searchParams.get(prop)
-  })
+function Filter({
+  disabled,
+  onChange,
+  onSubmit,
+  onRefresh,
+  onShowHelp,
+  value
+}) {
   const { t } = useTranslation()
 
   function handleSubmit(event) {
     event.preventDefault()
-    onChange(filter)
+    onSubmit(event.target.value)
   }
-
-  // Change the filter if the top search box changes it
-  useEffect(() => {
-    const filterParam = params.f !== null ? decodeURIComponent(params.f) : ''
-    if (filterParam !== filter) setFilter(filterParam)
-  }, [location])
 
   return (
     <form
@@ -36,12 +31,10 @@ function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
           autoComplete="off"
           disabled={disabled}
           name="search"
-          onChange={(event) => {
-            setFilter(event.target.value)
-          }}
+          onChange={(event) => onChange(event.target.value)}
           placeholder={t('common.search')}
           style={{ padding: '.575rem' }}
-          value={filter}
+          value={value}
         />
         <button
           type="button"
@@ -70,6 +63,7 @@ function Filter({ disabled, onChange, onRefresh, onShowHelp, value }) {
 Filter.propTypes = {
   disabled: PropTypes.bool,
   onChange: PropTypes.func,
+  onSubmit: PropTypes.func,
   onRefresh: PropTypes.func,
   onShowHelp: PropTypes.func,
   value: PropTypes.string
