@@ -5,7 +5,7 @@ import {
   toElasticsearchQuery
 } from '@cybernetex/kbn-es-query'
 import { byString, byNumber, byValues } from 'sort-es'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Alert, ScoreBadge, Table } from '../../components'
 import { Context } from '../../state'
@@ -32,7 +32,6 @@ function sortTableData(data, columns) {
 
 function Projects() {
   const [globalState, dispatch] = useContext(Context)
-  const location = useLocation()
   const navigate = useNavigate()
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop)
@@ -57,23 +56,21 @@ function Projects() {
           }
   })
 
-  function onFilterChange(value) {
-    if (value !== state.filter) {
-      setState((prevState) => ({
-        ...prevState,
-        data: [],
-        filter: value === null ? '' : value
-      }))
-      setURL(
-        `/ui/projects?f=${encodeURIComponent(value)}&s=${encodeURIComponent(
-          JSON.stringify(state.sort)
-        )}`
-      )
-    }
+  function updateParams() {
+    setURL(
+      `/ui/projects?f=${encodeURIComponent(
+        state.filter
+      )}&s=${encodeURIComponent(JSON.stringify(state.sort))}`
+    )
   }
 
   function onRefresh() {
-    setState({ ...state, data: [], refresh: true })
+    setState({
+      ...state,
+      data: [],
+      filter: params.f !== null ? decodeURIComponent(params.f) : '',
+      refresh: true
+    })
   }
 
   function onSortChange(column, direction) {
@@ -166,11 +163,7 @@ function Projects() {
     navigate(url)
   }
 
-  useEffect(() => {
-    setState({ ...state, columns: buildColumns() })
-  }, [state.fields])
-
-  useEffect(() => {
+  function search() {
     if (state.fetching === false) {
       setState({ ...state, fetching: true })
 
@@ -221,7 +214,15 @@ function Projects() {
         }
       )
     }
-  }, [state.fields, state.filter, state.refresh])
+  }
+
+  useEffect(() => {
+    setState({ ...state, columns: buildColumns() })
+  }, [state.fields])
+
+  useEffect(() => {
+    search()
+  }, [state.fields, state.refresh])
 
   // Re-sort the table data when the sort settings change
   useEffect(() => {
@@ -249,12 +250,6 @@ function Projects() {
     }
   }, [state.errorMessage])
 
-  // Change the filter if the top search box changes it
-  useEffect(() => {
-    const value = params.f !== null ? decodeURIComponent(params.f) : ''
-    if (value !== state.filter) onFilterChange(value)
-  }, [location])
-
   return (
     <div className="m-0 px-4 py-3 space-y-3">
       {state.errorMessage !== null && (
@@ -265,7 +260,16 @@ function Projects() {
       <div className="flex items-center space-x-2 md:space-x-10 w-100">
         <Filter
           disabled={state.fetching}
-          onChange={onFilterChange}
+          onSubmit={() => {
+            updateParams()
+            search()
+          }}
+          onChange={(value) =>
+            setState((prevState) => ({
+              ...prevState,
+              filter: value
+            }))
+          }
           onRefresh={onRefresh}
           onShowHelp={() => setState({ ...state, showHelp: true })}
           value={state.filter}
