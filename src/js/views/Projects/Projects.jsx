@@ -5,7 +5,7 @@ import {
   toElasticsearchQuery
 } from '@cybernetex/kbn-es-query'
 import { byString, byNumber, byValues } from 'sort-es'
-import { useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 import { Alert, ScoreBadge, Table } from '../../components'
 import { Context } from '../../state'
@@ -32,10 +32,7 @@ function sortTableData(data, columns) {
 
 function Projects() {
   const [globalState, dispatch] = useContext(Context)
-  const navigate = useNavigate()
-  const params = new Proxy(new URLSearchParams(window.location.search), {
-    get: (searchParams, prop) => searchParams.get(prop)
-  })
+  const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
 
   const [state, setState] = useState({
@@ -44,23 +41,23 @@ function Projects() {
     errorMessage: null,
     fetching: false,
     fields: ['id', 'namespace', 'project_type', 'name', 'project_score'],
-    filter: params.f !== null ? decodeURIComponent(params.f) : '',
+    filter: searchParams.get('f') ? searchParams.get('f') : '',
     refresh: false,
     showHelp: false,
-    sort:
-      params.s !== null
-        ? JSON.parse(decodeURIComponent(params.s))
-        : {
-            namespace: 'asc',
-            name: 'asc'
-          }
+    sort: searchParams.get('s')
+      ? JSON.parse(searchParams.get('s'))
+      : {
+          namespace: 'asc',
+          name: 'asc'
+        }
   })
 
   function updateParams() {
-    setURL(
-      `/ui/projects?f=${encodeURIComponent(
-        state.filter
-      )}&s=${encodeURIComponent(JSON.stringify(state.sort))}`
+    setSearchParams(
+      new URLSearchParams({
+        f: state.filter,
+        s: JSON.stringify(state.sort)
+      })
     )
   }
 
@@ -68,7 +65,7 @@ function Projects() {
     setState({
       ...state,
       data: [],
-      filter: params.f !== null ? decodeURIComponent(params.f) : '',
+      filter: searchParams.get('f') ? searchParams.get('f') : '',
       refresh: true
     })
   }
@@ -151,18 +148,6 @@ function Projects() {
     return new URL(path, globalState.baseURL)
   }
 
-  function setURL(path) {
-    const url = buildURL(path)
-    dispatch({
-      type: 'SET_CURRENT_PAGE',
-      payload: {
-        url: url,
-        title: 'projects.title'
-      }
-    })
-    navigate(url)
-  }
-
   function search() {
     if (state.fetching === false) {
       setState({ ...state, fetching: true })
@@ -231,11 +216,7 @@ function Projects() {
       columns: buildColumns(),
       data: sortTableData(state.data, state.sort)
     })
-    setURL(
-      `/ui/projects?f=${encodeURIComponent(
-        state.filter
-      )}&s=${encodeURIComponent(JSON.stringify(state.sort))}`
-    )
+    updateParams()
   }, [state.sort])
 
   // Remove the error message after 30 seconds
