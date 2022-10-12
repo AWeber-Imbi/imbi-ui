@@ -12,6 +12,7 @@ import { Toggle } from './Toggle'
 import { DatePicker } from './DatePicker'
 import { DateTimePicker } from './DateTimePicker'
 import { MarkdownField } from '../Markdown/MarkdownField'
+import { ProjectPicker } from './ProjectPicker'
 
 function Field({
   autoFocus,
@@ -24,6 +25,7 @@ function Field({
   multiple,
   name,
   onChange,
+  onError,
   options,
   placeholder,
   readOnly,
@@ -168,6 +170,17 @@ function Field({
             value={value}
           />
         )}
+        {type === 'project' && (
+          <ProjectPicker
+            disabled={disabled}
+            name={name}
+            readOnly={readOnly}
+            required={required}
+            value={value}
+            onChange={onChange}
+            onError={onError}
+          />
+        )}
         {errorMessage !== null && (
           <p className="ml-2 mt-2 text-sm text-red-700 col-span-2">
             {errorMessage}
@@ -201,6 +214,7 @@ Field.propTypes = {
   multiple: PropTypes.bool,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
+  onError: PropTypes.func,
   options: SelectOptions,
   placeholder: PropTypes.string,
   readOnly: PropTypes.bool,
