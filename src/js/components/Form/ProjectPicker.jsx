@@ -42,7 +42,10 @@ function ProjectPicker({
   }, [])
 
   useEffect(() => {
-    if (!projectTypeID || !namespaceID) return
+    if (!projectTypeID || !namespaceID) {
+      setProjects([])
+      return
+    }
 
     const projectsURL = new URL(
       `/projects?namespace_id=${encodeURIComponent(
