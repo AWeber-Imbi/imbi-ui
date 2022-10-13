@@ -326,8 +326,7 @@ export default {
         requestError:
           'Error making API request for Projects, resetting filters and sort ({{error}}).',
         searchHelpTitle: 'Project Search Help',
-        searchHelpDQL:
-          'Imbi Project Search uses the <a href="https://opensearch.org/docs/latest/dashboards/dql" class="text-blue-600 underline" target="_new">OpenSearch Dashboards Query Language (DQL)</a>.',
+        searchHelp: 'Imbi Project Search uses the ',
         searchHelpFields: 'Searchable Fields',
         title: 'Projects'
       },
@@ -376,6 +375,9 @@ export default {
             unused: 'Unused'
           }
         }
+      },
+      opensearch: {
+        dql: 'OpenSearch Dashboards Query Language (DQL)'
       }
     }
   }

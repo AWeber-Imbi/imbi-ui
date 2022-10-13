@@ -1,28 +1,25 @@
 import PropTypes from 'prop-types'
-import React, { useContext } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { byString } from 'sort-es'
 
 import { Modal } from '../../components'
-import { Context } from '../../state'
 
-function HelpDialog({ onClose }) {
+function HelpDialog({ title, searchHelp, fields, onClose }) {
   const { t } = useTranslation()
-  const [globalState] = useContext(Context)
-  const fields = Array.from(
-    new Set(globalState.openSearch.fields.map((field) => field.name))
-  )
   return (
     <Modal onClose={onClose}>
-      <Modal.Title>{t('projects.searchHelpTitle')}</Modal.Title>
+      <Modal.Title>{title}</Modal.Title>
       <div>
-        <span
-          dangerouslySetInnerHTML={{
-            __html: t('projects.searchHelpDQL', {
-              interpolation: { escapeValue: false }
-            })
-          }}
-        />
+        <span>
+          {searchHelp}
+          <a
+            href="https://opensearch.org/docs/latest/dashboards/dql"
+            className="text-blue-600 underline"
+            target="_new">
+            {t('opensearch.dql')}
+          </a>
+        </span>
         <h1 className="my-4 font-bold">{t('projects.searchHelpFields')}</h1>
         <ul className="list-disc list-inside max-h-36 ml-5 font-mono overflow-scroll">
           {fields.sort(byString()).map((field) => {
@@ -36,6 +33,9 @@ function HelpDialog({ onClose }) {
 }
 
 HelpDialog.propTypes = {
+  title: PropTypes.string.isRequired,
+  searchHelp: PropTypes.string.isRequired,
+  fields: PropTypes.arrayOf(PropTypes.string),
   onClose: PropTypes.func
 }
 export { HelpDialog }
