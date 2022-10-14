@@ -15,6 +15,10 @@ function ISO8601ToDatetimeLocal(isoDate) {
 }
 
 function isDifferent(factValue, fieldValue, factDataType) {
+  if (factValue === fieldValue) {
+    return false
+  }
+
   function normalizedFact() {
     if (factDataType === 'timestamp') return ISO8601ToDatetimeLocal(factValue)
     if (factDataType === 'decimal') return parseFloat(factValue)
