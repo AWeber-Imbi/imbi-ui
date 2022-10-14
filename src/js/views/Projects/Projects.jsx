@@ -262,7 +262,14 @@ function Projects() {
         rowURL={(data) => `/ui/projects/${data.id}`}
       />
       {state.showHelp && (
-        <HelpDialog onClose={() => setState({ ...state, showHelp: false })} />
+        <HelpDialog
+          title={t('projects.searchHelpTitle')}
+          searchHelp={t('projects.searchHelp')}
+          fields={Array.from(
+            new Set(globalState.openSearch.fields.map((field) => field.name))
+          )}
+          onClose={() => setState({ ...state, showHelp: false })}
+        />
       )}
     </div>
   )
