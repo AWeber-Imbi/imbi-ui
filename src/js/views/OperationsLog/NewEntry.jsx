@@ -1,30 +1,194 @@
 import PropTypes from 'prop-types'
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { User } from '../../schema'
-import { WishedFutureState } from '../../components'
+import { ErrorBoundary, Form, SavingModal } from '../../components'
+import { useTranslation } from 'react-i18next'
+import { metadataAsOptions } from '../../settings'
+import { httpPost } from '../../utils'
+import { useNavigate } from 'react-router-dom'
+import { Error } from '../Error'
 
-function NewEntry() {
-  const [state, dispatch] = useContext(Context)
+function NewEntry({ user }) {
+  const [globalState, dispatch] = useContext(Context)
+  const [saving, setSaving] = useState(false)
+  const [savingComplete, setSavingComplete] = useState(false)
+  const [error, setError] = useState()
+  const navigate = useNavigate()
+
+  const [changeType, setChangeType] = useState()
+  const [environment, setEnvironment] = useState()
+  const [recordedAt, setRecordedAt] = useState()
+  const [completedAt, setCompletedAt] = useState()
+  const [description, setDescription] = useState()
+  const [project, setProject] = useState()
+  const [version, setVersion] = useState()
+  const [ticketSlug, setTicketSlug] = useState()
+  const [link, setLink] = useState()
+  const [notes, setNotes] = useState()
+
+  const { t } = useTranslation()
+
   useEffect(() => {
     dispatch({
       type: 'SET_CURRENT_PAGE',
       payload: {
-        title: 'operationsLogNewEntry.title',
-        url: new URL('/ui/operations-log/create', state.baseURL)
+        title: 'operationsLog.create.title',
+        url: new URL('/ui/operations-log/create', globalState.baseURL)
       }
     })
   }, [])
+
+  async function onSubmit(event) {
+    event.preventDefault()
+    setSaving(true)
+    const response = await httpPost(
+      globalState.fetch,
+      new URL('/operations-log', globalState.baseURL),
+      {
+        recorded_by: user.username,
+        environment: environment,
+        change_type: changeType,
+        recorded_at: new Date(recordedAt).toISOString(),
+        completed_at: completedAt ? new Date(completedAt).toISOString() : null,
+        project_id: project ? parseInt(project) : null,
+        description: description ? description : null,
+        link: link ? link : null,
+        notes: notes ? notes : null,
+        ticket_slug: ticketSlug ? ticketSlug : null,
+        version: version ? version : null
+      }
+    )
+    if (response.success) {
+      setSavingComplete(true)
+    } else {
+      setError(response.data)
+    }
+  }
+
   return (
-    <div className="flex-grow flex items-center justify-center">
-      <WishedFutureState>
-        This page will let you manually add an operations log entry. Ideally
-        these entries would be made as part of a CI pipeline process. In
-        addition, we&rsquo;d like to update the slackbot to allow for entries by
-        way of slack.
-      </WishedFutureState>
-    </div>
+    <ErrorBoundary>
+      <Form.MultiSectionForm
+        disabled={!changeType || !environment || !recordedAt}
+        sideBarTitle={t('operationsLog.create.sideBarTitle')}
+        icon="fas file"
+        onSubmit={onSubmit}
+        instructions={
+          <div className="ml-2 text-sm">* {t('common.required')}</div>
+        }
+        submitButtonText={saving ? t('common.saving') : t('common.save')}>
+        <Form.Field
+          title={t('operationsLog.changeType')}
+          name="change_type"
+          type="select"
+          options={[
+            { label: 'Configured', value: 'Configured' },
+            { label: 'Decommissioned', value: 'Decommissioned' },
+            { label: 'Deployed', value: 'Deployed' },
+            { label: 'Migrated', value: 'Migrated' },
+            { label: 'Provisioned', value: 'Provisioned' },
+            { label: 'Restarted', value: 'Restarted' },
+            { label: 'Rolled Back', value: 'Rolled Back' },
+            { label: 'Scaled', value: 'Scaled' },
+            { label: 'Upgraded', value: 'Upgraded' }
+          ]}
+          required={true}
+          onChange={(_name, value) => setChangeType(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.environment')}
+          name="environment"
+          type="select"
+          options={metadataAsOptions(
+            globalState.metadata.environments,
+            'name',
+            'name'
+          )}
+          required={true}
+          onChange={(_name, value) => setEnvironment(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.recordedAt')}
+          name="link"
+          type="datetime"
+          required={true}
+          onChange={(_name, value) => setRecordedAt(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.completedAt')}
+          name="link"
+          type="datetime"
+          required={false}
+          description={t('operationsLog.completedAtDescription')}
+          onChange={(_name, value) => setCompletedAt(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.description')}
+          name="description"
+          type="text"
+          required={false}
+          description={t('operationsLog.descriptionDescription')}
+          onChange={(_name, value) => setDescription(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.project')}
+          name="project"
+          type="project"
+          required={false}
+          onChange={(_name, value) => setProject(value)}
+          onError={(error) => setError(error)}
+        />
+        <Form.Field
+          title={t('operationsLog.version')}
+          name="version"
+          type="text"
+          required={false}
+          description={t('operationsLog.versionDescription')}
+          onChange={(_name, value) => setVersion(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.ticketSlug')}
+          name="ticket_slug"
+          type="text"
+          required={false}
+          onChange={(_name, value) => setTicketSlug(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.link')}
+          name="link"
+          type="text"
+          required={false}
+          description={t('operationsLog.linkDescription')}
+          onChange={(_name, value) => setLink(value)}
+        />
+        <Form.Field
+          title={t('operationsLog.notes')}
+          name="notes"
+          type="textarea"
+          required={false}
+          description={t('operationsLog.notesDescription')}
+          onChange={(_name, value) => setNotes(value)}
+        />
+      </Form.MultiSectionForm>
+      {saving && (
+        <SavingModal
+          title={t('operationsLog.savingNewEntryTitle')}
+          steps={[
+            {
+              isComplete: savingComplete,
+              pendingLabel: t('operationsLog.savingNewEntry'),
+              completedLabel: t('operationsLog.savingNewEntryComplete')
+            }
+          ]}
+          onSaveComplete={(event) => {
+            event.preventDefault()
+            navigate('/ui/operations-log')
+          }}
+        />
+      )}
+      {error && <Error>{error}</Error>}
+    </ErrorBoundary>
   )
 }
 NewEntry.propTypes = {
