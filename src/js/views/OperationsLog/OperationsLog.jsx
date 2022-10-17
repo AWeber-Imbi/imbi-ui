@@ -94,7 +94,8 @@ function OperationsLog() {
       name: 'project_name',
       type: 'text',
       tableOptions: {
-        headerClassName: 'w-2/12'
+        headerClassName: 'w-2/12',
+        lookupFunction: (value) => <p className="truncate">{value}</p>
       }
     },
     {
