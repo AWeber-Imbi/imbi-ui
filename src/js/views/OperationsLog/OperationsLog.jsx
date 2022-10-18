@@ -13,6 +13,15 @@ import { useTranslation } from 'react-i18next'
 import { DateTime } from 'luxon'
 import { HelpDialog } from '../Projects/HelpDialog'
 import { useSearchParams } from 'react-router-dom'
+import { ViewOperationsLog } from './ViewOperationsLog'
+
+function cloneParams(searchParams) {
+  const newParams = new URLSearchParams()
+  for (const [key, value] of searchParams) {
+    newParams.set(key, value)
+  }
+  return newParams
+}
 
 function OperationsLog() {
   const [globalState, dispatch] = useContext(Context)
@@ -25,6 +34,7 @@ function OperationsLog() {
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -67,6 +77,11 @@ function OperationsLog() {
       setOnFetch(false)
     })
   }, [onFetch])
+
+  useEffect(() => {
+    if (!searchParams.get('v')) return
+    setShowDetail(true)
+  }, [searchParams])
 
   function buildURL(path) {
     return new URL(path, globalState.baseURL)
@@ -152,7 +167,25 @@ function OperationsLog() {
         onShowHelp={() => setShowHelp(true)}
         value={filter}
       />
-      <Table columns={columns} data={rows} />
+      <Table
+        columns={columns}
+        data={rows}
+        onRowClick={(data) => {
+          const newParams = cloneParams(searchParams)
+          newParams.set('v', data.id)
+          setSearchParams(newParams)
+        }}
+      />
+      {showDetail && (
+        <ViewOperationsLog
+          operationsLogID={parseInt(searchParams.get('v'))}
+          onClose={() => {
+            const newParams = cloneParams(searchParams)
+            newParams.delete('v')
+            setSearchParams(newParams)
+            setShowDetail(false)
+          }}></ViewOperationsLog>
+      )}
       {showHelp && (
         <HelpDialog
           onClose={() => setShowHelp(false)}
