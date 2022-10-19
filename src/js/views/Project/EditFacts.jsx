@@ -4,15 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Card, ErrorBoundary, Form } from '../../components'
 import { Context } from '../../state'
-import { httpPost } from '../../utils'
-
-function ISO8601ToDatetimeLocal(isoDate) {
-  if (!isoDate) return isoDate
-  const msOffset = new Date().getTimezoneOffset() * 60 * 1000
-  return new Date(new Date(isoDate).getTime() - msOffset)
-    .toISOString()
-    .slice(0, -1)
-}
+import { httpPost, ISO8601ToDatetimeLocal } from '../../utils'
 
 function isDifferent(factValue, fieldValue, factDataType) {
   function normalizedFact() {

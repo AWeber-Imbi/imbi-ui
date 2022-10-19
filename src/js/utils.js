@@ -86,3 +86,11 @@ export function lookupNamespaceByID(namespaces, namespace_id) {
 export function setDocumentTitle(value) {
   document.title = 'Imbi - ' + value
 }
+
+export function ISO8601ToDatetimeLocal(isoDate) {
+  if (!isoDate) return isoDate
+  const msOffset = new Date().getTimezoneOffset() * 60 * 1000
+  return new Date(new Date(isoDate).getTime() - msOffset)
+    .toISOString()
+    .slice(0, -1)
+}
