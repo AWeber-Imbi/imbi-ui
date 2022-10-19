@@ -17,6 +17,7 @@ import { ProjectPicker } from './ProjectPicker'
 function Field({
   autoFocus,
   castTo,
+  className,
   description,
   disabled,
   errorMessage,
@@ -40,7 +41,7 @@ function Field({
     return <input type="hidden" name={name} value={value} />
   }
   return (
-    <div className="grid grid-cols-3 gap-4 items-start pt-5">
+    <div className={`grid grid-cols-3 gap-4 items-start pt-5 ${className}`}>
       <label
         htmlFor={'field-' + name}
         className="block text-sm mt-2 font-medium text-gray-700">
@@ -198,6 +199,7 @@ function Field({
 
 Field.defaultProps = {
   autoFocus: false,
+  className: '',
   disabled: false,
   errorMessage: null,
   multiple: false,
@@ -207,6 +209,7 @@ Field.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,
   castTo: PropTypes.oneOf(['number']),
+  className: PropTypes.string,
   description: PropTypes.string,
   errorMessage: PropTypes.string,
   maximum: PropTypes.number,
