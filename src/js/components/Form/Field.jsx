@@ -233,7 +233,8 @@ Field.propTypes = {
     'toggle',
     'url',
     'date',
-    'datetime'
+    'datetime',
+    'project'
   ]).isRequired,
   value: PropTypes.oneOfType([
     PropTypes.bool,
