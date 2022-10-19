@@ -11,7 +11,8 @@ function ProjectPicker({
   onChange,
   onError,
   readOnly,
-  required
+  required,
+  value
 }) {
   const [globalState, dispatch] = useContext(Context)
   const [namespaces, setNamespaces] = useState([])
@@ -37,6 +38,10 @@ function ProjectPicker({
       } else {
         setNamespaces(namespacesResponse.data)
         setProjectTypes(projectTypesResponse.data)
+        if (value) {
+          setNamespaceID(value.namespace_id)
+          setProjectTypeID(value.project_type_id)
+        }
       }
     })
   }, [])
@@ -79,7 +84,8 @@ function ProjectPicker({
             event.preventDefault()
             setNamespaceID(event.target.value)
           }}
-          required={required}>
+          required={required}
+          value={namespaceID}>
           <option value="" />
           {namespaces.map((n) => (
             <option value={n.id} key={n.id}>
@@ -104,7 +110,8 @@ function ProjectPicker({
             event.preventDefault()
             setProjectTypeID(event.target.value)
           }}
-          required={required}>
+          required={required}
+          value={projectTypeID}>
           <option value="" />
           {projectTypes.map((t) => (
             <option value={t.id} key={t.id}>
@@ -129,7 +136,8 @@ function ProjectPicker({
             event.preventDefault()
             if (onChange !== undefined) onChange(name, event.target.value)
           }}
-          required={required}>
+          required={required}
+          value={value && value.project_id}>
           <option value="" />
           {projects.map((p) => (
             <option value={p.id} key={p.id}>
@@ -153,6 +161,7 @@ ProjectPicker.propTypes = {
   onChange: PropTypes.func,
   onError: PropTypes.func,
   readOnly: PropTypes.bool,
-  required: PropTypes.bool
+  required: PropTypes.bool,
+  value: PropTypes.object
 }
 export { ProjectPicker }

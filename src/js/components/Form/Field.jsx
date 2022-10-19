@@ -243,6 +243,7 @@ Field.propTypes = {
     PropTypes.bool,
     PropTypes.number,
     PropTypes.string,
+    PropTypes.object,
     PropTypes.arrayOf(PropTypes.string),
     PropTypes.arrayOf(PropTypes.number)
   ])

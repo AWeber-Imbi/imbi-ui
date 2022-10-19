@@ -31,6 +31,7 @@ function OperationsLog() {
   )
   const [onFetch, setOnFetch] = useState(false)
   const [fetching, setFetching] = useState(false)
+  const [updated, setUpdated] = useState(false)
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
@@ -184,7 +185,13 @@ function OperationsLog() {
             newParams.delete('v')
             setSearchParams(newParams)
             setShowDetail(false)
-          }}></ViewOperationsLog>
+            if (updated) {
+              setOnFetch(true)
+              setUpdated(false)
+            }
+          }}
+          onUpdate={() => setUpdated(true)}
+        />
       )}
       {showHelp && (
         <HelpDialog

@@ -245,6 +245,7 @@ export default {
           title: 'Add Operations Log Entry',
           sideBarTitle: 'New Entry'
         },
+        entry: 'Operations Log Entry',
         searchHelp: 'Imbi Operations Log Search uses the ',
         searchHelpTitle: 'Operations Log Search Help',
         savingNewEntryTitle: 'Save',
