@@ -35,7 +35,6 @@ function OperationsLog() {
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
-  const [showDetail, setShowDetail] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -78,11 +77,6 @@ function OperationsLog() {
       setOnFetch(false)
     })
   }, [onFetch])
-
-  useEffect(() => {
-    if (!searchParams.get('v')) return
-    setShowDetail(true)
-  }, [searchParams])
 
   function buildURL(path) {
     return new URL(path, globalState.baseURL)
@@ -177,20 +171,25 @@ function OperationsLog() {
           setSearchParams(newParams)
         }}
       />
-      {showDetail && (
+      {searchParams.get('v') && (
         <ViewOperationsLog
           operationsLogID={parseInt(searchParams.get('v'))}
           onClose={() => {
             const newParams = cloneParams(searchParams)
             newParams.delete('v')
             setSearchParams(newParams)
-            setShowDetail(false)
             if (updated) {
               setOnFetch(true)
               setUpdated(false)
             }
           }}
           onUpdate={() => setUpdated(true)}
+          onDelete={() => {
+            const newParams = cloneParams(searchParams)
+            newParams.delete('v')
+            setSearchParams(newParams)
+            setOnFetch(true)
+          }}
         />
       )}
       {showHelp && (

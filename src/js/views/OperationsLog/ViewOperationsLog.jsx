@@ -2,14 +2,14 @@ import React, { Fragment, useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
-import { httpGet } from '../../utils'
+import { httpDelete, httpGet } from '../../utils'
 import PropTypes from 'prop-types'
 import { Button, Icon, Modal } from '../../components'
 import { Error } from '../Error'
 import { Display } from './Display'
 import { Edit } from './Edit'
 
-function ViewOperationsLog({ operationsLogID, onClose, onUpdate }) {
+function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
   const [globalState, dispatch] = useContext(Context)
   const { t } = useTranslation()
   const [entry, setEntry] = useState()
@@ -43,6 +43,18 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate }) {
     )
   }
 
+  async function onClickDelete() {
+    const response = await httpDelete(
+      globalState.fetch,
+      new URL(`/operations-log/${operationsLogID}`, globalState.baseURL)
+    )
+    if (response.success) {
+      onDelete()
+    } else {
+      setError(response.data)
+    }
+  }
+
   useEffect(() => {
     loadOpsLog()
   }, [])
@@ -68,6 +80,10 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate }) {
         <Fragment>
           <Display entry={entry} />
           <Modal.Footer closeText="Close" onClose={onClose}>
+            <Button className="btn-red text-s" onClick={() => onClickDelete()}>
+              <Icon icon="fas trash" className="mr-2" />
+              {t('common.delete')}
+            </Button>
             <Button
               className="btn-white text-s"
               onClick={() => setIsEditing(true)}>
@@ -83,6 +99,7 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate }) {
 ViewOperationsLog.propTypes = {
   operationsLogID: PropTypes.number.isRequired,
   onClose: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired
+  onUpdate: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired
 }
 export { ViewOperationsLog }
