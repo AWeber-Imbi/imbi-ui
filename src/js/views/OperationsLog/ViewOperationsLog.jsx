@@ -50,7 +50,7 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
       new URL(`/operations-log/${operationsLogID}`, globalState.baseURL)
     )
     if (response.success) {
-      onDelete()
+      onDelete(operationsLogID)
     } else {
       setError(response.data)
     }

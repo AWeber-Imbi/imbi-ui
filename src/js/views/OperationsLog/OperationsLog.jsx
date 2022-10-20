@@ -32,6 +32,7 @@ function OperationsLog() {
   const [onFetch, setOnFetch] = useState(false)
   const [fetching, setFetching] = useState(false)
   const [updated, setUpdated] = useState(false)
+  const [deletedID, setDeletedID] = useState()
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
@@ -69,7 +70,12 @@ function OperationsLog() {
     ).then(({ data, success }) => {
       if (success) {
         setErrorMessage(null)
-        setRows(data.hits.hits.map((hit) => hit._source))
+        setRows(
+          data.hits.hits
+            .map((hit) => hit._source)
+            .filter((r) => r.id !== deletedID)
+        )
+        setDeletedID(null)
       } else {
         setErrorMessage(t('projects.requestError', { error: data }))
       }
@@ -184,10 +190,11 @@ function OperationsLog() {
             }
           }}
           onUpdate={() => setUpdated(true)}
-          onDelete={() => {
+          onDelete={(operationsLogID) => {
             const newParams = cloneParams(searchParams)
             newParams.delete('v')
             setSearchParams(newParams)
+            setDeletedID(operationsLogID)
             setOnFetch(true)
           }}
         />
