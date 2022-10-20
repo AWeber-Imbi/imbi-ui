@@ -4,7 +4,7 @@ import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
 import { httpDelete, httpGet } from '../../utils'
 import PropTypes from 'prop-types'
-import { Button, Icon, Modal } from '../../components'
+import { Button, ConfirmationDialog, Icon, Modal } from '../../components'
 import { Error } from '../Error'
 import { Display } from './Display'
 import { Edit } from './Edit'
@@ -15,6 +15,7 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
   const [entry, setEntry] = useState()
   const [error, setError] = useState()
   const [isEditing, setIsEditing] = useState(false)
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
   function loadOpsLog() {
     const url = new URL(
@@ -43,7 +44,7 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
     )
   }
 
-  async function onClickDelete() {
+  async function onConfirmDelete() {
     const response = await httpDelete(
       globalState.fetch,
       new URL(`/operations-log/${operationsLogID}`, globalState.baseURL)
@@ -64,7 +65,16 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
   return (
     <Modal onClose={onClose}>
       <Modal.Title>{t('operationsLog.entry')}</Modal.Title>
-      {isEditing ? (
+      {showDeleteConfirmation ? (
+        <ConfirmationDialog
+          mode="error"
+          title={t('operationsLog.deleteConfirmation.title')}
+          confirmationButtonText={t('operationsLog.deleteConfirmation.button')}
+          onCancel={() => setShowDeleteConfirmation(false)}
+          onConfirm={() => onConfirmDelete()}>
+          {t('operationsLog.deleteConfirmation.text')}
+        </ConfirmationDialog>
+      ) : isEditing ? (
         <Edit
           saving={false}
           operationsLog={entry}
@@ -80,7 +90,9 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
         <Fragment>
           <Display entry={entry} />
           <Modal.Footer closeText="Close" onClose={onClose}>
-            <Button className="btn-red text-s" onClick={() => onClickDelete()}>
+            <Button
+              className="btn-red text-s"
+              onClick={() => setShowDeleteConfirmation(true)}>
               <Icon icon="fas trash" className="mr-2" />
               {t('common.delete')}
             </Button>

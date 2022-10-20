@@ -241,6 +241,11 @@ export default {
       },
       operationsLog: {
         title: 'Operations Log',
+        deleteConfirmation: {
+          title: 'Delete Operations Log',
+          text: 'Are you sure you would like to delete this Operations Log entry?',
+          button: 'Delete'
+        },
         create: {
           title: 'Add Operations Log Entry',
           sideBarTitle: 'New Entry'
