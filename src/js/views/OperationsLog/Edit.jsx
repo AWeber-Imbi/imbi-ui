@@ -192,7 +192,7 @@ function Edit({ onCancel, onError, onSuccess, saving, operationsLog }) {
       <Form.Field
         title={t('operationsLog.notes')}
         name="notes"
-        type="textarea"
+        type="markdown"
         required={false}
         description={t('operationsLog.notesDescription')}
         onChange={onValueChange}

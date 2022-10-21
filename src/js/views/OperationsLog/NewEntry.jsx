@@ -165,10 +165,11 @@ function NewEntry({ user }) {
         <Form.Field
           title={t('operationsLog.notes')}
           name="notes"
-          type="textarea"
+          type="markdown"
           required={false}
           description={t('operationsLog.notesDescription')}
           onChange={(_name, value) => setNotes(value)}
+          value={notes}
         />
       </Form.MultiSectionForm>
       {saving && (
