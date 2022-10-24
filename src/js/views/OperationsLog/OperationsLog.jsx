@@ -84,6 +84,12 @@ function OperationsLog() {
     })
   }, [onFetch])
 
+  useEffect(() => {
+    if (!deletedID) return
+    setRows((prevRows) => prevRows.filter((r) => r.id !== deletedID))
+    setDeletedID(null)
+  }, [deletedID])
+
   function buildURL(path) {
     return new URL(path, globalState.baseURL)
   }
@@ -195,7 +201,6 @@ function OperationsLog() {
             newParams.delete('v')
             setSearchParams(newParams)
             setDeletedID(operationsLogID)
-            setOnFetch(true)
           }}
         />
       )}
