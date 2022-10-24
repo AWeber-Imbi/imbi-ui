@@ -23,6 +23,9 @@ export const jsonSchema = {
     },
     gitlab_group_name: {
       oneOf: [{ type: 'string' }, { type: 'null' }]
+    },
+    sentry_team_slug: {
+      oneOf: [{ type: 'string' }, { type: 'null' }]
     }
   },
   additionalProperties: false,
@@ -34,5 +37,6 @@ export const Namespace = {
   slug: PropTypes.string.isRequired,
   icon_class: PropTypes.string,
   maintained_by: PropTypes.string,
-  gitlab_group_name: PropTypes.string
+  gitlab_group_name: PropTypes.string,
+  sentry_team_slug: PropTypes.string
 }
