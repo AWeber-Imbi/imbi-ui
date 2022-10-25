@@ -29,7 +29,7 @@ function OperationsLog() {
   const [filter, setFilter] = useState(
     searchParams.get('f') ? searchParams.get('f') : ''
   )
-  const [onFetch, setOnFetch] = useState(false)
+  const [onFetch, setOnFetch] = useState(true)
   const [fetching, setFetching] = useState(false)
   const [updated, setUpdated] = useState(false)
   const [deletedID, setDeletedID] = useState()
@@ -37,6 +37,11 @@ function OperationsLog() {
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
   const { t } = useTranslation()
+
+  if (deletedID) {
+    setRows((prevRows) => prevRows.filter((r) => r.id !== deletedID))
+    setDeletedID(null)
+  }
 
   useEffect(() => {
     dispatch({
@@ -46,7 +51,6 @@ function OperationsLog() {
         url: new URL('/ui/operations-log', globalState.baseURL)
       }
     })
-    setOnFetch(true)
   }, [])
 
   useEffect(() => {
@@ -83,12 +87,6 @@ function OperationsLog() {
       setOnFetch(false)
     })
   }, [onFetch])
-
-  useEffect(() => {
-    if (!deletedID) return
-    setRows((prevRows) => prevRows.filter((r) => r.id !== deletedID))
-    setDeletedID(null)
-  }, [deletedID])
 
   function buildURL(path) {
     return new URL(path, globalState.baseURL)
