@@ -55,8 +55,19 @@ function Edit({ onCancel, onError, onSuccess, saving, operationsLog }) {
       project_id: fieldValues.project_id ? fieldValues.project_id : null
     }
     delete newValues.project
+    const oldValues = {
+      ...operationsLog,
+      recorded_at: new Date(operationsLog.recorded_at).toISOString(),
+      completed_at: operationsLog.completed_at
+        ? new Date(operationsLog.completed_at).toISOString()
+        : null
+    }
 
-    const patchValue = compare(operationsLog, newValues)
+    const patchValue = compare(oldValues, newValues)
+    if (patchValue.length === 0) {
+      onCancel()
+      return
+    }
     const response = await httpPatch(globalState.fetch, url, patchValue)
     if (response.success) {
       onSuccess()
