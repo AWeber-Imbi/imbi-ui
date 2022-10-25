@@ -1,38 +1,16 @@
 import PropTypes from 'prop-types'
-import React, { Fragment } from 'react'
+import React from 'react'
 import { DateTime } from 'luxon'
 import { Markdown } from '../../components'
 import { useTranslation } from 'react-i18next'
-
-function Definition({ term, children, className }) {
-  return (
-    <Fragment>
-      <dt className="font-medium text-gray-500 w-48">{term}</dt>
-      <dd
-        className={`mt-1 items-start sm:mt-0 truncate ${
-          className !== undefined ? className : ''
-        }`}>
-        {children}
-      </dd>
-    </Fragment>
-  )
-}
-Definition.propTypes = {
-  term: PropTypes.string.isRequired,
-  icon: PropTypes.string,
-  children: PropTypes.oneOfType([
-    PropTypes.element,
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.element)
-  ]),
-  className: PropTypes.string
-}
+import { DescriptionList } from '../../components/DescriptionList/DescriptionList'
+import { Definition } from '../../components/DescriptionList/Definition'
 
 function Display({ entry }) {
   const { t } = useTranslation()
 
   return (
-    <dl className="lg:ml-4 my-3 space-y-3 overflow-hidden text-gray-900">
+    <DescriptionList>
       <Definition term={t('operationsLog.changeType')}>
         {entry.change_type}
       </Definition>
@@ -83,7 +61,7 @@ function Display({ entry }) {
           }
         </Definition>
       )}
-    </dl>
+    </DescriptionList>
   )
 }
 Display.propTypes = {

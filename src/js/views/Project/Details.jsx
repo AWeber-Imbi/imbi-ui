@@ -1,42 +1,19 @@
 import PropTypes from 'prop-types'
-import React, { Fragment } from 'react'
+import React from 'react'
 
 import { Button, Card, Icon } from '../../components'
 import { useTranslation } from 'react-i18next'
 
 import { Edit } from './Edit'
-
-function Definition({ term, icon, children, className }) {
-  return (
-    <Fragment>
-      <dt className="font-medium text-gray-500 w-48">{term}</dt>
-      <dd
-        className={`mt-1 items-start sm:mt-0 truncate ${
-          className !== undefined ? className : ''
-        }`}>
-        {icon && <Icon icon={icon} className="mr-2 " />}
-        {children}
-      </dd>
-    </Fragment>
-  )
-}
-Definition.propTypes = {
-  term: PropTypes.string.isRequired,
-  icon: PropTypes.string,
-  children: PropTypes.oneOfType([
-    PropTypes.element,
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.element)
-  ]),
-  className: PropTypes.string
-}
+import { DescriptionList } from '../../components/DescriptionList/DescriptionList'
+import { Definition } from '../../components/DescriptionList/Definition'
 
 function Display({ project, onEditClick, shouldGrow }) {
   const { t } = useTranslation()
   return (
     <Card className={`flex flex-col ${shouldGrow ? 'h-full' : ''}`}>
       <h2 className="font-medium mb-2">{t('terms.projectInfo')}</h2>
-      <dl className="lg:ml-4 my-3 space-y-3 overflow-hidden text-gray-900">
+      <DescriptionList>
         <Definition term={t('terms.namespace')} icon={project.namespace_icon}>
           {project.namespace}
         </Definition>
@@ -83,7 +60,7 @@ function Display({ project, onEditClick, shouldGrow }) {
             </Definition>
           )
         })}
-      </dl>
+      </DescriptionList>
       {project.archived === false && (
         <div className="flex-grow flex flex-row items-end">
           <div className="flex-grow text-right mt-2">
