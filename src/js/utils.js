@@ -84,5 +84,5 @@ export function lookupNamespaceByID(namespaces, namespace_id) {
 }
 
 export function setDocumentTitle(value) {
-  document.title = 'Imbi - ' + value
+  document.title = `${value} - Imbi`
 }
