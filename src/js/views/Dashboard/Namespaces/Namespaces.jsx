@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
 import { Sparklines, SparklinesLine } from 'react-sparklines'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -197,38 +197,42 @@ function Namespaces({ onReady }) {
                 const values = (
                   state.kpiHistory[namespace.namespace_id] || []
                 ).map((entry) => entry.value)
-                const handleClick = () =>
-                  navigate(
-                    '/ui/projects?f=' +
-                      encodeURIComponent(
-                        `namespace_slug:${
-                          lookupNamespaceByID(
-                            globalState.metadata.namespaces,
-                            namespace.namespace_id
-                          ).slug
-                        }`
-                      )
+                const projectsURL =
+                  '/ui/projects?f=' +
+                  encodeURIComponent(
+                    `namespace_slug:${
+                      lookupNamespaceByID(
+                        globalState.metadata.namespaces,
+                        namespace.namespace_id
+                      ).slug
+                    }`
                   )
                 return (
                   <tr
                     className="hover:bg-gray-100 cursor-pointer hover:text-blue-700"
                     key={`namespace-${namespace.namespace_id}`}>
-                    <td
-                      className="px-5 py-1.5 whitespace-nowrap w-4/12"
-                      onClick={handleClick}>
-                      {namespace.namespace}
+                    <td className="w-4/12">
+                      <Link
+                        to={projectsURL}
+                        className="block h-full w-full px-5 py-1.5 whitespace-nowrap">
+                        {namespace.namespace}
+                      </Link>
                     </td>
-                    <td
-                      className="px-5 py-1.5 text-center w-2/12"
-                      onClick={handleClick}>
-                      {formatNumber(namespace.projects)}
+                    <td className="w-2/12">
+                      <Link
+                        to={projectsURL}
+                        className="block h-full w-full px-5 py-1.5 text-center">
+                        {formatNumber(namespace.projects)}
+                      </Link>
                     </td>
-                    <td
-                      className="px-5 py-1.5 text-center w-2/12"
-                      onClick={handleClick}>
-                      <ScoreBadge
-                        value={Math.round(namespace.stack_health_score)}
-                      />
+                    <td className="w-2/12">
+                      <Link
+                        to={projectsURL}
+                        className="block h-full w-full px-5 py-1.5 text-center">
+                        <ScoreBadge
+                          value={Math.round(namespace.stack_health_score)}
+                        />
+                      </Link>
                     </td>
                     <td
                       className="p-0 pr-5 text-center w-4/12"
