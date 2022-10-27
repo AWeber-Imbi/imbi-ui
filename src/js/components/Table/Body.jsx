@@ -12,7 +12,8 @@ function Body({
   onDeleteClick,
   onEditClick,
   onRowClick,
-  rowURL
+  rowURL,
+  checkIsHighlighted
 }) {
   let rowOffset = -1
   return (
@@ -30,6 +31,7 @@ function Body({
             onDeleteClick={onDeleteClick}
             onEditClick={onEditClick}
             rowURL={rowURL}
+            isHighlighted={checkIsHighlighted && checkIsHighlighted(row)}
           />
         )
       })}
@@ -46,6 +48,7 @@ Body.propTypes = {
   onDeleteClick: PropTypes.func,
   onEditClick: PropTypes.func,
   onRowClick: PropTypes.func,
-  rowURL: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+  rowURL: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  checkIsHighlighted: PropTypes.func
 }
 export { Body }

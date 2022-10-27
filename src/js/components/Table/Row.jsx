@@ -13,7 +13,8 @@ function Row({
   onClick,
   onDeleteClick,
   onEditClick,
-  rowURL
+  rowURL,
+  isHighlighted
 }) {
   const { t } = useTranslation()
   const toRender = columns
@@ -38,6 +39,7 @@ function Row({
     <tr
       className={
         (onClick !== undefined ? 'cursor-pointer ' : '') +
+        (isHighlighted && 'bg-gray-100 text-blue-700 ') +
         'hover:bg-gray-100 hover:text-blue-700'
       }
       onClick={(event) => {
@@ -99,6 +101,9 @@ function Row({
     </tr>
   )
 }
+Row.defaultProps = {
+  isHighlighted: false
+}
 Row.propTypes = {
   columns: Columns.isRequired,
   data: PropTypes.object.isRequired,
@@ -107,6 +112,7 @@ Row.propTypes = {
   onClick: PropTypes.func,
   onDeleteClick: PropTypes.func,
   onEditClick: PropTypes.func,
-  rowURL: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+  rowURL: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  isHighlighted: PropTypes.bool
 }
 export { Row }

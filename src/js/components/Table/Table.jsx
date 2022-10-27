@@ -13,7 +13,8 @@ function Table({
   onDeleteClick,
   onEditClick,
   onRowClick,
-  rowURL
+  rowURL,
+  checkIsHighlighted
 }) {
   const colCount =
     columns.filter((c) => !c.tableOptions?.hide).length +
@@ -35,6 +36,7 @@ function Table({
           onEditClick={onEditClick}
           onRowClick={onRowClick}
           rowURL={rowURL}
+          checkIsHighlighted={checkIsHighlighted}
         />
         <Footer columns={colCount} />
       </table>
@@ -50,7 +52,8 @@ Table.propTypes = {
   onDeleteClick: PropTypes.func,
   onEditClick: PropTypes.func,
   onRowClick: PropTypes.func,
-  rowURL: PropTypes.oneOfType([PropTypes.func, PropTypes.string])
+  rowURL: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+  checkIsHighlighted: PropTypes.func
 }
 
 export { Table }
