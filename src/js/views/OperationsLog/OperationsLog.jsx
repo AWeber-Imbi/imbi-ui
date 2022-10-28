@@ -14,6 +14,7 @@ import { DateTime } from 'luxon'
 import { HelpDialog } from '../Projects/HelpDialog'
 import { useSearchParams } from 'react-router-dom'
 import { ViewOperationsLog } from './ViewOperationsLog'
+import { SlideOver } from '../../components/SlideOver/SlideOver'
 
 function cloneParams(searchParams) {
   const newParams = new URLSearchParams()
@@ -36,7 +37,14 @@ function OperationsLog() {
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
+  const [slideOverOpen, setSlideOverOpen] = useState(false)
   const { t } = useTranslation()
+
+  if (searchParams.get('v') && !slideOverOpen) {
+    setSlideOverOpen(true)
+  } else if (!searchParams.get('v') && slideOverOpen) {
+    setSlideOverOpen(false)
+  }
 
   if (deletedID) {
     setRows((prevRows) => prevRows.filter((r) => r.id !== deletedID))
@@ -179,20 +187,25 @@ function OperationsLog() {
           const newParams = cloneParams(searchParams)
           newParams.set('v', data.id)
           setSearchParams(newParams)
+          setSlideOverOpen(true)
         }}
+        checkIsHighlighted={(row) => row.id === parseInt(searchParams.get('v'))}
       />
-      {searchParams.get('v') && (
+      <SlideOver
+        open={slideOverOpen}
+        title={t('operationsLog.entry')}
+        onClose={() => {
+          const newParams = cloneParams(searchParams)
+          newParams.delete('v')
+          setSearchParams(newParams)
+          if (updated) {
+            setOnFetch(true)
+            setUpdated(false)
+          }
+          setSlideOverOpen(false)
+        }}>
         <ViewOperationsLog
           operationsLogID={parseInt(searchParams.get('v'))}
-          onClose={() => {
-            const newParams = cloneParams(searchParams)
-            newParams.delete('v')
-            setSearchParams(newParams)
-            if (updated) {
-              setOnFetch(true)
-              setUpdated(false)
-            }
-          }}
           onUpdate={() => setUpdated(true)}
           onDelete={(operationsLogID) => {
             const newParams = cloneParams(searchParams)
@@ -201,7 +214,8 @@ function OperationsLog() {
             setDeletedID(operationsLogID)
           }}
         />
-      )}
+      </SlideOver>
+
       {showHelp && (
         <HelpDialog
           onClose={() => setShowHelp(false)}

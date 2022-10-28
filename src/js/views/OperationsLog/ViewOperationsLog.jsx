@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +9,7 @@ import { Error } from '../Error'
 import { Display } from './Display'
 import { Edit } from './Edit'
 
-function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
+function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
   const [globalState, dispatch] = useContext(Context)
   const { t } = useTranslation()
   const [entry, setEntry] = useState()
@@ -50,6 +50,7 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
       new URL(`/operations-log/${operationsLogID}`, globalState.baseURL)
     )
     if (response.success) {
+      setShowDeleteConfirmation(false)
       onDelete(operationsLogID)
     } else {
       setError(response.data)
@@ -63,9 +64,8 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
   if (!entry) return <></>
   if (error) return <Error>{error}</Error>
   return (
-    <Modal onClose={onClose}>
-      <Modal.Title>{t('operationsLog.entry')}</Modal.Title>
-      {showDeleteConfirmation ? (
+    <>
+      {showDeleteConfirmation && (
         <ConfirmationDialog
           mode="error"
           title={t('operationsLog.deleteConfirmation.title')}
@@ -74,7 +74,8 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
           onConfirm={() => onConfirmDelete()}>
           {t('operationsLog.deleteConfirmation.text')}
         </ConfirmationDialog>
-      ) : isEditing ? (
+      )}
+      {isEditing ? (
         <Edit
           saving={false}
           operationsLog={entry}
@@ -87,9 +88,9 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
           }}
         />
       ) : (
-        <Fragment>
+        <>
           <Display entry={entry} />
-          <Modal.Footer closeText="Close" onClose={onClose}>
+          <Modal.Footer>
             <Button
               className="btn-red text-s"
               onClick={() => setShowDeleteConfirmation(true)}>
@@ -103,14 +104,13 @@ function ViewOperationsLog({ operationsLogID, onClose, onUpdate, onDelete }) {
               {t('common.edit')}
             </Button>
           </Modal.Footer>
-        </Fragment>
+        </>
       )}
-    </Modal>
+    </>
   )
 }
 ViewOperationsLog.propTypes = {
   operationsLogID: PropTypes.number.isRequired,
-  onClose: PropTypes.func.isRequired,
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired
 }
