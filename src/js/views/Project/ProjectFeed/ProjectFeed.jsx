@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 
 const FETCH_LIMIT = 25
 
-function ProjectFeed({ projectID, factTypes }) {
+function ProjectFeed({ projectID }) {
   const [state, dispatch] = useContext(Context)
   const [factHistory, setFactHistory] = useState({
     entries: [],
@@ -58,7 +58,9 @@ function ProjectFeed({ projectID, factTypes }) {
   }
 
   function normalizeFactHistory(entries) {
-    const factTypeById = new Map(factTypes.map((f) => [f.id, f]))
+    const factTypeById = new Map(
+      state.metadata.projectFactTypes.map((f) => [f.id, f])
+    )
     return entries.map((f) => ({
       ...f,
       project_fact_type: factTypeById.get(f.fact_type_id).name,
@@ -135,7 +137,6 @@ function ProjectFeed({ projectID, factTypes }) {
   )
 }
 ProjectFeed.propTypes = {
-  projectID: PropTypes.number.isRequired,
-  factTypes: PropTypes.arrayOf(PropTypes.object).isRequired
+  projectID: PropTypes.number.isRequired
 }
 export { ProjectFeed }
