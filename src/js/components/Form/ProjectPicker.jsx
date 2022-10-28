@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
-import { httpGet, httpRequest, requestOptions } from '../../utils'
+import { httpGet } from '../../utils'
 import { useTranslation } from 'react-i18next'
 
 function ProjectPicker({
@@ -15,36 +15,11 @@ function ProjectPicker({
   value
 }) {
   const [globalState, dispatch] = useContext(Context)
-  const [namespaces, setNamespaces] = useState([])
-  const [projectTypes, setProjectTypes] = useState([])
   const [projects, setProjects] = useState([])
-  const [namespaceID, setNamespaceID] = useState()
-  const [projectTypeID, setProjectTypeID] = useState()
+  const [namespaceID, setNamespaceID] = useState(value?.namespace_id)
+  const [projectTypeID, setProjectTypeID] = useState(value?.project_type_id)
 
   const { t } = useTranslation()
-
-  useEffect(() => {
-    const namespacesURL = new URL('/namespaces', globalState.baseURL)
-    const projectTypesURL = new URL('/project-types', globalState.baseURL)
-
-    Promise.all([
-      httpRequest(globalState.fetch, namespacesURL, requestOptions),
-      httpRequest(globalState.fetch, projectTypesURL, requestOptions)
-    ]).then(([namespacesResponse, projectTypesResponse]) => {
-      if (!namespacesResponse.success) {
-        onError(namespacesResponse.data)
-      } else if (!projectTypesResponse.success) {
-        onError(projectTypesResponse.data)
-      } else {
-        setNamespaces(namespacesResponse.data)
-        setProjectTypes(projectTypesResponse.data)
-        if (value) {
-          setNamespaceID(value.namespace_id)
-          setProjectTypeID(value.project_type_id)
-        }
-      }
-    })
-  }, [])
 
   useEffect(() => {
     if (!projectTypeID || !namespaceID) {
@@ -87,7 +62,7 @@ function ProjectPicker({
           required={required}
           value={namespaceID}>
           <option value="" />
-          {namespaces.map((n) => (
+          {globalState.metadata.namespaces.map((n) => (
             <option value={n.id} key={n.id}>
               {n.name}
             </option>
@@ -113,7 +88,7 @@ function ProjectPicker({
           required={required}
           value={projectTypeID}>
           <option value="" />
-          {projectTypes.map((t) => (
+          {globalState.metadata.projectTypes.map((t) => (
             <option value={t.id} key={t.id}>
               {t.name}
             </option>
