@@ -10,7 +10,7 @@ import { Display } from './Display'
 import { Edit } from './Edit'
 
 function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
-  const [globalState, dispatch] = useContext(Context)
+  const [globalState] = useContext(Context)
   const { t } = useTranslation()
   const [entry, setEntry] = useState()
   const [error, setError] = useState()

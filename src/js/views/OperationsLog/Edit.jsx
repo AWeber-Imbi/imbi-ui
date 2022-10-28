@@ -9,7 +9,7 @@ import { httpGet, httpPatch, ISO8601ToDatetimeLocal } from '../../utils'
 import { compare } from 'fast-json-patch'
 
 function Edit({ onCancel, onError, onSuccess, saving, operationsLog }) {
-  const [globalState, dispatch] = useContext(Context)
+  const [globalState] = useContext(Context)
   const [fieldValues, setFieldValues] = useState()
   const { t } = useTranslation()
 

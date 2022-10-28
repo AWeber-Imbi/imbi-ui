@@ -14,7 +14,7 @@ function ProjectPicker({
   required,
   value
 }) {
-  const [globalState, dispatch] = useContext(Context)
+  const [globalState] = useContext(Context)
   const [projects, setProjects] = useState([])
   const [namespaceID, setNamespaceID] = useState(value?.namespace_id)
   const [projectTypeID, setProjectTypeID] = useState(value?.project_type_id)
