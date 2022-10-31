@@ -73,7 +73,7 @@ function Overview({ factTypes, project, refresh, urlPath }) {
         <div
           className="flex-auto lg:w-6/12 w-full"
           style={height ? { height: height } : null}>
-          <ProjectFeed factTypes={factTypes} projectID={project.id} />
+          <ProjectFeed projectID={project.id} />
         </div>
       </div>
     </Fragment>
