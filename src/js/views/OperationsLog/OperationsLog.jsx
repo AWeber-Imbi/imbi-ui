@@ -10,7 +10,6 @@ import {
 import { metadataAsOptions } from '../../settings'
 import { httpPost } from '../../utils'
 import { useTranslation } from 'react-i18next'
-import { DateTime } from 'luxon'
 import { HelpDialog } from '../Projects/HelpDialog'
 import { useSearchParams } from 'react-router-dom'
 import { ViewOperationsLog } from './ViewOperationsLog'
@@ -146,13 +145,10 @@ function OperationsLog() {
     {
       title: t('operationsLog.recordedAt'),
       name: 'recorded_at',
-      type: 'text',
+      type: 'datetime',
       tableOptions: {
         headerClassName: 'w-2/12 truncate',
-        className: 'truncate',
-        lookupFunction: (value) => {
-          return DateTime.fromISO(value).toLocaleString(DateTime.DATETIME_MED)
-        }
+        className: 'truncate'
       }
     }
   ]

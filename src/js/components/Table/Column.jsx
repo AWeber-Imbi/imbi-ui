@@ -4,6 +4,7 @@ import React from 'react'
 
 import { Column as ColumnPropTypes } from '../../schema'
 import { Icon } from '..'
+import { DateTime } from 'luxon'
 
 function Column({ definition, children, linkTo }) {
   let clsName = ''
@@ -11,6 +12,8 @@ function Column({ definition, children, linkTo }) {
   if (definition !== undefined && definition.tableOptions !== undefined) {
     if (definition.type === 'icon')
       value = <Icon className="mr-2" icon={children} title={children} />
+    else if (definition.type === 'datetime')
+      value = DateTime.fromISO(children).toLocaleString(DateTime.DATETIME_MED)
     if (definition.tableOptions.className !== undefined)
       clsName = definition.tableOptions.className
     if (definition.tableOptions.lookupFunction !== undefined)

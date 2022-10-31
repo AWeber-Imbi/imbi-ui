@@ -39,6 +39,7 @@ export const Column = {
   }),
   title: PropTypes.string.isRequired,
   type: PropTypes.oneOf([
+    'datetime',
     'hidden',
     'icon',
     'internal',
