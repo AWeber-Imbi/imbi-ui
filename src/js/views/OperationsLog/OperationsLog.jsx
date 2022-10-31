@@ -101,6 +101,15 @@ function OperationsLog() {
 
   const columns = [
     {
+      title: t('operationsLog.recordedAt'),
+      name: 'recorded_at',
+      type: 'datetime',
+      tableOptions: {
+        headerClassName: 'w-2/12 truncate',
+        className: 'truncate'
+      }
+    },
+    {
       title: t('operationsLog.changeType'),
       name: 'change_type',
       type: 'text',
@@ -137,15 +146,6 @@ function OperationsLog() {
       title: t('operationsLog.recordedBy'),
       name: 'recorded_by',
       type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12 truncate',
-        className: 'truncate'
-      }
-    },
-    {
-      title: t('operationsLog.recordedAt'),
-      name: 'recorded_at',
-      type: 'datetime',
       tableOptions: {
         headerClassName: 'w-2/12 truncate',
         className: 'truncate'
