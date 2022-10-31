@@ -27,15 +27,15 @@ function ProjectPicker({
       return
     }
 
-    const projectsURL = new URL(
-      `/projects?namespace_id=${encodeURIComponent(
-        namespaceID
-      )}&project_type_id=${encodeURIComponent(projectTypeID)}`,
-      globalState.baseURL
-    )
+    const projectURL = new URL('/projects', globalState.baseURL)
+    const params = new URLSearchParams({
+      namespace_id: namespaceID,
+      project_type_id: projectTypeID
+    })
+    projectURL.search = params.toString()
     httpGet(
       globalState.fetch,
-      projectsURL,
+      projectURL,
       (result) => {
         setProjects(result.data)
       },
