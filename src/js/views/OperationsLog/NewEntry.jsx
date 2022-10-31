@@ -82,17 +82,10 @@ function NewEntry({ user }) {
           title={t('operationsLog.changeType')}
           name="change_type"
           type="select"
-          options={[
-            { label: 'Configured', value: 'Configured' },
-            { label: 'Decommissioned', value: 'Decommissioned' },
-            { label: 'Deployed', value: 'Deployed' },
-            { label: 'Migrated', value: 'Migrated' },
-            { label: 'Provisioned', value: 'Provisioned' },
-            { label: 'Restarted', value: 'Restarted' },
-            { label: 'Rolled Back', value: 'Rolled Back' },
-            { label: 'Scaled', value: 'Scaled' },
-            { label: 'Upgraded', value: 'Upgraded' }
-          ]}
+          options={globalState.metadata.changeTypes.map((changeType) => ({
+            label: changeType,
+            value: changeType
+          }))}
           required={true}
           onChange={(_name, value) => setChangeType(value)}
         />
