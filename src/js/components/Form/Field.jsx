@@ -12,10 +12,12 @@ import { Toggle } from './Toggle'
 import { DatePicker } from './DatePicker'
 import { DateTimePicker } from './DateTimePicker'
 import { MarkdownField } from '../Markdown/MarkdownField'
+import { ProjectPicker } from './ProjectPicker'
 
 function Field({
   autoFocus,
   castTo,
+  className,
   description,
   disabled,
   errorMessage,
@@ -24,6 +26,7 @@ function Field({
   multiple,
   name,
   onChange,
+  onError,
   options,
   placeholder,
   readOnly,
@@ -38,7 +41,7 @@ function Field({
     return <input type="hidden" name={name} value={value} />
   }
   return (
-    <div className="grid grid-cols-3 gap-4 items-start pt-5">
+    <div className={`grid grid-cols-3 gap-4 items-start pt-5 ${className}`}>
       <label
         htmlFor={'field-' + name}
         className="block text-sm mt-2 font-medium text-gray-700">
@@ -168,6 +171,17 @@ function Field({
             value={value}
           />
         )}
+        {type === 'project' && (
+          <ProjectPicker
+            disabled={disabled}
+            name={name}
+            readOnly={readOnly}
+            required={required}
+            value={value}
+            onChange={onChange}
+            onError={onError}
+          />
+        )}
         {errorMessage !== null && (
           <p className="ml-2 mt-2 text-sm text-red-700 col-span-2">
             {errorMessage}
@@ -185,6 +199,7 @@ function Field({
 
 Field.defaultProps = {
   autoFocus: false,
+  className: '',
   disabled: false,
   errorMessage: null,
   multiple: false,
@@ -194,6 +209,7 @@ Field.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,
   castTo: PropTypes.oneOf(['number']),
+  className: PropTypes.string,
   description: PropTypes.string,
   errorMessage: PropTypes.string,
   maximum: PropTypes.number,
@@ -201,6 +217,7 @@ Field.propTypes = {
   multiple: PropTypes.bool,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func,
+  onError: PropTypes.func,
   options: SelectOptions,
   placeholder: PropTypes.string,
   readOnly: PropTypes.bool,
@@ -219,12 +236,14 @@ Field.propTypes = {
     'toggle',
     'url',
     'date',
-    'datetime'
+    'datetime',
+    'project'
   ]).isRequired,
   value: PropTypes.oneOfType([
     PropTypes.bool,
     PropTypes.number,
     PropTypes.string,
+    PropTypes.object,
     PropTypes.arrayOf(PropTypes.string),
     PropTypes.arrayOf(PropTypes.number)
   ])

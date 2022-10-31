@@ -73,7 +73,18 @@ function useSettings() {
             namespaces: data.metadata.namespaces,
             projectFactTypes: data.metadata.project_fact_types,
             projectLinkTypes: data.metadata.project_link_types,
-            projectTypes: data.metadata.project_types
+            projectTypes: data.metadata.project_types,
+            changeTypes: [
+              'Configured',
+              'Decommissioned',
+              'Deployed',
+              'Migrated',
+              'Provisioned',
+              'Restarted',
+              'Rolled Back',
+              'Scaled',
+              'Upgraded'
+            ]
           })
           setOpenSearch(data.opensearch)
           setProjectURLTemplate(data.project_url_template)

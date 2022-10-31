@@ -25,7 +25,6 @@ import { Configuration } from './Configuration'
 import { Dependencies } from './Dependencies'
 import { Logs } from './Logs'
 import { Notes } from './Notes'
-import { OpsLog } from './OpsLog'
 import { Overview } from './Overview'
 import { Settings } from './Settings'
 
@@ -109,7 +108,11 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Tab to={`${baseURL}/dependencies`}>{t('project.dependencies')}</Tab>
           <Tab to={`${baseURL}/logs`}>{t('common.logs')}</Tab>
           <Tab to={`${baseURL}/notes`}>{t('common.notes')}</Tab>
-          <Tab to={`${baseURL}/operations-log`} isLast={project.archived}>
+          <Tab
+            to={`/ui/operations-log?f=${encodeURIComponent(
+              `project_id:${project.id}`
+            )}`}
+            isLast={project.archived}>
             {t('operationsLog.title')}
           </Tab>
           {project.archived !== true && (
@@ -142,10 +145,6 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Route
             path={`notes`}
             element={<Notes project={project} urlPath={baseURL} />}
-          />
-          <Route
-            path={`operations-log`}
-            element={<OpsLog urlPath={baseURL} />}
           />
           <Route
             path={`settings`}

@@ -240,11 +240,39 @@ export default {
         projectTypes: 'Project Types'
       },
       operationsLog: {
-        addEntry: 'Add Entry',
-        title: 'Operations Log'
-      },
-      operationsLogNewEntry: {
-        title: 'Add Operations Log Entry'
+        title: 'Operations Log',
+        deleteConfirmation: {
+          title: 'Delete Operations Log',
+          text: 'Are you sure you would like to delete this Operations Log entry?',
+          button: 'Delete'
+        },
+        create: {
+          title: 'Add Operations Log Entry',
+          sideBarTitle: 'New Entry'
+        },
+        entry: 'Operations Log Entry',
+        searchHelp: 'Imbi Operations Log Search uses the ',
+        searchHelpTitle: 'Operations Log Search Help',
+        savingNewEntryTitle: 'Save',
+        savingNewEntry: 'Saving new operations log entry',
+        savingNewEntryComplete: 'New operations log entry saved',
+        environment: 'Environment',
+        changeType: 'Change Type',
+        description: 'Description',
+        notes: 'Notes',
+        version: 'Version',
+        ticketSlug: 'Ticket Slug',
+        link: 'Link',
+        project: 'Project',
+        recordedAt: 'Recorded At',
+        completedAt: 'Completed At',
+        recordedBy: 'Recorded By',
+        completedAtDescription:
+          'When the change completed, if it occurred over a period of time',
+        descriptionDescription: 'Single line description of the change',
+        versionDescription: 'Version that the change was made for',
+        linkDescription: 'Additional context to the slug',
+        notesDescription: 'Notes in markdown format'
       },
       project: {
         archived: 'This project is archived and is read-only.',
@@ -326,8 +354,7 @@ export default {
         requestError:
           'Error making API request for Projects, resetting filters and sort ({{error}}).',
         searchHelpTitle: 'Project Search Help',
-        searchHelpDQL:
-          'Imbi Project Search use the <a href="https://opensearch.org/docs/latest/dashboards/dql" class="text-blue-600 underline" target="_new">OpenSearch Dashboards Query Language (DQL)</a>.',
+        searchHelp: 'Imbi Project Search uses the ',
         searchHelpFields: 'Searchable Fields',
         title: 'Projects'
       },
@@ -376,6 +403,9 @@ export default {
             unused: 'Unused'
           }
         }
+      },
+      opensearch: {
+        dql: 'OpenSearch Dashboards Query Language (DQL)'
       }
     }
   }
