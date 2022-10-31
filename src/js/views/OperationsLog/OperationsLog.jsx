@@ -114,7 +114,7 @@ function OperationsLog() {
       name: 'description',
       type: 'text',
       tableOptions: {
-        lookupFunction: (value) => <p className="truncate">{value}</p>
+        className: 'truncate'
       }
     },
     {
@@ -123,7 +123,7 @@ function OperationsLog() {
       type: 'text',
       tableOptions: {
         headerClassName: 'w-2/12',
-        lookupFunction: (value) => <p className="truncate">{value}</p>
+        className: 'truncate'
       }
     },
     {
@@ -140,7 +140,7 @@ function OperationsLog() {
       type: 'text',
       tableOptions: {
         headerClassName: 'w-2/12 truncate',
-        lookupFunction: (value) => <p className="truncate">{value}</p>
+        className: 'truncate'
       }
     },
     {
@@ -149,11 +149,9 @@ function OperationsLog() {
       type: 'text',
       tableOptions: {
         headerClassName: 'w-2/12 truncate',
+        className: 'truncate',
         lookupFunction: (value) => {
-          const displayValue = DateTime.fromISO(value).toLocaleString(
-            DateTime.DATETIME_MED
-          )
-          return <p className="truncate">{displayValue}</p>
+          return DateTime.fromISO(value).toLocaleString(DateTime.DATETIME_MED)
         }
       }
     }
