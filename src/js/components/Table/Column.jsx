@@ -9,16 +9,16 @@ import { DateTime } from 'luxon'
 function Column({ definition, children, linkTo }) {
   let clsName = ''
   let value = children
-  if (definition !== undefined && definition.tableOptions !== undefined) {
-    if (definition.type === 'icon')
-      value = <Icon className="mr-2" icon={children} title={children} />
-    else if (definition.type === 'datetime')
-      value = DateTime.fromISO(children).toLocaleString(DateTime.DATETIME_MED)
-    if (definition.tableOptions.className !== undefined)
-      clsName = definition.tableOptions.className
-    if (definition.tableOptions.lookupFunction !== undefined)
-      value = definition.tableOptions.lookupFunction(children)
-  }
+  if (definition?.type === 'icon')
+    value = <Icon className="mr-2" icon={children} title={children} />
+  else if (definition?.type === 'datetime')
+    value = DateTime.fromISO(children).toLocaleString(DateTime.DATETIME_MED)
+  else if (definition?.tableOptions?.lookupFunction)
+    value = definition.tableOptions.lookupFunction(children)
+
+  if (definition?.tableOptions?.className)
+    clsName = definition.tableOptions.className
+
   if (linkTo !== undefined)
     return (
       <td>
