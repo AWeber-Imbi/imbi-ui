@@ -272,7 +272,8 @@ export default {
         descriptionDescription: 'Single line description of the change',
         versionDescription: 'Version that the change was made for',
         linkDescription: 'Additional context to the slug',
-        notesDescription: 'Notes in markdown format'
+        notesDescription: 'Notes in markdown format',
+        requestError: 'Error making API request for Operations log ({{error}}).'
       },
       project: {
         archived: 'This project is archived and is read-only.',

@@ -52,6 +52,18 @@ function Projects() {
         }
   })
 
+  useEffect(() => {
+    const url = new URL('/ui/projects', globalState.baseURL)
+    url.search = searchParams.toString()
+    dispatch({
+      type: 'SET_CURRENT_PAGE',
+      payload: {
+        url: url,
+        title: 'projects.title'
+      }
+    })
+  }, [])
+
   function updateParams() {
     setSearchParams(
       new URLSearchParams({

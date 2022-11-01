@@ -88,7 +88,7 @@ function OperationsLog() {
         )
         setDeletedID(null)
       } else {
-        setErrorMessage(t('projects.requestError', { error: data }))
+        setErrorMessage(t('operationsLog.requestError', { error: data }))
       }
       setFetching(false)
       setOnFetch(false)
