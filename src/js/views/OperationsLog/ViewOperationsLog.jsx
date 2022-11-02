@@ -83,7 +83,6 @@ function ViewOperationsLog({
       )}
       {isEditing ? (
         <Edit
-          saving={false}
           operationsLog={entry}
           onError={(error) => setError(error)}
           onCancel={() => setIsEditing(false)}

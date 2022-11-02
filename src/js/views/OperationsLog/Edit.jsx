@@ -8,9 +8,10 @@ import { useTranslation } from 'react-i18next'
 import { httpGet, httpPatch, ISO8601ToDatetimeLocal } from '../../utils'
 import { compare } from 'fast-json-patch'
 
-function Edit({ onCancel, onError, onSuccess, saving, operationsLog }) {
+function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   const [globalState] = useContext(Context)
   const [fieldValues, setFieldValues] = useState()
+  const [saving, setSaving] = useState(false)
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -42,6 +43,7 @@ function Edit({ onCancel, onError, onSuccess, saving, operationsLog }) {
   }, [])
 
   async function onSubmit() {
+    setSaving(true)
     const url = new URL(
       `/operations-log/${operationsLog.id}`,
       globalState.baseURL
@@ -65,10 +67,12 @@ function Edit({ onCancel, onError, onSuccess, saving, operationsLog }) {
 
     const patchValue = compare(oldValues, newValues)
     if (patchValue.length === 0) {
+      setSaving(false)
       onCancel()
       return
     }
     const response = await httpPatch(globalState.fetch, url, patchValue)
+    setSaving(false)
     if (response.success) {
       onSuccess()
     } else {
@@ -210,7 +214,6 @@ Edit.propTypes = {
   onCancel: PropTypes.func.isRequired,
   onError: PropTypes.func.isRequired,
   onSuccess: PropTypes.func.isRequired,
-  saving: PropTypes.bool.isRequired,
   operationsLog: PropTypes.object.isRequired
 }
 export { Edit }
