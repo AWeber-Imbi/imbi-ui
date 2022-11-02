@@ -34,6 +34,7 @@ function ViewOperationsLog({
         if (!data.project_id) {
           setEntry(data)
         } else {
+          setEntry({ ...data, project_name: '-' })
           const opsLog = data
           httpGet(
             globalState.fetch,
