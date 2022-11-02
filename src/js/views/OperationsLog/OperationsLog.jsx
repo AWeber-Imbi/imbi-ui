@@ -37,6 +37,7 @@ function OperationsLog() {
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
   const [slideOverOpen, setSlideOverOpen] = useState(false)
+  const [selectedEntry, setSelectedEntry] = useState()
   const { t } = useTranslation()
 
   if (searchParams.get('v') && !slideOverOpen) {
@@ -182,6 +183,7 @@ function OperationsLog() {
           newParams.set('v', data.id)
           setSearchParams(newParams)
           setSlideOverOpen(true)
+          setSelectedEntry(data)
         }}
         checkIsHighlighted={(row) => row.id === parseInt(searchParams.get('v'))}
       />
@@ -197,8 +199,10 @@ function OperationsLog() {
             setUpdated(false)
           }
           setSlideOverOpen(false)
+          setSelectedEntry(null)
         }}>
         <ViewOperationsLog
+          cachedEntry={selectedEntry}
           operationsLogID={parseInt(searchParams.get('v'))}
           onUpdate={() => setUpdated(true)}
           onDelete={(operationsLogID) => {
