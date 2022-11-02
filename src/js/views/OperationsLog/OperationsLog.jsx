@@ -111,6 +111,23 @@ function OperationsLog() {
       }
     },
     {
+      title: t('operationsLog.environment'),
+      name: 'environment',
+      type: 'text',
+      tableOptions: {
+        headerClassName: 'w-2/12'
+      }
+    },
+    {
+      title: t('operationsLog.project'),
+      name: 'project_name',
+      type: 'text',
+      tableOptions: {
+        headerClassName: 'w-2/12',
+        className: 'truncate'
+      }
+    },
+    {
       title: t('operationsLog.changeType'),
       name: 'change_type',
       type: 'text',
@@ -124,23 +141,6 @@ function OperationsLog() {
       type: 'text',
       tableOptions: {
         className: 'truncate'
-      }
-    },
-    {
-      title: t('operationsLog.project'),
-      name: 'project_name',
-      type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12',
-        className: 'truncate'
-      }
-    },
-    {
-      title: t('operationsLog.environment'),
-      name: 'environment',
-      type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12'
       }
     },
     {
