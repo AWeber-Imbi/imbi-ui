@@ -11,11 +11,16 @@ function Display({ entry }) {
 
   return (
     <DescriptionList>
-      <Definition term={t('operationsLog.changeType')}>
-        {entry.change_type}
-      </Definition>
       <Definition term={t('operationsLog.environment')}>
         {entry.environment}
+      </Definition>
+      {(entry.project_name || entry.project_id) && (
+        <Definition term={t('operationsLog.project')}>
+          {entry.project_name || entry.project_id}
+        </Definition>
+      )}
+      <Definition term={t('operationsLog.changeType')}>
+        {entry.change_type}
       </Definition>
       <Definition term={t('operationsLog.recordedAt')}>
         {DateTime.fromISO(entry.recorded_at).toLocaleString(
@@ -32,11 +37,6 @@ function Display({ entry }) {
       {entry.description && (
         <Definition term={t('operationsLog.description')}>
           {entry.description}
-        </Definition>
-      )}
-      {(entry.project_name || entry.project_id) && (
-        <Definition term={t('operationsLog.project')}>
-          {entry.project_name || entry.project_id}
         </Definition>
       )}
       {entry.version && (
