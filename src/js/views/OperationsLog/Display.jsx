@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import { DateTime } from 'luxon'
-import { Markdown } from '../../components'
+import { Icon, Markdown } from '../../components'
 import { useTranslation } from 'react-i18next'
 import { DescriptionList } from '../../components/DescriptionList/DescriptionList'
 import { Definition } from '../../components/DescriptionList/Definition'
@@ -50,7 +50,16 @@ function Display({ entry }) {
         </Definition>
       )}
       {entry.link && (
-        <Definition term={t('operationsLog.link')}>{entry.link}</Definition>
+        <Definition term={t('operationsLog.link')}>
+          <a
+            className="text-blue-800 hover:text-blue-700"
+            href={entry.link}
+            title={entry.link}
+            target="_new">
+            <Icon icon="fas external-link-alt" className="mr-2" />
+            {entry.link}
+          </a>
+        </Definition>
       )}
       {entry.notes && (
         <Definition term={t('operationsLog.notes')}>
