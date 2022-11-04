@@ -63,7 +63,7 @@ function Display({ entry }) {
       )}
       {entry.notes && (
         <Definition term={t('operationsLog.notes')}>
-          <Markdown className="overflow-auto whitespace-pre-wrap max-h-[70vh] border-solid border-2 p-2 rounded">
+          <Markdown className="overflow-auto max-h-[70vh] border-solid border-2 p-2 rounded">
             {entry.notes}
           </Markdown>
         </Definition>
