@@ -7,7 +7,7 @@ class Link extends React.PureComponent {
     return (
       <a
         href={this.props.href}
-        className="text-blue-600 hover:text-blue-800 whitespace-pre-wrap"
+        className="text-blue-600 hover:text-blue-800p"
         rel="noreferrer"
         target="_blank">
         {this.props.children}
@@ -36,7 +36,7 @@ UL.propTypes = {
 
 class Paragraph extends React.PureComponent {
   render() {
-    return <p className="pb-1 whitespace-pre-wrap">{this.props.children}</p>
+    return <p className="pb-1">{this.props.children}</p>
   }
 }
 Paragraph.propTypes = {
@@ -50,29 +50,15 @@ class Heading extends React.PureComponent {
   }
   render() {
     if (this.level === 1) {
-      return (
-        <h1 className="text-xl pb-2 text-bold whitespace-pre-wrap">
-          {this.props.children}
-        </h1>
-      )
+      return <h1 className="text-xl pb-2 text-bold">{this.props.children}</h1>
     }
     if (this.level === 2) {
-      return (
-        <h2 className="text-lg pb-1 text-bold whitespace-pre-wrap">
-          {this.props.children}
-        </h2>
-      )
+      return <h2 className="text-lg pb-1 text-bold">{this.props.children}</h2>
     }
     if (this.level === 3) {
-      return (
-        <h3 className="pb-1 text-bold whitespace-pre-wrap">
-          {this.props.children}
-        </h3>
-      )
+      return <h3 className="pb-1 text-bold">{this.props.children}</h3>
     }
-    return (
-      <p className="text-bold whitespace-pre-wrap">{this.props.children}</p>
-    )
+    return <p className="text-bold">{this.props.children}</p>
   }
 }
 Heading.propTypes = {
