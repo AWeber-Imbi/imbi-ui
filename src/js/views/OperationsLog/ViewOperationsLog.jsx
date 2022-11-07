@@ -9,10 +9,15 @@ import { Error } from '../Error'
 import { Display } from './Display'
 import { Edit } from './Edit'
 
-function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
+function ViewOperationsLog({
+  cachedEntry,
+  operationsLogID,
+  onUpdate,
+  onDelete
+}) {
   const [globalState] = useContext(Context)
   const { t } = useTranslation()
-  const [entry, setEntry] = useState()
+  const [entry, setEntry] = useState(cachedEntry)
   const [error, setError] = useState()
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
@@ -29,6 +34,7 @@ function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
         if (!data.project_id) {
           setEntry(data)
         } else {
+          setEntry({ ...data, project_name: '-' })
           const opsLog = data
           httpGet(
             globalState.fetch,
@@ -58,7 +64,7 @@ function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
   }
 
   useEffect(() => {
-    loadOpsLog()
+    if (!cachedEntry) loadOpsLog()
   }, [])
 
   if (!entry) return <></>
@@ -77,7 +83,6 @@ function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
       )}
       {isEditing ? (
         <Edit
-          saving={false}
           operationsLog={entry}
           onError={(error) => setError(error)}
           onCancel={() => setIsEditing(false)}
@@ -110,6 +115,7 @@ function ViewOperationsLog({ operationsLogID, onUpdate, onDelete }) {
   )
 }
 ViewOperationsLog.propTypes = {
+  cachedEntry: PropTypes.object,
   operationsLogID: PropTypes.number.isRequired,
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired

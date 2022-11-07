@@ -7,7 +7,7 @@ function Definition({ term, icon, children, className }) {
     <div>
       <dt className="font-medium text-gray-500 w-48">{term}</dt>
       <dd
-        className={`mt-1 items-start truncate ${
+        className={`mt-1 items-start ${
           className !== undefined ? className : ''
         }`}>
         {icon && <Icon icon={icon} className="mr-2 " />}

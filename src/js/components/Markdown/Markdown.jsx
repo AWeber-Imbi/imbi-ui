@@ -7,7 +7,7 @@ class Link extends React.PureComponent {
     return (
       <a
         href={this.props.href}
-        className="text-blue-600 hover:text-blue-800"
+        className="text-blue-600 hover:text-blue-800p"
         rel="noreferrer"
         target="_blank">
         {this.props.children}
