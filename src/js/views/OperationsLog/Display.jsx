@@ -16,7 +16,14 @@ function Display({ entry }) {
       </Definition>
       {(entry.project_name || entry.project_id) && (
         <Definition term={t('operationsLog.project')}>
-          {entry.project_name || entry.project_id}
+          <a
+            className="text-blue-800 hover:text-blue-700"
+            href={`/ui/projects/${entry.project_id}`}
+            title={entry.project_name}
+            target="_blank">
+            <Icon icon="fas external-link-alt" className="mr-2" />
+            {entry.project_name || entry.project_id}
+          </a>
         </Definition>
       )}
       <Definition term={t('operationsLog.changeType')}>
