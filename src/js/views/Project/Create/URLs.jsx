@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../../state'
 import { Form } from '../../../components'
@@ -152,25 +152,23 @@ function URLs({ localDispatch, localState }) {
 
   return (
     <Form.Section name="urls" title={t('project.projectURLs')}>
-      <Fragment>
-        {localState.attributes.environments.map((environment) => {
-          return (
-            <Form.Field
-              title={`${environment} URL`}
-              name={`url-${environment}`}
-              key={`url-${environment}`}
-              type="text"
-              errorMessage={errors[`url-${environment}`]}
-              onChange={onChange}
-              value={
-                localState.urls[environment] !== undefined
-                  ? localState.urls[environment]
-                  : ''
-              }
-            />
-          )
-        })}
-      </Fragment>
+      {localState.attributes.environments.map((environment) => {
+        return (
+          <Form.Field
+            title={`${environment} URL`}
+            name={`url-${environment}`}
+            key={`url-${environment}`}
+            type="text"
+            errorMessage={errors[`url-${environment}`]}
+            onChange={onChange}
+            value={
+              localState.urls[environment] !== undefined
+                ? localState.urls[environment]
+                : ''
+            }
+          />
+        )
+      })}
     </Form.Section>
   )
 }
