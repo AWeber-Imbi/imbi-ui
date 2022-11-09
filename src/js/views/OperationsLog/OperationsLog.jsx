@@ -14,6 +14,7 @@ import { HelpDialog } from '../Projects/HelpDialog'
 import { useSearchParams } from 'react-router-dom'
 import { ViewOperationsLog } from './ViewOperationsLog'
 import { SlideOver } from '../../components/SlideOver/SlideOver'
+import PropTypes from 'prop-types'
 
 function cloneParams(searchParams) {
   const newParams = new URLSearchParams()
@@ -23,7 +24,7 @@ function cloneParams(searchParams) {
   return newParams
 }
 
-function OperationsLog() {
+function OperationsLog({ projectID }) {
   const [globalState, dispatch] = useContext(Context)
   const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState(
@@ -65,9 +66,16 @@ function OperationsLog() {
     if (fetching || !onFetch) return
     setFetching(true)
 
-    const query = {
+    let query = filter.trim()
+    if (projectID) {
+      query += query
+        ? ` AND project_id:${projectID}`
+        : `project_id:${projectID}`
+    }
+
+    const payload = {
       query: toElasticsearchQuery(
-        fromKueryExpression(filter),
+        fromKueryExpression(query),
         metadataAsOptions.openSearch
       ),
       sort: [{ recorded_at: { order: 'desc' } }],
@@ -78,7 +86,7 @@ function OperationsLog() {
     httpPost(
       globalState.fetch,
       buildURL('/opensearch/operations-log'),
-      query
+      payload
     ).then(({ data, success }) => {
       if (success) {
         setErrorMessage(null)
@@ -235,5 +243,8 @@ function OperationsLog() {
       )}
     </div>
   )
+}
+OperationsLog.propTypes = {
+  projectID: PropTypes.number
 }
 export { OperationsLog }
