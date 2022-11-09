@@ -108,59 +108,67 @@ function OperationsLog({ projectID, className }) {
     return new URL(path, globalState.baseURL)
   }
 
-  const columns = [
-    {
-      title: t('operationsLog.recordedAt'),
-      name: 'recorded_at',
-      type: 'datetime',
-      tableOptions: {
-        headerClassName: 'w-2/12 truncate',
-        className: 'truncate'
+  function buildColumns() {
+    const columns = [
+      {
+        title: t('operationsLog.recordedAt'),
+        name: 'recorded_at',
+        type: 'datetime',
+        tableOptions: {
+          headerClassName: 'w-2/12 truncate',
+          className: 'truncate'
+        }
+      },
+      {
+        title: t('operationsLog.environment'),
+        name: 'environment',
+        type: 'text',
+        tableOptions: {
+          headerClassName: 'w-2/12'
+        }
       }
-    },
-    {
-      title: t('operationsLog.environment'),
-      name: 'environment',
-      type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12'
-      }
-    },
-    {
-      title: t('operationsLog.project'),
-      name: 'project_name',
-      type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12',
-        className: 'truncate'
-      }
-    },
-    {
-      title: t('operationsLog.changeType'),
-      name: 'change_type',
-      type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12 truncate'
-      }
-    },
-    {
-      title: t('operationsLog.description'),
-      name: 'description',
-      type: 'text',
-      tableOptions: {
-        className: 'truncate'
-      }
-    },
-    {
-      title: t('operationsLog.recordedBy'),
-      name: 'recorded_by',
-      type: 'text',
-      tableOptions: {
-        headerClassName: 'w-2/12 truncate',
-        className: 'truncate'
-      }
+    ]
+
+    if (!projectID) {
+      columns.push({
+        title: t('operationsLog.project'),
+        name: 'project_name',
+        type: 'text',
+        tableOptions: {
+          headerClassName: 'w-2/12',
+          className: 'truncate'
+        }
+      })
     }
-  ]
+
+    return columns.concat([
+      {
+        title: t('operationsLog.changeType'),
+        name: 'change_type',
+        type: 'text',
+        tableOptions: {
+          headerClassName: 'w-2/12 truncate'
+        }
+      },
+      {
+        title: t('operationsLog.description'),
+        name: 'description',
+        type: 'text',
+        tableOptions: {
+          className: 'truncate'
+        }
+      },
+      {
+        title: t('operationsLog.recordedBy'),
+        name: 'recorded_by',
+        type: 'text',
+        tableOptions: {
+          headerClassName: 'w-2/12 truncate',
+          className: 'truncate'
+        }
+      }
+    ])
+  }
 
   return (
     <div className={`m-0 space-y-3 ${className}`}>
@@ -184,7 +192,7 @@ function OperationsLog({ projectID, className }) {
         value={filter}
       />
       <Table
-        columns={columns}
+        columns={buildColumns()}
         data={rows}
         onRowClick={(data) => {
           const newParams = cloneParams(searchParams)
