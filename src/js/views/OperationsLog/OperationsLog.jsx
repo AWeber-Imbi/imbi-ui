@@ -24,7 +24,7 @@ function cloneParams(searchParams) {
   return newParams
 }
 
-function OperationsLog({ projectID }) {
+function OperationsLog({ projectID, className }) {
   const [globalState, dispatch] = useContext(Context)
   const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState(
@@ -163,7 +163,7 @@ function OperationsLog({ projectID }) {
   ]
 
   return (
-    <div className="m-0 px-4 py-3 space-y-3 grow">
+    <div className={`m-0 space-y-3 ${className}`}>
       {errorMessage && (
         <Alert className="mt-3" level="error">
           {errorMessage}
