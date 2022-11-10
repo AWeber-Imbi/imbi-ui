@@ -24,7 +24,7 @@ function cloneParams(searchParams) {
   return newParams
 }
 
-function OperationsLog({ projectID, className }) {
+function OperationsLog({ projectID, urlPath, className }) {
   const [globalState, dispatch] = useContext(Context)
   const [searchParams, setSearchParams] = useSearchParams()
   const [filter, setFilter] = useState(
@@ -53,11 +53,12 @@ function OperationsLog({ projectID, className }) {
   }
 
   useEffect(() => {
+    const path = urlPath ? `${urlPath}/operations-log` : 'ui/operations-log'
     dispatch({
       type: 'SET_CURRENT_PAGE',
       payload: {
         title: 'operationsLog.title',
-        url: new URL('/ui/operations-log', globalState.baseURL)
+        url: new URL(path, globalState.baseURL)
       }
     })
   }, [])
@@ -253,6 +254,8 @@ function OperationsLog({ projectID, className }) {
   )
 }
 OperationsLog.propTypes = {
-  projectID: PropTypes.number
+  projectID: PropTypes.number,
+  urlPath: PropTypes.string,
+  className: PropTypes.string
 }
 export { OperationsLog }
