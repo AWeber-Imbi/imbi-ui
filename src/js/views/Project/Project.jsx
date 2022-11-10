@@ -145,7 +145,7 @@ function ProjectPage({ project, factTypes, refresh }) {
           />
           <Route
             path={`operations-log`}
-            element={<OperationsLog projectID={project.id} />}
+            element={<OperationsLog projectID={project.id} urlPath={baseURL} />}
           />
           <Route
             path={`settings`}
