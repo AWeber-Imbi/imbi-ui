@@ -21,12 +21,12 @@ function NewEntry({ user }) {
   const [environment, setEnvironment] = useState()
   const [recordedAt, setRecordedAt] = useState()
   const [completedAt, setCompletedAt] = useState()
-  const [description, setDescription] = useState()
+  const [description, setDescription] = useState('')
   const [project, setProject] = useState()
-  const [version, setVersion] = useState()
-  const [ticketSlug, setTicketSlug] = useState()
-  const [link, setLink] = useState()
-  const [notes, setNotes] = useState()
+  const [version, setVersion] = useState('')
+  const [ticketSlug, setTicketSlug] = useState('')
+  const [link, setLink] = useState('')
+  const [notes, setNotes] = useState('')
 
   const { t } = useTranslation()
 
@@ -123,6 +123,7 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.descriptionDescription')}
           onChange={(_name, value) => setDescription(value)}
+          value={description}
         />
         <Form.Field
           title={t('operationsLog.project')}
@@ -139,6 +140,7 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.versionDescription')}
           onChange={(_name, value) => setVersion(value)}
+          value={version}
         />
         <Form.Field
           title={t('operationsLog.ticketSlug')}
@@ -146,6 +148,7 @@ function NewEntry({ user }) {
           type="text"
           required={false}
           onChange={(_name, value) => setTicketSlug(value)}
+          value={ticketSlug}
         />
         <Form.Field
           title={t('operationsLog.link')}
@@ -154,6 +157,7 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.linkDescription')}
           onChange={(_name, value) => setLink(value)}
+          value={link}
         />
         <Form.Field
           title={t('operationsLog.notes')}
