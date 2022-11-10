@@ -21,7 +21,7 @@ function HelpDialog({ title, searchHelp, fields, onClose }) {
           </a>
         </span>
         <h1 className="my-4 font-bold">{t('projects.searchHelpFields')}</h1>
-        <ul className="list-disc list-inside max-h-96 ml-5 font-mono overflow-scroll">
+        <ul className="list-disc list-inside max-h-96 ml-5 font-mono overflow-auto">
           {fields.sort(byString()).map((field) => {
             return <li key={`field-` + field}>{field}</li>
           })}

@@ -51,7 +51,7 @@ function Main({ user }) {
                 />
                 <Route
                   path="/ui/operations-log"
-                  element={<OperationsLog user={user} />}
+                  element={<OperationsLog user={user} className="px-4 py-3" />}
                 />
                 <Route
                   path="/ui/projects/create"

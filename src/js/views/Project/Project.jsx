@@ -27,6 +27,7 @@ import { Logs } from './Logs'
 import { Notes } from './Notes'
 import { Overview } from './Overview'
 import { Settings } from './Settings'
+import { OperationsLog } from '../OperationsLog'
 
 function ProjectPage({ project, factTypes, refresh }) {
   const [state, dispatch] = useContext(Context)
@@ -108,11 +109,7 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Tab to={`${baseURL}/dependencies`}>{t('project.dependencies')}</Tab>
           <Tab to={`${baseURL}/logs`}>{t('common.logs')}</Tab>
           <Tab to={`${baseURL}/notes`}>{t('common.notes')}</Tab>
-          <Tab
-            to={`/ui/operations-log?f=${encodeURIComponent(
-              `project_id:${project.id}`
-            )}`}
-            isLast={project.archived}>
+          <Tab to={`${baseURL}/operations-log`} isLast={project.archived}>
             {t('operationsLog.title')}
           </Tab>
           {project.archived !== true && (
@@ -145,6 +142,10 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Route
             path={`notes`}
             element={<Notes project={project} urlPath={baseURL} />}
+          />
+          <Route
+            path={`operations-log`}
+            element={<OperationsLog projectID={project.id} />}
           />
           <Route
             path={`settings`}
