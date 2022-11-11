@@ -5,16 +5,20 @@ export const jsonSchema = {
   type: 'object',
   properties: {
     id: { type: 'number' },
-    recorded_at: { type: 'string' },
+    recorded_at: { type: 'string', format: 'date-time' },
     recorded_by: { type: 'string' },
     completed_at: {
-      oneOf: [{ type: 'string' }, { type: 'null' }]
+      oneOf: [{ type: 'string', format: 'date-time' }, { type: 'null' }]
     },
     project_id: {
       oneOf: [{ type: 'number' }, { type: 'null' }]
     },
     environment: { type: 'string' },
-    change_type: { type: 'string' },
+    change_type: {
+      type: 'string',
+      pattern:
+        '^(Configured|Decommissioned|Deployed|Migrated|Provisioned|Restarted|Rolled Back|Scaled|Upgraded)$'
+    },
     description: {
       oneOf: [{ type: 'string' }, { type: 'null' }]
     },
@@ -25,7 +29,7 @@ export const jsonSchema = {
       oneOf: [{ type: 'string' }, { type: 'null' }]
     },
     ticket_slug: {
-      oneOf: [{ type: 'string' }, { type: 'null' }]
+      oneOf: [{ type: 'string', pattern: '^[\\w-]+$' }, { type: 'null' }]
     },
     version: {
       oneOf: [{ type: 'string' }, { type: 'null' }]
