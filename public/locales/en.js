@@ -273,7 +273,24 @@ export default {
         versionDescription: 'Version that the change was made for',
         linkDescription: 'Additional context to the slug',
         notesDescription: 'Notes in markdown format',
-        requestError: 'Error making API request for Operations log ({{error}}).'
+        requestError:
+          'Error making API request for Operations log ({{error}}).',
+        validation: {
+          changeTypeError:
+            'Change type cannot be empty and must be one of the valid options',
+          environmentError: 'Environment cannot be empty',
+          recordedAtError:
+            'Recorded at cannot be empty and must be a valid ISO-8601 datetime string',
+          completedAtError:
+            'Completed at must either be empty or a valid ISO-8601 datetime string',
+          descriptionError: 'Description must either be empty or a string',
+          projectError: 'Project must either be or a number',
+          versionError: 'Version must either be empty or a string',
+          ticketSlugError:
+            'Ticket slug must either be empty or a string containing only letters, numbers, hyphen, and underscore',
+          linkError: 'Link must either be empty or a string',
+          notesError: 'Notes must either be empty or a string'
+        }
       },
       project: {
         archived: 'This project is archived and is read-only.',

@@ -9,6 +9,8 @@ import { metadataAsOptions } from '../../settings'
 import { httpPost } from '../../utils'
 import { useNavigate } from 'react-router-dom'
 import { Error } from '../Error'
+import { validate } from 'jsonschema'
+import { jsonSchema } from '../../schema/OperationsLog'
 
 function NewEntry({ user }) {
   const [globalState, dispatch] = useContext(Context)
@@ -71,29 +73,81 @@ function NewEntry({ user }) {
     })
   }, [])
 
+  function errorMessages(field) {
+    switch (field) {
+      case 'change_type':
+        return t('operationsLog.validation.changeTypeError')
+      case 'environment':
+        return t('operationsLog.validation.environmentError')
+      case 'recorded_at':
+        return t('operationsLog.validation.recordedAtError')
+      case 'completed_at':
+        return t('operationsLog.validation.completedAtError')
+      case 'description':
+        return t('operationsLog.validation.descriptionError')
+      case 'project':
+        return t('operationsLog.validation.projectError')
+      case 'version':
+        return t('operationsLog.validation.versionError')
+      case 'ticket_slug':
+        return t('operationsLog.validation.ticketSlugError')
+      case 'link':
+        return t('operationsLog.validation.linkError')
+      case 'notes':
+        return t('operationsLog.validation.notesError')
+      default:
+        return t('error.title')
+    }
+  }
+
+  function clearValidation() {
+    setFields((prevState) => {
+      const newState = { ...prevState }
+      for (const field of Object.keys(newState)) {
+        newState[field].validationError = null
+      }
+      return newState
+    })
+  }
+
   async function onSubmit(event) {
     event.preventDefault()
+
+    const values = {
+      recorded_by: user.username,
+      environment: fields.environment.value,
+      change_type: fields.change_type.value,
+      recorded_at: new Date(fields.recorded_at.value).toISOString(),
+      completed_at: fields.completed_at.value
+        ? new Date(fields.completed_at.value).toISOString()
+        : null,
+      project_id: fields.project.value ? parseInt(fields.project.value) : null,
+      description: fields.description.value ? fields.description.value : null,
+      link: fields.link.value ? fields.link.value : null,
+      notes: fields.notes.value ? fields.notes.value : null,
+      ticket_slug: fields.ticket_slug.value ? fields.ticket_slug.value : null,
+      version: fields.version.value ? fields.version.value : null
+    }
+    clearValidation()
+    const validation = validate(values, jsonSchema)
+    if (validation.errors.length > 0) {
+      setFields((prevState) => {
+        const newState = { ...prevState }
+        for (const error of validation.errors) {
+          for (const path of error.path) {
+            newState[path].validationError = errorMessages(path)
+          }
+        }
+        return newState
+      })
+      return
+    }
+
     setSaving(true)
     const response = await httpPost(
       globalState.fetch,
       new URL('/operations-log', globalState.baseURL),
-      {
-        recorded_by: user.username,
-        environment: fields.environment.value,
-        change_type: fields.change_type.value,
-        recorded_at: new Date(fields.recorded_at.value).toISOString(),
-        completed_at: fields.completed_at.value
-          ? new Date(fields.completed_at.value).toISOString()
-          : null,
-        project_id: fields.project.value
-          ? parseInt(fields.project.value)
-          : null,
-        description: fields.description.value ? fields.description.value : null,
-        link: fields.link.value ? fields.link.value : null,
-        notes: fields.notes.value ? fields.notes.value : null,
-        ticket_slug: fields.ticket_slug.value ? fields.ticket_slug.value : null,
-        version: fields.version.value ? fields.version.value : null
-      }
+      values
     )
     if (response.success) {
       setSavingComplete(true)
@@ -134,6 +188,7 @@ function NewEntry({ user }) {
           }))}
           required={true}
           onChange={onChange}
+          errorMessage={fields.change_type.validationError}
         />
         <Form.Field
           title={t('operationsLog.environment')}
@@ -146,6 +201,7 @@ function NewEntry({ user }) {
           )}
           required={true}
           onChange={onChange}
+          errorMessage={fields.environment.validationError}
         />
         <Form.Field
           title={t('operationsLog.recordedAt')}
@@ -154,6 +210,7 @@ function NewEntry({ user }) {
           required={true}
           onChange={onChange}
           value={fields.recorded_at.value}
+          errorMessage={fields.recorded_at.validationError}
         />
         <Form.Field
           title={t('operationsLog.completedAt')}
@@ -163,6 +220,7 @@ function NewEntry({ user }) {
           description={t('operationsLog.completedAtDescription')}
           onChange={onChange}
           value={fields.completed_at.value}
+          errorMessage={fields.completed_at.validationError}
         />
         <Form.Field
           title={t('operationsLog.description')}
@@ -172,6 +230,7 @@ function NewEntry({ user }) {
           description={t('operationsLog.descriptionDescription')}
           onChange={onChange}
           value={fields.description.value}
+          errorMessage={fields.description.validationError}
         />
         <Form.Field
           title={t('operationsLog.project')}
@@ -180,6 +239,7 @@ function NewEntry({ user }) {
           required={false}
           onChange={onChange}
           onError={(error) => setError(error)}
+          errorMessage={fields.project.validationError}
         />
         <Form.Field
           title={t('operationsLog.version')}
@@ -189,6 +249,7 @@ function NewEntry({ user }) {
           description={t('operationsLog.versionDescription')}
           onChange={onChange}
           value={fields.version.value}
+          errorMessage={fields.version.validationError}
         />
         <Form.Field
           title={t('operationsLog.ticketSlug')}
@@ -197,6 +258,7 @@ function NewEntry({ user }) {
           required={false}
           onChange={onChange}
           value={fields.ticket_slug.value}
+          errorMessage={fields.ticket_slug.validationError}
         />
         <Form.Field
           title={t('operationsLog.link')}
@@ -206,6 +268,7 @@ function NewEntry({ user }) {
           description={t('operationsLog.linkDescription')}
           onChange={onChange}
           value={fields.link.value}
+          errorMessage={fields.link.validationError}
         />
         <Form.Field
           title={t('operationsLog.notes')}
@@ -215,6 +278,7 @@ function NewEntry({ user }) {
           description={t('operationsLog.notesDescription')}
           onChange={onChange}
           value={fields.notes.value}
+          errorMessage={fields.notes.validationError}
         />
       </Form.MultiSectionForm>
       {saving && (
