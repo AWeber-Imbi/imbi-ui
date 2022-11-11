@@ -15,18 +15,49 @@ function NewEntry({ user }) {
   const [saving, setSaving] = useState(false)
   const [savingComplete, setSavingComplete] = useState(false)
   const [error, setError] = useState()
+  const [fields, setFields] = useState({
+    change_type: {
+      value: null,
+      validationError: null
+    },
+    environment: {
+      value: null,
+      validationError: null
+    },
+    recorded_at: {
+      value: null,
+      validationError: null
+    },
+    completed_at: {
+      value: null,
+      validationError: null
+    },
+    description: {
+      value: '',
+      validationError: null
+    },
+    project: {
+      value: null,
+      validationError: null
+    },
+    version: {
+      value: '',
+      validationError: null
+    },
+    ticket_slug: {
+      value: '',
+      validationError: null
+    },
+    link: {
+      value: '',
+      validationError: null
+    },
+    notes: {
+      value: '',
+      validationError: null
+    }
+  })
   const navigate = useNavigate()
-
-  const [changeType, setChangeType] = useState()
-  const [environment, setEnvironment] = useState()
-  const [recordedAt, setRecordedAt] = useState()
-  const [completedAt, setCompletedAt] = useState()
-  const [description, setDescription] = useState('')
-  const [project, setProject] = useState()
-  const [version, setVersion] = useState('')
-  const [ticketSlug, setTicketSlug] = useState('')
-  const [link, setLink] = useState('')
-  const [notes, setNotes] = useState('')
 
   const { t } = useTranslation()
 
@@ -48,16 +79,20 @@ function NewEntry({ user }) {
       new URL('/operations-log', globalState.baseURL),
       {
         recorded_by: user.username,
-        environment: environment,
-        change_type: changeType,
-        recorded_at: new Date(recordedAt).toISOString(),
-        completed_at: completedAt ? new Date(completedAt).toISOString() : null,
-        project_id: project ? parseInt(project) : null,
-        description: description ? description : null,
-        link: link ? link : null,
-        notes: notes ? notes : null,
-        ticket_slug: ticketSlug ? ticketSlug : null,
-        version: version ? version : null
+        environment: fields.environment.value,
+        change_type: fields.change_type.value,
+        recorded_at: new Date(fields.recorded_at.value).toISOString(),
+        completed_at: fields.completed_at.value
+          ? new Date(fields.completed_at.value).toISOString()
+          : null,
+        project_id: fields.project.value
+          ? parseInt(fields.project.value)
+          : null,
+        description: fields.description.value ? fields.description.value : null,
+        link: fields.link.value ? fields.link.value : null,
+        notes: fields.notes.value ? fields.notes.value : null,
+        ticket_slug: fields.ticket_slug.value ? fields.ticket_slug.value : null,
+        version: fields.version.value ? fields.version.value : null
       }
     )
     if (response.success) {
@@ -67,10 +102,21 @@ function NewEntry({ user }) {
     }
   }
 
+  function onChange(name, value) {
+    setFields((prevState) => ({
+      ...prevState,
+      [name]: { ...prevState[name], value }
+    }))
+  }
+
   return (
     <ErrorBoundary>
       <Form.MultiSectionForm
-        disabled={!changeType || !environment || !recordedAt}
+        disabled={
+          !fields.change_type.value ||
+          !fields.environment.value ||
+          !fields.recorded_at.value
+        }
         sideBarTitle={t('operationsLog.create.sideBarTitle')}
         icon="fas file"
         onSubmit={onSubmit}
@@ -87,7 +133,7 @@ function NewEntry({ user }) {
             value: changeType
           }))}
           required={true}
-          onChange={(_name, value) => setChangeType(value)}
+          onChange={onChange}
         />
         <Form.Field
           title={t('operationsLog.environment')}
@@ -99,22 +145,24 @@ function NewEntry({ user }) {
             'name'
           )}
           required={true}
-          onChange={(_name, value) => setEnvironment(value)}
+          onChange={onChange}
         />
         <Form.Field
           title={t('operationsLog.recordedAt')}
-          name="link"
+          name="recorded_at"
           type="datetime"
           required={true}
-          onChange={(_name, value) => setRecordedAt(value)}
+          onChange={onChange}
+          value={fields.recorded_at.value}
         />
         <Form.Field
           title={t('operationsLog.completedAt')}
-          name="link"
+          name="completed_at"
           type="datetime"
           required={false}
           description={t('operationsLog.completedAtDescription')}
-          onChange={(_name, value) => setCompletedAt(value)}
+          onChange={onChange}
+          value={fields.completed_at.value}
         />
         <Form.Field
           title={t('operationsLog.description')}
@@ -122,15 +170,15 @@ function NewEntry({ user }) {
           type="text"
           required={false}
           description={t('operationsLog.descriptionDescription')}
-          onChange={(_name, value) => setDescription(value)}
-          value={description}
+          onChange={onChange}
+          value={fields.description.value}
         />
         <Form.Field
           title={t('operationsLog.project')}
           name="project"
           type="project"
           required={false}
-          onChange={(_name, value) => setProject(value)}
+          onChange={onChange}
           onError={(error) => setError(error)}
         />
         <Form.Field
@@ -139,16 +187,16 @@ function NewEntry({ user }) {
           type="text"
           required={false}
           description={t('operationsLog.versionDescription')}
-          onChange={(_name, value) => setVersion(value)}
-          value={version}
+          onChange={onChange}
+          value={fields.version.value}
         />
         <Form.Field
           title={t('operationsLog.ticketSlug')}
           name="ticket_slug"
           type="text"
           required={false}
-          onChange={(_name, value) => setTicketSlug(value)}
-          value={ticketSlug}
+          onChange={onChange}
+          value={fields.ticket_slug.value}
         />
         <Form.Field
           title={t('operationsLog.link')}
@@ -156,8 +204,8 @@ function NewEntry({ user }) {
           type="text"
           required={false}
           description={t('operationsLog.linkDescription')}
-          onChange={(_name, value) => setLink(value)}
-          value={link}
+          onChange={onChange}
+          value={fields.link.value}
         />
         <Form.Field
           title={t('operationsLog.notes')}
@@ -165,8 +213,8 @@ function NewEntry({ user }) {
           type="markdown"
           required={false}
           description={t('operationsLog.notesDescription')}
-          onChange={(_name, value) => setNotes(value)}
-          value={notes}
+          onChange={onChange}
+          value={fields.notes.value}
         />
       </Form.MultiSectionForm>
       {saving && (
