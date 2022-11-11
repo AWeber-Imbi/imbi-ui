@@ -158,38 +158,18 @@ function useSettings() {
         type: 'SET_INTEGRATIONS',
         payload: integrations
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_METADATA',
         payload: metadata
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_OPENSEARCH',
         payload: openSearch
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_PROJECT_URL_TEMPLATE',
         payload: projectURLTemplate
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_OPS_LOG_URL_TEMPLATE',
         payload: opsLogURLTemplate
