@@ -7,12 +7,42 @@ import { metadataAsOptions } from '../../settings'
 import { useTranslation } from 'react-i18next'
 import { httpGet, httpPatch, ISO8601ToDatetimeLocal } from '../../utils'
 import { compare } from 'fast-json-patch'
+import { validate } from 'jsonschema'
+import { jsonSchema } from '../../schema/OperationsLog'
 
 function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   const [globalState] = useContext(Context)
   const [fieldValues, setFieldValues] = useState()
+  const [validationErrors, setValidationErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const { t } = useTranslation()
+
+  function errorMessages(field) {
+    switch (field) {
+      case 'change_type':
+        return t('operationsLog.validation.changeTypeError')
+      case 'environment':
+        return t('operationsLog.validation.environmentError')
+      case 'recorded_at':
+        return t('operationsLog.validation.recordedAtError')
+      case 'completed_at':
+        return t('operationsLog.validation.completedAtError')
+      case 'description':
+        return t('operationsLog.validation.descriptionError')
+      case 'project':
+        return t('operationsLog.validation.projectError')
+      case 'version':
+        return t('operationsLog.validation.versionError')
+      case 'ticket_slug':
+        return t('operationsLog.validation.ticketSlugError')
+      case 'link':
+        return t('operationsLog.validation.linkError')
+      case 'notes':
+        return t('operationsLog.validation.notesError')
+      default:
+        return t('error.title')
+    }
+  }
 
   useEffect(() => {
     const values = {
@@ -57,6 +87,22 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       project_id: fieldValues.project_id ? fieldValues.project_id : null
     }
     delete newValues.project
+
+    const newErrors = {}
+    const validation = validate(newValues, jsonSchema)
+    if (validation.errors.length > 0) {
+      for (const error of validation.errors) {
+        for (const path of error.path) {
+          newErrors[path] = errorMessages(path)
+        }
+      }
+    }
+    setValidationErrors(newErrors)
+    if (Object.keys(newErrors).length > 0) {
+      setSaving(false)
+      return
+    }
+
     const oldValues = {
       ...operationsLog,
       recorded_at: new Date(operationsLog.recorded_at).toISOString(),
@@ -114,6 +160,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.change_type}
         className="text-gray-600"
+        errorMessage={validationErrors?.change_type}
       />
       <Form.Field
         title={t('operationsLog.environment')}
@@ -128,6 +175,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.environment}
         className="text-gray-600"
+        errorMessage={validationErrors?.environment}
       />
       <Form.Field
         title={t('operationsLog.recordedAt')}
@@ -137,6 +185,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.recorded_at}
         className="text-gray-600"
+        errorMessage={validationErrors?.recorded_at}
       />
       <Form.Field
         title={t('operationsLog.completedAt')}
@@ -147,6 +196,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.completed_at}
         className="text-gray-600"
+        errorMessage={validationErrors?.completed_at}
       />
       <Form.Field
         title={t('operationsLog.description')}
@@ -157,6 +207,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.description}
         className="text-gray-600"
+        errorMessage={validationErrors?.description}
       />
       <Form.Field
         title={t('operationsLog.project')}
@@ -167,6 +218,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onError={onError}
         value={fieldValues.project}
         className="text-gray-600"
+        errorMessage={validationErrors?.project}
       />
       <Form.Field
         title={t('operationsLog.version')}
@@ -177,6 +229,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.version}
         className="text-gray-600"
+        errorMessage={validationErrors?.version}
       />
       <Form.Field
         title={t('operationsLog.ticketSlug')}
@@ -186,6 +239,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.ticket_slug}
         className="text-gray-600"
+        errorMessage={validationErrors?.ticket_slug}
       />
       <Form.Field
         title={t('operationsLog.link')}
@@ -196,6 +250,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.link}
         className="text-gray-600"
+        errorMessage={validationErrors?.link}
       />
       <Form.Field
         title={t('operationsLog.notes')}
@@ -206,6 +261,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.notes}
         className="text-gray-600"
+        errorMessage={validationErrors?.notes}
       />
     </Form.SimpleForm>
   )
