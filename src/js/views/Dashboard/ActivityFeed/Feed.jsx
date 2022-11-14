@@ -24,8 +24,11 @@ function Feed({ onReady }) {
         globalState.fetch,
         url,
         (result) => {
+          // defaulting 'type' to 'ProjectFeedType' for backwards compatibility
           setState({
-            data: result,
+            data: result.filter(
+              (f) => (f.type || 'ProjectFeedEntry') === 'ProjectFeedEntry'
+            ),
             fetched: true,
             errorMessage: null
           })

@@ -61,13 +61,16 @@ function ProjectFeed({ projectID }) {
     const factTypeById = new Map(
       state.metadata.projectFactTypes.map((f) => [f.id, f])
     )
-    return entries.map((f) => ({
-      ...f,
-      project_fact_type: factTypeById.get(f.fact_type_id).name,
-      recorded_at: DateTime.fromISO(f.recorded_at).toLocaleString(
-        DateTime.DATETIME_MED
-      )
-    }))
+    // defaulting 'type' to 'ProjectFeedType' for backwards compatibility
+    return entries
+      .filter((f) => (f.type || 'ProjectFeedEntry') === 'ProjectFeedEntry')
+      .map((f) => ({
+        ...f,
+        project_fact_type: factTypeById.get(f.fact_type_id).name,
+        recorded_at: DateTime.fromISO(f.recorded_at).toLocaleString(
+          DateTime.DATETIME_MED
+        )
+      }))
   }
 
   let content
