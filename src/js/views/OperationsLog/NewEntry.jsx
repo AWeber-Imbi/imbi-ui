@@ -9,55 +9,25 @@ import { metadataAsOptions } from '../../settings'
 import { httpPost } from '../../utils'
 import { useNavigate } from 'react-router-dom'
 import { Error } from '../Error'
-import { validate } from 'jsonschema'
-import { jsonSchema } from '../../schema/OperationsLog'
+import { useValidation } from './useValidation'
 
 function NewEntry({ user }) {
   const [globalState, dispatch] = useContext(Context)
   const [saving, setSaving] = useState(false)
   const [savingComplete, setSavingComplete] = useState(false)
   const [error, setError] = useState()
+  const [errors, { validate, setErrors }] = useValidation()
   const [fields, setFields] = useState({
-    change_type: {
-      value: null,
-      validationError: null
-    },
-    environment: {
-      value: null,
-      validationError: null
-    },
-    recorded_at: {
-      value: null,
-      validationError: null
-    },
-    completed_at: {
-      value: null,
-      validationError: null
-    },
-    description: {
-      value: '',
-      validationError: null
-    },
-    project: {
-      value: null,
-      validationError: null
-    },
-    version: {
-      value: '',
-      validationError: null
-    },
-    ticket_slug: {
-      value: '',
-      validationError: null
-    },
-    link: {
-      value: '',
-      validationError: null
-    },
-    notes: {
-      value: '',
-      validationError: null
-    }
+    change_type: null,
+    environment: null,
+    recorded_at: null,
+    completed_at: null,
+    description: '',
+    project: null,
+    version: '',
+    ticket_slug: '',
+    link: '',
+    notes: ''
   })
   const navigate = useNavigate()
 
@@ -73,73 +43,28 @@ function NewEntry({ user }) {
     })
   }, [])
 
-  function errorMessages(field) {
-    switch (field) {
-      case 'change_type':
-        return t('operationsLog.validation.changeTypeError')
-      case 'environment':
-        return t('operationsLog.validation.environmentError')
-      case 'recorded_at':
-        return t('operationsLog.validation.recordedAtError')
-      case 'completed_at':
-        return t('operationsLog.validation.completedAtError')
-      case 'description':
-        return t('operationsLog.validation.descriptionError')
-      case 'project':
-        return t('operationsLog.validation.projectError')
-      case 'version':
-        return t('operationsLog.validation.versionError')
-      case 'ticket_slug':
-        return t('operationsLog.validation.ticketSlugError')
-      case 'link':
-        return t('operationsLog.validation.linkError')
-      case 'notes':
-        return t('operationsLog.validation.notesError')
-      default:
-        return t('error.title')
-    }
-  }
-
-  function clearValidation() {
-    setFields((prevState) => {
-      const newState = { ...prevState }
-      for (const field of Object.keys(newState)) {
-        newState[field].validationError = null
-      }
-      return newState
-    })
-  }
-
   async function onSubmit(event) {
     event.preventDefault()
 
     const values = {
       recorded_by: user.username,
-      environment: fields.environment.value,
-      change_type: fields.change_type.value,
-      recorded_at: new Date(fields.recorded_at.value).toISOString(),
-      completed_at: fields.completed_at.value
-        ? new Date(fields.completed_at.value).toISOString()
+      environment: fields.environment,
+      change_type: fields.change_type,
+      recorded_at: new Date(fields.recorded_at).toISOString(),
+      completed_at: fields.completed_at
+        ? new Date(fields.completed_at).toISOString()
         : null,
-      project_id: fields.project.value ? parseInt(fields.project.value) : null,
-      description: fields.description.value ? fields.description.value : null,
-      link: fields.link.value ? fields.link.value : null,
-      notes: fields.notes.value ? fields.notes.value : null,
-      ticket_slug: fields.ticket_slug.value ? fields.ticket_slug.value : null,
-      version: fields.version.value ? fields.version.value : null
+      project_id: fields.project ? parseInt(fields.project) : null,
+      description: fields.description ? fields.description : null,
+      link: fields.link ? fields.link : null,
+      notes: fields.notes ? fields.notes : null,
+      ticket_slug: fields.ticket_slug ? fields.ticket_slug : null,
+      version: fields.version ? fields.version : null
     }
-    clearValidation()
-    const validation = validate(values, jsonSchema)
-    if (validation.errors.length > 0) {
-      setFields((prevState) => {
-        const newState = { ...prevState }
-        for (const error of validation.errors) {
-          for (const path of error.path) {
-            newState[path].validationError = errorMessages(path)
-          }
-        }
-        return newState
-      })
+
+    const newErrors = validate(values)
+    setErrors(newErrors)
+    if (Object.keys(newErrors).length > 0) {
       return
     }
 
@@ -159,7 +84,7 @@ function NewEntry({ user }) {
   function onChange(name, value) {
     setFields((prevState) => ({
       ...prevState,
-      [name]: { ...prevState[name], value }
+      [name]: value
     }))
   }
 
@@ -167,9 +92,7 @@ function NewEntry({ user }) {
     <ErrorBoundary>
       <Form.MultiSectionForm
         disabled={
-          !fields.change_type.value ||
-          !fields.environment.value ||
-          !fields.recorded_at.value
+          !fields.change_type || !fields.environment || !fields.recorded_at
         }
         sideBarTitle={t('operationsLog.create.sideBarTitle')}
         icon="fas file"
@@ -188,7 +111,7 @@ function NewEntry({ user }) {
           }))}
           required={true}
           onChange={onChange}
-          errorMessage={fields.change_type.validationError}
+          errorMessage={errors.change_type}
         />
         <Form.Field
           title={t('operationsLog.environment')}
@@ -201,7 +124,7 @@ function NewEntry({ user }) {
           )}
           required={true}
           onChange={onChange}
-          errorMessage={fields.environment.validationError}
+          errorMessage={errors.environment}
         />
         <Form.Field
           title={t('operationsLog.recordedAt')}
@@ -209,8 +132,8 @@ function NewEntry({ user }) {
           type="datetime"
           required={true}
           onChange={onChange}
-          value={fields.recorded_at.value}
-          errorMessage={fields.recorded_at.validationError}
+          value={fields.recorded_at}
+          errorMessage={errors.recorded_at}
         />
         <Form.Field
           title={t('operationsLog.completedAt')}
@@ -219,8 +142,8 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.completedAtDescription')}
           onChange={onChange}
-          value={fields.completed_at.value}
-          errorMessage={fields.completed_at.validationError}
+          value={fields.completed_at}
+          errorMessage={errors.completed_at}
         />
         <Form.Field
           title={t('operationsLog.description')}
@@ -229,8 +152,8 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.descriptionDescription')}
           onChange={onChange}
-          value={fields.description.value}
-          errorMessage={fields.description.validationError}
+          value={fields.description}
+          errorMessage={errors.description}
         />
         <Form.Field
           title={t('operationsLog.project')}
@@ -239,7 +162,7 @@ function NewEntry({ user }) {
           required={false}
           onChange={onChange}
           onError={(error) => setError(error)}
-          errorMessage={fields.project.validationError}
+          errorMessage={errors.project}
         />
         <Form.Field
           title={t('operationsLog.version')}
@@ -248,8 +171,8 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.versionDescription')}
           onChange={onChange}
-          value={fields.version.value}
-          errorMessage={fields.version.validationError}
+          value={fields.version}
+          errorMessage={errors.version}
         />
         <Form.Field
           title={t('operationsLog.ticketSlug')}
@@ -257,8 +180,8 @@ function NewEntry({ user }) {
           type="text"
           required={false}
           onChange={onChange}
-          value={fields.ticket_slug.value}
-          errorMessage={fields.ticket_slug.validationError}
+          value={fields.ticket_slug}
+          errorMessage={errors.ticket_slug}
         />
         <Form.Field
           title={t('operationsLog.link')}
@@ -267,8 +190,8 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.linkDescription')}
           onChange={onChange}
-          value={fields.link.value}
-          errorMessage={fields.link.validationError}
+          value={fields.link}
+          errorMessage={errors.link}
         />
         <Form.Field
           title={t('operationsLog.notes')}
@@ -277,8 +200,8 @@ function NewEntry({ user }) {
           required={false}
           description={t('operationsLog.notesDescription')}
           onChange={onChange}
-          value={fields.notes.value}
-          errorMessage={fields.notes.validationError}
+          value={fields.notes}
+          errorMessage={errors.notes}
         />
       </Form.MultiSectionForm>
       {saving && (
