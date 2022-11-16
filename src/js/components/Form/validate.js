@@ -1,5 +1,7 @@
-import { validate } from 'jsonschema'
-import { isURL } from '../../utils'
+import { validate as jsonschemaValidate, validate } from 'jsonschema'
+import { camelCase, isURL } from '../../utils'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Validates an object using JSON Schema
@@ -37,4 +39,28 @@ export function validateURLs(values) {
     })
     .filter((key) => key !== null)
   return [errors.length === 0, errors]
+}
+
+export function useValidation(translationPrefix, jsonSchema) {
+  const [errors, setErrors] = useState({})
+  const { t } = useTranslation()
+
+  function validate(values) {
+    const errorMessages = Object.fromEntries(
+      Object.keys(jsonSchema.properties).map((field) => [
+        field,
+        t(`${translationPrefix}.validation.${camelCase(field)}Error`)
+      ])
+    )
+    const newErrors = {}
+    const validation = jsonschemaValidate(values, jsonSchema)
+    for (const error of validation.errors) {
+      for (const path of error.path) {
+        newErrors[path] = errorMessages[path] || t('error.title')
+      }
+    }
+    setErrors(newErrors)
+  }
+
+  return [errors, validate]
 }

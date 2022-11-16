@@ -94,3 +94,14 @@ export function ISO8601ToDatetimeLocal(isoDate) {
     .toISOString()
     .slice(0, -1)
 }
+
+/**
+ * Transform snake_case strings to camelCase
+ * @param s
+ * @returns {string}
+ */
+export function camelCase(s) {
+  return s
+    .toLowerCase()
+    .replace(/(_[a-z])/g, (group) => group.toUpperCase().replace('_', ''))
+}

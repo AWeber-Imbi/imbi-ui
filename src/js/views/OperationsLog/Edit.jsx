@@ -7,12 +7,13 @@ import { metadataAsOptions } from '../../settings'
 import { useTranslation } from 'react-i18next'
 import { httpGet, httpPatch, ISO8601ToDatetimeLocal } from '../../utils'
 import { compare } from 'fast-json-patch'
-import { useValidation } from './useValidation'
+import { jsonSchema } from '../../schema/OperationsLog'
+import { useValidation } from '../../components/Form/validate'
 
 function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   const [globalState] = useContext(Context)
   const [fieldValues, setFieldValues] = useState()
-  const [errors, { validate, setErrors }] = useValidation()
+  const [errors, validate] = useValidation('operationsLog', jsonSchema)
   const [saving, setSaving] = useState(false)
   const { t } = useTranslation()
 
@@ -44,7 +45,45 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
     }
   }, [])
 
-  async function onSubmit() {
+  useEffect(() => {
+    if (!saving) return
+
+    if (Object.keys(errors).length > 0) {
+      setSaving(false)
+      return
+    }
+
+    const update = async () => {
+      const oldValues = {
+        ...operationsLog,
+        recorded_at: new Date(operationsLog.recorded_at).toISOString(),
+        completed_at: operationsLog.completed_at
+          ? new Date(operationsLog.completed_at).toISOString()
+          : null
+      }
+
+      const patchValue = compare(oldValues, values())
+      if (patchValue.length === 0) {
+        onCancel()
+        return
+      }
+      const url = new URL(
+        `/operations-log/${operationsLog.id}`,
+        globalState.baseURL
+      )
+      const response = await httpPatch(globalState.fetch, url, patchValue)
+      setSaving(false)
+      if (response.success) {
+        onSuccess()
+      } else {
+        onError(response.data)
+      }
+    }
+
+    update().catch((error) => onError(error))
+  }, [saving])
+
+  function values() {
     const newValues = {
       ...fieldValues,
       recorded_at: new Date(fieldValues.recorded_at).toISOString(),
@@ -54,38 +93,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       project_id: fieldValues.project_id ? fieldValues.project_id : null
     }
     delete newValues.project
-
-    const newErrors = validate(newValues)
-    setErrors(newErrors)
-    if (Object.keys(newErrors).length > 0) {
-      return
-    }
-
-    const oldValues = {
-      ...operationsLog,
-      recorded_at: new Date(operationsLog.recorded_at).toISOString(),
-      completed_at: operationsLog.completed_at
-        ? new Date(operationsLog.completed_at).toISOString()
-        : null
-    }
-
-    const patchValue = compare(oldValues, newValues)
-    if (patchValue.length === 0) {
-      onCancel()
-      return
-    }
-    setSaving(true)
-    const url = new URL(
-      `/operations-log/${operationsLog.id}`,
-      globalState.baseURL
-    )
-    const response = await httpPatch(globalState.fetch, url, patchValue)
-    setSaving(false)
-    if (response.success) {
-      onSuccess()
-    } else {
-      onError(response.data)
-    }
+    return newValues
   }
 
   function onValueChange(key, value) {
@@ -107,7 +115,10 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
     <Form.SimpleForm
       errorMessage={null}
       onCancel={onCancel}
-      onSubmit={onSubmit}
+      onSubmit={() => {
+        validate(values())
+        setSaving(true)
+      }}
       ready={true}
       saving={saving}>
       <Form.Field
