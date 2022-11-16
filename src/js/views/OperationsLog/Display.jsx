@@ -1,12 +1,20 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useContext } from 'react'
 import { DateTime } from 'luxon'
 import { Icon, Markdown } from '../../components'
 import { useTranslation } from 'react-i18next'
 import { DescriptionList } from '../../components/DescriptionList/DescriptionList'
 import { Definition } from '../../components/DescriptionList/Definition'
+import { Context } from '../../state'
+
+function renderURLTemplate(urlTemplate, slug, environment) {
+  return urlTemplate
+    .replace('{environment}', environment.toString().toLowerCase())
+    .replace('{slug}', slug.toString().toLowerCase())
+}
 
 function Display({ entry }) {
+  const [globalState] = useContext(Context)
   const { t } = useTranslation()
 
   return (
@@ -53,7 +61,22 @@ function Display({ entry }) {
       )}
       {entry.ticket_slug && (
         <Definition term={t('operationsLog.ticketSlug')}>
-          {entry.ticket_slug}
+          {globalState.opsLogURLTemplate ? (
+            <a
+              className="text-blue-800 hover:text-blue-700"
+              href={renderURLTemplate(
+                globalState.opsLogURLTemplate,
+                entry.ticket_slug,
+                entry.environment
+              )}
+              title={entry.ticket_slug}
+              target="_blank">
+              <Icon icon="fas external-link-alt" className="mr-2" />
+              {entry.ticket_slug}
+            </a>
+          ) : (
+            entry.ticket_slug
+          )}
         </Definition>
       )}
       {entry.link && (

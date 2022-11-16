@@ -54,6 +54,11 @@ const Reducer = (state, action) => {
         ...state,
         openSearch: action.payload
       }
+    case 'SET_OPS_LOG_URL_TEMPLATE':
+      return {
+        ...state,
+        opsLogURLTemplate: action.payload
+      }
     case 'SET_PROJECT_URL_TEMPLATE':
       return {
         ...state,

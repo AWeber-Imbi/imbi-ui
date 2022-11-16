@@ -53,6 +53,7 @@ function useSettings() {
   })
   const [openSearch, setOpenSearch] = useState(null)
   const [projectURLTemplate, setProjectURLTemplate] = useState(null)
+  const [opsLogURLTemplate, setOpsLogURLTemplate] = useState()
   const [timerHandle, setTimerHandle] = useState(null)
 
   useEffect(() => {
@@ -88,6 +89,7 @@ function useSettings() {
           })
           setOpenSearch(data.opensearch)
           setProjectURLTemplate(data.project_url_template)
+          setOpsLogURLTemplate(data.ops_log_ticket_slug_template)
           setLastUpdated(Date.now())
         },
         (error) => {
@@ -156,32 +158,21 @@ function useSettings() {
         type: 'SET_INTEGRATIONS',
         payload: integrations
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_METADATA',
         payload: metadata
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_OPENSEARCH',
         payload: openSearch
       })
-    }
-  }, [lastUpdated])
-
-  useEffect(() => {
-    if (lastUpdated !== null) {
       dispatch({
         type: 'SET_PROJECT_URL_TEMPLATE',
         payload: projectURLTemplate
+      })
+      dispatch({
+        type: 'SET_OPS_LOG_URL_TEMPLATE',
+        payload: opsLogURLTemplate
       })
     }
   }, [lastUpdated])

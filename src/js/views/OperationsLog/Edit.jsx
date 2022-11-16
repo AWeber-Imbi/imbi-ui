@@ -7,10 +7,13 @@ import { metadataAsOptions } from '../../settings'
 import { useTranslation } from 'react-i18next'
 import { httpGet, httpPatch, ISO8601ToDatetimeLocal } from '../../utils'
 import { compare } from 'fast-json-patch'
+import { jsonSchema } from '../../schema/OperationsLog'
+import { useValidation } from '../../components/Form/validate'
 
 function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   const [globalState] = useContext(Context)
   const [fieldValues, setFieldValues] = useState()
+  const [errors, validate] = useValidation('operationsLog', jsonSchema)
   const [saving, setSaving] = useState(false)
   const { t } = useTranslation()
 
@@ -42,12 +45,45 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
     }
   }, [])
 
-  async function onSubmit() {
-    setSaving(true)
-    const url = new URL(
-      `/operations-log/${operationsLog.id}`,
-      globalState.baseURL
-    )
+  useEffect(() => {
+    if (!saving) return
+
+    if (Object.keys(errors).length > 0) {
+      setSaving(false)
+      return
+    }
+
+    const update = async () => {
+      const oldValues = {
+        ...operationsLog,
+        recorded_at: new Date(operationsLog.recorded_at).toISOString(),
+        completed_at: operationsLog.completed_at
+          ? new Date(operationsLog.completed_at).toISOString()
+          : null
+      }
+
+      const patchValue = compare(oldValues, values())
+      if (patchValue.length === 0) {
+        onCancel()
+        return
+      }
+      const url = new URL(
+        `/operations-log/${operationsLog.id}`,
+        globalState.baseURL
+      )
+      const response = await httpPatch(globalState.fetch, url, patchValue)
+      setSaving(false)
+      if (response.success) {
+        onSuccess()
+      } else {
+        onError(response.data)
+      }
+    }
+
+    update().catch((error) => onError(error))
+  }, [saving])
+
+  function values() {
     const newValues = {
       ...fieldValues,
       recorded_at: new Date(fieldValues.recorded_at).toISOString(),
@@ -57,27 +93,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       project_id: fieldValues.project_id ? fieldValues.project_id : null
     }
     delete newValues.project
-    const oldValues = {
-      ...operationsLog,
-      recorded_at: new Date(operationsLog.recorded_at).toISOString(),
-      completed_at: operationsLog.completed_at
-        ? new Date(operationsLog.completed_at).toISOString()
-        : null
-    }
-
-    const patchValue = compare(oldValues, newValues)
-    if (patchValue.length === 0) {
-      setSaving(false)
-      onCancel()
-      return
-    }
-    const response = await httpPatch(globalState.fetch, url, patchValue)
-    setSaving(false)
-    if (response.success) {
-      onSuccess()
-    } else {
-      onError(response.data)
-    }
+    return newValues
   }
 
   function onValueChange(key, value) {
@@ -99,7 +115,10 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
     <Form.SimpleForm
       errorMessage={null}
       onCancel={onCancel}
-      onSubmit={onSubmit}
+      onSubmit={() => {
+        validate(values())
+        setSaving(true)
+      }}
       ready={true}
       saving={saving}>
       <Form.Field
@@ -114,6 +133,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.change_type}
         className="text-gray-600"
+        errorMessage={errors?.change_type}
       />
       <Form.Field
         title={t('operationsLog.environment')}
@@ -128,6 +148,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.environment}
         className="text-gray-600"
+        errorMessage={errors?.environment}
       />
       <Form.Field
         title={t('operationsLog.recordedAt')}
@@ -137,6 +158,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.recorded_at}
         className="text-gray-600"
+        errorMessage={errors?.recorded_at}
       />
       <Form.Field
         title={t('operationsLog.completedAt')}
@@ -147,6 +169,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.completed_at}
         className="text-gray-600"
+        errorMessage={errors?.completed_at}
       />
       <Form.Field
         title={t('operationsLog.description')}
@@ -157,6 +180,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.description}
         className="text-gray-600"
+        errorMessage={errors?.description}
       />
       <Form.Field
         title={t('operationsLog.project')}
@@ -167,6 +191,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onError={onError}
         value={fieldValues.project}
         className="text-gray-600"
+        errorMessage={errors?.project}
       />
       <Form.Field
         title={t('operationsLog.version')}
@@ -177,6 +202,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.version}
         className="text-gray-600"
+        errorMessage={errors?.version}
       />
       <Form.Field
         title={t('operationsLog.ticketSlug')}
@@ -186,6 +212,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.ticket_slug}
         className="text-gray-600"
+        errorMessage={errors?.ticket_slug}
       />
       <Form.Field
         title={t('operationsLog.link')}
@@ -196,6 +223,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.link}
         className="text-gray-600"
+        errorMessage={errors?.link}
       />
       <Form.Field
         title={t('operationsLog.notes')}
@@ -206,6 +234,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         onChange={onValueChange}
         value={fieldValues.notes}
         className="text-gray-600"
+        errorMessage={errors?.notes}
       />
     </Form.SimpleForm>
   )
