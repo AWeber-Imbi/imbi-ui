@@ -9,14 +9,15 @@ import { metadataAsOptions } from '../../settings'
 import { httpPost } from '../../utils'
 import { useNavigate } from 'react-router-dom'
 import { Error } from '../Error'
-import { useValidation } from './useValidation'
+import { jsonSchema } from '../../schema/OperationsLog'
+import { useValidation } from '../../components/Form/validate'
 
 function NewEntry({ user }) {
   const [globalState, dispatch] = useContext(Context)
   const [saving, setSaving] = useState(false)
   const [savingComplete, setSavingComplete] = useState(false)
   const [error, setError] = useState()
-  const [errors, { validate, setErrors }] = useValidation()
+  const [errors, validate] = useValidation('operationsLog', jsonSchema)
   const [fields, setFields] = useState({
     change_type: null,
     environment: null,
@@ -43,10 +44,8 @@ function NewEntry({ user }) {
     })
   }, [])
 
-  async function onSubmit(event) {
-    event.preventDefault()
-
-    const values = {
+  function values() {
+    return {
       recorded_by: user.username,
       environment: fields.environment,
       change_type: fields.change_type,
@@ -61,25 +60,31 @@ function NewEntry({ user }) {
       ticket_slug: fields.ticket_slug ? fields.ticket_slug : null,
       version: fields.version ? fields.version : null
     }
+  }
 
-    const newErrors = validate(values)
-    setErrors(newErrors)
-    if (Object.keys(newErrors).length > 0) {
+  useEffect(() => {
+    if (!saving) return
+
+    if (Object.keys(errors).length > 0) {
+      setSaving(false)
       return
     }
 
-    setSaving(true)
-    const response = await httpPost(
-      globalState.fetch,
-      new URL('/operations-log', globalState.baseURL),
-      values
-    )
-    if (response.success) {
-      setSavingComplete(true)
-    } else {
-      setError(response.data)
+    const create = async () => {
+      const response = await httpPost(
+        globalState.fetch,
+        new URL('/operations-log', globalState.baseURL),
+        values()
+      )
+      if (response.success) {
+        setSavingComplete(true)
+      } else {
+        setError(response.data)
+      }
     }
-  }
+
+    create().catch((error) => setError(error))
+  }, [saving])
 
   function onChange(name, value) {
     setFields((prevState) => ({
@@ -96,7 +101,11 @@ function NewEntry({ user }) {
         }
         sideBarTitle={t('operationsLog.create.sideBarTitle')}
         icon="fas file"
-        onSubmit={onSubmit}
+        onSubmit={(event) => {
+          event.preventDefault()
+          validate(values())
+          setSaving(true)
+        }}
         instructions={
           <div className="ml-2 text-sm">* {t('common.required')}</div>
         }
