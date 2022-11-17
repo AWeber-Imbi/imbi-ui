@@ -36,20 +36,18 @@ function Entry({ entry }) {
       />
       <div className="min-w-0 flex-1 text-sm text-gray-700">
         <Trans i18nKey={'dashboard.activityFeed.entry'} i18n={i18n} t={t}>
-          <span className="font-medium text-gray-700">{{ displayName }}</span>{' '}
-          <span>{{ action }}</span> the{' '}
+          <span className="font-medium text-gray-700">{{ displayName }}</span>
+          <span>{{ action }}</span>
           <Link
             to={`/ui/projects/${entry.project_id}`}
             className="font-medium text-blue-700 hover:text-blue-800">
             {{ project }}
-          </Link>{' '}
-          project in the{' '}
+          </Link>
           <Link
             to={`/ui/projects?f=${filter}`}
             className="font-medium text-blue-700 hover:text-blue-800">
             {{ namespace }}
-          </Link>{' '}
-          namespace.
+          </Link>
         </Trans>
         <p
           className="mt-0.5 text-sm text-gray-500"

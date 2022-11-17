@@ -225,7 +225,7 @@ export default {
         activityFeed: {
           recentActivity: 'Recent Activity',
           entry:
-            '<0>{{displayName}}</0> <2>{{action}}</2> the <5>{{project}}</5> project in the <9>{{namespace}}</9> namespace.',
+            '<0>{{displayName}}</0> <1>{{action}}</1> the <2>{{project}}</2> project in the <3>{{namespace}}</3> namespace.',
           created: 'created',
           updated: 'updated',
           updatedFacts: 'updated one or more facts for'
