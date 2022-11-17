@@ -34,30 +34,28 @@ function Entry({ entry }) {
         email={entry.email_address}
         size={22}
       />
-      <div className="min-w-0 flex-1">
-        <div className="text-sm text-gray-700">
-          <Trans i18nKey={'dashboard.activityFeed.entry'} i18n={i18n} t={t}>
-            <span className="font-medium text-gray-700">{{ displayName }}</span>{' '}
-            <span>{{ action }}</span> the{' '}
-            <Link
-              to={`/ui/projects/${entry.project_id}`}
-              className="font-medium text-blue-700 hover:text-blue-800">
-              {{ project }}
-            </Link>{' '}
-            project in the{' '}
-            <Link
-              to={`/ui/projects?f=${filter}`}
-              className="font-medium text-blue-700 hover:text-blue-800">
-              {{ namespace }}
-            </Link>{' '}
-            namespace.
-          </Trans>
-          <p
-            className="mt-0.5 text-sm text-gray-500"
-            title={when.toLocaleString(DateTime.DATETIME_MED)}>
-            {when.toRelative()}
-          </p>
-        </div>
+      <div className="min-w-0 flex-1 text-sm text-gray-700">
+        <Trans i18nKey={'dashboard.activityFeed.entry'} i18n={i18n} t={t}>
+          <span className="font-medium text-gray-700">{{ displayName }}</span>{' '}
+          <span>{{ action }}</span> the{' '}
+          <Link
+            to={`/ui/projects/${entry.project_id}`}
+            className="font-medium text-blue-700 hover:text-blue-800">
+            {{ project }}
+          </Link>{' '}
+          project in the{' '}
+          <Link
+            to={`/ui/projects?f=${filter}`}
+            className="font-medium text-blue-700 hover:text-blue-800">
+            {{ namespace }}
+          </Link>{' '}
+          namespace.
+        </Trans>
+        <p
+          className="mt-0.5 text-sm text-gray-500"
+          title={when.toLocaleString(DateTime.DATETIME_MED)}>
+          {when.toRelative()}
+        </p>
       </div>
     </li>
   )
