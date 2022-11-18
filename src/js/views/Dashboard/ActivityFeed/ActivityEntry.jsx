@@ -8,7 +8,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Context } from '../../../state'
 import { lookupNamespaceByID } from '../../../utils'
 
-function Entry({ entry }) {
+function ActivityEntry({ entry }) {
   const { t, i18n } = useTranslation()
   const [globalState] = useContext(Context)
 
@@ -58,7 +58,7 @@ function Entry({ entry }) {
     </li>
   )
 }
-Entry.propTypes = {
+ActivityEntry.propTypes = {
   entry: PropTypes.shape({
     display_name: PropTypes.string,
     email_address: PropTypes.string,
@@ -72,4 +72,4 @@ Entry.propTypes = {
     who: PropTypes.string
   })
 }
-export { Entry }
+export { ActivityEntry }

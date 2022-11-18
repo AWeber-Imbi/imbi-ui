@@ -6,7 +6,7 @@ import { Alert, ContentArea, ErrorBoundary, Panel } from '../../../components'
 import { Context } from '../../../state'
 import { httpGet } from '../../../utils'
 
-import { Entry } from './Entry'
+import { ActivityEntry } from './ActivityEntry'
 
 function Feed({ onReady }) {
   const [globalState] = useContext(Context)
@@ -58,7 +58,7 @@ function Feed({ onReady }) {
               {state.data
                 .filter((e) => e.display_name !== 'SonarQube')
                 .map((entry, offset) => {
-                  return <Entry key={`entry-${offset}`} entry={entry} />
+                  return <ActivityEntry key={`entry-${offset}`} entry={entry} />
                 })}
             </ul>
           </div>
