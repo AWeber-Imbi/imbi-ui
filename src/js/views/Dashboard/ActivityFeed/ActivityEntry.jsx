@@ -27,7 +27,7 @@ function ActivityEntry({ entry }) {
     }`
   )
   return (
-    <li className="flex p-2 space-x-3 border-b border-gray-200">
+    <li className="flex p-2 space-x-3">
       <Gravatar
         className="h-8 w-8 rounded-full"
         default="mp"

@@ -54,11 +54,16 @@ function Feed({ onReady }) {
             <Alert level="error">{state.errorMessage}</Alert>
           )}
           <div className="h-full overflow-y-scroll">
-            <ul className="space-y-3">
+            <ul className="space-y-1">
               {state.data
                 .filter((e) => e.display_name !== 'SonarQube')
                 .map((entry, offset) => {
-                  return <ActivityEntry key={`entry-${offset}`} entry={entry} />
+                  return (
+                    <>
+                      <ActivityEntry key={`entry-${offset}`} entry={entry} />
+                      <div className="h-[1px] w-full bg-gray-200"></div>
+                    </>
+                  )
                 })}
             </ul>
           </div>
