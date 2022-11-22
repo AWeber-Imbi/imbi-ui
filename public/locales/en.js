@@ -226,6 +226,17 @@ export default {
           recentActivity: 'Recent Activity',
           entry:
             '<0>{{displayName}}</0> <1>{{action}}</1> the <2>{{project}}</2> project in the <3>{{namespace}}</3> namespace.',
+          opsLog:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> in the <4>{{environment}}</4> environment.',
+          opsLogVersion:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> in the <4>{{environment}}</4> environment. (<5>{{version}}</5>)',
+          opsLogDescription: '<0>{{displayName}}</0> - <1>{{description}}</1>.',
+          opsLogDescriptionVersion:
+            '<0>{{displayName}}</0> - <1>{{description}}</1>. (<5>{{version}}</5>)',
+          opsLogProject:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> <3>{{project}}</3> in the <4>{{environment}}</4> environment.',
+          opsLogProjectVersion:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> <3>{{project}}</3> in the <4>{{environment}}</4> environment. (<5>{{version}}</5>)',
           created: 'created',
           updated: 'updated',
           updatedFacts: 'updated one or more facts for'

@@ -7,6 +7,7 @@ import { Context } from '../../../state'
 import { httpGet } from '../../../utils'
 
 import { ActivityEntry } from './ActivityEntry'
+import { OpsLogEntry } from './OpsLogEntry'
 
 function Feed({ onReady }) {
   const [globalState] = useContext(Context)
@@ -27,7 +28,9 @@ function Feed({ onReady }) {
           // defaulting 'type' to 'ProjectFeedType' for backwards compatibility
           setState({
             data: result.filter(
-              (f) => (f.type || 'ProjectFeedEntry') === 'ProjectFeedEntry'
+              (f) =>
+                (f.type || 'ProjectFeedEntry') === 'ProjectFeedEntry' &&
+                f.display_name !== 'SonarQube'
             ),
             fetched: true,
             errorMessage: null
@@ -55,16 +58,23 @@ function Feed({ onReady }) {
           )}
           <div className="h-full overflow-y-scroll">
             <ul className="space-y-1">
-              {state.data
-                .filter((e) => e.display_name !== 'SonarQube')
-                .map((entry, offset) => {
-                  return (
-                    <>
-                      <ActivityEntry key={`entry-${offset}`} entry={entry} />
-                      <div className="h-[1px] w-full bg-gray-200"></div>
-                    </>
+              {state.data.map((entry, index) => {
+                let entryComponent = <></>
+                if (entry.type === 'ProjectFeedEntry')
+                  entryComponent = (
+                    <ActivityEntry key={`entry-${index}`} entry={entry} />
                   )
-                })}
+                else if (entry.type === 'OperationsLogEntry')
+                  entryComponent = (
+                    <OpsLogEntry key={`entry-${index}`} entry={entry} />
+                  )
+                return (
+                  <>
+                    {entryComponent}
+                    <div className="h-[1px] w-full bg-gray-200"></div>
+                  </>
+                )
+              })}
             </ul>
           </div>
         </Panel>
