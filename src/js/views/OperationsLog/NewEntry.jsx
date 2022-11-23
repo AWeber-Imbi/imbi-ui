@@ -6,7 +6,7 @@ import { User } from '../../schema'
 import { ErrorBoundary, Form, SavingModal } from '../../components'
 import { useTranslation } from 'react-i18next'
 import { metadataAsOptions } from '../../settings'
-import { httpPost } from '../../utils'
+import { httpPost, ISO8601ToDatetimeLocal } from '../../utils'
 import { useNavigate } from 'react-router-dom'
 import { Error } from '../Error'
 import { jsonSchema } from '../../schema/OperationsLog'
@@ -21,7 +21,7 @@ function NewEntry({ user }) {
   const [fields, setFields] = useState({
     change_type: null,
     environment: null,
-    recorded_at: null,
+    recorded_at: ISO8601ToDatetimeLocal(new Date().toISOString()).slice(0, -7),
     completed_at: null,
     description: '',
     project: null,
