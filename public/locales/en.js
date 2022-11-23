@@ -282,7 +282,7 @@ export default {
           'When the change completed, if it occurred over a period of time',
         descriptionDescription: 'Single line description of the change',
         versionDescription: 'Version that the change was made for',
-        linkDescription: 'Additional context to the slug',
+        linkDescription: 'Additional context to the ops log entry',
         notesDescription: 'Notes in markdown format',
         requestError:
           'Error making API request for Operations log ({{error}}).',
