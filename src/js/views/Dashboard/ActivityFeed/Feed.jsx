@@ -25,13 +25,8 @@ function Feed({ onReady }) {
         globalState.fetch,
         url,
         (result) => {
-          // defaulting 'type' to 'ProjectFeedType' for backwards compatibility
           setState({
-            data: result.filter(
-              (f) =>
-                (f.type || 'ProjectFeedEntry') === 'ProjectFeedEntry' &&
-                f.display_name !== 'SonarQube'
-            ),
+            data: result.filter((f) => f.display_name !== 'SonarQube'),
             fetched: true,
             errorMessage: null
           })
