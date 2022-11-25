@@ -36,8 +36,8 @@ function ProjectPicker({
     httpGet(
       globalState.fetch,
       projectURL,
-      (result) => {
-        setProjects(result.data)
+      ({ data }) => {
+        setProjects(data.data)
       },
       (error) => {
         onError(error)

@@ -24,8 +24,8 @@ function ProjectFeed({ projectID }) {
     httpGet(
       state.fetch,
       buildURL(0),
-      (result) => {
-        const entries = normalizeFactHistory(result)
+      ({ data }) => {
+        const entries = normalizeFactHistory(data)
         setFactHistory({
           entries: entries,
           hasMore: entries.length === FETCH_LIMIT
@@ -39,8 +39,8 @@ function ProjectFeed({ projectID }) {
     httpGet(
       state.fetch,
       buildURL(factHistory.entries.length),
-      (result) => {
-        const entries = normalizeFactHistory(result)
+      ({ data }) => {
+        const entries = normalizeFactHistory(data)
         setFactHistory((prevState) => ({
           entries: prevState.entries.concat(entries),
           hasMore: entries.length === FETCH_LIMIT

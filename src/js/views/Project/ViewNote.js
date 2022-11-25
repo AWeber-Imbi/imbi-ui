@@ -17,8 +17,8 @@ export function ViewNote({ onClose, urlPath }) {
       httpGet(
         state.fetch,
         new URL(urlPath, state.baseURL),
-        (result) => {
-          setNote(result)
+        ({ data }) => {
+          setNote(data)
         },
         (error) => {
           setErrorMessage(error)

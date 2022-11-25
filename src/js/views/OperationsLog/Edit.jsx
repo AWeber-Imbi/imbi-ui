@@ -30,7 +30,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       httpGet(
         globalState.fetch,
         new URL(`/projects/${operationsLog.project_id}`, globalState.baseURL),
-        (data) => {
+        ({ data }) => {
           values.project = {
             project_id: data.id,
             namespace_id: data.namespace_id,

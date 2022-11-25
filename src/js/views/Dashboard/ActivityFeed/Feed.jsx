@@ -24,9 +24,9 @@ function Feed({ onReady }) {
       httpGet(
         globalState.fetch,
         url,
-        (result) => {
+        ({ data }) => {
           setState({
-            data: result.filter((f) => f.display_name !== 'SonarQube'),
+            data: data.filter((f) => f.display_name !== 'SonarQube'),
             fetched: true,
             errorMessage: null
           })

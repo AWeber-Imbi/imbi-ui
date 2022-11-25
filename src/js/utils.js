@@ -22,9 +22,11 @@ export const requestOptions = {
 }
 
 export function httpGet(fetchMethod, path, onSuccess, onError) {
-  httpRequest(fetchMethod, path, requestOptions).then(({ data, success }) => {
-    success ? onSuccess(data) : onError(data)
-  })
+  httpRequest(fetchMethod, path, requestOptions).then(
+    ({ data, success, headers }) => {
+      success ? onSuccess({ data, headers }) : onError(data)
+    }
+  )
 }
 
 export function httpDelete(fetchMethod, path) {
@@ -60,11 +62,12 @@ export async function httpRequest(fetchMethod, path, options = requestOptions) {
   const text = await response.text()
   const data = text && JSON.parse(text)
   if (response.status >= 200 && response.status < 300)
-    return { success: true, data: data }
+    return { success: true, data: data, headers: response.headers }
   return {
     success: false,
     data: getErrorMessage(response, data),
-    status: response.status
+    status: response.status,
+    headers: response.headers
   }
 }
 

@@ -41,8 +41,8 @@ function Namespaces({ onReady }) {
       httpGet(
         globalState.fetch,
         url,
-        (result) => {
-          const namespaces = result.sort((a, b) =>
+        ({ data }) => {
+          const namespaces = data.sort((a, b) =>
             a.stack_health_score < b.stack_health_score ? 1 : -1
           )
           setState({
@@ -69,14 +69,14 @@ function Namespaces({ onReady }) {
       httpGet(
         globalState.fetch,
         url,
-        (result) => {
+        ({ data }) => {
           const namespaces = new Set()
           const kpiHistory = {}
-          result.forEach((entry) => {
+          data.forEach((entry) => {
             namespaces.add(entry.namespace_id)
           })
           namespaces.forEach((namespace_id) => {
-            const history = result
+            const history = data
               .filter((entry) => entry.namespace_id === namespace_id)
               .map((entry) => {
                 if (entry.namespace_id === namespace_id)

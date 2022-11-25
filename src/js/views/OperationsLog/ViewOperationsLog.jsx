@@ -30,7 +30,7 @@ function ViewOperationsLog({
     httpGet(
       globalState.fetch,
       url,
-      (data) => {
+      ({ data }) => {
         if (!data.project_id) {
           setEntry(data)
         } else {
@@ -39,7 +39,7 @@ function ViewOperationsLog({
           httpGet(
             globalState.fetch,
             new URL(`/projects/${opsLog.project_id}`, globalState.baseURL),
-            (data) => {
+            ({ data }) => {
               setEntry({ ...opsLog, project_name: data.name })
             },
             (error) => setError(error)
