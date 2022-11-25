@@ -82,6 +82,26 @@ export function isURL(value) {
   return urlRegexp.test(value)
 }
 
+const linkGroup = /<([\w\-.~!*'();:@&=+$,/?%#[\]]+)>;\s*rel="+([A-z]+)"+/
+
+export function parseLinkHeader(header) {
+  const linkCount = (header.match(/</g) || []).length
+  const groups = []
+  for (let i = 0; i < linkCount; i++) groups.push(linkGroup.source)
+  const regex = new RegExp(groups.join(/\s*,\s*/.source))
+  const match = header.match(regex)
+  const links = {}
+  if (match) {
+    for (let i = 1; i < match.length; i = i + 2) {
+      const link = match[i]
+      const rel = match[i + 1]
+      if (!Object.hasOwn(links, rel)) links[rel] = []
+      links[rel].push(link)
+    }
+  }
+  return links
+}
+
 export function lookupNamespaceByID(namespaces, namespace_id) {
   return namespaces.find((e) => e.id === namespace_id)
 }
