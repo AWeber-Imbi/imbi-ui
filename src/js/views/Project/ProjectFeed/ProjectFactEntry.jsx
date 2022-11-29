@@ -30,11 +30,17 @@ function ProjectFactEntry({
           {' set '}
           {factType}
           {' to '}
-          <Tooltip value={`${t('terms.score')}: ${score}`}>
+          {score ? (
+            <Tooltip value={`${t('terms.score')}: ${score}`}>
+              <span className="font-medium text-gray-900 whitespace-nowrap">
+                {value}
+              </span>
+            </Tooltip>
+          ) : (
             <span className="font-medium text-gray-900 whitespace-nowrap">
               {value}
             </span>
-          </Tooltip>{' '}
+          )}{' '}
           <p className="text-xs whitespace-nowrap mt-1">{recordedAt}</p>
         </div>
       </div>
@@ -43,7 +49,7 @@ function ProjectFactEntry({
 }
 ProjectFactEntry.propTypes = {
   value: PropTypes.string.isRequired,
-  score: PropTypes.number.isRequired,
+  score: PropTypes.number,
   recordedBy: PropTypes.string.isRequired,
   recordedAt: PropTypes.string.isRequired,
   factType: PropTypes.string.isRequired,
