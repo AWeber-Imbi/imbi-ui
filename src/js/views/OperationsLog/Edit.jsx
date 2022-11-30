@@ -94,7 +94,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         ? fieldValues.description.trim()
         : null,
       project_id: fieldValues.project_id?.trim()
-        ? fieldValues.project_id.trim()
+        ? parseInt(fieldValues.project_id.trim())
         : null,
       ticket_slug: fieldValues.ticket_slug?.trim()
         ? fieldValues.ticket_slug.trim()
