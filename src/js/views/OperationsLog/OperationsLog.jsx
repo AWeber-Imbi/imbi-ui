@@ -227,7 +227,7 @@ function OperationsLog({ projectID, urlPath, className }) {
         title={
           <>
             {t('operationsLog.entry')}
-            {selectedIndex !== undefined && (
+            {selectedIndex !== undefined && listenForKeyDown && (
               <>
                 <Icon icon="fas arrow-left" className="ml-4 mr-2 h-4" />
                 <Icon icon="fas arrow-right" className="h-4" />
