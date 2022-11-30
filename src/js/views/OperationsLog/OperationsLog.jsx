@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { Filter } from '../Projects/Filter'
-import { Alert, Table } from '../../components'
+import { Alert, Icon, Table } from '../../components'
 import {
   fromKueryExpression,
   toElasticsearchQuery
@@ -211,7 +211,17 @@ function OperationsLog({ projectID, urlPath, className }) {
       />
       <SlideOver
         open={slideOverOpen}
-        title={t('operationsLog.entry')}
+        title={
+          <>
+            {t('operationsLog.entry')}
+            {selectedIndex !== undefined && (
+              <>
+                <Icon icon="fas arrow-left" className="ml-4 mr-2 h-4" />
+                <Icon icon="fas arrow-right" className="h-4" />
+              </>
+            )}
+          </>
+        }
         onClose={() => {
           const newParams = cloneParams(searchParams)
           newParams.delete('v')
