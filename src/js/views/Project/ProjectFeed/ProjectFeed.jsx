@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { ProjectOpsLogEntry } from './ProjectOpsLogEntry'
 import { ProjectCreatedEntry } from './ProjectCreatedEntry'
 import { ProjectUpdatedEntry } from './ProjectUpdatedEntry'
+import { Entry } from './Entry'
 
 function ProjectFeed({ projectID }) {
   const [state] = useContext(Context)
@@ -70,12 +71,8 @@ function ProjectFeed({ projectID }) {
           />
         )}
         {entry.type === 'ProjectFeedEntry' && entry.what === 'updated fact' && (
-          <ProjectFactEntry
-            what={entry.what}
-            recordedBy={entry.display_name}
+          <Entry
             recordedAt={formatDate(entry.when)}
-            factType={entry.fact_name}
-            value={entry.value}
             iconClass={
               entry.icon_class
                 ? entry.icon_class
@@ -84,33 +81,39 @@ function ProjectFeed({ projectID }) {
                 : entry.value === 'false'
                 ? 'fas times'
                 : 'fas sticky-note'
-            }
-          />
+            }>
+            <ProjectFactEntry
+              what={entry.what}
+              recordedBy={entry.display_name}
+              factType={entry.fact_name}
+              value={entry.value}
+            />
+          </Entry>
         )}
         {entry.type === 'ProjectFeedEntry' && entry.what === 'created' && (
-          <ProjectCreatedEntry
-            recordedBy={entry.display_name}
-            recordedAt={formatDate(entry.when)}
-            iconClass="fas plus"
-          />
+          <Entry recordedAt={formatDate(entry.when)} iconClass="fas plus">
+            <ProjectCreatedEntry recordedBy={entry.display_name} />
+          </Entry>
         )}
         {entry.type === 'ProjectFeedEntry' && entry.what === 'updated' && (
-          <ProjectUpdatedEntry
-            recordedBy={entry.display_name}
-            recordedAt={formatDate(entry.when)}
-            iconClass="fas pencil-alt"
-          />
+          <Entry recordedAt={formatDate(entry.when)} iconClass="fas pencil-alt">
+            <ProjectUpdatedEntry recordedBy={entry.display_name} />
+          </Entry>
         )}
         {entry.type === 'OperationsLogEntry' && (
-          <ProjectOpsLogEntry
-            displayName={entry.display_name}
+          <Entry
             recordedAt={formatDate(entry.recorded_at)}
-            changeType={entry.change_type.toLowerCase()}
-            project={entry.project_name}
-            environment={entry.environment}
-            version={entry.version}
-            iconClass="fas project-diagram"
-          />
+            iconClass="fas project-diagram">
+            <ProjectOpsLogEntry
+              displayName={entry.display_name}
+              recordedAt={formatDate(entry.recorded_at)}
+              changeType={entry.change_type.toLowerCase()}
+              project={entry.project_name}
+              environment={entry.environment}
+              version={entry.version}
+              iconClass="fas project-diagram"
+            />
+          </Entry>
         )}
       </li>
     ))
