@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Icon } from '../../../components'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 
-function ProjectCreatedEntry({ what, recordedBy, recordedAt, iconClass }) {
-  const { t } = useTranslation()
+function ProjectCreatedEntry({ recordedBy, recordedAt, iconClass }) {
+  const { t, i18n } = useTranslation()
 
   return (
     <div className="relative flex items-start space-x-3">
@@ -17,10 +17,11 @@ function ProjectCreatedEntry({ what, recordedBy, recordedAt, iconClass }) {
       </div>
       <div className="min-w-0 flex-1 py-1.5">
         <div className="text-sm text-gray-500">
-          <span className="font-medium text-gray-900 whitespace-nowrap">
-            {recordedBy}
-          </span>{' '}
-          {what} {' the '} {t('terms.project').toLowerCase()}
+          <Trans i18nKey="project.feed.created" i18n={i18n} t={t}>
+            <span className="font-medium text-gray-900 whitespace-nowrap">
+              {{ recordedBy }}
+            </span>
+          </Trans>
           <p className="text-xs whitespace-nowrap mt-1">{recordedAt}</p>
         </div>
       </div>
@@ -28,9 +29,8 @@ function ProjectCreatedEntry({ what, recordedBy, recordedAt, iconClass }) {
   )
 }
 ProjectCreatedEntry.propTypes = {
-  what: PropTypes.string.isRequired,
   recordedBy: PropTypes.string.isRequired,
   recordedAt: PropTypes.string.isRequired,
-  iconClass: PropTypes.string
+  iconClass: PropTypes.string.isRequired
 }
 export { ProjectCreatedEntry }

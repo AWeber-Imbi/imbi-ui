@@ -323,6 +323,10 @@ export default {
         factHistory: 'Fact History',
         feed: {
           title: 'Project Feed',
+          created: '<0>{{recordedBy}}</0> created the project.',
+          updated: '<0>{{recordedBy}}</0> updated project information.',
+          updatedFact:
+            '<0>{{recordedBy}}</0> set <1>{{factType}}</1> to <2>{{value}}</2>.',
           opsLog:
             '<0>{{displayName}}</0> <1>{{changeType}}</1> <2>{{project}}</2> in the <3>{{environment}}</3> environment.',
           opsLogVersion:

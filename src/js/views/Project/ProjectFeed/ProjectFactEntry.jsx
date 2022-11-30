@@ -1,17 +1,16 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Icon, Tooltip } from '../../../components'
-import { useTranslation } from 'react-i18next'
+import { Icon } from '../../../components'
+import { Trans, useTranslation } from 'react-i18next'
 
 function ProjectFactEntry({
   value,
-  score,
   recordedBy,
   recordedAt,
   factType,
   iconClass
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   return (
     <div className="relative flex items-start space-x-3">
@@ -24,23 +23,15 @@ function ProjectFactEntry({
       </div>
       <div className="min-w-0 flex-1 py-1.5">
         <div className="text-sm text-gray-500">
-          <span className="font-medium text-gray-900 whitespace-nowrap">
-            {recordedBy}
-          </span>
-          {' set '}
-          {factType}
-          {' to '}
-          {score ? (
-            <Tooltip value={`${t('terms.score')}: ${score}`}>
-              <span className="font-medium text-gray-900 whitespace-nowrap">
-                {value}
-              </span>
-            </Tooltip>
-          ) : (
+          <Trans i18nKey="project.feed.updatedFact" i18n={i18n} t={t}>
             <span className="font-medium text-gray-900 whitespace-nowrap">
-              {value}
+              {{ recordedBy }}
             </span>
-          )}{' '}
+            <span>{{ factType }}</span>
+            <span className="font-medium text-gray-900 whitespace-nowrap">
+              {{ value }}
+            </span>
+          </Trans>
           <p className="text-xs whitespace-nowrap mt-1">{recordedAt}</p>
         </div>
       </div>
@@ -49,10 +40,9 @@ function ProjectFactEntry({
 }
 ProjectFactEntry.propTypes = {
   value: PropTypes.string.isRequired,
-  score: PropTypes.number,
   recordedBy: PropTypes.string.isRequired,
   recordedAt: PropTypes.string.isRequired,
   factType: PropTypes.string.isRequired,
-  iconClass: PropTypes.string
+  iconClass: PropTypes.string.isRequired
 }
 export { ProjectFactEntry }

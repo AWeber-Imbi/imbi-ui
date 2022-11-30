@@ -6,7 +6,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import { Context } from '../../../state'
 import { httpGet, parseLinkHeader } from '../../../utils'
 import { Alert, Card, ErrorBoundary, Loading } from '../../../components'
-import { ProjectFactEntry } from './ProjectFeedEntry'
+import { ProjectFactEntry } from './ProjectFactEntry'
 import { useTranslation } from 'react-i18next'
 import { ProjectOpsLogEntry } from './ProjectOpsLogEntry'
 import { ProjectCreatedEntry } from './ProjectCreatedEntry'
@@ -72,7 +72,6 @@ function ProjectFeed({ projectID }) {
         {entry.type === 'ProjectFeedEntry' && entry.what === 'updated fact' && (
           <ProjectFactEntry
             what={entry.what}
-            score={entry.score}
             recordedBy={entry.display_name}
             recordedAt={formatDate(entry.when)}
             factType={entry.fact_name}
@@ -90,7 +89,6 @@ function ProjectFeed({ projectID }) {
         )}
         {entry.type === 'ProjectFeedEntry' && entry.what === 'created' && (
           <ProjectCreatedEntry
-            what={entry.what}
             recordedBy={entry.display_name}
             recordedAt={formatDate(entry.when)}
             iconClass="fas plus"
@@ -98,7 +96,6 @@ function ProjectFeed({ projectID }) {
         )}
         {entry.type === 'ProjectFeedEntry' && entry.what === 'updated' && (
           <ProjectUpdatedEntry
-            what={entry.what}
             recordedBy={entry.display_name}
             recordedAt={formatDate(entry.when)}
             iconClass="fas pencil-alt"
