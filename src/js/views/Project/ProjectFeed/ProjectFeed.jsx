@@ -6,8 +6,11 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import { Context } from '../../../state'
 import { httpGet, parseLinkHeader } from '../../../utils'
 import { Alert, Card, ErrorBoundary, Loading } from '../../../components'
-import { ProjectFactEntry } from './ProjectFactEntry'
+import { ProjectFactEntry } from './ProjectFeedEntry'
 import { useTranslation } from 'react-i18next'
+import { ProjectOpsLogEntry } from './ProjectOpsLogEntry'
+import { ProjectCreatedEntry } from './ProjectCreatedEntry'
+import { ProjectUpdatedEntry } from './ProjectUpdatedEntry'
 
 function ProjectFeed({ projectID }) {
   const [state] = useContext(Context)
@@ -31,23 +34,19 @@ function ProjectFeed({ projectID }) {
         const next = Object.hasOwn(links, 'next') ? links.next[0] : null
         setFeed((prevState) => ({
           entries: prevState.entries.concat(
-            data
-              .filter(
-                (entry) =>
-                  (entry.type || 'ProjectFeedEntry') === 'ProjectFeedEntry'
-              )
-              .map((entry) => ({
-                ...entry,
-                when: DateTime.fromISO(entry.when).toLocaleString(
-                  DateTime.DATETIME_MED
-                )
-              }))
+            data.filter((entry) =>
+              ['ProjectFeedEntry', 'OperationsLogEntry'].includes(entry.type)
+            )
           ),
           nextLink: next
         }))
       },
       (error) => setErrorMessage(error)
     )
+  }
+
+  function formatDate(d) {
+    return DateTime.fromISO(d).toLocaleString(DateTime.DATETIME_MED)
   }
 
   let content
@@ -70,22 +69,52 @@ function ProjectFeed({ projectID }) {
             aria-hidden="true"
           />
         )}
-        <ProjectFactEntry
-          score={entry.score}
-          recordedBy={entry.display_name}
-          recordedAt={entry.when}
-          factType={entry.fact_name}
-          value={entry.value}
-          iconClass={
-            entry.icon_class
-              ? entry.icon_class
-              : entry.value === 'true'
-              ? 'fas check-circle'
-              : entry.value === 'false'
-              ? 'fas times-circle'
-              : 'fas sticky-note'
-          }
-        />
+        {entry.type === 'ProjectFeedEntry' && entry.what === 'updated fact' && (
+          <ProjectFactEntry
+            what={entry.what}
+            score={entry.score}
+            recordedBy={entry.display_name}
+            recordedAt={formatDate(entry.when)}
+            factType={entry.fact_name}
+            value={entry.value}
+            iconClass={
+              entry.icon_class
+                ? entry.icon_class
+                : entry.value === 'true'
+                ? 'fas check'
+                : entry.value === 'false'
+                ? 'fas times'
+                : 'fas sticky-note'
+            }
+          />
+        )}
+        {entry.type === 'ProjectFeedEntry' && entry.what === 'created' && (
+          <ProjectCreatedEntry
+            what={entry.what}
+            recordedBy={entry.display_name}
+            recordedAt={formatDate(entry.when)}
+            iconClass="fas plus"
+          />
+        )}
+        {entry.type === 'ProjectFeedEntry' && entry.what === 'updated' && (
+          <ProjectUpdatedEntry
+            what={entry.what}
+            recordedBy={entry.display_name}
+            recordedAt={formatDate(entry.when)}
+            iconClass="fas pencil-alt"
+          />
+        )}
+        {entry.type === 'OperationsLogEntry' && (
+          <ProjectOpsLogEntry
+            displayName={entry.display_name}
+            recordedAt={formatDate(entry.recorded_at)}
+            changeType={entry.change_type.toLowerCase()}
+            project={entry.project_name}
+            environment={entry.environment}
+            version={entry.version}
+            iconClass="fas project-diagram"
+          />
+        )}
       </li>
     ))
 
@@ -110,7 +139,7 @@ function ProjectFeed({ projectID }) {
   return (
     <ErrorBoundary>
       <Card className="flow-root h-full">
-        <h2 className="font-medium mb-2">{t('project.feed')}</h2>
+        <h2 className="font-medium mb-2">{t('project.feed.title')}</h2>
         {content}
       </Card>
     </ErrorBoundary>

@@ -321,7 +321,13 @@ export default {
         editProject: 'Edit Project',
         environments: 'Environments',
         factHistory: 'Fact History',
-        feed: 'Project Feed',
+        feed: {
+          title: 'Project Feed',
+          opsLog:
+            '<0>{{displayName}}</0> <1>{{changeType}}</1> <2>{{project}}</2> in the <3>{{environment}}</3> environment.',
+          opsLogVersion:
+            '<0>{{displayName}}</0> <1>{{changeType}}</1> <2>{{project}}</2> in the <3>{{environment}}</3> environment. (<4>{{version}}</4>)'
+        },
         gitlab: {
           connect: 'Connect to GitLab',
           notConnected:
