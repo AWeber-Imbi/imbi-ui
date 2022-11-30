@@ -56,6 +56,19 @@ function OperationsLog({ projectID, urlPath, className }) {
     setDeletedID(null)
   }
 
+  if (searchParams.get('v') && slideOverOpen && selectedIndex === undefined) {
+    let index
+    rows.forEach((entry, i) => {
+      if (entry.id === parseInt(searchParams.get('v'))) {
+        index = i
+      }
+    })
+    if (index !== undefined) {
+      setSelectedIndex(index)
+      setListenForKeyDown(true)
+    }
+  }
+
   useEffect(() => {
     const path = urlPath ? `${urlPath}/operations-log` : 'ui/operations-log'
     dispatch({
