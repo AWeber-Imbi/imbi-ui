@@ -13,7 +13,11 @@ function ViewOperationsLog({
   cachedEntry,
   operationsLogID,
   onUpdate,
-  onDelete
+  onDelete,
+  onEditOpen,
+  onDeleteOpen,
+  onEditClose,
+  onDeleteClose
 }) {
   const [globalState] = useContext(Context)
   const { t } = useTranslation()
@@ -21,6 +25,10 @@ function ViewOperationsLog({
   const [error, setError] = useState()
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+
+  if (cachedEntry && entry && cachedEntry.id !== entry.id) {
+    setEntry(cachedEntry)
+  }
 
   function loadOpsLog() {
     const url = new URL(
@@ -63,6 +71,26 @@ function ViewOperationsLog({
     }
   }
 
+  function onEditStart() {
+    setIsEditing(true)
+    onEditOpen()
+  }
+
+  function onEditEnd() {
+    setIsEditing(false)
+    onEditClose()
+  }
+
+  function onDeleteStart() {
+    setShowDeleteConfirmation(true)
+    onDeleteOpen()
+  }
+
+  function onDeleteEnd() {
+    setShowDeleteConfirmation(false)
+    onDeleteClose()
+  }
+
   useEffect(() => {
     if (!cachedEntry) loadOpsLog()
   }, [])
@@ -76,7 +104,7 @@ function ViewOperationsLog({
           mode="error"
           title={t('operationsLog.deleteConfirmation.title')}
           confirmationButtonText={t('operationsLog.deleteConfirmation.button')}
-          onCancel={() => setShowDeleteConfirmation(false)}
+          onCancel={() => onDeleteEnd()}
           onConfirm={() => onConfirmDelete()}>
           {t('operationsLog.deleteConfirmation.text')}
         </ConfirmationDialog>
@@ -85,9 +113,11 @@ function ViewOperationsLog({
         <Edit
           operationsLog={entry}
           onError={(error) => setError(error)}
-          onCancel={() => setIsEditing(false)}
+          onCancel={() => {
+            onEditEnd()
+          }}
           onSuccess={() => {
-            setIsEditing(false)
+            onEditEnd()
             onUpdate()
             loadOpsLog()
           }}
@@ -96,15 +126,11 @@ function ViewOperationsLog({
         <>
           <Display entry={entry} />
           <Modal.Footer>
-            <Button
-              className="btn-red text-s"
-              onClick={() => setShowDeleteConfirmation(true)}>
+            <Button className="btn-red text-s" onClick={() => onDeleteStart()}>
               <Icon icon="fas trash" className="mr-2" />
               {t('common.delete')}
             </Button>
-            <Button
-              className="btn-white text-s"
-              onClick={() => setIsEditing(true)}>
+            <Button className="btn-white text-s" onClick={() => onEditStart()}>
               <Icon icon="fas edit" className="mr-2" />
               {t('common.edit')}
             </Button>
@@ -118,6 +144,10 @@ ViewOperationsLog.propTypes = {
   cachedEntry: PropTypes.object,
   operationsLogID: PropTypes.number.isRequired,
   onUpdate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired
+  onDelete: PropTypes.func.isRequired,
+  onEditOpen: PropTypes.func.isRequired,
+  onDeleteOpen: PropTypes.func.isRequired,
+  onEditClose: PropTypes.func.isRequired,
+  onDeleteClose: PropTypes.func.isRequired
 }
 export { ViewOperationsLog }
