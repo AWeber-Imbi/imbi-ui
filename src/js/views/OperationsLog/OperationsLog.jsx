@@ -229,8 +229,20 @@ function OperationsLog({ projectID, urlPath, className }) {
             {t('operationsLog.entry')}
             {selectedIndex !== undefined && listenForKeyDown && (
               <>
-                <Icon icon="fas arrow-left" className="ml-4 mr-2 h-4" />
-                <Icon icon="fas arrow-right" className="h-4" />
+                <Icon
+                  icon="fas arrow-left"
+                  className={
+                    'ml-4 mr-2 h-4' +
+                    (selectedIndex === 0 ? ' text-gray-200' : '')
+                  }
+                />
+                <Icon
+                  icon="fas arrow-right"
+                  className={
+                    'h-4' +
+                    (selectedIndex === rows.length - 1 ? ' text-gray-200' : '')
+                  }
+                />
               </>
             )}
           </>
