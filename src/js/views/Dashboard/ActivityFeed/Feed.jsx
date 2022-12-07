@@ -22,7 +22,7 @@ function Feed({ onReady }) {
     data: [],
     fetched: false,
     errorMessage: null,
-    nextLink: new URL('/activity-feed', globalState.baseURL)
+    nextLink: new URL('/activity-feed?omit_user=SonarQube', globalState.baseURL)
   })
   const { t } = useTranslation()
 
@@ -42,12 +42,12 @@ function Feed({ onReady }) {
         const links = parseLinkHeader(headers.get('Link'))
         const next = Object.hasOwn(links, 'next') ? links.next[0] : null
         setState((prevState) => ({
-          data: prevState.data.concat(
-            data.filter((f) => f.display_name !== 'SonarQube')
-          ),
+          data: prevState.data.concat(data),
           fetched: true,
           errorMessage: null,
-          nextLink: next ? new URL(next, globalState.baseURL) : null
+          nextLink: next
+            ? new URL(`${next}&omit_user=SonarQube`, globalState.baseURL)
+            : null
         }))
       },
       (error) => {
