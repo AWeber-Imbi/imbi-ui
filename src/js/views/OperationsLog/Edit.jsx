@@ -90,17 +90,17 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       completed_at: fieldValues.completed_at
         ? new Date(fieldValues.completed_at).toISOString()
         : null,
-      description: fieldValues.description?.trim()
+      description: fieldValues.description
         ? fieldValues.description.trim()
         : null,
-      project_id: fieldValues.project_id?.trim()
+      project_id: fieldValues.project_id
         ? parseInt(fieldValues.project_id.trim())
         : null,
-      ticket_slug: fieldValues.ticket_slug?.trim()
+      ticket_slug: fieldValues.ticket_slug
         ? fieldValues.ticket_slug.trim()
         : null,
-      link: fieldValues.link?.trim() ? fieldValues.link.trim() : null,
-      notes: fieldValues.notes?.trim() ? fieldValues.notes.trim() : null
+      link: fieldValues.link ? fieldValues.link.trim() : null,
+      notes: fieldValues.notes ? fieldValues.notes.trim() : null
     }
     delete newValues.project
     return newValues
