@@ -22,7 +22,7 @@ function Feed({ onReady }) {
     data: [],
     fetched: false,
     errorMessage: null,
-    nextLink: new URL('/activity-feed?omit_user=SonarQube', globalState.baseURL)
+    nextLink: new URL('/activity-feed?omit_user=sonarqube', globalState.baseURL)
   })
   const { t } = useTranslation()
 
@@ -46,7 +46,7 @@ function Feed({ onReady }) {
           fetched: true,
           errorMessage: null,
           nextLink: next
-            ? new URL(`${next}&omit_user=SonarQube`, globalState.baseURL)
+            ? new URL(`${next}&omit_user=sonarqube`, globalState.baseURL)
             : null
         }))
       },
