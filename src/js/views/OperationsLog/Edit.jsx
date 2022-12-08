@@ -30,7 +30,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       httpGet(
         globalState.fetch,
         new URL(`/projects/${operationsLog.project_id}`, globalState.baseURL),
-        (data) => {
+        ({ data }) => {
           values.project = {
             project_id: data.id,
             namespace_id: data.namespace_id,
@@ -90,7 +90,17 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       completed_at: fieldValues.completed_at
         ? new Date(fieldValues.completed_at).toISOString()
         : null,
-      project_id: fieldValues.project_id ? fieldValues.project_id : null
+      description: fieldValues.description
+        ? fieldValues.description.trim()
+        : null,
+      project_id: fieldValues.project_id
+        ? parseInt(fieldValues.project_id.trim())
+        : null,
+      ticket_slug: fieldValues.ticket_slug
+        ? fieldValues.ticket_slug.trim()
+        : null,
+      link: fieldValues.link ? fieldValues.link.trim() : null,
+      notes: fieldValues.notes ? fieldValues.notes.trim() : null
     }
     delete newValues.project
     return newValues

@@ -65,7 +65,7 @@ function useSettings() {
       httpGet(
         globalState.fetch,
         new URL('/ui/settings', globalState.baseURL),
-        (data) => {
+        ({ data }) => {
           setIntegrations(data.integrations)
           setMetadata({
             cookieCutters: data.metadata.cookie_cutters,
@@ -127,7 +127,7 @@ function useSettings() {
       httpGet(
         globalState.fetch,
         new URL('/integrations/gitlab', globalState.baseURL),
-        (data) => {
+        ({ data }) => {
           setIntegrations({
             ...integrations,
             gitlab: {

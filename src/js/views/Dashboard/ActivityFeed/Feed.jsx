@@ -1,46 +1,65 @@
 import PropTypes from 'prop-types'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import InfiniteScroll from 'react-infinite-scroll-component'
 
-import { Alert, ContentArea, ErrorBoundary, Panel } from '../../../components'
+import {
+  Alert,
+  ContentArea,
+  ErrorBoundary,
+  Loading,
+  Panel
+} from '../../../components'
 import { Context } from '../../../state'
-import { httpGet } from '../../../utils'
+import { httpGet, parseLinkHeader } from '../../../utils'
 
-import { Entry } from './Entry'
+import { ActivityEntry } from './ActivityEntry'
+import { OpsLogEntry } from './OpsLogEntry'
 
 function Feed({ onReady }) {
   const [globalState] = useContext(Context)
   const [state, setState] = useState({
     data: [],
     fetched: false,
-    errorMessage: null
+    errorMessage: null,
+    nextLink: new URL('/activity-feed?omit_user=sonarqube', globalState.baseURL)
   })
   const { t } = useTranslation()
 
   useEffect(() => {
-    if (state.fetched === false) {
-      const url = new URL('/activity-feed', globalState.baseURL)
-      httpGet(
-        globalState.fetch,
-        url,
-        (result) => {
-          // defaulting 'type' to 'ProjectFeedType' for backwards compatibility
-          setState({
-            data: result.filter(
-              (f) => (f.type || 'ProjectFeedEntry') === 'ProjectFeedEntry'
-            ),
-            fetched: true,
-            errorMessage: null
-          })
-        },
-        (error) => {
-          setState({ data: [], fetched: true, errorMessage: error })
-        }
-      )
+    if (!state.fetched) {
+      fetchNext()
     } else {
       onReady()
     }
   }, [state.fetched])
+
+  function fetchNext() {
+    httpGet(
+      globalState.fetch,
+      state.nextLink,
+      ({ data, headers }) => {
+        const links = parseLinkHeader(headers.get('Link'))
+        const next = Object.hasOwn(links, 'next') ? links.next[0] : null
+        setState((prevState) => ({
+          data: prevState.data.concat(data),
+          fetched: true,
+          errorMessage: null,
+          nextLink: next
+            ? new URL(`${next}&omit_user=sonarqube`, globalState.baseURL)
+            : null
+        }))
+      },
+      (error) => {
+        setState({
+          data: [],
+          fetched: true,
+          errorMessage: error,
+          nextLink: null
+        })
+      }
+    )
+  }
 
   return (
     <ErrorBoundary>
@@ -53,15 +72,32 @@ function Feed({ onReady }) {
           {state.errorMessage !== null && (
             <Alert level="error">{state.errorMessage}</Alert>
           )}
-          <div className="h-full overflow-y-scroll">
-            <ul className="space-y-3">
-              {state.data
-                .filter((e) => e.display_name !== 'SonarQube')
-                .map((entry, offset) => {
-                  return <Entry key={`entry-${offset}`} entry={entry} />
-                })}
-            </ul>
-          </div>
+          <ul
+            id="activity-feed-list"
+            role="list"
+            className="space-y-1 h-full overflow-auto">
+            <InfiniteScroll
+              next={fetchNext}
+              hasMore={state.nextLink !== null}
+              loader={<Loading />}
+              dataLength={state.data.length}
+              scrollableTarget="activity-feed-list"
+              scrollThreshold={0.7}>
+              {state.data.map((entry, index) => {
+                let entryComponent = <></>
+                if (entry.type === 'ProjectFeedEntry')
+                  entryComponent = <ActivityEntry entry={entry} />
+                else if (entry.type === 'OperationsLogEntry')
+                  entryComponent = <OpsLogEntry entry={entry} />
+                return (
+                  <Fragment key={`entry-${index}`}>
+                    {entryComponent}
+                    <div className="h-[1px] w-full bg-gray-200"></div>
+                  </Fragment>
+                )
+              })}
+            </InfiniteScroll>
+          </ul>
         </Panel>
       </ContentArea>
     </ErrorBoundary>

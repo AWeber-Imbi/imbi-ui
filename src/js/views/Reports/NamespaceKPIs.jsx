@@ -73,13 +73,13 @@ function NamespaceKPIs() {
       httpGet(
         globalState.fetch,
         url,
-        (result) => {
+        ({ data }) => {
           const lookup = Object.fromEntries(
-            result.map((row) => [row.namespace, row.namespace_id])
+            data.map((row) => [row.namespace, row.namespace_id])
           )
           setState({
             ...state,
-            data: result,
+            data: data,
             fetched: true,
             lookup: lookup,
             errorMessage: null

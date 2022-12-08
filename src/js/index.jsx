@@ -99,8 +99,8 @@ function App({
       httpGet(
         fetch,
         '/ui/user',
-        (result) => {
-          setUserData(result)
+        ({ data }) => {
+          setUserData(data)
         },
         () => {
           setUserState({

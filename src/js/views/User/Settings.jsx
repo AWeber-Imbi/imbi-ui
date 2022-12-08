@@ -68,9 +68,9 @@ function Settings() {
       httpGet(
         state.fetch,
         url,
-        (result) => {
+        ({ data }) => {
           setRefresh(false)
-          setTokens(result)
+          setTokens(data)
         },
         (error) => {
           setErrorMessage(error)

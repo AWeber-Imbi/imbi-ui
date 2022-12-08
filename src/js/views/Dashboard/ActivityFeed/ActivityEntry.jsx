@@ -8,7 +8,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Context } from '../../../state'
 import { lookupNamespaceByID } from '../../../utils'
 
-function Entry({ entry }) {
+function ActivityEntry({ entry }) {
   const { t, i18n } = useTranslation()
   const [globalState] = useContext(Context)
 
@@ -27,42 +27,38 @@ function Entry({ entry }) {
     }`
   )
   return (
-    <li className="flex p-2 space-x-3 border-b border-gray-200">
+    <li className="flex p-2 space-x-3">
       <Gravatar
         className="h-8 w-8 rounded-full"
         default="mp"
         email={entry.email_address}
         size={22}
       />
-      <div className="min-w-0 flex-1">
-        <div className="text-sm text-gray-700">
-          <Trans i18nKey={'dashboard.activityFeed.entry'} i18n={i18n} t={t}>
-            <span className="font-medium text-gray-700">{{ displayName }}</span>{' '}
-            <span>{{ action }}</span> the{' '}
-            <Link
-              to={`/ui/projects/${entry.project_id}`}
-              className="font-medium text-blue-700 hover:text-blue-800">
-              {{ project }}
-            </Link>{' '}
-            project in the{' '}
-            <Link
-              to={`/ui/projects?f=${filter}`}
-              className="font-medium text-blue-700 hover:text-blue-800">
-              {{ namespace }}
-            </Link>{' '}
-            namespace.
-          </Trans>
-          <p
-            className="mt-0.5 text-sm text-gray-500"
-            title={when.toLocaleString(DateTime.DATETIME_MED)}>
-            {when.toRelative()}
-          </p>
-        </div>
+      <div className="min-w-0 flex-1 text-sm text-gray-700">
+        <Trans i18nKey={'dashboard.activityFeed.entry'} i18n={i18n} t={t}>
+          <span className="font-medium text-gray-700">{{ displayName }}</span>
+          <span>{{ action }}</span>
+          <Link
+            to={`/ui/projects/${entry.project_id}`}
+            className="font-medium text-blue-700 hover:text-blue-800">
+            {{ project }}
+          </Link>
+          <Link
+            to={`/ui/projects?f=${filter}`}
+            className="font-medium text-blue-700 hover:text-blue-800">
+            {{ namespace }}
+          </Link>
+        </Trans>
+        <p
+          className="mt-0.5 text-sm text-gray-500"
+          title={when.toLocaleString(DateTime.DATETIME_MED)}>
+          {when.toRelative()}
+        </p>
       </div>
     </li>
   )
 }
-Entry.propTypes = {
+ActivityEntry.propTypes = {
   entry: PropTypes.shape({
     display_name: PropTypes.string,
     email_address: PropTypes.string,
@@ -76,4 +72,4 @@ Entry.propTypes = {
     who: PropTypes.string
   })
 }
-export { Entry }
+export { ActivityEntry }

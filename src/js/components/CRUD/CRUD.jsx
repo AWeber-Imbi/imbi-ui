@@ -79,7 +79,7 @@ function CRUD({
     httpGet(
       state.fetch,
       url,
-      (data) => {
+      ({ data }) => {
         itemIgnore.map((key) => {
           delete data[key]
         })
@@ -136,8 +136,8 @@ function CRUD({
       httpGet(
         state.fetch,
         url,
-        (result) => {
-          setData(result)
+        ({ data }) => {
+          setData(data)
           setReady(true)
         },
         (error) => {

@@ -225,7 +225,18 @@ export default {
         activityFeed: {
           recentActivity: 'Recent Activity',
           entry:
-            '<0>{{displayName}}</0> <2>{{action}}</2> the <5>{{project}}</5> project in the <9>{{namespace}}</9> namespace.',
+            '<0>{{displayName}}</0> <1>{{action}}</1> the <2>{{project}}</2> project in the <3>{{namespace}}</3> namespace.',
+          opsLog:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> in the <4>{{environment}}</4> environment.',
+          opsLogVersion:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> in the <4>{{environment}}</4> environment. (<5>{{version}}</5>)',
+          opsLogDescription: '<0>{{displayName}}</0> - <1>{{description}}</1>.',
+          opsLogDescriptionVersion:
+            '<0>{{displayName}}</0> - <1>{{description}}</1>. (<5>{{version}}</5>)',
+          opsLogProject:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> <3>{{project}}</3> in the <4>{{environment}}</4> environment.',
+          opsLogProjectVersion:
+            '<0>{{displayName}}</0> <2>{{changeType}}</2> <3>{{project}}</3> in the <4>{{environment}}</4> environment. (<5>{{version}}</5>)',
           created: 'created',
           updated: 'updated',
           updatedFacts: 'updated one or more facts for'
@@ -271,7 +282,7 @@ export default {
           'When the change completed, if it occurred over a period of time',
         descriptionDescription: 'Single line description of the change',
         versionDescription: 'Version that the change was made for',
-        linkDescription: 'Additional context to the slug',
+        linkDescription: 'Additional context to the ops log entry',
         notesDescription: 'Notes in markdown format',
         requestError:
           'Error making API request for Operations log ({{error}}).',
@@ -310,7 +321,17 @@ export default {
         editProject: 'Edit Project',
         environments: 'Environments',
         factHistory: 'Fact History',
-        feed: 'Project Feed',
+        feed: {
+          title: 'Project Feed',
+          created: '<0>{{recordedBy}}</0> created the project.',
+          updated: '<0>{{recordedBy}}</0> updated project information.',
+          updatedFact:
+            '<0>{{recordedBy}}</0> set <1>{{factType}}</1> to <2>{{value}}</2>.',
+          opsLog:
+            '<0>{{displayName}}</0> <1>{{changeType}}</1> <2>{{project}}</2> in the <3>{{environment}}</3> environment.',
+          opsLogVersion:
+            '<0>{{displayName}}</0> <1>{{changeType}}</1> <2>{{project}}</2> in the <3>{{environment}}</3> environment. (<4>{{version}}</4>)'
+        },
         gitlab: {
           connect: 'Connect to GitLab',
           notConnected:

@@ -54,7 +54,7 @@ function GitlabImport() {
         httpGet(
           state.fetch,
           url,
-          (data) => {
+          ({ data }) => {
             setErrors({ ...errors, [key]: null })
             if (data.length) {
               setFormState({ ...formState, namespaceSelected: true })
@@ -90,7 +90,7 @@ function GitlabImport() {
     httpGet(
       state.fetch,
       new URL('/gitlab/namespaces', state.baseURL),
-      (data) => {
+      ({ data }) => {
         setNamespaces(data)
       },
       (error) => {

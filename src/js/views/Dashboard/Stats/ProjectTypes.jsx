@@ -25,9 +25,9 @@ function ProjectTypes({ onReady }) {
       httpGet(
         globalState.fetch,
         url,
-        (result) => {
+        ({ data }) => {
           setState({
-            data: result,
+            data: data,
             fetched: true,
             errorMessage: null
           })
