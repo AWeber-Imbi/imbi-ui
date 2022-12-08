@@ -10,6 +10,29 @@ import { compare } from 'fast-json-patch'
 import { jsonSchema } from '../../schema/OperationsLog'
 import { useValidation } from '../../components/Form/validate'
 
+function toSchemaValues(fieldValues) {
+  const values = {
+    ...fieldValues,
+    recorded_at: new Date(fieldValues.recorded_at).toISOString(),
+    completed_at: fieldValues.completed_at
+      ? new Date(fieldValues.completed_at).toISOString()
+      : null,
+    description: fieldValues.description
+      ? fieldValues.description.trim()
+      : null,
+    project_id: fieldValues.project.project_id
+      ? parseInt(fieldValues.project.project_id.trim())
+      : null,
+    ticket_slug: fieldValues.ticket_slug
+      ? fieldValues.ticket_slug.trim()
+      : null,
+    link: fieldValues.link ? fieldValues.link.trim() : null,
+    notes: fieldValues.notes ? fieldValues.notes.trim() : null
+  }
+  delete values.project
+  return values
+}
+
 function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   const [globalState] = useContext(Context)
   const [fieldValues, setFieldValues] = useState()
@@ -32,15 +55,17 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         new URL(`/projects/${operationsLog.project_id}`, globalState.baseURL),
         ({ data }) => {
           values.project = {
-            project_id: data.id,
-            namespace_id: data.namespace_id,
-            project_type_id: data.project_type_id
+            project_id: data.id.toString(),
+            namespace_id: data.namespace_id.toString(),
+            project_type_id: data.project_type_id.toString()
           }
+          delete values.project_id
           setFieldValues(values)
         },
         (error) => onError(error)
       )
     } else {
+      values.project = { project_id: '', namespace_id: '', project_type_id: '' }
       setFieldValues(values)
     }
   }, [])
@@ -62,7 +87,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
           : null
       }
 
-      const patchValue = compare(oldValues, values())
+      const patchValue = compare(oldValues, toSchemaValues(fieldValues))
       if (patchValue.length === 0) {
         onCancel()
         return
@@ -83,40 +108,11 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
     update().catch((error) => onError(error))
   }, [saving])
 
-  function values() {
-    const newValues = {
-      ...fieldValues,
-      recorded_at: new Date(fieldValues.recorded_at).toISOString(),
-      completed_at: fieldValues.completed_at
-        ? new Date(fieldValues.completed_at).toISOString()
-        : null,
-      description: fieldValues.description
-        ? fieldValues.description.trim()
-        : null,
-      project_id: fieldValues.project_id
-        ? parseInt(fieldValues.project_id.trim())
-        : null,
-      ticket_slug: fieldValues.ticket_slug
-        ? fieldValues.ticket_slug.trim()
-        : null,
-      link: fieldValues.link ? fieldValues.link.trim() : null,
-      notes: fieldValues.notes ? fieldValues.notes.trim() : null
-    }
-    delete newValues.project
-    return newValues
-  }
-
   function onValueChange(key, value) {
-    setFieldValues((prevValues) => {
-      const newValues = { ...prevValues }
-      if (key === 'project') {
-        delete newValues.project
-        newValues.project_id = value
-      } else {
-        newValues[key] = value
-      }
-      return newValues
-    })
+    setFieldValues((prevValues) => ({
+      ...prevValues,
+      [key]: key === 'project' ? { project_id: value } : value
+    }))
   }
 
   if (!fieldValues) return <></>
@@ -126,7 +122,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       errorMessage={null}
       onCancel={onCancel}
       onSubmit={() => {
-        validate(values())
+        validate(toSchemaValues(fieldValues))
         setSaving(true)
       }}
       ready={true}
