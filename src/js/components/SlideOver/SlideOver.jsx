@@ -1,9 +1,19 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect, useRef } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import PropTypes from 'prop-types'
 import { Icon } from '../Icon/Icon'
 
-function SlideOver({ open, title, onClose, children }) {
+function SlideOver({
+  open,
+  title,
+  onClose,
+  onKeyDown,
+  focusTrigger,
+  children
+}) {
+  const ref = useRef(null)
+  useEffect(() => ref.current?.focus(), [focusTrigger])
+
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog
@@ -15,7 +25,11 @@ function SlideOver({ open, title, onClose, children }) {
 
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
-            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+            <div
+              className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16 outline-none"
+              onKeyDown={(e) => onKeyDown && onKeyDown(e)}
+              tabIndex={-1}
+              ref={ref}>
               <Transition.Child
                 as={Fragment}
                 enter="transform transition ease-in-out duration-500"
@@ -55,6 +69,8 @@ SlideOver.propTypes = {
   open: PropTypes.bool.isRequired,
   title: PropTypes.node.isRequired,
   onClose: PropTypes.func.isRequired,
+  focusTrigger: PropTypes.any,
+  onKeyDown: PropTypes.func,
   children: PropTypes.node.isRequired
 }
 export { SlideOver }

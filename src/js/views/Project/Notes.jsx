@@ -23,8 +23,8 @@ function Notes({ project, urlPath }) {
   }, [])
 
   const [shownNoteId, setShownNoteId] = useState(null)
-  const showNote = (noteData) => {
-    setShownNoteId(noteData.id)
+  const showNote = ({ data }) => {
+    setShownNoteId(data.id)
   }
   if (shownNoteId !== null) {
     return (

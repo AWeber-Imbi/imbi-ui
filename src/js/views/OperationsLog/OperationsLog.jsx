@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { Filter } from '../Projects/Filter'
-import { Alert, Table } from '../../components'
+import { Alert, Icon, Table } from '../../components'
 import {
   fromKueryExpression,
   toElasticsearchQuery
@@ -38,18 +38,35 @@ function OperationsLog({ projectID, urlPath, className }) {
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
   const [slideOverOpen, setSlideOverOpen] = useState(false)
-  const [selectedEntry, setSelectedEntry] = useState()
+  const [selectedIndex, setSelectedIndex] = useState()
+  const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
+  const [listenForKeyDown, setListenForKeyDown] = useState(false)
   const { t } = useTranslation()
 
   if (searchParams.get('v') && !slideOverOpen) {
     setSlideOverOpen(true)
+    setListenForKeyDown(true)
   } else if (!searchParams.get('v') && slideOverOpen) {
     setSlideOverOpen(false)
+    setListenForKeyDown(false)
   }
 
   if (deletedID) {
     setRows((prevRows) => prevRows.filter((r) => r.id !== deletedID))
     setDeletedID(null)
+  }
+
+  if (searchParams.get('v') && slideOverOpen && selectedIndex === undefined) {
+    let index
+    rows.forEach((entry, i) => {
+      if (entry.id === parseInt(searchParams.get('v'))) {
+        index = i
+      }
+    })
+    if (index !== undefined) {
+      setSelectedIndex(index)
+      setListenForKeyDown(true)
+    }
   }
 
   useEffect(() => {
@@ -195,18 +212,41 @@ function OperationsLog({ projectID, urlPath, className }) {
       <Table
         columns={buildColumns()}
         data={rows}
-        onRowClick={(data) => {
+        onRowClick={({ index }) => {
           const newParams = cloneParams(searchParams)
-          newParams.set('v', data.id)
+          newParams.set('v', rows[index].id)
           setSearchParams(newParams)
           setSlideOverOpen(true)
-          setSelectedEntry(data)
+          setSelectedIndex(index)
+          setListenForKeyDown(true)
         }}
         checkIsHighlighted={(row) => row.id === parseInt(searchParams.get('v'))}
       />
       <SlideOver
         open={slideOverOpen}
-        title={t('operationsLog.entry')}
+        title={
+          <>
+            {t('operationsLog.entry')}
+            {selectedIndex !== undefined && listenForKeyDown && (
+              <>
+                <Icon
+                  icon="fas arrow-left"
+                  className={
+                    'ml-4 mr-2 h-4' +
+                    (selectedIndex === 0 ? ' text-gray-200' : '')
+                  }
+                />
+                <Icon
+                  icon="fas arrow-right"
+                  className={
+                    'h-4' +
+                    (selectedIndex === rows.length - 1 ? ' text-gray-200' : '')
+                  }
+                />
+              </>
+            )}
+          </>
+        }
         onClose={() => {
           const newParams = cloneParams(searchParams)
           newParams.delete('v')
@@ -216,10 +256,30 @@ function OperationsLog({ projectID, urlPath, className }) {
             setUpdated(false)
           }
           setSlideOverOpen(false)
-          setSelectedEntry(null)
-        }}>
+          setSelectedIndex(null)
+        }}
+        onKeyDown={(e) => {
+          if (!listenForKeyDown) return
+          if (e.key === 'ArrowLeft' && selectedIndex > 0) {
+            const newIndex = selectedIndex - 1
+            setSelectedIndex(newIndex)
+            const newParams = cloneParams(searchParams)
+            newParams.set('v', rows[newIndex].id)
+            setSearchParams(newParams)
+          } else if (
+            e.key === 'ArrowRight' &&
+            selectedIndex < rows.length - 1
+          ) {
+            const newIndex = selectedIndex + 1
+            setSelectedIndex(newIndex)
+            const newParams = cloneParams(searchParams)
+            newParams.set('v', rows[newIndex].id)
+            setSearchParams(newParams)
+          }
+        }}
+        focusTrigger={slideOverFocusTrigger}>
         <ViewOperationsLog
-          cachedEntry={selectedEntry}
+          cachedEntry={rows[selectedIndex]}
           operationsLogID={parseInt(searchParams.get('v'))}
           onUpdate={() => setUpdated(true)}
           onDelete={(operationsLogID) => {
@@ -227,6 +287,16 @@ function OperationsLog({ projectID, urlPath, className }) {
             newParams.delete('v')
             setSearchParams(newParams)
             setDeletedID(operationsLogID)
+          }}
+          onEditOpen={() => setListenForKeyDown(false)}
+          onDeleteOpen={() => setListenForKeyDown(false)}
+          onEditClose={() => {
+            setListenForKeyDown(true)
+            setSlideOverFocusTrigger({})
+          }}
+          onDeleteClose={() => {
+            setListenForKeyDown(true)
+            setSlideOverFocusTrigger({})
           }}
         />
       </SlideOver>

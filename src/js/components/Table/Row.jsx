@@ -47,7 +47,7 @@ function Row({
         // This is necessary for the Edit and Delete buttons ;)
         if (event.target.onclick === null) {
           event.preventDefault()
-          if (onClick !== undefined) onClick(data)
+          if (onClick !== undefined) onClick({ data, index })
         }
       }}>
       {toRender.map((column) => {
