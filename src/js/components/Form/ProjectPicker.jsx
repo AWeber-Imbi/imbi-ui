@@ -27,24 +27,31 @@ function ProjectPicker({
       return
     }
 
+    fetchProjects()
+  }, [namespaceID, projectTypeID])
+
+  function fetchProjects(offset = 0) {
+    const limit = 100
     const projectURL = new URL('/projects', globalState.baseURL)
     const params = new URLSearchParams({
       namespace_id: namespaceID,
       project_type_id: projectTypeID,
-      limit: 100
+      limit,
+      offset
     })
     projectURL.search = params.toString()
     httpGet(
       globalState.fetch,
       projectURL,
       ({ data }) => {
-        setProjects(data.data)
+        setProjects((prevState) => prevState.concat(data.data))
+        if (data.rows > offset + limit) {
+          fetchProjects(offset + limit)
+        }
       },
-      (error) => {
-        onError(error)
-      }
+      (error) => onError(error)
     )
-  }, [namespaceID, projectTypeID])
+  }
 
   return (
     <div className={'flex gap-2'}>
