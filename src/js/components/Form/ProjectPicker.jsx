@@ -30,7 +30,8 @@ function ProjectPicker({
     const projectURL = new URL('/projects', globalState.baseURL)
     const params = new URLSearchParams({
       namespace_id: namespaceID,
-      project_type_id: projectTypeID
+      project_type_id: projectTypeID,
+      limit: 100
     })
     projectURL.search = params.toString()
     httpGet(
