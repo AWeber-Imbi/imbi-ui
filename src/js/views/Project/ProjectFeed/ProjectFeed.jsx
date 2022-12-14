@@ -63,7 +63,7 @@ function ProjectFeed({ projectID }) {
     )
   } else {
     const entries = feed.entries.map((entry, index) => (
-      <li key={index} className="relative pb-8 pr-3">
+      <li key={index} className="relative pb-6 last:pb-0 pr-3">
         {index !== feed.entries.length - 1 && (
           <span
             className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"

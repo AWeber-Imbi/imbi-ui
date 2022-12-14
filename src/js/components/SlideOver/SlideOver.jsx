@@ -46,8 +46,11 @@ function SlideOver({
                           {title}
                         </Dialog.Title>
                         <div className="ml-3 flex h-7 items-center">
-                          <button type="button" onClick={() => onClose()}>
-                            <Icon icon="fas times-circle" />
+                          <button
+                            type="button"
+                            className="outline-offset-4"
+                            onClick={() => onClose()}>
+                            <Icon icon="fas times-circle" className="block" />
                           </button>
                         </div>
                       </div>

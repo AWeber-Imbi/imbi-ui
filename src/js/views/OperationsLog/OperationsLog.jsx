@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 
 import { Context } from '../../state'
 import { Filter } from '../Projects/Filter'
@@ -40,15 +40,17 @@ function OperationsLog({ projectID, urlPath, className }) {
   const [slideOverOpen, setSlideOverOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState()
   const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
-  const [listenForKeyDown, setListenForKeyDown] = useState(false)
+  const [showArrows, setShowArrows] = useState(false)
+  const arrowLeftRef = useRef(null)
+  const arrowRightRef = useRef(null)
   const { t } = useTranslation()
 
   if (searchParams.get('v') && !slideOverOpen) {
     setSlideOverOpen(true)
-    setListenForKeyDown(true)
+    setShowArrows(true)
   } else if (!searchParams.get('v') && slideOverOpen) {
     setSlideOverOpen(false)
-    setListenForKeyDown(false)
+    setShowArrows(false)
   }
 
   if (deletedID) {
@@ -65,7 +67,7 @@ function OperationsLog({ projectID, urlPath, className }) {
     })
     if (index !== undefined) {
       setSelectedIndex(index)
-      setListenForKeyDown(true)
+      setShowArrows(true)
     }
   }
 
@@ -121,6 +123,13 @@ function OperationsLog({ projectID, urlPath, className }) {
       setOnFetch(false)
     })
   }, [onFetch])
+
+  function move(index) {
+    setSelectedIndex(index)
+    const newParams = cloneParams(searchParams)
+    newParams.set('v', rows[index].id)
+    setSearchParams(newParams)
+  }
 
   function buildURL(path) {
     return new URL(path, globalState.baseURL)
@@ -218,34 +227,53 @@ function OperationsLog({ projectID, urlPath, className }) {
           setSearchParams(newParams)
           setSlideOverOpen(true)
           setSelectedIndex(index)
-          setListenForKeyDown(true)
+          setShowArrows(true)
         }}
         checkIsHighlighted={(row) => row.id === parseInt(searchParams.get('v'))}
       />
       <SlideOver
         open={slideOverOpen}
         title={
-          <>
+          <div className="flex items-center">
             {t('operationsLog.entry')}
-            {selectedIndex !== undefined && listenForKeyDown && (
+            {selectedIndex !== undefined && showArrows && (
               <>
-                <Icon
-                  icon="fas arrow-left"
-                  className={
-                    'ml-4 mr-2 h-4' +
-                    (selectedIndex === 0 ? ' text-gray-200' : '')
-                  }
-                />
-                <Icon
-                  icon="fas arrow-right"
-                  className={
-                    'h-4' +
-                    (selectedIndex === rows.length - 1 ? ' text-gray-200' : '')
-                  }
-                />
+                <button
+                  ref={arrowLeftRef}
+                  className="ml-4 mr-2 h-min outline-offset-4"
+                  onClick={() => {
+                    if (selectedIndex > 0) move(selectedIndex - 1)
+                  }}
+                  tabIndex={selectedIndex === 0 ? -1 : 0}>
+                  <Icon
+                    icon="fas arrow-left"
+                    className={
+                      'h-4 select-none block' +
+                      (selectedIndex === 0 ? ' text-gray-200' : '')
+                    }
+                  />
+                </button>
+
+                <button
+                  ref={arrowRightRef}
+                  className="outline-offset-4"
+                  onClick={() => {
+                    if (selectedIndex < rows.length - 1) move(selectedIndex + 1)
+                  }}
+                  tabIndex={selectedIndex === rows.length - 1 ? -1 : 0}>
+                  <Icon
+                    icon="fas arrow-right"
+                    className={
+                      'h-4 select-none block' +
+                      (selectedIndex === rows.length - 1
+                        ? ' text-gray-200'
+                        : '')
+                    }
+                  />
+                </button>
               </>
             )}
-          </>
+          </div>
         }
         onClose={() => {
           const newParams = cloneParams(searchParams)
@@ -259,22 +287,16 @@ function OperationsLog({ projectID, urlPath, className }) {
           setSelectedIndex(null)
         }}
         onKeyDown={(e) => {
-          if (!listenForKeyDown) return
-          if (e.key === 'ArrowLeft' && selectedIndex > 0) {
-            const newIndex = selectedIndex - 1
-            setSelectedIndex(newIndex)
-            const newParams = cloneParams(searchParams)
-            newParams.set('v', rows[newIndex].id)
-            setSearchParams(newParams)
+          if (!showArrows) return
+          if (selectedIndex > 0 && e.key === 'ArrowLeft') {
+            arrowLeftRef.current?.focus()
+            move(selectedIndex - 1)
           } else if (
-            e.key === 'ArrowRight' &&
-            selectedIndex < rows.length - 1
+            selectedIndex < rows.length - 1 &&
+            e.key === 'ArrowRight'
           ) {
-            const newIndex = selectedIndex + 1
-            setSelectedIndex(newIndex)
-            const newParams = cloneParams(searchParams)
-            newParams.set('v', rows[newIndex].id)
-            setSearchParams(newParams)
+            arrowRightRef.current?.focus()
+            move(selectedIndex + 1)
           }
         }}
         focusTrigger={slideOverFocusTrigger}>
@@ -288,14 +310,14 @@ function OperationsLog({ projectID, urlPath, className }) {
             setSearchParams(newParams)
             setDeletedID(operationsLogID)
           }}
-          onEditOpen={() => setListenForKeyDown(false)}
-          onDeleteOpen={() => setListenForKeyDown(false)}
+          onEditOpen={() => setShowArrows(false)}
+          onDeleteOpen={() => setShowArrows(false)}
           onEditClose={() => {
-            setListenForKeyDown(true)
+            setShowArrows(true)
             setSlideOverFocusTrigger({})
           }}
           onDeleteClose={() => {
-            setListenForKeyDown(true)
+            setShowArrows(true)
             setSlideOverFocusTrigger({})
           }}
         />
