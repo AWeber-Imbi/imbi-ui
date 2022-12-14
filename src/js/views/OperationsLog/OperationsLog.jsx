@@ -40,17 +40,17 @@ function OperationsLog({ projectID, urlPath, className }) {
   const [slideOverOpen, setSlideOverOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState()
   const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
-  const [listenForKeyDown, setListenForKeyDown] = useState(false)
+  const [showArrows, setShowArrows] = useState(false)
   const arrowLeftRef = useRef(null)
   const arrowRightRef = useRef(null)
   const { t } = useTranslation()
 
   if (searchParams.get('v') && !slideOverOpen) {
     setSlideOverOpen(true)
-    setListenForKeyDown(true)
+    setShowArrows(true)
   } else if (!searchParams.get('v') && slideOverOpen) {
     setSlideOverOpen(false)
-    setListenForKeyDown(false)
+    setShowArrows(false)
   }
 
   if (deletedID) {
@@ -67,7 +67,7 @@ function OperationsLog({ projectID, urlPath, className }) {
     })
     if (index !== undefined) {
       setSelectedIndex(index)
-      setListenForKeyDown(true)
+      setShowArrows(true)
     }
   }
 
@@ -227,7 +227,7 @@ function OperationsLog({ projectID, urlPath, className }) {
           setSearchParams(newParams)
           setSlideOverOpen(true)
           setSelectedIndex(index)
-          setListenForKeyDown(true)
+          setShowArrows(true)
         }}
         checkIsHighlighted={(row) => row.id === parseInt(searchParams.get('v'))}
       />
@@ -236,7 +236,7 @@ function OperationsLog({ projectID, urlPath, className }) {
         title={
           <div className="flex items-center">
             {t('operationsLog.entry')}
-            {selectedIndex !== undefined && listenForKeyDown && (
+            {selectedIndex !== undefined && showArrows && (
               <>
                 <button
                   ref={arrowLeftRef}
@@ -287,7 +287,7 @@ function OperationsLog({ projectID, urlPath, className }) {
           setSelectedIndex(null)
         }}
         onKeyDown={(e) => {
-          if (!listenForKeyDown) return
+          if (!showArrows) return
           if (selectedIndex > 0 && e.key === 'ArrowLeft') {
             arrowLeftRef.current?.focus()
             move(selectedIndex - 1)
@@ -310,14 +310,14 @@ function OperationsLog({ projectID, urlPath, className }) {
             setSearchParams(newParams)
             setDeletedID(operationsLogID)
           }}
-          onEditOpen={() => setListenForKeyDown(false)}
-          onDeleteOpen={() => setListenForKeyDown(false)}
+          onEditOpen={() => setShowArrows(false)}
+          onDeleteOpen={() => setShowArrows(false)}
           onEditClose={() => {
-            setListenForKeyDown(true)
+            setShowArrows(true)
             setSlideOverFocusTrigger({})
           }}
           onDeleteClose={() => {
-            setListenForKeyDown(true)
+            setShowArrows(true)
             setSlideOverFocusTrigger({})
           }}
         />
