@@ -44,7 +44,9 @@ function ProjectPicker({
       globalState.fetch,
       projectURL,
       ({ data }) => {
-        setProjects((prevState) => prevState.concat(data.data))
+        setProjects((prevState) =>
+          offset === 0 ? data.data : prevState.concat(data.data)
+        )
         if (data.rows > offset + limit) {
           fetchProjects(offset + limit)
         }
