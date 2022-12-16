@@ -71,16 +71,17 @@ function Automations({ localDispatch, localState, user }) {
     )
   }, [localState.createGitlabRepository])
 
-  // State management to kick off automations
+  // State management to kick off orthogonal automations
   useEffect(() => {
     if (localState.isSaving && localState.saved.attributes) {
       if (localState.createGitlabRepository)
         localDispatch({ type: 'SET_CREATING_GITLAB_REPOSITORY', payload: true })
-      else localDispatch({ type: 'SET_CREATING_SENTRY_PROJECT', payload: true })
+      if (sentryEnabled)
+        localDispatch({ type: 'SET_CREATING_SENTRY_PROJECT', payload: true })
     }
   }, [localState.saved.attributes])
 
-  // Sonarqube can be run after github.
+  // Sonarqube automation cannot be run until AFTER the gitlab repo exists
   useEffect(() => {
     if (localState.isSaving && localState.created.gitlabRepository) {
       if (localState.createSonarqubeProject)
