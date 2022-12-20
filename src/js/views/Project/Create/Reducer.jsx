@@ -11,6 +11,8 @@ const initialState = {
   attributes: { ...emptyAttributes },
   attributesReady: false,
   automationLinks: new Set(),
+  // was the integration selected?
+  createConsulTokens: false,
   createGitlabRepository: false,
   createSentryProject: false,
   createSonarqubeProject: false,
@@ -20,14 +22,18 @@ const initialState = {
   links: {},
   linksReady: true,
   projectCookieCutter: null,
+  // set to true to trigger the action asynchronously
   creating: {
+    consulTokens: false,
     gitlabInitialCommit: false,
     gitlabRepository: false,
     grafanaDashboard: false,
     sentryProject: false,
     sonarqubeProject: false
   },
+  // set to true when the action has completed
   created: {
+    consulTokens: false,
     gitlabInitialCommit: false,
     gitlabRepository: false,
     grafanaDashboard: false,
@@ -65,6 +71,27 @@ function reducer(state, action) {
       return {
         ...state,
         automationLinks: action.payload
+      }
+    case 'SET_CREATE_CONSUL_TOKENS':
+      return {
+        ...state,
+        createConsulTokens: action.payload
+      }
+    case 'SET_CREATED_CONSUL_TOKENS':
+      return {
+        ...state,
+        created: {
+          ...state.created,
+          consulTokens: action.payload
+        }
+      }
+    case 'SET_CREATING_CONSUL_TOKENS':
+      return {
+        ...state,
+        creating: {
+          ...state.creating,
+          consulTokens: action.payload
+        }
       }
     case 'SET_CREATE_GITLAB_REPOSITORY':
       return {

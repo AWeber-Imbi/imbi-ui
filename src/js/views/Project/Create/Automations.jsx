@@ -47,6 +47,12 @@ function Automations({ localDispatch, localState, user }) {
     namespace.sentry_team_slug &&
     globalState.integrations.sentry.enabled
 
+  const consulEnabled =
+    globalState.integrations.consul.enabled &&
+    globalState.integrations.consul.enabled_project_types.includes(
+      localState.attributes.project_type_id
+    )
+
   function manageAutomationLinks(automationEnabled, project_link_type_id) {
     const automationLinks = new Set(localState.automationLinks)
     if (automationEnabled && project_link_type_id !== null)
@@ -78,6 +84,8 @@ function Automations({ localDispatch, localState, user }) {
         localDispatch({ type: 'SET_CREATING_GITLAB_REPOSITORY', payload: true })
       if (sentryEnabled)
         localDispatch({ type: 'SET_CREATING_SENTRY_PROJECT', payload: true })
+      if (consulEnabled)
+        localDispatch({ type: 'SET_CREATING_CONSUL_TOKENS', payload: true })
     }
   }, [localState.saved.attributes])
 
@@ -270,7 +278,36 @@ function Automations({ localDispatch, localState, user }) {
     }
   }, [localState.creating.sentryProject])
 
+  // Create Consul Tokens
+  useEffect(() => {
+    async function createConsulTokens() {
+      let result = await httpPost(
+        globalState.fetch,
+        new URL('/ui/automations/consul/create-token', globalState.baseURL),
+        {
+          project_id: localState.projectId
+        }
+      )
+      if (result.success) {
+        localDispatch({ type: 'SET_CREATED_CONSUL_TOKENS', payload: true })
+        localDispatch({ type: 'SET_CREATING_CONSUL_TOKENS', payload: false })
+      } else {
+        localDispatch({ type: 'SET_CREATING_CONSUL_TOKENS', payload: false })
+        localDispatch({ type: 'SET_ERROR_MESSAGE', payload: result.data })
+        localDispatch({ type: 'SET_IS_SAVING', payload: false })
+      }
+    }
+    if (
+      localState.isSaving &&
+      localState.creating.consulTokens &&
+      !localState.created.consulTokens
+    ) {
+      createConsulTokens()
+    }
+  }, [localState.creating.consulTokens])
+
   if (
+    consulEnabled ||
     gitlabEnabled ||
     globalState.integrations.sonarqube.enabled ||
     grafanaEnabled ||
@@ -362,6 +399,20 @@ function Automations({ localDispatch, localState, user }) {
                 })
               }}
               value={localState.dashboardCookieCutter}
+            />
+          )}
+          {consulEnabled && (
+            <Form.Field
+              title="Enable consul token creation"
+              name="createConsulTokens"
+              type="toggle"
+              onChange={(key, value) => {
+                localDispatch({
+                  type: 'SET_CREATE_CONSUL_TOKENS',
+                  payload: value
+                })
+              }}
+              value={localState.createConsulTokens}
             />
           )}
         </Fragment>
