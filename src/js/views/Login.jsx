@@ -2,11 +2,16 @@ import PropTypes from 'prop-types'
 import React, { useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Alert } from '../components'
+import { Alert, Button } from '../components'
 import { Context } from '../state'
 import { httpPost, setDocumentTitle } from '../utils'
 
-function Login({ onLoginCallback, useLDAP }) {
+function Login({
+  onLoginCallback,
+  useLDAP,
+  googleClientId,
+  googleAuthorizationEndpoint
+}) {
   const [globalState] = useContext(Context)
   const [state, setState] = useState({
     credentials: {
@@ -20,6 +25,25 @@ function Login({ onLoginCallback, useLDAP }) {
   const usernameRef = useRef()
 
   setDocumentTitle(t('login.signIn'))
+
+  function redirectToGoogle(e) {
+    e.preventDefault()
+    const redirectUri = new URL('/google/auth', globalState.baseURL).toString()
+    const scopes = [
+      'openid',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ].join(' ')
+    document.location =
+      `${googleAuthorizationEndpoint}` +
+      `?client_id=${googleClientId}` +
+      `&redirect_uri=${redirectUri}` +
+      '&response_type=code' +
+      `&scope=${scopes}` +
+      '&access_type=offline' +
+      '&include_granted_scopes=true' +
+      '&prompt=select_account'
+  }
 
   function onChange(e) {
     const { name, value } = e.target
@@ -55,7 +79,7 @@ function Login({ onLoginCallback, useLDAP }) {
     <main className="flex flex-row flex-grow overflow-y-auto">
       <div className="container mx-auto my-auto">
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-white py-8 px-4 space-y-8 shadow sm:rounded-lg sm:px-10">
             <form className="space-y-6" action="#" onSubmit={onSubmit}>
               <div className="rounded-md shadow-sm -space-y-px">
                 {state.errorMessage !== null && (
@@ -129,6 +153,10 @@ function Login({ onLoginCallback, useLDAP }) {
                 </div>
               </div>
             </form>
+            <div className="h-[1px] bg-gray-200"></div>
+            <div className="flex justify-center">
+              <Button onClick={redirectToGoogle}>Sign in with Google</Button>
+            </div>
           </div>
         </div>
       </div>
@@ -137,6 +165,8 @@ function Login({ onLoginCallback, useLDAP }) {
 }
 Login.propTypes = {
   onLoginCallback: PropTypes.func,
-  useLDAP: PropTypes.bool
+  useLDAP: PropTypes.bool,
+  googleClientId: PropTypes.string,
+  googleAuthorizationEndpoint: PropTypes.string
 }
 export { Login }

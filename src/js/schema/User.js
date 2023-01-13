@@ -11,5 +11,6 @@ export const User = {
   permissions: PropTypes.arrayOf(PropTypes.string),
   last_refreshed_at: PropTypes.string,
   last_seen_at: PropTypes.string,
-  integrations: PropTypes.arrayOf(PropTypes.string)
+  integrations: PropTypes.arrayOf(PropTypes.string),
+  google_user: PropTypes.bool
 }

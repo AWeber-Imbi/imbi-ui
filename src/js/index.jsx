@@ -36,7 +36,9 @@ function App({
   service,
   sonarqubeEnabled,
   url,
-  version
+  version,
+  googleOauthClientId,
+  googleAuthorizationEndpoint
 }) {
   if (isURL(sentry_dsn))
     Sentry.init({
@@ -113,7 +115,12 @@ function App({
     } else if (userState.initialized && !userState.authenticated) {
       // Display Login Form
       setContent(
-        <Login onLoginCallback={setUserData} useLDAP={ldap === 'true'} />
+        <Login
+          onLoginCallback={setUserData}
+          useLDAP={ldap === 'true'}
+          googleClientId={googleOauthClientId}
+          googleAuthorizationEndpoint={googleAuthorizationEndpoint}
+        />
       )
     } else if (userState.authenticated) {
       setContent(
@@ -161,7 +168,9 @@ App.propTypes = {
   sentry_dsn: PropTypes.string,
   sonarqubeEnabled: PropTypes.string,
   url: PropTypes.string,
-  version: PropTypes.string
+  version: PropTypes.string,
+  googleOauthClientId: PropTypes.string,
+  googleAuthorizationEndpoint: PropTypes.string
 }
 
 const root = document.getElementById('app')
