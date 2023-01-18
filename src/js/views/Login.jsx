@@ -7,12 +7,7 @@ import { Context } from '../state'
 import { httpPost, setDocumentTitle } from '../utils'
 import { Link } from 'react-router-dom'
 
-function Login({
-  onLoginCallback,
-  useLDAP,
-  googleClientId,
-  googleAuthorizationEndpoint
-}) {
+function Login({ onLoginCallback, useLDAP }) {
   const [globalState] = useContext(Context)
   const [state, setState] = useState({
     credentials: {
@@ -149,8 +144,6 @@ function Login({
 }
 Login.propTypes = {
   onLoginCallback: PropTypes.func,
-  useLDAP: PropTypes.bool,
-  googleClientId: PropTypes.string,
-  googleAuthorizationEndpoint: PropTypes.string
+  useLDAP: PropTypes.bool
 }
 export { Login }
