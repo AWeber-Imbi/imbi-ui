@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Button } from '../components'
 import { Context } from '../state'
 import { httpPost, setDocumentTitle } from '../utils'
+import { Link } from 'react-router-dom'
 
 function Login({
   onLoginCallback,
@@ -25,25 +26,6 @@ function Login({
   const usernameRef = useRef()
 
   setDocumentTitle(t('login.signIn'))
-
-  function redirectToGoogle(e) {
-    e.preventDefault()
-    const redirectUri = new URL('/google/auth', globalState.baseURL).toString()
-    const scopes = [
-      'openid',
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile'
-    ].join(' ')
-    document.location =
-      `${googleAuthorizationEndpoint}` +
-      `?client_id=${googleClientId}` +
-      `&redirect_uri=${redirectUri}` +
-      '&response_type=code' +
-      `&scope=${scopes}` +
-      '&access_type=offline' +
-      '&include_granted_scopes=true' +
-      '&prompt=select_account'
-  }
 
   function onChange(e) {
     const { name, value } = e.target
@@ -155,7 +137,9 @@ function Login({
             </form>
             <div className="h-[1px] bg-gray-200"></div>
             <div className="flex justify-center">
-              <Button onClick={redirectToGoogle}>Sign in with Google</Button>
+              <Link reloadDocument to="/ui/login/google">
+                <Button>Sign in with Google</Button>
+              </Link>
             </div>
           </div>
         </div>
