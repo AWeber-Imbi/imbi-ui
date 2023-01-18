@@ -2,9 +2,10 @@ import PropTypes from 'prop-types'
 import React, { useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Alert } from '../components'
+import { Alert, Button } from '../components'
 import { Context } from '../state'
 import { httpPost, setDocumentTitle } from '../utils'
+import { Link } from 'react-router-dom'
 
 function Login({ onLoginCallback, useLDAP }) {
   const [globalState] = useContext(Context)
@@ -55,7 +56,7 @@ function Login({ onLoginCallback, useLDAP }) {
     <main className="flex flex-row flex-grow overflow-y-auto">
       <div className="container mx-auto my-auto">
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-white py-8 px-4 space-y-8 shadow sm:rounded-lg sm:px-10">
             <form className="space-y-6" action="#" onSubmit={onSubmit}>
               <div className="rounded-md shadow-sm -space-y-px">
                 {state.errorMessage !== null && (
@@ -129,6 +130,12 @@ function Login({ onLoginCallback, useLDAP }) {
                 </div>
               </div>
             </form>
+            <div className="h-[1px] bg-gray-200"></div>
+            <div className="flex justify-center">
+              <Link reloadDocument to="/ui/login/google">
+                <Button>Sign in with Google</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
