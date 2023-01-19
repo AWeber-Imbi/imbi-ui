@@ -5,7 +5,7 @@ export const User = {
   username: PropTypes.string,
   display_name: PropTypes.string,
   email_address: PropTypes.string,
-  user_type: PropTypes.oneOf(['internal', 'ldap']),
+  user_type: PropTypes.oneOf(['google', 'internal', 'ldap']),
   external_id: PropTypes.string,
   groups: PropTypes.arrayOf(PropTypes.string),
   permissions: PropTypes.arrayOf(PropTypes.string),
