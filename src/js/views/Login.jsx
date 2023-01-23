@@ -133,7 +133,7 @@ function Login({ onLoginCallback, useLDAP }) {
             <div className="h-[1px] bg-gray-200"></div>
             <div className="flex justify-center">
               <Link reloadDocument to="/ui/login/google">
-                <Button>Sign in with Google</Button>
+                <Button>{t('login.signInWithGoogle')}</Button>
               </Link>
             </div>
           </div>
