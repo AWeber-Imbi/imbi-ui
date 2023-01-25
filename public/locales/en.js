@@ -218,7 +218,8 @@ export default {
       login: {
         username: 'User Name',
         password: 'Password',
-        signIn: 'Sign in'
+        signIn: 'Sign in',
+        signInWithGoogle: 'Sign in with Google'
       },
       dashboard: {
         title: 'Dashboard',
