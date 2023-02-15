@@ -7,7 +7,7 @@ import { Button } from '..'
 function Footer({ children, disabled, instructions, onSubmitClick }) {
   const { t } = useTranslation()
   return (
-    <div className="flex flex-row border-t border-gray-300 mt-10 pt-5">
+    <div className="flex flex-row mt-10 pt-5">
       {instructions}
       <div className="flex-grow text-right space-x-3">
         <Button

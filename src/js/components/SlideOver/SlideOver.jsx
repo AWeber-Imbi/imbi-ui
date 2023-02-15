@@ -41,7 +41,7 @@ function SlideOver({
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-2xl">
                   <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
                     <div className="px-4 sm:px-6">
-                      <div className="flex items-start justify-between border-b border-gray-400 pb-5">
+                      <div className="flex items-start justify-between pb-5">
                         <Dialog.Title className="text-xl font-medium text-gray-900">
                           {title}
                         </Dialog.Title>
