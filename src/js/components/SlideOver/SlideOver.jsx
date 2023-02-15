@@ -42,7 +42,7 @@ function SlideOver({
                   <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
                     <div className="px-4 sm:px-6">
                       <div className="flex items-start justify-between border-b border-gray-400 pb-5">
-                        <Dialog.Title className="text-lg font-medium text-gray-900">
+                        <Dialog.Title className="text-xl font-medium text-gray-900">
                           {title}
                         </Dialog.Title>
                         <div className="ml-3 flex h-7 items-center">
