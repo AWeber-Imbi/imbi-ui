@@ -187,7 +187,7 @@ function OperationsLog({ projectID, urlPath, className }) {
       },
       {
         title: t('operationsLog.recordedBy'),
-        name: 'recorded_by',
+        name: 'display_name',
         type: 'text',
         tableOptions: {
           headerClassName: 'w-2/12 truncate',
