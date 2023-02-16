@@ -18,6 +18,7 @@ function SimpleForm({
   const { t } = useTranslation()
   return (
     <form
+      className="space-y-5"
       onSubmit={(event) => {
         event.preventDefault()
         onSubmit()
