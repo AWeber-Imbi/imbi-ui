@@ -1,11 +1,5 @@
 import PropTypes from 'prop-types'
-import React, {
-  Fragment,
-  useContext,
-  useEffect,
-  useReducer,
-  useState
-} from 'react'
+import React, { useContext, useEffect, useReducer, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -99,23 +93,21 @@ function Create({ user }) {
         submitButtonText={
           localState.isSaving ? t('common.saving') : t('common.save')
         }>
-        <Fragment>
-          <Attributes localDispatch={localDispatch} localState={localState} />
-          {automationsEnabled && (
-            <Automations
-              localDispatch={localDispatch}
-              localState={localState}
-              user={user}
-            />
+        <Attributes localDispatch={localDispatch} localState={localState} />
+        {automationsEnabled && (
+          <Automations
+            localDispatch={localDispatch}
+            localState={localState}
+            user={user}
+          />
+        )}
+        {localState.attributes.environments !== null &&
+          localState.attributes.environments.length > 0 && (
+            <URLs localDispatch={localDispatch} localState={localState} />
           )}
-          {localState.attributes.environments !== null &&
-            localState.attributes.environments.length > 0 && (
-              <URLs localDispatch={localDispatch} localState={localState} />
-            )}
-          {globalState.metadata.projectLinkTypes.length > 0 && (
-            <Links localDispatch={localDispatch} localState={localState} />
-          )}
-        </Fragment>
+        {globalState.metadata.projectLinkTypes.length > 0 && (
+          <Links localDispatch={localDispatch} localState={localState} />
+        )}
       </Form.MultiSectionForm>
       {showGitlabModal && (
         <GitlabConnectModal
