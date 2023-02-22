@@ -219,7 +219,9 @@ export default {
         username: 'User Name',
         password: 'Password',
         signIn: 'Sign in',
-        signInWithGoogle: 'Sign in with Google'
+        title: 'Imbi Sign In',
+        signInWithGoogle: 'Sign in with Google',
+        googleRequired: 'Imbi requires signing in with Google.'
       },
       dashboard: {
         title: 'Dashboard',

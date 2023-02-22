@@ -6,6 +6,7 @@ import { Alert } from '../../components'
 import { Context } from '../../state'
 import { httpPost, setDocumentTitle } from '../../utils'
 import { Google } from './Google'
+import Logo from '../../../images/logo.svg'
 
 function Login({ onLoginCallback, useLDAP, useLocalUsers, useGoogle }) {
   const [globalState] = useContext(Context)
@@ -57,6 +58,14 @@ function Login({ onLoginCallback, useLDAP, useLocalUsers, useGoogle }) {
       <div className="container mx-auto my-auto">
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 space-y-8 shadow sm:rounded-lg sm:px-10">
+            <div className="flex flex-col items-center mb-4 gap-2">
+              <img
+                src={Logo}
+                style={{ height: '56px', width: '56px' }}
+                alt=""
+              />
+              <h1 className="text-xl text-gray-700">{t('login.title')}</h1>
+            </div>
             {(useLocalUsers || useLDAP) && (
               <form className="space-y-6" action=".#" onSubmit={onSubmit}>
                 <div className="rounded-md shadow-sm -space-y-px">
@@ -133,14 +142,16 @@ function Login({ onLoginCallback, useLDAP, useLocalUsers, useGoogle }) {
               </form>
             )}
             {useGoogle && (
-              <>
-                {(useLDAP || useLocalUsers) && (
-                  <div className="h-[1px] bg-gray-200"></div>
+              <div className="flex flex-col items-center gap-4">
+                {((useLDAP || useLocalUsers) && (
+                  <div className="h-[1px] bg-gray-200 w-full mb-4"></div>
+                )) || (
+                  <p className="text-sm font-medium text-gray-500">
+                    {t('login.googleRequired')}
+                  </p>
                 )}
-                <div className="flex justify-center">
-                  <Google />
-                </div>
-              </>
+                <Google />
+              </div>
             )}
           </div>
         </div>
