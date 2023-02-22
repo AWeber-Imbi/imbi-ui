@@ -30,7 +30,9 @@ function App({
   footerIcon,
   footerText,
   footerUrl,
+  google,
   ldap,
+  localUsers,
   logo,
   sentry_dsn,
   service,
@@ -113,7 +115,12 @@ function App({
     } else if (userState.initialized && !userState.authenticated) {
       // Display Login Form
       setContent(
-        <Login onLoginCallback={setUserData} useLDAP={ldap === 'true'} />
+        <Login
+          onLoginCallback={setUserData}
+          useLDAP={ldap === 'true'}
+          useLocalUsers={localUsers === 'true'}
+          useGoogle={google === 'true'}
+        />
       )
     } else if (userState.authenticated) {
       setContent(
@@ -154,7 +161,9 @@ App.propTypes = {
   footerIcon: PropTypes.string,
   footerText: PropTypes.string,
   footerUrl: PropTypes.string,
+  google: PropTypes.string,
   ldap: PropTypes.string,
+  localUsers: PropTypes.string,
   logo: PropTypes.string,
   projectUrlTemplate: PropTypes.string,
   service: PropTypes.string,
