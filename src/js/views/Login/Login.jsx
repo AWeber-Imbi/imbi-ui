@@ -2,9 +2,9 @@ import PropTypes from 'prop-types'
 import React, { useContext, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Alert, Button } from '../components'
-import { Context } from '../state'
-import { httpPost, setDocumentTitle } from '../utils'
+import { Alert, Button } from '../../components'
+import { Context } from '../../state'
+import { httpPost, setDocumentTitle } from '../../utils'
 import { Link } from 'react-router-dom'
 
 function Login({ onLoginCallback, useLDAP, useLocalUsers, useGoogle }) {
@@ -58,7 +58,7 @@ function Login({ onLoginCallback, useLDAP, useLocalUsers, useGoogle }) {
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 space-y-8 shadow sm:rounded-lg sm:px-10">
             {(useLocalUsers || useLDAP) && (
-              <form className="space-y-6" action="#" onSubmit={onSubmit}>
+              <form className="space-y-6" action=".#" onSubmit={onSubmit}>
                 <div className="rounded-md shadow-sm -space-y-px">
                   {state.errorMessage !== null && (
                     <div className="pb-4">
