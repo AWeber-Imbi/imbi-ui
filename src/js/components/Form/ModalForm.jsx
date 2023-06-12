@@ -87,7 +87,7 @@ function ModalForm({
     <Modal onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <Modal.Title>{saving ? savingTitle : title}</Modal.Title>
-        <div className="text-gray-500">
+        <div className="text-gray-500 space-y-5">
           {ignoreErrors !== true && errorMessage !== null && (
             <Alert className="mb-3" level="error">
               {errorMessage}

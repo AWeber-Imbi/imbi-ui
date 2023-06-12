@@ -40,22 +40,20 @@ function SlideOver({
                 leaveTo="translate-x-full">
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-2xl">
                   <div className="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
-                    <div className="px-4 sm:px-6">
-                      <div className="flex items-start justify-between border-b border-gray-400 pb-5">
-                        <Dialog.Title className="text-lg font-medium text-gray-900">
-                          {title}
-                        </Dialog.Title>
-                        <div className="ml-3 flex h-7 items-center">
-                          <button
-                            type="button"
-                            className="outline-offset-4"
-                            onClick={() => onClose()}>
-                            <Icon icon="fas times-circle" className="block" />
-                          </button>
-                        </div>
+                    <div className="flex items-start justify-between mb-5 mx-4 sm:mx-6">
+                      <Dialog.Title className="text-xl font-medium text-gray-900">
+                        {title}
+                      </Dialog.Title>
+                      <div className="ml-3 flex h-7 items-center">
+                        <button
+                          type="button"
+                          className="outline-offset-4"
+                          onClick={() => onClose()}>
+                          <Icon icon="fas times-circle" className="block" />
+                        </button>
                       </div>
                     </div>
-                    <div className="relative mt-6 flex-1 px-4 sm:px-6">
+                    <div className="relative flex-1 mt-2 px-4 sm:px-6">
                       {children}
                     </div>
                   </div>

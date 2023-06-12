@@ -5,11 +5,10 @@ import { Icon } from '../Icon/Icon'
 function Definition({ term, icon, children, className }) {
   return (
     <div>
-      <dt className="font-medium text-gray-500 w-48">{term}</dt>
-      <dd
-        className={`mt-1 items-start ${
-          className !== undefined ? className : ''
-        }`}>
+      <dt className="text-xs font-medium text-gray-500 w-48 tracking-wider">
+        {term}
+      </dt>
+      <dd className={`items-start ${className !== undefined ? className : ''}`}>
         {icon && <Icon icon={icon} className="mr-2 " />}
         {children}
       </dd>

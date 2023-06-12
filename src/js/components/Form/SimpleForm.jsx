@@ -18,6 +18,7 @@ function SimpleForm({
   const { t } = useTranslation()
   return (
     <form
+      className="space-y-5"
       onSubmit={(event) => {
         event.preventDefault()
         onSubmit()
@@ -28,7 +29,7 @@ function SimpleForm({
         </Alert>
       )}
       {children}
-      <div className="mt-5 sm:mt-6 text-right border-t border-gray-400 pt-5 mt-5 space-x-3">
+      <div className="mt-5 sm:mt-6 text-right pt-5 mt-5 space-x-3">
         <Button
           className={'btn-white'}
           disabled={saving === true}

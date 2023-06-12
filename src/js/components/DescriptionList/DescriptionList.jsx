@@ -1,14 +1,18 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-function DescriptionList({ children }) {
+function DescriptionList({ children, className }) {
   return (
-    <dl className="lg:ml-4 my-3 space-y-3 overflow-hidden text-gray-900">
+    <dl className={`space-y-3 overflow-hidden text-gray-900 ${className}`}>
       {children}
     </dl>
   )
 }
+DescriptionList.defaultProps = {
+  className: ''
+}
 DescriptionList.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string
 }
 export { DescriptionList }

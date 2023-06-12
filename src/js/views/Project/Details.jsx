@@ -13,7 +13,7 @@ function Display({ project, onEditClick, shouldGrow }) {
   return (
     <Card className={`flex flex-col ${shouldGrow ? 'h-full' : ''}`}>
       <h2 className="font-medium mb-2">{t('terms.projectInfo')}</h2>
-      <DescriptionList>
+      <DescriptionList className="my-3">
         <Definition term={t('terms.namespace')} icon={project.namespace_icon}>
           {project.namespace}
         </Definition>

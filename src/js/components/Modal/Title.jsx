@@ -8,7 +8,7 @@ class Title extends React.PureComponent {
   render() {
     return (
       <Dialog.Title>
-        <div className="text-xl text-gray-500 border-b border-gray-400 pb-2 mb-5">
+        <div className="text-xl text-gray-900 pb-2 mb-5">
           {this.props.icon && <Icon className="mr-2" icon={this.props.icon} />}
           {this.props.children}
         </div>

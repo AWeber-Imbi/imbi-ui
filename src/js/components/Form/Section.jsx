@@ -5,11 +5,11 @@ function Section({ name, title, firstSection, children }) {
   return (
     <Fragment>
       <div className={firstSection ? '' : 'pt-5'}>
-        <h3 className="text-lg leading-6 font-medium">
+        <h3 className="text-lg leading-6 font-medium mb-5">
           <a name={name}>{title}</a>
         </h3>
       </div>
-      <div className="border-t border-gray-300 w-full pl-5">{children}</div>
+      <div className="w-full space-y-5">{children}</div>
     </Fragment>
   )
 }
