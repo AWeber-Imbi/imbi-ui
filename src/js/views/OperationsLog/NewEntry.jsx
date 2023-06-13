@@ -97,7 +97,10 @@ function NewEntry({ user }) {
     <ErrorBoundary>
       <Form.MultiSectionForm
         disabled={
-          !fields.change_type || !fields.environment || !fields.recorded_at
+          !fields.change_type ||
+          !fields.environment ||
+          !fields.recorded_at ||
+          !fields.description
         }
         sideBarTitle={t('operationsLog.create.sideBarTitle')}
         icon="fas file"
@@ -158,7 +161,7 @@ function NewEntry({ user }) {
           title={t('operationsLog.description')}
           name="description"
           type="text"
-          required={false}
+          required={true}
           description={t('operationsLog.descriptionDescription')}
           onChange={onChange}
           value={fields.description}

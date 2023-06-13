@@ -36,7 +36,13 @@ export const jsonSchema = {
     }
   },
   additionalProperties: false,
-  required: ['recorded_at', 'recorded_by', 'environment', 'change_type']
+  required: [
+    'recorded_at',
+    'recorded_by',
+    'environment',
+    'change_type',
+    'description'
+  ]
 }
 
 export const propTypes = {
