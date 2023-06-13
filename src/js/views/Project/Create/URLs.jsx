@@ -6,11 +6,19 @@ import { httpPost, isURL } from '../../../utils'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 
-function renderURLTemplate(urlTemplate, attributes, environment) {
+function renderURLTemplate(
+  urlTemplate,
+  attributes,
+  environment,
+  namespaceSlug
+) {
   let url = urlTemplate.replace(
     '{environment}',
     environment.toString().toLowerCase()
   )
+  if (namespaceSlug) {
+    url = url.replace('{namespace}', namespaceSlug.toLowerCase())
+  }
   for (const [key, value] of Object.entries(attributes)) {
     if (value !== null)
       url = url.replace(`{${key}}`, value.toString().toLowerCase())
@@ -45,12 +53,20 @@ function URLs({ localDispatch, localState }) {
     ) {
       if (globalState.projectURLTemplate !== '') {
         const urls = {}
+        let namespaceSlug
+        for (let namespace of globalState.metadata.namespaces) {
+          if (namespace.id === localState.attributes.namespace_id) {
+            namespaceSlug = namespace.slug
+            break
+          }
+        }
         localState.attributes.environments.forEach((environment) => {
           if (localState.urls[environment] === undefined) {
             urls[environment] = renderURLTemplate(
               globalState.projectURLTemplate,
               localState.attributes,
-              environment
+              environment,
+              namespaceSlug
             )
           }
         })
