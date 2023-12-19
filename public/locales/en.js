@@ -6,6 +6,7 @@ export default {
         cancel: 'Cancel',
         close: 'Close',
         configuration: 'Configuration',
+        createdAt: 'Created At',
         createdBy: 'Created By',
         description: 'Description',
         delete: 'Delete',
@@ -21,6 +22,8 @@ export default {
         initializing: 'Initializing',
         invalidURL: 'Value does not appear to be a URL',
         lastUpdated: 'Last Updated: {{date}}',
+        lastUpdatedBy: 'Last Updated By',
+        lastUpdatedTitle: 'Last Updated',
         loading: 'Loading',
         logs: 'Logs',
         name: 'Name',
@@ -352,7 +355,10 @@ export default {
           columns: {
             owner: 'Identifier Owner',
             externalId: 'Identifier'
-          }
+          },
+          externalId: 'External ID',
+          identifierTitle: 'Identifier for {{integrationName}}',
+          integrationName: 'Integration Name'
         },
         links: 'Links',
         linksSaved: 'Links Saved',

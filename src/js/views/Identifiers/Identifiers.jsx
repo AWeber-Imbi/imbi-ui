@@ -4,8 +4,10 @@ import { Context } from '../../state'
 import { Alert, Loading, Table } from '../../components'
 import { httpRequest, requestOptions } from '../../utils'
 import { useTranslation } from 'react-i18next'
+import { SlideOver } from '../../components/SlideOver/SlideOver'
+import { ViewIdentifier } from './ViewIdentifier'
 
-function IdentifierTable({ identifiers }) {
+function IdentifierTable({ identifiers, projectId }) {
   const { t } = useTranslation()
 
   function buildColumns() {
@@ -23,9 +25,42 @@ function IdentifierTable({ identifiers }) {
     ]
   }
 
-  return <Table columns={buildColumns()} data={identifiers} />
+  const [viewSlideOverOpen, setViewSlideOverOpen] = useState(false)
+  const [selectedIdentifier, setSelectedIdentifier] = useState(null)
+
+  return (
+    <>
+      <Table
+        columns={buildColumns()}
+        data={identifiers}
+        onRowClick={({ index }) => {
+          setSelectedIdentifier(identifiers[index])
+          setViewSlideOverOpen(true)
+        }}
+      />
+      {selectedIdentifier !== null ? (
+        <SlideOver
+          open={viewSlideOverOpen}
+          onClose={() => {
+            setViewSlideOverOpen(false)
+          }}
+          title={
+            <div>
+              {t('project.identifiers.identifierTitle', {
+                integrationName: selectedIdentifier.integration_name
+              })}
+            </div>
+          }>
+          <ViewIdentifier cachedIdentifier={selectedIdentifier} />
+        </SlideOver>
+      ) : (
+        <></>
+      )}
+    </>
+  )
 }
 IdentifierTable.propTypes = {
+  projectId: PropTypes.number.isRequired,
   identifiers: PropTypes.arrayOf(PropTypes.object).isRequired
 }
 
@@ -58,7 +93,7 @@ function Identifiers({ project }) {
   ) : identifiers === null ? (
     <Loading />
   ) : (
-    <IdentifierTable identifiers={identifiers} />
+    <IdentifierTable identifiers={identifiers} projectId={projectId} />
   )
 }
 Identifiers.propTypes = {
