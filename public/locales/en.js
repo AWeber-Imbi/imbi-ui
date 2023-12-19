@@ -65,6 +65,7 @@ export default {
         projects: 'Projects',
         projectInfo: 'Project Information',
         projectFacts: 'Project Facts',
+        projectIdentifiers: 'Project Identifiers',
         projectNote: 'Note',
         projectNotes: 'Notes',
         projectType: 'Project Type',
@@ -347,6 +348,12 @@ export default {
           repoCreated: 'GitLab Repository Created'
         },
         id: 'Project ID',
+        identifiers: {
+          columns: {
+            owner: 'Identifier Owner',
+            externalId: 'Identifier'
+          }
+        },
         links: 'Links',
         linksSaved: 'Links Saved',
         logs: 'Logs',
