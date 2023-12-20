@@ -357,6 +357,9 @@ export default {
             externalId: 'Identifier'
           },
           addIdentifier: 'Add Identifier',
+          deleteTitle: 'Delete {{integrationName}} identifier',
+          deleteConfirmation:
+            'Are you sure you would like to delete this identifier?',
           externalId: 'External ID',
           integrationName: 'Integration Name',
           identifierTitle: 'Identifier for {{integrationName}}',

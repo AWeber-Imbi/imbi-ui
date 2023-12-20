@@ -84,6 +84,10 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
           }>
           <ViewIdentifier
             cachedIdentifier={selectedIdentifier}
+            onDelete={() => {
+              setViewSlideOverOpen(false)
+              onChange()
+            }}
           />
         </SlideOver>
       ) : (
