@@ -28,12 +28,18 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
 
   const [addSlideOverOpen, setAddSlideOverOpen] = useState(false)
   const [viewSlideOverOpen, setViewSlideOverOpen] = useState(false)
-  const [selectedIdentifier, setSelectedIdentifier] = useState(null)
+  const [selectedIndex, setSelectedIndex] = useState(null)
   const [availableIntegrations, setAvailableIntegrations] =
     useState(integrations)
 
   function addIdentifier() {
     setAddSlideOverOpen(true)
+  }
+
+  function onIdentifierModified() {
+    setViewSlideOverOpen(false)
+    setSelectedIndex(null)
+    onChange()
   }
 
   useEffect(() => {
@@ -48,7 +54,7 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
         columns={buildColumns()}
         data={identifiers}
         onRowClick={({ index }) => {
-          setSelectedIdentifier(identifiers[index])
+          setSelectedIndex(index)
           setViewSlideOverOpen(true)
         }}
       />
@@ -66,7 +72,7 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
           onCancel={() => setAddSlideOverOpen(false)}
         />
       </SlideOver>
-      {selectedIdentifier !== null ? (
+      {selectedIndex !== null ? (
         <SlideOver
           open={viewSlideOverOpen}
           onClose={() => {
@@ -78,16 +84,19 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
               i18n={i18n}
               t={t}>
               <span>
-                {{ integrationName: selectedIdentifier.integration_name }}
+                {{
+                  integrationName: identifiers[selectedIndex].integration_name
+                }}
               </span>
             </Trans>
           }>
           <ViewIdentifier
-            cachedIdentifier={selectedIdentifier}
-            onDelete={() => {
-              setViewSlideOverOpen(false)
-              onChange()
-            }}
+            cachedIdentifier={identifiers[selectedIndex]}
+            integrations={availableIntegrations.concat(
+              identifiers[selectedIndex].integration_name
+            )}
+            onDelete={onIdentifierModified}
+            onUpdate={onIdentifierModified}
           />
         </SlideOver>
       ) : (
