@@ -356,9 +356,11 @@ export default {
             owner: 'Identifier Owner',
             externalId: 'Identifier'
           },
+          addIdentifier: 'Add Identifier',
           externalId: 'External ID',
+          integrationName: 'Integration Name',
           identifierTitle: 'Identifier for {{integrationName}}',
-          integrationName: 'Integration Name'
+          newIdentifier: 'New Identifier'
         },
         links: 'Links',
         linksSaved: 'Links Saved',
