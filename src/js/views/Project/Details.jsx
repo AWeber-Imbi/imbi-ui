@@ -105,7 +105,7 @@ function Details({ project, editing, onEditing, refresh, shouldGrow }) {
     <Display
       project={project}
       onEditClick={() => onEditing(true)}
-      shouldGrow={shouldGrow}
+      shouldGrow={false}
     />
   )
 }
