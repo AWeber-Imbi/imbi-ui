@@ -50,14 +50,18 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
 
   return (
     <>
-      <Table
-        columns={buildColumns()}
-        data={identifiers}
-        onRowClick={({ index }) => {
-          setSelectedIndex(index)
-          setViewSlideOverOpen(true)
-        }}
-      />
+      {identifiers.length > 0 ? (
+        <Table
+          columns={buildColumns()}
+          data={identifiers}
+          onRowClick={({ index }) => {
+            setSelectedIndex(index)
+            setViewSlideOverOpen(true)
+          }}
+        />
+      ) : (
+        <></>
+      )}
       <SlideOver
         title={t('project.identifiers.newIdentifier')}
         open={addSlideOverOpen}
@@ -128,7 +132,7 @@ IdentifierTable.propTypes = {
   onChange: PropTypes.func.isRequired
 }
 
-function Identifiers({ project }) {
+function Identifiers({ project, setIntegrationCount }) {
   const [globalState] = useContext(Context)
   const projectId = project.id
   const [identifiers, setIdentifiers] = useState(null)
@@ -162,6 +166,9 @@ function Identifiers({ project }) {
       ).then(({ data, success }) => {
         if (success) {
           setIntegrations(data.map((elm) => elm.name))
+          if (setIntegrationCount !== undefined) {
+            setIntegrationCount(data.length)
+          }
         }
       })
     }
@@ -185,7 +192,8 @@ function Identifiers({ project }) {
   )
 }
 Identifiers.propTypes = {
-  project: PropTypes.object.isRequired
+  project: PropTypes.object.isRequired,
+  setIntegrationCount: PropTypes.func
 }
 
 export { Identifiers }

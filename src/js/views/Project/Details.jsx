@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Button, Card, Icon } from '../../components'
 import { useTranslation } from 'react-i18next'
@@ -11,6 +11,17 @@ import { Identifiers } from '../Identifiers'
 
 function Display({ project, onEditClick, shouldGrow }) {
   const { t } = useTranslation()
+  const [integrationCount, setIntegrationCount] = useState()
+  const [displayIdentifiers, setDisplayIdentifiers] = useState()
+
+  useEffect(() => {
+    if (integrationCount === 0) {
+      setDisplayIdentifiers(false)
+    } else if (integrationCount > 0) {
+      setDisplayIdentifiers(true)
+    }
+  }, [integrationCount, setDisplayIdentifiers])
+
   return (
     <>
       <Card className={`flex flex-col ${shouldGrow ? 'h-full' : ''}`}>
@@ -74,12 +85,17 @@ function Display({ project, onEditClick, shouldGrow }) {
           </div>
         )}
       </Card>
-      <Card className="flex flex-col mt-3">
-        <h2 className="font-medium mb-2">{t('terms.projectIdentifiers')}</h2>
-        <div className="mt-3 mb-2">
-          <Identifiers project={project} />
-        </div>
-      </Card>
+      {displayIdentifiers !== false && (
+        <Card className="flex flex-col mt-3">
+          <h2 className="font-medium mb-2">{t('terms.projectIdentifiers')}</h2>
+          <div className="mt-3 mb-2">
+            <Identifiers
+              project={project}
+              setIntegrationCount={setIntegrationCount}
+            />
+          </div>
+        </Card>
+      )}
     </>
   )
 }
