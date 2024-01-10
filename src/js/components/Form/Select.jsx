@@ -48,7 +48,7 @@ function Select({
         (multiple === false ? ' truncate pr-6' : '') +
         (hasFocus === false && hasError === true ? ' border-red-700' : '')
       }
-      defaultValue={currentValue === null ? '' : currentValue}
+      value={currentValue === null ? '' : currentValue}
       disabled={disabled || readOnly}
       id={'field-' + name}
       multiple={multiple}

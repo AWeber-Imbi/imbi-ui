@@ -6,6 +6,7 @@ export default {
         cancel: 'Cancel',
         close: 'Close',
         configuration: 'Configuration',
+        createdAt: 'Created At',
         createdBy: 'Created By',
         description: 'Description',
         delete: 'Delete',
@@ -21,6 +22,8 @@ export default {
         initializing: 'Initializing',
         invalidURL: 'Value does not appear to be a URL',
         lastUpdated: 'Last Updated: {{date}}',
+        lastUpdatedBy: 'Last Updated By',
+        lastUpdatedTitle: 'Last Updated',
         loading: 'Loading',
         logs: 'Logs',
         name: 'Name',
@@ -65,6 +68,7 @@ export default {
         projects: 'Projects',
         projectInfo: 'Project Information',
         projectFacts: 'Project Facts',
+        projectIdentifiers: 'Project Identifiers',
         projectNote: 'Note',
         projectNotes: 'Notes',
         projectType: 'Project Type',
@@ -347,6 +351,20 @@ export default {
           repoCreated: 'GitLab Repository Created'
         },
         id: 'Project ID',
+        identifiers: {
+          columns: {
+            owner: 'Identifier Owner',
+            externalId: 'Identifier'
+          },
+          addIdentifier: 'Add Identifier',
+          deleteTitle: 'Delete {{integrationName}} identifier',
+          deleteConfirmation:
+            'Are you sure you would like to delete this identifier?',
+          externalId: 'External ID',
+          integrationName: 'Integration Name',
+          identifierTitle: 'Identifier for {{integrationName}}',
+          newIdentifier: 'New Identifier'
+        },
         links: 'Links',
         linksSaved: 'Links Saved',
         logs: 'Logs',
