@@ -162,8 +162,6 @@ function Projects() {
 
   function search() {
     if (state.fetching === false) {
-      setState({ ...state, fetching: true })
-
       let filter = state.filter
       if (state.filter === '' || state.filter === '*')
         filter = 'NOT archived:true'
@@ -173,14 +171,29 @@ function Projects() {
       )
         filter = `(${state.filter}) AND NOT archived:true`
 
+      let ast
+
+      try {
+        ast = fromKueryExpression(filter)
+      } catch (err) {
+        setState((prevState) => ({
+          ...prevState,
+          errorMessage: err.shortMessage
+        }))
+        return
+      }
+
       const query = {
-        query: toElasticsearchQuery(
-          fromKueryExpression(filter),
-          metadataAsOptions.openSearch
-        ),
+        query: toElasticsearchQuery(ast, metadataAsOptions.openSearch),
         fields: state.fields,
         size: 1000
       }
+
+      setState((prevState) => ({
+        ...prevState,
+        errorMessage: null,
+        fetching: true
+      }))
 
       httpPost(globalState.fetch, buildURL('/opensearch/projects'), query).then(
         ({ data, success }) => {
