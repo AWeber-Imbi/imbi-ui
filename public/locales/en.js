@@ -162,6 +162,11 @@ export default {
             title: 'Sentry Team Slug',
             description:
               'Sentry team that new projects for this namespace will be created in'
+          },
+          awsSsmSlug: {
+            title: 'AWS SSM Slug',
+            description:
+              'Namespace slug as it appears in the AWS SSM path prefix'
           }
         },
         projectFactTypes: {

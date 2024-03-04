@@ -84,6 +84,15 @@ export function Namespaces() {
           tableOptions: {
             headerClassName: 'w-2/12'
           }
+        },
+        {
+          title: t('admin.namespaces.awsSsmSlug.title'),
+          name: 'aws_ssm_slug',
+          description: t('admin.namespaces.awsSsmSlug.description'),
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-2/12'
+          }
         }
       ]}
       errorStrings={{
