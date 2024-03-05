@@ -1,6 +1,9 @@
 export default {
   en: {
     translation: {
+      aws: {
+        ssmParameter: 'SSM Parameter'
+      },
       common: {
         all: 'All',
         cancel: 'Cancel',
@@ -44,6 +47,7 @@ export default {
         textClass: 'Text Class',
         turnOff: 'Turn Off',
         turnOn: 'Turn On',
+        type: 'Type',
         updatedBy: 'Updated By',
         value: 'Value',
         welcome: 'Welcome'
