@@ -475,6 +475,10 @@ export default {
       },
       opensearch: {
         dql: 'OpenSearch Dashboards Query Language (DQL)'
+      },
+      wishedFutureState: {
+        configuration:
+          'This tab will provide an abstracted interface for editing the configuration in Consul, Vault, and K8s Configuration Maps.'
       }
     }
   }

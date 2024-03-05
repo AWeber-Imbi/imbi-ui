@@ -3,9 +3,11 @@ import { Context } from '../../../state'
 import PropTypes from 'prop-types'
 import { SSMConfiguration } from './SSMConfiguration'
 import { WishedFutureState } from '../../../components'
+import { useTranslation } from 'react-i18next'
 
 function Configuration({ urlPath, project }) {
   const [globalState, dispatch] = useContext(Context)
+  const { t } = useTranslation()
 
   useEffect(() => {
     dispatch({
@@ -24,9 +26,7 @@ function Configuration({ urlPath, project }) {
       return (
         <div className="pt-20 flex items-center justify-center">
           <WishedFutureState>
-            This tab will provide an abstracted interface for editing the
-            configuration in Consul, Vault, AWS SSM Parameter Store, and K8s
-            Configuration Maps.
+            {t('wishedFutureState.configuration')}
           </WishedFutureState>
         </div>
       )
