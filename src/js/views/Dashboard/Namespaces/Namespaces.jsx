@@ -52,11 +52,11 @@ function Namespaces({ onReady }) {
             namespaceErrorMessage: null
           })
         },
-        (error) => {
+        ({ message }) => {
           setState({
             ...state,
             fetchedNamespaces: true,
-            namespaceErrorMessage: error
+            namespaceErrorMessage: message
           })
         }
       )
@@ -96,12 +96,12 @@ function Namespaces({ onReady }) {
             kpiHistoryErrorMessage: null
           })
         },
-        (error) => {
+        ({ message }) => {
           setState({
             ...state,
             kpiHistory: {},
             fetchedKPIHistory: false,
-            kpiHistoryErrorMessage: error
+            kpiHistoryErrorMessage: message
           })
         }
       )

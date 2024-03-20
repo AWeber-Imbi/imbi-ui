@@ -51,7 +51,7 @@ function ProjectPicker({
           fetchProjects(offset + limit)
         }
       },
-      (error) => onError(error)
+      ({ message }) => onError(message)
     )
   }
 

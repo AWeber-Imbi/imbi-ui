@@ -72,8 +72,8 @@ function Settings() {
           setRefresh(false)
           setTokens(data)
         },
-        (error) => {
-          setErrorMessage(error)
+        ({ message }) => {
+          setErrorMessage(message)
         }
       )
     }

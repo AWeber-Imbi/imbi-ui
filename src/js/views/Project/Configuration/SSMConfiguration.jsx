@@ -61,7 +61,7 @@ function SSMConfiguration({ project }) {
         setRows(data.sort((a, b) => (a.name > b.name ? 1 : -1)))
         setFetching(false)
       },
-      (message) => {
+      ({ message }) => {
         setErrorMessage(message)
         setFetching(false)
       }

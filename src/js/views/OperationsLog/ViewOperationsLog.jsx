@@ -50,11 +50,11 @@ function ViewOperationsLog({
             ({ data }) => {
               setEntry({ ...opsLog, project_name: data.name })
             },
-            (error) => setError(error)
+            ({ message }) => setError(message)
           )
         }
       },
-      (error) => setError(error)
+      ({ message }) => setError(message)
     )
   }
 

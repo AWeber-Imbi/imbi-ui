@@ -92,10 +92,10 @@ function useSettings() {
           setOpsLogURLTemplate(data.ops_log_ticket_slug_template)
           setLastUpdated(Date.now())
         },
-        (error) => {
+        ({ message }) => {
           dispatch({
             type: 'SET_ERROR',
-            error: `Failed to fetch settings ${error}`
+            error: `Failed to fetch settings ${message}`
           })
         }
       )
@@ -139,12 +139,12 @@ function useSettings() {
             }
           })
         },
-        (error) => {
+        ({ message }) => {
           setIntegrations({
             ...integrations,
             gitlab: {
               enabled: false,
-              error: error
+              error: message
             }
           })
         }

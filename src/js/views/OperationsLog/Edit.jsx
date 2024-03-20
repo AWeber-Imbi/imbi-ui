@@ -62,7 +62,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
           delete values.project_id
           setFieldValues(values)
         },
-        (error) => onError(error)
+        ({ message }) => onError(message)
       )
     } else {
       values.project = { project_id: '', namespace_id: '', project_type_id: '' }
