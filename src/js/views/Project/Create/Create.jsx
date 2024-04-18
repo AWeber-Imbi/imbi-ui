@@ -142,7 +142,15 @@ function Create() {
     if (response.success) {
       navigate(`/ui/projects/${response.data.id}`)
     } else {
-      setErrorMessage(response.data)
+      let errorMessage = response.data
+      if (response.responseBody?.title) {
+        if (response.responseBody?.detail) {
+          errorMessage = `${response.responseBody.title} - ${response.responseBody.detail}`
+        } else {
+          errorMessage = response.responseBody.title
+        }
+      }
+      setErrorMessage(errorMessage)
     }
   }
 
