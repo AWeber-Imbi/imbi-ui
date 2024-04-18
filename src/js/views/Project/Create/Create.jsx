@@ -1,156 +1,227 @@
-import PropTypes from 'prop-types'
-import React, { useContext, useEffect, useReducer, useState } from 'react'
+import PropTypes, { string } from 'prop-types'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { validate } from 'jsonschema'
 
 import { Context } from '../../../state'
 import { ErrorBoundary, Form } from '../../../components'
-import { User } from '../../../schema'
 
-import { Attributes } from './Attributes'
-import { Automations } from './Automations'
-import { initialState, reducer } from './Reducer'
-import { GitlabConnectModal } from './GitlabConnectModal'
-import { SavingDialog } from './SavingDialog'
-import { Links } from './Links'
-import { URLs } from './URLs'
+import { jsonSchema } from '../../../schema/Project'
+import { metadataAsOptions } from '../../../settings'
+import { httpGet, httpPost } from '../../../utils'
+
+import { AutomationList } from './AutomationList'
+
+const EMPTY_FIELDS = {
+  namespace_id: null,
+  project_type_id: null,
+  name: null,
+  slug: null,
+  description: null
+}
+
+function Automation({ automationName, integrationName, automationSlug }) {
+  return {
+    integrationName,
+    automationName,
+    automationSlug
+  }
+}
+Automation.propTypes = {
+  automationName: PropTypes.string.isRequired,
+  automationSlug: PropTypes.string.isRequired,
+  integrationName: PropTypes.string.isRequired
+}
 
 function Create({ user }) {
   const { t } = useTranslation()
-
-  const attributesLink = { href: '#attributes', label: t('project.attributes') }
-  const automationsLink = {
-    href: '#automations',
-    label: t('project.automations')
-  }
   const navigate = useNavigate()
-  const linksLink = { href: '#links', label: t('project.links') }
-  const urlsLink = { href: '#urls', label: t('project.urls') }
-  const [globalState, globalDispatch] = useContext(Context)
-  const [localState, localDispatch] = useReducer(reducer, initialState)
-  const [showGitlabModal, setShowGitlabModal] = useState(
-    globalState.integrations.gitlab.enabled &&
-      !user.integrations.includes('gitlab')
-  )
-  const automationsEnabled =
-    (globalState.integrations.gitlab.enabled &&
-      user.integrations.includes('gitlab')) ||
-    globalState.integrations.grafana.enabled ||
-    globalState.integrations.sentry.enabled ||
-    globalState.integrations.sonarqube.enabled
-  const [sidebarLinks, setSidebarLinks] = useState(buildSidebarLinks())
+  const [globalState] = useContext(Context)
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [fieldValues, setFieldValues] = useState(EMPTY_FIELDS)
+  const [fieldErrors, setFieldErrors] = useState(EMPTY_FIELDS)
+  const [isReady, setIsReady] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [automations, setAutomations] = useState([])
+  const [selectedAutomations, setSelectedAutomations] = useState([])
 
-  function buildSidebarLinks() {
-    const links = [attributesLink]
-    if (
-      localState.attributes.environments !== null &&
-      localState.attributes.environments.length > 0
+  useEffect(async () => {
+    /* fetch automations available for selected project type */
+    if (fieldValues.project_type_id) {
+      const url = new URL('/ui/available-automations', globalState.baseURL)
+      url.searchParams.append('project_type_id', fieldValues.project_type_id)
+      await httpGet(
+        globalState.fetch,
+        url,
+        ({ data }) => {
+          setAutomations(
+            data.map(({ automation_name, integration_name, automation_slug }) =>
+              Automation({
+                automationName: automation_name,
+                integrationName: integration_name,
+                automationSlug: automation_slug
+              })
+            )
+          )
+        },
+        ({ error }) => {
+          setErrorMessage(error)
+        }
+      )
+    }
+  }, [fieldValues.project_type_id])
+
+  useEffect(() => {
+    /* remove any previously selected automations that are no longer available */
+    const automationSlugs = new Set(automations.map((a) => a.automationSlug))
+    setSelectedAutomations((prevState) =>
+      prevState.filter((slug) => automationSlugs.has(slug))
     )
-      links.push(urlsLink)
-    if (automationsEnabled) links.push(automationsLink)
-    links.push(linksLink)
-    return links
+  }, [automations])
+
+  const onChange = (key, value) => {
+    /* update fieldValues property named `key` */
+    if (fieldValues[key] !== value) {
+      const newValues = { ...fieldValues, [key]: value }
+      const result = validate(newValues, jsonSchema)
+      const errors = {}
+      if (result.errors.length > 0) {
+        setIsReady(false)
+        result.errors.map((err) => {
+          err.path.map((field) => {
+            if (newValues[field] !== null) {
+              errors[field] = err.message
+            }
+          })
+        })
+        setFieldErrors(errors)
+      } else {
+        setFieldErrors(EMPTY_FIELDS)
+        setIsReady(true)
+      }
+      /* special handling to autogenerate slug from name */
+      if (key === 'name') {
+        const slugifier = (value) =>
+          value
+            .replace(/[^-A-Za-z0-9]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-*/, '')
+            .replace(/-*$/, '')
+            .toLowerCase()
+        if (fieldValues.name) {
+          const oldSlug = slugifier(fieldValues.name)
+          if (fieldValues.slug === oldSlug || !fieldValues.slug) {
+            newValues.slug = slugifier(newValues.name)
+          }
+        }
+      }
+      setFieldValues(newValues)
+    }
   }
 
-  useEffect(() => {
-    globalDispatch({
-      type: 'SET_CURRENT_PAGE',
-      payload: {
-        title: 'projects.newProject',
-        url: new URL('/ui/projects/create', globalState.baseURL)
-      }
-    })
-  }, [])
+  const onCancel = () => {
+    navigate(-1)
+  }
 
-  useEffect(() => {
-    if (
-      localState.attributes.environments !== null &&
-      localState.attributes.environments.length > 0
-    ) {
-      setSidebarLinks(buildSidebarLinks())
+  const onSubmit = async () => {
+    setIsSaving(true)
+    const response = await httpPost(
+      globalState.fetch,
+      new URL('/projects', globalState.baseURL),
+      {
+        name: fieldValues.name,
+        namespace_id: fieldValues.namespace_id,
+        project_type_id: fieldValues.project_type_id,
+        slug: fieldValues.slug,
+        description: fieldValues.description,
+        automations: selectedAutomations
+      }
+    )
+    setIsSaving(false)
+    if (response.success) {
+      navigate(`/ui/projects/${response.data.id}`)
+    } else {
+      setErrorMessage(response.data)
     }
-  }, [localState.attributes.environments])
+  }
 
   return (
     <ErrorBoundary>
-      <Form.MultiSectionForm
-        disabled={localState.attributesReady === false}
-        icon="fas file"
-        instructions={
-          <div className="ml-2 text-sm">* {t('common.required')}</div>
-        }
-        errorMessage={
-          localState.errorMessage !== null
-            ? t('project.createError', { message: localState.errorMessage })
-            : null
-        }
-        sideBarLinks={sidebarLinks}
-        sideBarTitle={t('projects.newProject')}
-        onSubmit={(event) => {
-          event.preventDefault()
-          localDispatch({ type: 'SET_IS_SAVING', payload: true })
-        }}
-        submitButtonText={
-          localState.isSaving ? t('common.saving') : t('common.save')
-        }>
-        <Attributes localDispatch={localDispatch} localState={localState} />
-        {automationsEnabled && (
-          <Automations
-            localDispatch={localDispatch}
-            localState={localState}
-            user={user}
+      <div className="flex-auto max-w-screen-lg rounded-lg space-y-3 text-gray-700 bg-white p-5 m-5">
+        <Form.SimpleForm
+          errorMessage={
+            errorMessage !== null
+              ? t('project.createError', { message: errorMessage })
+              : null
+          }
+          onCancel={onCancel}
+          onSubmit={onSubmit}
+          ready={isReady}
+          saving={isSaving}>
+          <Form.Field
+            title={t('project.namespace')}
+            name="namespace_id"
+            description={t('project.create.namespaceDescription')}
+            value={fieldValues.namespace_id}
+            errorMessage={fieldErrors.namespace_id}
+            type="select"
+            autoFocus={true}
+            castTo="number"
+            required={true}
+            options={metadataAsOptions(globalState.metadata.namespaces)}
+            onChange={onChange}
           />
-        )}
-        {localState.attributes.environments !== null &&
-          localState.attributes.environments.length > 0 && (
-            <URLs localDispatch={localDispatch} localState={localState} />
-          )}
-        {globalState.metadata.projectLinkTypes.length > 0 && (
-          <Links localDispatch={localDispatch} localState={localState} />
-        )}
-      </Form.MultiSectionForm>
-      {showGitlabModal && (
-        <GitlabConnectModal
-          onClose={() => {
-            setShowGitlabModal(false)
-          }}
-          user={user}
-        />
-      )}
-      {localState.isSaving && (
-        <SavingDialog
-          complete={{
-            attributes: localState.saved.attributes,
-            gitlab: localState.created.gitlabRepository,
-            grafanaCookieCutter: localState.created.grafanaDashboard,
-            links: localState.saved.links,
-            projectCookieCutter: localState.created.gitlabInitialCommit,
-            sentry: localState.created.sentryProject,
-            sonarqube: localState.created.sonarqubeProject,
-            urls: localState.saved.urls
-          }}
-          options={{
-            gitlab: localState.createGitlabRepository,
-            grafanaCookieCutter: localState.dashboardCookieCutter !== null,
-            links:
-              globalState.metadata.projectLinkTypes.length > 0 &&
-              Object.keys(localState.links).length > 0,
-            projectCookieCutter: localState.projectCookieCutter !== null,
-            sentry: localState.createSentryProject,
-            sonarqube: localState.createSonarqubeProject,
-            urls: Object.keys(localState.urls).length > 0
-          }}
-          onSaveComplete={(event) => {
-            event.preventDefault()
-            navigate(`/ui/projects/${localState.projectId}`)
-          }}
-          translate={t}
-        />
-      )}
+          <Form.Field
+            title={t('project.projectType')}
+            name="project_type_id"
+            description={t('project.create.projectTypeDescription')}
+            value={fieldValues.project_type_id}
+            errorMessage={fieldErrors.project_type_id}
+            type="select"
+            castTo="number"
+            required={true}
+            options={metadataAsOptions(globalState.metadata.projectTypes)}
+            onChange={onChange}
+          />
+          <Form.Field
+            title={t('project.name')}
+            name="name"
+            description={t('project.nameDescription')}
+            value={fieldValues.name}
+            errorMessage={fieldErrors.name}
+            type="text"
+            required={true}
+            onChange={onChange}
+          />
+          <Form.Field
+            title={t('common.slug')}
+            name="slug"
+            description={t('common.slugDescription')}
+            value={fieldValues.slug}
+            errorMessage={fieldErrors.slug}
+            type="text"
+            required={true}
+            onChange={onChange}
+          />
+          <Form.Field
+            title={t('common.description')}
+            name="description"
+            description={t('project.descriptionDescription')}
+            value={fieldValues.description}
+            errorMessage={fieldErrors.description}
+            type="markdown"
+            onChange={onChange}
+          />
+          <AutomationList
+            automations={automations}
+            selectedAutomations={selectedAutomations}
+            setSelectedAutomations={setSelectedAutomations}
+          />
+        </Form.SimpleForm>
+      </div>
     </ErrorBoundary>
   )
 }
-Create.propTypes = {
-  user: PropTypes.exact(User)
-}
+
 export { Create }
