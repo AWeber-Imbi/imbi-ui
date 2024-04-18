@@ -34,7 +34,7 @@ Automation.propTypes = {
   integrationName: PropTypes.string.isRequired
 }
 
-function Create({ user }) {
+function Create() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [globalState] = useContext(Context)
