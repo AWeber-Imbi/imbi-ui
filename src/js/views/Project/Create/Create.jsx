@@ -21,19 +21,6 @@ const EMPTY_FIELDS = {
   description: null
 }
 
-function Automation({ automationName, integrationName, automationSlug }) {
-  return {
-    integrationName,
-    automationName,
-    automationSlug
-  }
-}
-Automation.propTypes = {
-  automationName: PropTypes.string.isRequired,
-  automationSlug: PropTypes.string.isRequired,
-  integrationName: PropTypes.string.isRequired
-}
-
 function Create() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -56,8 +43,8 @@ function Create() {
         url,
         ({ data }) => {
           setAutomations(
-            data.map(({ automation_name, integration_name, automation_slug }) =>
-              Automation({
+            data.map(
+              ({ automation_name, integration_name, automation_slug }) => ({
                 automationName: automation_name,
                 integrationName: integration_name,
                 automationSlug: automation_slug
