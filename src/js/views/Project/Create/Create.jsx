@@ -75,8 +75,8 @@ function Create() {
       const errors = {}
       if (result.errors.length > 0) {
         setIsReady(false)
-        result.errors.map((err) => {
-          err.path.map((field) => {
+        result.errors.forEach((err) => {
+          err.path.forEach((field) => {
             if (newValues[field] !== null) {
               errors[field] = err.message
             }
