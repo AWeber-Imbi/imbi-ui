@@ -67,7 +67,8 @@ export async function httpRequest(fetchMethod, path, options = requestOptions) {
     success: false,
     data: getErrorMessage(response, data),
     status: response.status,
-    headers: response.headers
+    headers: response.headers,
+    responseBody: data
   }
 }
 
