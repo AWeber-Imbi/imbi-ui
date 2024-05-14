@@ -6,7 +6,7 @@ import { Alert, Icon, Loading, Table } from '../../../components'
 import { useTranslation } from 'react-i18next'
 import { SlideOver } from '../../../components/SlideOver/SlideOver'
 import { ViewSSMParam } from './ViewSSMParam'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { httpGet } from '../../../utils'
 
 function cloneParams(searchParams) {
@@ -20,6 +20,7 @@ function cloneParams(searchParams) {
 function SSMConfiguration({ project }) {
   const [globalState, dispatch] = useContext(Context)
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [onFetch, setOnFetch] = useState(true)
   const [fetching, setFetching] = useState(false)
@@ -61,9 +62,13 @@ function SSMConfiguration({ project }) {
         setRows(data.sort((a, b) => (a.name > b.name ? 1 : -1)))
         setFetching(false)
       },
-      ({ message }) => {
-        setErrorMessage(message)
-        setFetching(false)
+      ({ message, status }) => {
+        if (status === 403) {
+          navigate('/ui/')
+        } else {
+          setErrorMessage(message)
+          setFetching(false)
+        }
       }
     )
     setOnFetch(false)
