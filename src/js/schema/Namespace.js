@@ -26,6 +26,9 @@ export const jsonSchema = {
     },
     sentry_team_slug: {
       oneOf: [{ type: 'string' }, { type: 'null' }]
+    },
+    pagerduty_policy: {
+      oneOf: [{ type: 'string' }, { type: 'null' }]
     }
   },
   additionalProperties: false,
@@ -38,5 +41,6 @@ export const Namespace = {
   icon_class: PropTypes.string,
   maintained_by: PropTypes.string,
   gitlab_group_name: PropTypes.string,
-  sentry_team_slug: PropTypes.string
+  sentry_team_slug: PropTypes.string,
+  pagerduty_policy: PropTypes.string
 }
