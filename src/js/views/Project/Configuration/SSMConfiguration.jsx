@@ -70,8 +70,15 @@ function SSMConfiguration({ project }) {
             .sort((a, b) => (a.name > b.name ? 1 : -1))
             .map((param) => {
               const types = new Set()
-              param.values.forEach((value) => types.add(value.type))
+              const environments = new Set()
+              param.values.forEach((value) => {
+                types.add(value.type)
+                environments.add(value.environment)
+              })
               param['type'] = Array.from(types).join(', ')
+              param['environments'] = Array.from(environments)
+                .sort((a, b) => (a.name > b.name ? 1 : -1))
+                .join(', ')
               return param
             })
         )
@@ -101,7 +108,8 @@ function SSMConfiguration({ project }) {
             name: 'name',
             type: 'text',
             tableOptions: {
-              headerClassName: 'w-10/12'
+              className: 'truncate',
+              headerClassName: 'w-6/12'
             }
           },
           {
@@ -109,7 +117,17 @@ function SSMConfiguration({ project }) {
             name: 'type',
             type: 'text',
             tableOptions: {
-              className: 'truncate'
+              className: 'truncate',
+              headerClassName: 'w-1/12'
+            }
+          },
+          {
+            title: t('terms.environments'),
+            name: 'environments',
+            type: 'text',
+            tableOptions: {
+              className: 'truncate',
+              headerClassName: 'w-2/12'
             }
           }
         ]}
