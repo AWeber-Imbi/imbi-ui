@@ -162,6 +162,10 @@ export default {
             description:
               'GitLab group slug/path that new projects for this namespace will be created in'
           },
+          pagerDutyPolicy: {
+            title: 'PagerDuty Escalation',
+            description: 'PagerDuty escalation policy for this namespace'
+          },
           sentryTeamSlug: {
             title: 'Sentry Team Slug',
             description:
@@ -323,6 +327,10 @@ export default {
         archived: 'This project is archived and is read-only.',
         attributes: 'Attributes',
         automations: 'Automations',
+        create: {
+          namespaceDescription: 'Namespace to create the project in',
+          projectTypeDescription: 'Type of the new project'
+        },
         createError: 'Error creating project: {{message}}',
         createGitLabRepository: 'Create GitLab Repository',
         createSentryProject: 'Create Project in Sentry',
@@ -378,6 +386,7 @@ export default {
         linksSaved: 'Links Saved',
         logs: 'Logs',
         name: 'Name',
+        nameDescription: 'Human-readable name for this project',
         namespace: 'Namespace',
         notes: {
           content: 'Content',

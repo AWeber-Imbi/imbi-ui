@@ -55,7 +55,7 @@ function Main({ user }) {
                 />
                 <Route
                   path="/ui/projects/create"
-                  element={<Project.Create user={user} />}
+                  element={<Project.Create />}
                 />
                 <Route
                   path="/ui/projects/import"
