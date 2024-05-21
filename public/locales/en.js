@@ -158,6 +158,10 @@ export default {
             description:
               'GitLab group slug/path that new projects for this namespace will be created in'
           },
+          pagerDutyPolicy: {
+            title: 'PagerDuty Escalation',
+            description: 'PagerDuty escalation policy for this namespace'
+          },
           sentryTeamSlug: {
             title: 'Sentry Team Slug',
             description:

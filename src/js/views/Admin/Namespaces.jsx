@@ -73,13 +73,22 @@ export function Namespaces() {
           description: t('admin.namespaces.gitLabGroupName.description'),
           type: 'text',
           tableOptions: {
-            headerClassName: 'w-4/12'
+            headerClassName: 'w-2/12'
           }
         },
         {
           title: t('admin.namespaces.sentryTeamSlug.title'),
           name: 'sentry_team_slug',
           description: t('admin.namespaces.sentryTeamSlug.description'),
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-2/12'
+          }
+        },
+        {
+          title: t('admin.namespaces.pagerDutyPolicy.title'),
+          name: 'pagerduty_policy',
+          description: t('admin.namespaces.pagerDutyPolicy.description'),
           type: 'text',
           tableOptions: {
             headerClassName: 'w-2/12'
