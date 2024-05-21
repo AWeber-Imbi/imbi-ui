@@ -30,6 +30,7 @@ function SSMConfiguration({ project }) {
   const [selectedIndex, setSelectedIndex] = useState()
   const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
   const [showArrows, setShowArrows] = useState(false)
+  const [showSecureStrings, setShowSecureStrings] = useState(false)
   const arrowLeftRef = useRef(null)
   const arrowRightRef = useRef(null)
 
@@ -49,6 +50,11 @@ function SSMConfiguration({ project }) {
     const newParams = cloneParams(searchParams)
     newParams.set('v', rows[index].name)
     setSearchParams(newParams)
+    setShowSecureStrings(false)
+  }
+
+  function onShowSecureStringsChange(value) {
+    setShowSecureStrings(value)
   }
 
   useEffect(() => {
@@ -59,7 +65,16 @@ function SSMConfiguration({ project }) {
       globalState.fetch,
       new URL(`/projects/${project.id}/configuration/ssm`, globalState.baseURL),
       ({ data }) => {
-        setRows(data.sort((a, b) => (a.name > b.name ? 1 : -1)))
+        setRows(
+          data
+            .sort((a, b) => (a.name > b.name ? 1 : -1))
+            .map((param) => {
+              const types = new Set()
+              param.values.forEach((value) => types.add(value.type))
+              param['type'] = Array.from(types).join(', ')
+              return param
+            })
+        )
         setFetching(false)
       },
       ({ message, status }) => {
@@ -173,7 +188,11 @@ function SSMConfiguration({ project }) {
             move(selectedIndex + 1)
           }
         }}>
-        <ViewSSMParam param={rows[selectedIndex]} />
+        <ViewSSMParam
+          param={rows[selectedIndex]}
+          showSecureStrings={showSecureStrings}
+          onShowSecureStringsChange={onShowSecureStringsChange}
+        />
       </SlideOver>
     </div>
   )
