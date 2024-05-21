@@ -41,7 +41,7 @@ function ViewSSMParam({ param, showSecureStrings, onShowSecureStringsChange }) {
           return (
             <DefinitionRow
               key={i}
-              className="min-w-0 break-words"
+              className="min-w-0 break-words font-mono"
               term={
                 includesMultipleTypes ? (
                   <>
