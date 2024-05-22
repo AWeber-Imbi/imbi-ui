@@ -9,7 +9,7 @@ function DefinitionRow({ term, icon, children, className }) {
         {term}
       </dt>
       <dd className={`${className !== undefined ? className : ''}`}>
-        {icon && <Icon icon={icon} className="mr-2 " />}
+        {icon && <Icon icon={icon} className="mr-2" />}
         {children}
       </dd>
     </div>
