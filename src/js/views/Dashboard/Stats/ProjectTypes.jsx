@@ -32,11 +32,11 @@ function ProjectTypes({ onReady }) {
             errorMessage: null
           })
         },
-        (error) => {
+        ({ message }) => {
           setState({
             data: { project_types: [] },
             fetched: true,
-            errorMessage: error
+            errorMessage: message
           })
         }
       )

@@ -42,7 +42,7 @@ function ProjectFeed({ projectID }) {
           nextLink: next
         }))
       },
-      (error) => setErrorMessage(error)
+      ({ message }) => setErrorMessage(message)
     )
   }
 

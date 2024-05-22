@@ -87,7 +87,7 @@ function CRUD({
         setFetching(false)
         setShowForm(true)
       },
-      (message) => {
+      ({ message }) => {
         setErrorMessage(
           errorStrings[message] !== undefined ? errorStrings[message] : message
         )
@@ -140,8 +140,8 @@ function CRUD({
           setData(data)
           setReady(true)
         },
-        (error) => {
-          setErrorMessage(error)
+        ({ message }) => {
+          setErrorMessage(message)
         }
       )
     }

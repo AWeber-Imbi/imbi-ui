@@ -1,6 +1,9 @@
 export default {
   en: {
     translation: {
+      aws: {
+        ssmParameter: 'SSM Parameter'
+      },
       common: {
         all: 'All',
         cancel: 'Cancel',
@@ -44,6 +47,7 @@ export default {
         textClass: 'Text Class',
         turnOff: 'Turn Off',
         turnOn: 'Turn On',
+        type: 'Type',
         updatedBy: 'Updated By',
         value: 'Value',
         welcome: 'Welcome'
@@ -166,6 +170,11 @@ export default {
             title: 'Sentry Team Slug',
             description:
               'Sentry team that new projects for this namespace will be created in'
+          },
+          awsSsmSlug: {
+            title: 'AWS SSM Slug',
+            description:
+              'Namespace slug as it appears in the AWS SSM path prefix'
           }
         },
         projectFactTypes: {
@@ -475,6 +484,10 @@ export default {
       },
       opensearch: {
         dql: 'OpenSearch Dashboards Query Language (DQL)'
+      },
+      wishedFutureState: {
+        configuration:
+          'This tab will provide an abstracted interface for editing the configuration in Consul, Vault, and K8s Configuration Maps.'
       }
     }
   }

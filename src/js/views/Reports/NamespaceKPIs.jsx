@@ -85,13 +85,13 @@ function NamespaceKPIs() {
             errorMessage: null
           })
         },
-        (error) => {
+        ({ message }) => {
           setState({
             ...state,
             data: [],
             fetched: true,
             lookup: {},
-            errorMessage: error
+            errorMessage: message
           })
         }
       )

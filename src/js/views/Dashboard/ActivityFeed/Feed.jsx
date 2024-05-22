@@ -50,11 +50,11 @@ function Feed({ onReady }) {
             : null
         }))
       },
-      (error) => {
+      ({ message }) => {
         setState({
           data: [],
           fetched: true,
-          errorMessage: error,
+          errorMessage: message,
           nextLink: null
         })
       }

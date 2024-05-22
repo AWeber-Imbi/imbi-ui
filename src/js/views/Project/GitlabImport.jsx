@@ -61,8 +61,8 @@ function GitlabImport() {
               setProjects(data)
             }
           },
-          (error) => {
-            setErrors({ ...errors, [key]: error })
+          ({ message }) => {
+            setErrors({ ...errors, [key]: message })
           }
         )
       }
@@ -93,8 +93,8 @@ function GitlabImport() {
       ({ data }) => {
         setNamespaces(data)
       },
-      (error) => {
-        setErrors({ ...errors, namespace_id: error })
+      ({ message }) => {
+        setErrors({ ...errors, namespace_id: message })
       }
     )
   }, [])

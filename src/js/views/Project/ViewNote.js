@@ -20,8 +20,8 @@ export function ViewNote({ onClose, urlPath }) {
         ({ data }) => {
           setNote(data)
         },
-        (error) => {
-          setErrorMessage(error)
+        ({ message }) => {
+          setErrorMessage(message)
         }
       )
     }

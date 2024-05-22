@@ -21,13 +21,13 @@ import {
   Tooltip
 } from '../../components'
 
-import { Configuration } from './Configuration'
 import { Dependencies } from './Dependencies'
 import { Logs } from './Logs'
 import { Notes } from './Notes'
 import { Overview } from './Overview'
 import { Settings } from './Settings'
 import { OperationsLog } from '../OperationsLog'
+import { Configuration } from './Configuration/Configuration'
 
 function ProjectPage({ project, factTypes, refresh }) {
   const [state, dispatch] = useContext(Context)
@@ -132,7 +132,7 @@ function ProjectPage({ project, factTypes, refresh }) {
           />
           <Route
             path={`configuration`}
-            element={<Configuration urlPath={baseURL} />}
+            element={<Configuration project={project} urlPath={baseURL} />}
           />
           <Route
             path={`dependencies`}
