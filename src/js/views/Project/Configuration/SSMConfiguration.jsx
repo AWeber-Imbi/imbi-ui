@@ -22,7 +22,6 @@ function SSMConfiguration({ project }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [onFetch, setOnFetch] = useState(true)
   const [fetching, setFetching] = useState(false)
   const [errorMessage, setErrorMessage] = useState()
   const [rows, setRows] = useState([])
@@ -58,7 +57,6 @@ function SSMConfiguration({ project }) {
   }
 
   useEffect(() => {
-    if (fetching || !onFetch) return
     setFetching(true)
 
     httpGet(
@@ -91,8 +89,7 @@ function SSMConfiguration({ project }) {
         }
       }
     )
-    setOnFetch(false)
-  }, [onFetch])
+  }, [])
 
   if (fetching) return <Loading></Loading>
   if (errorMessage) return <Alert level="error">{errorMessage}</Alert>
