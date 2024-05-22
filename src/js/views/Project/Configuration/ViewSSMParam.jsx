@@ -9,22 +9,15 @@ import { DefinitionRow } from '../../../components/DescriptionList/DefinitionRow
 function ViewSSMParam({ param, showSecureStrings, onShowSecureStringsChange }) {
   const { t } = useTranslation()
 
-  const allTypes = new Set(param.values.map((value) => value.type))
-  const includesSecureString = allTypes.has('SecureString')
-  const includesMultipleTypes = allTypes.size > 1
-  const typeDisplay = includesMultipleTypes
-    ? Array.from(allTypes).join(', ')
-    : param.values[0].type
-
   return (
     <>
       <DescriptionList>
         <Definition term={t('common.name')}>{param.name}</Definition>
-        <Definition term={t('common.type')}>{typeDisplay}</Definition>
+        <Definition term={t('common.type')}>{param.type}</Definition>
       </DescriptionList>
       <div className="flex items-center justify-between mt-6 mb-3">
         <h1 className="text-xl font-medium text-gray-900">Values</h1>
-        {includesSecureString && (
+        {param.type.includes('SecureString') && (
           <div className="flex items-center gap-1">
             <p>Show decrypted value</p>
             <Toggle
@@ -45,7 +38,7 @@ function ViewSSMParam({ param, showSecureStrings, onShowSecureStringsChange }) {
                 key={i}
                 className="min-w-0 break-words font-mono"
                 term={
-                  includesMultipleTypes ? (
+                  param.type.includes(',') ? (
                     <>
                       {environment}
                       <br />
