@@ -37,26 +37,28 @@ function ViewSSMParam({ param, showSecureStrings, onShowSecureStringsChange }) {
       </div>
 
       <DescriptionList>
-        {param.values.map(({ environment, value, type }, i) => {
-          return (
-            <DefinitionRow
-              key={i}
-              className="min-w-0 break-words font-mono"
-              term={
-                includesMultipleTypes ? (
-                  <>
-                    {environment}
-                    <br />
-                    <i>{type}</i>
-                  </>
-                ) : (
-                  environment
-                )
-              }>
-              {type === 'String' || showSecureStrings ? value : '********'}
-            </DefinitionRow>
-          )
-        })}
+        {param.values
+          .sort((a, b) => (a.environment > b.environment ? 1 : -1))
+          .map(({ environment, value, type }, i) => {
+            return (
+              <DefinitionRow
+                key={i}
+                className="min-w-0 break-words font-mono"
+                term={
+                  includesMultipleTypes ? (
+                    <>
+                      {environment}
+                      <br />
+                      <i>{type}</i>
+                    </>
+                  ) : (
+                    environment
+                  )
+                }>
+                {type === 'String' || showSecureStrings ? value : '********'}
+              </DefinitionRow>
+            )
+          })}
       </DescriptionList>
     </>
   )
