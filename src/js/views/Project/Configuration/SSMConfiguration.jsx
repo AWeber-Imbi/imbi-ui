@@ -75,10 +75,8 @@ function SSMConfiguration({ project }) {
                 types.add(value.type)
                 environments.add(value.environment)
               })
-              param['type'] = Array.from(types).join(', ')
-              param['environments'] = Array.from(environments)
-                .sort((a, b) => (a.name > b.name ? 1 : -1))
-                .join(', ')
+              param['type'] = Array.from(types).sort().join(', ')
+              param['environments'] = Array.from(environments).sort().join(', ')
               return param
             })
         )
