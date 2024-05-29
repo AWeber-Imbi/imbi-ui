@@ -375,10 +375,13 @@ function Edit({ project, onEditFinished }) {
             title={t('project.configurationType')}
             name="configuration_type"
             type="select"
-            options={metadataAsOptions(
-              globalState.metadata.projectConfigurationTypes,
-              'configuration_type',
-              'configuration_type'
+            options={globalState.metadata.projectConfigurationTypes.map(
+              (type) => ({
+                label: t(
+                  `project.configurationTypes.${type.configuration_type}`
+                ),
+                value: type.configuration_type
+              })
             )}
             errorMessage={state.projectErrors.configuration_type}
             onChange={onValueChange}

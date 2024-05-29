@@ -43,7 +43,7 @@ function Display({ project, onEditClick, shouldGrow }) {
           )}
           {project.configuration_type && (
             <Definition term={t('project.configurationType')}>
-              {project.configuration_type}
+              {t(`project.configurationTypes.${project.configuration_type}`)}
             </Definition>
           )}
           {project.environments &&
