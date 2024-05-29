@@ -82,7 +82,8 @@ async function saveProjectChanges(globalState, project, values) {
     project_type_id: project.project_type_id,
     slug: project.slug,
     description: project.description,
-    environments: project.environments
+    environments: project.environments,
+    configuration_type: project.configuration_type
   }
   const patchValue = compare(originalValues, values)
   if (patchValue.length > 0) {
@@ -169,7 +170,8 @@ function Edit({ project, onEditFinished }) {
     name: null,
     slug: null,
     description: null,
-    environments: null
+    environments: null,
+    configuration_type: null
   }
   const [globalState] = useContext(Context)
   const environmentIcons = Object.fromEntries(
@@ -197,7 +199,8 @@ function Edit({ project, onEditFinished }) {
       name: project.name,
       slug: project.slug,
       description: project.description,
-      environments: project.environments
+      environments: project.environments,
+      configuration_type: project.configuration_type
     },
     links: originalLinks,
     urlErrors: {},
@@ -367,6 +370,19 @@ function Edit({ project, onEditFinished }) {
             onChange={onValueChange}
             errorMessage={state.projectErrors.environments}
             value={state.values.environments}
+          />
+          <Form.Field
+            title={t('project.configurationType')}
+            name="configuration_type"
+            type="select"
+            options={metadataAsOptions(
+              globalState.metadata.projectConfigurationTypes,
+              'configuration_type',
+              'configuration_type'
+            )}
+            errorMessage={state.projectErrors.configuration_type}
+            onChange={onValueChange}
+            value={state.values.configuration_type}
           />
           {state.values.environments !== null &&
             state.values.environments.map((environment) => {
