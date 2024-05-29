@@ -47,6 +47,7 @@ function useSettings() {
     environments: [],
     groups: [],
     namespaces: [],
+    projectConfigurationTypes: [],
     projectFactTypes: [],
     projectLinkTypes: [],
     projectTypes: []
@@ -72,6 +73,8 @@ function useSettings() {
             environments: data.metadata.environments,
             groups: data.metadata.groups,
             namespaces: data.metadata.namespaces,
+            projectConfigurationTypes:
+              data.metadata.project_configuration_types,
             projectFactTypes: data.metadata.project_fact_types,
             projectLinkTypes: data.metadata.project_link_types,
             projectTypes: data.metadata.project_types,
