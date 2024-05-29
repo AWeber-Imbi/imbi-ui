@@ -328,6 +328,9 @@ export default {
         attributes: 'Attributes',
         automations: 'Automations',
         configurationType: 'Configuration Type',
+        configurationTypes: {
+          ssm: 'AWS SSM Parameter Store'
+        },
         create: {
           namespaceDescription: 'Namespace to create the project in',
           projectTypeDescription: 'Type of the new project'
