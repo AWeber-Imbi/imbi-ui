@@ -327,6 +327,7 @@ export default {
         archived: 'This project is archived and is read-only.',
         attributes: 'Attributes',
         automations: 'Automations',
+        configurationType: 'Configuration Type',
         create: {
           namespaceDescription: 'Namespace to create the project in',
           projectTypeDescription: 'Type of the new project'
