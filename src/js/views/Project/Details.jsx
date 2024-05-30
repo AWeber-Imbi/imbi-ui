@@ -41,6 +41,11 @@ function Display({ project, onEditClick, shouldGrow }) {
               {project.environments.join(', ')}
             </Definition>
           )}
+          {project.configuration_type && (
+            <Definition term={t('project.configurationType')}>
+              {t(`project.configurationTypes.${project.configuration_type}`)}
+            </Definition>
+          )}
           {project.environments &&
             project.environments.map((environment) => {
               if (project.urls[environment] === undefined) return null
