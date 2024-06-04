@@ -4,12 +4,23 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '..'
 
-function Footer({ children, disabled, instructions, onSubmitClick }) {
+function Footer({
+  children,
+  disabled,
+  instructions,
+  onSubmitClick,
+  onCancelClick
+}) {
   const { t } = useTranslation()
   return (
     <div className="flex flex-row mt-10 pt-5">
       {instructions}
       <div className="flex-grow text-right space-x-3">
+        {onCancelClick && (
+          <Button className={'btn-white'} onClick={onCancelClick}>
+            {t('common.cancel')}
+          </Button>
+        )}
         <Button
           className="btn-green"
           onClick={onSubmitClick}
@@ -36,6 +47,7 @@ Footer.propTypes = {
     PropTypes.element,
     PropTypes.string
   ]),
-  onSubmitClick: PropTypes.func
+  onSubmitClick: PropTypes.func,
+  onCancelClick: PropTypes.func
 }
 export { Footer }

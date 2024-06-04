@@ -12,6 +12,7 @@ function MultiSectionForm({
   icon,
   instructions,
   onSubmit,
+  onCancel,
   sideBarLinks,
   sideBarTitle,
   submitButtonText
@@ -36,7 +37,10 @@ function MultiSectionForm({
         {children}
         <form onSubmit={onSubmit}>
           {submitButtonText && (
-            <Footer disabled={disabled} instructions={instructions}>
+            <Footer
+              disabled={disabled}
+              instructions={instructions}
+              onCancelClick={onCancel}>
               {submitButtonText}
             </Footer>
           )}
@@ -64,6 +68,7 @@ MultiSectionForm.propTypes = {
     PropTypes.string
   ]),
   onSubmit: PropTypes.func,
+  onCancel: PropTypes.func,
   sideBarLinks: PropTypes.arrayOf(
     PropTypes.exact({
       href: PropTypes.string.isRequired,
