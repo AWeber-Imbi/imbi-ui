@@ -372,13 +372,13 @@ function Edit({ project, onEditFinished }) {
             value={state.values.environments}
           />
           <Form.Field
-            title={t('project.configurationType')}
+            title={t('project.configuration.type')}
             name="configuration_type"
             type="select"
             options={globalState.metadata.projectConfigurationTypes.map(
               (type) => ({
                 label: t(
-                  `project.configurationTypes.${type.configuration_type}`
+                  `project.configuration.${type.configuration_type}.name`
                 ),
                 value: type.configuration_type
               })
