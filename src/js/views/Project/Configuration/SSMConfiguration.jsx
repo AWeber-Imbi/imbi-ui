@@ -95,7 +95,7 @@ function SSMConfiguration({ project }) {
   if (errorMessage) return <Alert level="error">{errorMessage}</Alert>
 
   return (
-    <div className="m-0">
+    <>
       <Table
         columns={[
           {
@@ -207,7 +207,7 @@ function SSMConfiguration({ project }) {
           onShowSecureStringsChange={onShowSecureStringsChange}
         />
       </SlideOver>
-    </div>
+    </>
   )
 }
 
