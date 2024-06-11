@@ -28,6 +28,7 @@ import { Overview } from './Overview'
 import { Settings } from './Settings'
 import { OperationsLog } from '../OperationsLog'
 import { Configuration } from './Configuration/Configuration'
+import { ComponentList } from './Components/ComponentList'
 
 function ProjectPage({ project, factTypes, refresh }) {
   const [state, dispatch] = useContext(Context)
@@ -106,6 +107,9 @@ function ProjectPage({ project, factTypes, refresh }) {
             {t('common.overview')}
           </Tab>
           <Tab to={`${baseURL}/configuration`}>{t('common.configuration')}</Tab>
+          <Tab to={`${baseURL}/components`}>
+            {t('project.components.plural')}
+          </Tab>
           <Tab to={`${baseURL}/dependencies`}>{t('project.dependencies')}</Tab>
           <Tab to={`${baseURL}/logs`}>{t('common.logs')}</Tab>
           <Tab to={`${baseURL}/notes`}>{t('common.notes')}</Tab>
@@ -133,6 +137,10 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Route
             path={`configuration`}
             element={<Configuration project={project} urlPath={baseURL} />}
+          />
+          <Route
+            path={`components`}
+            element={<ComponentList project={project} urlPath={baseURL} />}
           />
           <Route
             path={`dependencies`}

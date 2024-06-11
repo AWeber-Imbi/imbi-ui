@@ -68,6 +68,7 @@ export default {
         links: 'Links',
         name: 'Name',
         namespace: 'Namespace',
+        package: 'Package',
         project: 'Project',
         projects: 'Projects',
         projectInfo: 'Project Information',
@@ -82,7 +83,8 @@ export default {
         score: 'Score',
         scoreHistory: 'Score History',
         stackHealthScore: 'Stack health Score',
-        slug: 'Slug'
+        slug: 'Slug',
+        version: 'Version'
       },
       error: {
         title: 'ERROR',
@@ -327,6 +329,12 @@ export default {
         archived: 'This project is archived and is read-only.',
         attributes: 'Attributes',
         automations: 'Automations',
+        components: {
+          singular: 'Component',
+          plural: 'Components',
+          packageURL: 'Package URL',
+          status: 'Status'
+        },
         configurationType: 'Configuration Type',
         configurationTypes: {
           ssm: 'AWS SSM Parameter Store'
