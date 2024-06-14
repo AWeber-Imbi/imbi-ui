@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { render } from 'react-dom'
 import * as Sentry from '@sentry/react'
 import { useNavigate } from 'react-router-dom'
+import { Validator } from 'jsonschema'
 
 require('./i18n')
 require('./icons')
@@ -16,6 +17,10 @@ import { Error, Initializing, Login, Main } from './views'
 import State from './state'
 
 Chart.register(...registerables)
+
+Validator.prototype.customFormats['http-url'] = function (input) {
+  return !input || input.match(/^https?:\/\/[a-z][.-a-z0-9]+[^.](\/.*)?/i)
+}
 
 export const loggedOutUser = {
   username: null,
