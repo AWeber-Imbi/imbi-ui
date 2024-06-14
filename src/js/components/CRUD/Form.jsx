@@ -1,6 +1,6 @@
 import { compare } from 'fast-json-patch'
 import PropTypes from 'prop-types'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { Columns } from '../../schema'
 import { Form } from '..'
@@ -22,12 +22,22 @@ function CrudForm({
 }) {
   const [state] = useContext(Context)
   const [originalValues, _] = useState(values) // eslint-disable-line
+  const columnMap = new Map(columns.map((c) => [c.name, c]))
+
+  function mapEmptyValues(formValues) {
+    return Object.fromEntries(
+      Object.entries(formValues).map(([k, v]) => [
+        k,
+        v === '' && columnMap.get(k).saveOptions?.emptyIsNull ? null : v
+      ])
+    )
+  }
 
   async function handleSubmit(formValues) {
     const url = new URL(state.baseURL)
     let result = null
     if (isEdit === true) {
-      const patchValue = compare(originalValues, formValues)
+      const patchValue = compare(originalValues, mapEmptyValues(formValues))
       url.pathname = itemPath.replace(/{{value}}/, originalValues[itemKey])
       result = await httpPatch(state.fetch, url, patchValue)
     } else {
