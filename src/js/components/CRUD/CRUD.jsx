@@ -189,7 +189,7 @@ function CRUD({
         )}
         {showForm && (
           <Form
-            columns={columns}
+            columns={columns.filter((col) => !itemIgnore.includes(col.name))}
             errorStrings={errorStrings}
             isEdit={itemToEdit !== null}
             itemKey={itemKey}
