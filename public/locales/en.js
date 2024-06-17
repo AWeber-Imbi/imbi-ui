@@ -129,6 +129,19 @@ export default {
           settings: 'Settings',
           userManagement: 'User Management'
         },
+        components: {
+          activeVersion: 'Active Version',
+          collectionName: 'Components',
+          itemName: 'Component',
+          homePage: 'Home Page',
+          packageURL: 'Package URL',
+          status: 'Status',
+          statusValues: {
+            active: 'Active',
+            deprecated: 'Deprecated',
+            forbidden: 'Forbidden'
+          }
+        },
         cookieCutters: {
           collectionName: 'Cookie Cutters',
           itemName: 'Cookie Cutter',
