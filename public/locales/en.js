@@ -331,7 +331,9 @@ export default {
           type: 'Configuration Type',
           ssm: {
             name: 'AWS SSM Parameter Store',
-            add: 'Add Param'
+            add: 'Add Param',
+            saving: 'Saving new parameters',
+            savingComplete: 'New parameters saved'
           }
         },
         create: {
