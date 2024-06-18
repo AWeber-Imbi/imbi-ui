@@ -503,12 +503,30 @@ export default {
         lastUpdated: 'Last Updated: {{lastUpdated}}',
         namespaceKPIs: {
           title: 'Namespace KPIs',
-          projects: 'Projects',
-          avgProjectScore: 'Avg Project Score',
-          stackHealthScore: 'Stack Health Score',
-          totalProjectScore: 'Total Project Score',
-          totalPossibleProjectScore: 'Total Possible Score',
-          totalProjectScorePercentage: 'TPS %'
+          columns: {
+            namespace: { title: 'Namespace' },
+            percent_of_tpps: {
+              title: 'TPS %',
+              description:
+                'Total Project Score percentage of the Total Possible Score'
+            },
+            projects: { title: 'Projects' },
+            stack_health_score: {
+              title: 'Stack Health Score',
+              description:
+                'The calculated score indicating the overall health of projects in the namespace'
+            },
+            total_possible_project_score: {
+              title: 'Total Possible Score',
+              description:
+                'The sum of the maximum possible project scores for all projects in the namespace'
+            },
+            total_project_score: {
+              title: 'Total Project Score',
+              description:
+                'The sum of the project scores for all projects in the namespace'
+            }
+          }
         },
         projectTypeDefinitions: {
           title: 'Project Type Definitions'
