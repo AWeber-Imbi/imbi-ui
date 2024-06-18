@@ -55,6 +55,7 @@ function useSettings() {
   const [openSearch, setOpenSearch] = useState(null)
   const [projectURLTemplate, setProjectURLTemplate] = useState(null)
   const [opsLogURLTemplate, setOpsLogURLTemplate] = useState()
+  const [ssmPrefixTemplate, setSSMPrefixTemplate] = useState()
   const [timerHandle, setTimerHandle] = useState(null)
 
   useEffect(() => {
@@ -93,6 +94,7 @@ function useSettings() {
           setOpenSearch(data.opensearch)
           setProjectURLTemplate(data.project_url_template)
           setOpsLogURLTemplate(data.ops_log_ticket_slug_template)
+          setSSMPrefixTemplate(data.ssm_prefix_template)
           setLastUpdated(Date.now())
         },
         ({ message }) => {
@@ -176,6 +178,10 @@ function useSettings() {
       dispatch({
         type: 'SET_OPS_LOG_URL_TEMPLATE',
         payload: opsLogURLTemplate
+      })
+      dispatch({
+        type: 'SET_SSM_PREFIX_TEMPLATE',
+        payload: ssmPrefixTemplate
       })
     }
   }, [lastUpdated])
