@@ -127,9 +127,9 @@ function Report({
     }
   }, [fetched])
 
-  useEffect(() => {
-    if (sort !== null) {
-      const [column, direction] = sort
+  function onSortDirection(column, direction) {
+    const [curCol, curDir] = sort
+    if (curCol !== column || curDir !== direction) {
       setReportData(
         [...reportData].sort((a, b) => {
           if (a[column] === null || a[column] < b[column])
@@ -138,12 +138,6 @@ function Report({
             return direction === 'asc' ? 1 : -1
         })
       )
-    }
-  }, [sort])
-
-  function onSortDirection(column, direction) {
-    const [curCol, curDir] = sort
-    if (curCol !== column || curDir !== direction) {
       setSort([column, direction])
     }
   }
