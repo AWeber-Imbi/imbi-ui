@@ -28,6 +28,9 @@ export const Column = {
   ),
   placeholder: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
   readOnly: PropTypes.bool,
+  saveOptions: PropTypes.exact({
+    emptyIsNull: PropTypes.bool
+  }),
   sortCallback: PropTypes.func,
   sortDirection: PropTypes.oneOf([null, 'asc', 'desc']),
   tableOptions: PropTypes.exact({

@@ -68,6 +68,7 @@ export default {
         links: 'Links',
         name: 'Name',
         namespace: 'Namespace',
+        package: 'Package',
         project: 'Project',
         projects: 'Projects',
         projectInfo: 'Project Information',
@@ -82,7 +83,8 @@ export default {
         score: 'Score',
         scoreHistory: 'Score History',
         stackHealthScore: 'Stack health Score',
-        slug: 'Slug'
+        slug: 'Slug',
+        version: 'Version'
       },
       error: {
         title: 'ERROR',
@@ -126,6 +128,19 @@ export default {
         sidebar: {
           settings: 'Settings',
           userManagement: 'User Management'
+        },
+        components: {
+          activeVersion: 'Active Version',
+          collectionName: 'Components',
+          itemName: 'Component',
+          homePage: 'Home Page',
+          packageURL: 'Package URL',
+          status: 'Status',
+          statusValues: {
+            active: 'Active',
+            deprecated: 'Deprecated',
+            forbidden: 'Forbidden'
+          }
         },
         cookieCutters: {
           collectionName: 'Cookie Cutters',
@@ -335,6 +350,12 @@ export default {
             saving: 'Saving new parameters',
             savingComplete: 'New parameters saved'
           }
+        },
+        components: {
+          singular: 'Component',
+          plural: 'Components',
+          packageURL: 'Package URL',
+          status: 'Status'
         },
         create: {
           namespaceDescription: 'Namespace to create the project in',

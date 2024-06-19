@@ -8,6 +8,7 @@ import { Sidebar } from '../../components'
 import { User } from '../../schema'
 
 import { CookieCutters } from './CookieCutters'
+import { Components } from './Components'
 import { Dashboard } from './Dashboard'
 import { Environments } from './Environments'
 import { Groups } from './Groups'
@@ -31,6 +32,11 @@ function Admin({ user }) {
             value={t('admin.cookieCutters.collectionName')}
             to="/ui/admin/cookie-cutters"
             icon="fas cookie"
+          />
+          <Sidebar.MenuItem
+            value={'Components'}
+            to="/ui/admin/components"
+            icon="fas cog"
           />
           <Sidebar.MenuItem
             value={t('admin.environments.collectionName')}
@@ -85,6 +91,7 @@ function Admin({ user }) {
         <Routes>
           <Route path="" exact={true} element={<Dashboard />} />
           <Route path="cookie-cutters" element={<CookieCutters />} />
+          <Route path="components" element={<Components />} />
           <Route path="environments" element={<Environments />} />
           <Route path="groups" element={<Groups />} />
           <Route path="namespaces" element={<Namespaces />} />
