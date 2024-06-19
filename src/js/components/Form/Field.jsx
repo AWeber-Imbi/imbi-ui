@@ -13,6 +13,7 @@ import { DatePicker } from './DatePicker'
 import { DateTimePicker } from './DateTimePicker'
 import { MarkdownField } from '../Markdown/MarkdownField'
 import { ProjectPicker } from './ProjectPicker'
+import { PrefixTextInput } from './PrefixTextInput'
 
 function Field({
   autoFocus,
@@ -34,7 +35,8 @@ function Field({
   step,
   title,
   type,
-  value
+  value,
+  prefix
 }) {
   if (type === 'hidden') {
     if (value === null) return null
@@ -106,6 +108,20 @@ function Field({
             required={required}
             type={type}
             value={value}
+          />
+        )}
+        {type === 'prefix-text' && (
+          <PrefixTextInput
+            autoFocus={autoFocus}
+            disabled={disabled}
+            hasError={errorMessage !== null}
+            name={name}
+            onChange={onChange}
+            placeholder={placeholder}
+            readOnly={readOnly}
+            required={required}
+            value={value}
+            prefix={prefix}
           />
         )}
         {type === 'markdown' && (
@@ -246,6 +262,7 @@ Field.propTypes = {
     PropTypes.object,
     PropTypes.arrayOf(PropTypes.string),
     PropTypes.arrayOf(PropTypes.number)
-  ])
+  ]),
+  prefix: PropTypes.string
 }
 export { Field }
