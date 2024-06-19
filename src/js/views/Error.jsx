@@ -8,7 +8,7 @@ import { setDocumentTitle } from '../utils'
 function Error({ children }) {
   const { t } = useTranslation()
   setDocumentTitle(t('error.title'))
-  return <ErrorComponent>{{ children }}</ErrorComponent>
+  return <ErrorComponent>{children}</ErrorComponent>
 }
 
 Error.propTypes = {
