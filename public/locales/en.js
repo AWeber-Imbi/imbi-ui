@@ -11,6 +11,7 @@ export default {
         configuration: 'Configuration',
         createdAt: 'Created At',
         createdBy: 'Created By',
+        definitions: 'Definitions',
         description: 'Description',
         delete: 'Delete',
         done: 'Done',
@@ -463,15 +464,69 @@ export default {
       },
       reports: {
         available: 'Available Reports',
+        componentUsage: {
+          title: 'Component Usage',
+          columns: {
+            active_version: {
+              title: 'Active Version',
+              description:
+                'Version range that is "active". When empty, this component does not impact project scores.' +
+                " When set, the score of a project that uses this component is impacted based on whether the project's" +
+                ' version *matches* this value.'
+            },
+            name: {
+              title: 'Name',
+              description: 'Human-readable name for the component (informative)'
+            },
+            package_url: {
+              title: 'Package URL',
+              description:
+                'Unique package URL as defined in the [purl-spec](https://github.com/package-url/purl-spec)'
+            },
+            project_count: {
+              title: 'Project Count',
+              description:
+                'Number of projects using some version of this component'
+            },
+            status: {
+              title: 'Status',
+              description:
+                'Administrative status for **all** versions of this component. "Forbidden"' +
+                'or "Deprecated" components always impact the score of project\'s that use any version of the component.'
+            },
+            version_count: {
+              title: 'Version Count',
+              description: 'Number of versions recorded for this component'
+            }
+          }
+        },
         lastUpdated: 'Last Updated: {{lastUpdated}}',
         namespaceKPIs: {
           title: 'Namespace KPIs',
-          projects: 'Projects',
-          avgProjectScore: 'Avg Project Score',
-          stackHealthScore: 'Stack Health Score',
-          totalProjectScore: 'Total Project Score',
-          totalPossibleProjectScore: 'Total Possible Score',
-          totalProjectScorePercentage: 'TPS %'
+          columns: {
+            namespace: { title: 'Namespace' },
+            percent_of_tpps: {
+              title: 'TPS %',
+              description:
+                'Total Project Score percentage of the Total Possible Score'
+            },
+            projects: { title: 'Projects' },
+            stack_health_score: {
+              title: 'Stack Health Score',
+              description:
+                'The calculated score indicating the overall health of projects in the namespace'
+            },
+            total_possible_project_score: {
+              title: 'Total Possible Score',
+              description:
+                'The sum of the maximum possible project scores for all projects in the namespace'
+            },
+            total_project_score: {
+              title: 'Total Project Score',
+              description:
+                'The sum of the project scores for all projects in the namespace'
+            }
+          }
         },
         projectTypeDefinitions: {
           title: 'Project Type Definitions'

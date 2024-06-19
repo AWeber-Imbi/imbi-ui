@@ -11,6 +11,7 @@ import { NewEntry, OperationsLog } from './OperationsLog/'
 import { Project } from './Project/'
 import { Projects } from './Projects/'
 import {
+  ComponentUsage,
   NamespaceKPIs,
   ProjectTypeDefinitions,
   Reports
@@ -19,6 +20,7 @@ import { UserProfile, UserSettings } from './User'
 
 import { useSettings } from '../settings'
 import { User as UserSchema } from '../schema'
+import { Components } from './Admin/Components'
 
 function Main({ user }) {
   const [globalState] = useContext(Context)
@@ -67,6 +69,10 @@ function Main({ user }) {
                 />
                 <Route path="/ui/projects" element={<Projects user={user} />} />
                 <Route path="/ui/reports" element={<Reports />} />
+                <Route
+                  path="/ui/reports/component-usage"
+                  element={<ComponentUsage />}
+                />
                 <Route
                   path="/ui/reports/namespace-kpis"
                   element={<NamespaceKPIs />}

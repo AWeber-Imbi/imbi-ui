@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '../../components'
 import { Context } from '../../state'
 
+export { ComponentUsage } from './ComponentUsage'
 export { NamespaceKPIs } from './NamespaceKPIs'
 export { ProjectTypeDefinitions } from './ProjectTypeDefinitions'
 
@@ -25,6 +26,11 @@ function Reports() {
       <Card className="space-y-3">
         <h1 className="text-gray-700 text-lg">{t('reports.available')}</h1>
         <ul className="list-disc list-inside ml-4 text-gray-600">
+          <li>
+            <Link to="/ui/reports/component-usage">
+              {t('reports.componentUsage.title')}
+            </Link>
+          </li>
           <li>
             <Link to="/ui/reports/namespace-kpis">
               {t('reports.namespaceKPIs.title')}
