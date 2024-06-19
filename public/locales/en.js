@@ -343,15 +343,20 @@ export default {
         archived: 'This project is archived and is read-only.',
         attributes: 'Attributes',
         automations: 'Automations',
+        configuration: {
+          type: 'Configuration Type',
+          ssm: {
+            name: 'AWS SSM Parameter Store',
+            add: 'Add Param',
+            saving: 'Saving new parameters',
+            savingComplete: 'New parameters saved'
+          }
+        },
         components: {
           singular: 'Component',
           plural: 'Components',
           packageURL: 'Package URL',
           status: 'Status'
-        },
-        configurationType: 'Configuration Type',
-        configurationTypes: {
-          ssm: 'AWS SSM Parameter Store'
         },
         create: {
           namespaceDescription: 'Namespace to create the project in',

@@ -48,7 +48,9 @@ function ViewSSMParam({ param, showSecureStrings, onShowSecureStringsChange }) {
                     environment
                   )
                 }>
-                {type === 'String' || showSecureStrings ? value : '********'}
+                {type !== 'SecureString' || showSecureStrings
+                  ? value
+                  : '********'}
               </DefinitionRow>
             )
           })}

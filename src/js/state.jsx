@@ -64,6 +64,11 @@ const Reducer = (state, action) => {
         ...state,
         projectURLTemplate: action.payload
       }
+    case 'SET_SSM_PREFIX_TEMPLATE':
+      return {
+        ...state,
+        ssmPrefixTemplate: action.payload
+      }
     case 'SET_REFRESH_SETTINGS':
       return {
         ...state,

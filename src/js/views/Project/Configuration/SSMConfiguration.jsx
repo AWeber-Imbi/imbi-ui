@@ -2,12 +2,13 @@ import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 
 import { Context } from '../../../state'
-import { Alert, Icon, Loading, Table } from '../../../components'
+import { Alert, Button, Icon, Loading, Table } from '../../../components'
 import { useTranslation } from 'react-i18next'
 import { SlideOver } from '../../../components/SlideOver/SlideOver'
 import { ViewSSMParam } from './ViewSSMParam'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { httpGet } from '../../../utils'
+import { AddSSMParam } from './AddSSMParam'
 
 function cloneParams(searchParams) {
   const newParams = new URLSearchParams()
@@ -30,6 +31,7 @@ function SSMConfiguration({ project }) {
   const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
   const [showArrows, setShowArrows] = useState(false)
   const [showSecureStrings, setShowSecureStrings] = useState(false)
+  const [showCreatePage, setShowCreatePage] = useState(false)
   const arrowLeftRef = useRef(null)
   const arrowRightRef = useRef(null)
 
@@ -56,7 +58,7 @@ function SSMConfiguration({ project }) {
     setShowSecureStrings(value)
   }
 
-  useEffect(() => {
+  function refreshParams() {
     setFetching(true)
 
     httpGet(
@@ -89,13 +91,52 @@ function SSMConfiguration({ project }) {
         }
       }
     )
+  }
+
+  useEffect(() => {
+    refreshParams()
   }, [])
 
   if (fetching) return <Loading></Loading>
   if (errorMessage) return <Alert level="error">{errorMessage}</Alert>
 
+  if (showCreatePage) {
+    let namespaceSlug
+    for (const namespace of globalState.metadata.namespaces) {
+      if (namespace.slug === project.namespace_slug) {
+        namespaceSlug = namespace.aws_ssm_slug
+        break
+      }
+    }
+    const prefix = globalState.ssmPrefixTemplate
+      .replace('{namespace_slug}', namespaceSlug)
+      .replace('{project_type_slug}', project.project_type_slug)
+      .replace('{project_slug}', project.slug)
+
+    return (
+      <AddSSMParam
+        onClose={() => {
+          setShowCreatePage(false)
+          refreshParams()
+        }}
+        project={project}
+        onSubmit={() => {}}
+        pathPrefix={prefix}
+      />
+    )
+  }
+
   return (
-    <div className="m-0">
+    <>
+      <div className="flex justify-end">
+        <Button
+          className="btn-green"
+          type="submit"
+          onClick={() => setShowCreatePage(true)}>
+          <Icon className="mr-2" icon="fas plus-circle" />
+          {t('project.configuration.ssm.add')}
+        </Button>
+      </div>
       <Table
         columns={[
           {
@@ -207,7 +248,7 @@ function SSMConfiguration({ project }) {
           onShowSecureStringsChange={onShowSecureStringsChange}
         />
       </SlideOver>
-    </div>
+    </>
   )
 }
 
