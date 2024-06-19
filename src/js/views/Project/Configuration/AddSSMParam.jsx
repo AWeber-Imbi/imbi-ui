@@ -28,12 +28,9 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
   useEffect(() => {
     if (!saving) return
 
-    const data = Object.entries(values)
-      .filter(([key, value]) => !!value)
-      .map(([key, value]) => ({
-        environment: key,
-        value
-      }))
+    const data = Object.fromEntries(
+      Object.entries(values).filter(([key, value]) => !!value)
+    )
 
     const create = async () => {
       const response = await httpPost(
@@ -43,7 +40,6 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
           globalState.baseURL
         ),
         {
-          namespace_id: project.namespace_id,
           name,
           type,
           values: data
