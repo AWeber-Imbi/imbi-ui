@@ -253,7 +253,8 @@ Field.propTypes = {
     'url',
     'date',
     'datetime',
-    'project'
+    'project',
+    'prefix-text'
   ]).isRequired,
   value: PropTypes.oneOfType([
     PropTypes.bool,
