@@ -12,7 +12,7 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
   const [saving, setSaving] = useState(false)
   const [savingComplete, setSavingComplete] = useState(false)
   const [error, setError] = useState()
-  const [name, setName] = useState(pathPrefix)
+  const [name, setName] = useState('')
   const [type, setType] = useState()
   const [values, setValues] = useState(
     Object.fromEntries(
@@ -77,10 +77,11 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
           <Form.Field
             title={'Name'}
             name="name"
-            type="text"
+            type="prefix-text"
             required={true}
             onChange={(name, value) => setName(value)}
             value={name}
+            prefix={pathPrefix}
           />
           <Form.Field
             title={'Type'}
