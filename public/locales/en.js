@@ -349,7 +349,11 @@ export default {
             name: 'AWS SSM Parameter Store',
             add: 'Add Param',
             saving: 'Saving new parameters',
-            savingComplete: 'New parameters saved'
+            savingComplete: 'New parameters saved',
+            deleteConfirmation: {
+              title: 'Delete SSM Parameters',
+              button: 'Delete Checked'
+            }
           }
         },
         components: {
