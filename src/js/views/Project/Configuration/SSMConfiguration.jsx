@@ -100,19 +100,19 @@ function SSMConfiguration({ project }) {
   if (fetching) return <Loading></Loading>
   if (errorMessage) return <Alert level="error">{errorMessage}</Alert>
 
-  if (showCreatePage) {
-    let namespaceSlug
-    for (const namespace of globalState.metadata.namespaces) {
-      if (namespace.slug === project.namespace_slug) {
-        namespaceSlug = namespace.aws_ssm_slug
-        break
-      }
+  let namespaceSlug
+  for (const namespace of globalState.metadata.namespaces) {
+    if (namespace.slug === project.namespace_slug) {
+      namespaceSlug = namespace.aws_ssm_slug
+      break
     }
-    const prefix = globalState.ssmPrefixTemplate
-      .replace('{namespace_slug}', namespaceSlug)
-      .replace('{project_type_slug}', project.project_type_slug)
-      .replace('{project_slug}', project.slug)
+  }
+  const prefix = globalState.ssmPrefixTemplate
+    .replace('{namespace_slug}', namespaceSlug)
+    .replace('{project_type_slug}', project.project_type_slug)
+    .replace('{project_slug}', project.slug)
 
+  if (showCreatePage) {
     return (
       <AddSSMParam
         onClose={() => {
@@ -243,9 +243,22 @@ function SSMConfiguration({ project }) {
           }
         }}>
         <ViewSSMParam
+          project={project}
+          pathPrefix={prefix}
           param={rows[selectedIndex]}
           showSecureStrings={showSecureStrings}
           onShowSecureStringsChange={onShowSecureStringsChange}
+          onDeleteComplete={() => {
+            const newParams = cloneParams(searchParams)
+            newParams.delete('v')
+            setSearchParams(newParams)
+            refreshParams()
+          }}
+          onDeleteOpen={() => setShowArrows(false)}
+          onDeleteClose={() => {
+            setShowArrows(true)
+            setSlideOverFocusTrigger({})
+          }}
         />
       </SlideOver>
     </>

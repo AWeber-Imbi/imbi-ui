@@ -48,11 +48,17 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
       if (response.success) {
         setSavingComplete(true)
       } else {
-        setError(response.data)
+        setSaving(false)
+        setError(
+          response?.responseBody?.detail
+            ? response.responseBody.detail
+            : response.data
+        )
       }
     }
 
     create().catch((error) => {
+      setSaving(false)
       setError(error)
     })
   }, [saving])
