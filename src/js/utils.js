@@ -31,11 +31,15 @@ export function httpGet(fetchMethod, path, onSuccess, onError) {
   )
 }
 
-export function httpDelete(fetchMethod, path) {
-  return httpRequest(fetchMethod, path, {
+export function httpDelete(fetchMethod, path, body) {
+  const options = {
     ...requestOptions,
     method: 'DELETE'
-  })
+  }
+  if (body) {
+    options.body = JSON.stringify(body)
+  }
+  return httpRequest(fetchMethod, path, options)
 }
 
 export function httpPatch(fetchMethod, path, body) {
