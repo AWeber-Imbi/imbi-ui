@@ -59,11 +59,11 @@ Fact.propTypes = {
   offset: PropTypes.number.isRequired
 }
 
-function Display({ project, onEditClick, shouldGrow }) {
+function Display({ project, onEditClick }) {
   const { t } = useTranslation()
   let lastUpdated = 0
   return (
-    <Card className={`flex flex-col ${shouldGrow ? 'h-full' : ''}`}>
+    <Card className="flex flex-col">
       <h2 className="font-medium mb-2">{t('project.projectFacts')}</h2>
       <dl className="lg:ml-4 my-3">
         {project.facts.map((fact, offset) => {
@@ -102,18 +102,10 @@ function Display({ project, onEditClick, shouldGrow }) {
 }
 Display.propTypes = {
   project: PropTypes.object.isRequired,
-  onEditClick: PropTypes.func.isRequired,
-  shouldGrow: PropTypes.bool.isRequired
+  onEditClick: PropTypes.func.isRequired
 }
 
-function Facts({
-  project,
-  factTypes,
-  editing,
-  onEditing,
-  refresh,
-  shouldGrow
-}) {
+function Facts({ project, factTypes, editing, onEditing, refresh }) {
   if (editing)
     return (
       <EditFacts
@@ -126,20 +118,13 @@ function Facts({
         }}
       />
     )
-  return (
-    <Display
-      project={project}
-      shouldGrow={shouldGrow}
-      onEditClick={() => onEditing(true)}
-    />
-  )
+  return <Display project={project} onEditClick={() => onEditing(true)} />
 }
 Facts.propTypes = {
   project: PropTypes.object.isRequired,
   factTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
   editing: PropTypes.bool.isRequired,
   onEditing: PropTypes.func.isRequired,
-  refresh: PropTypes.func.isRequired,
-  shouldGrow: PropTypes.bool.isRequired
+  refresh: PropTypes.func.isRequired
 }
 export { Facts }

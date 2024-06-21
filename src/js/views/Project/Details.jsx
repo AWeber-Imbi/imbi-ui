@@ -23,7 +23,7 @@ function Display({ project, onEditClick, shouldGrow }) {
   }, [integrationCount, setDisplayIdentifiers])
 
   return (
-    <>
+    <div>
       <Card className={`flex flex-col ${shouldGrow ? 'h-full' : ''}`}>
         <h2 className="font-medium mb-2">{t('terms.projectInfo')}</h2>
         <DescriptionList className="my-3">
@@ -101,7 +101,7 @@ function Display({ project, onEditClick, shouldGrow }) {
           </div>
         </Card>
       )}
-    </>
+    </div>
   )
 }
 
