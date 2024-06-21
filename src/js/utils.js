@@ -140,3 +140,23 @@ export function camelCase(s) {
     .toLowerCase()
     .replace(/(_[a-z])/g, (group) => group.toUpperCase().replace('_', ''))
 }
+
+export function truncateUrl(url, maxLen) {
+  const attrs = ['hash', 'search']
+  const working = new URL(url)
+  attrs.forEach((attr) => {
+    if (working.toString().length > maxLen) {
+      working[attr] = ''
+    }
+  })
+  while (working.toString().length > maxLen && working.pathname.length > 1) {
+    working.pathname = working.pathname.substring(
+      0,
+      working.pathname.lastIndexOf('/')
+    )
+  }
+  const rendered = working.toString()
+  return rendered.length <= maxLen
+    ? rendered
+    : working.toString().substring(0, maxLen - 3) + '...'
+}

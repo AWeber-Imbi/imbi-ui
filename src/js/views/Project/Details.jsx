@@ -8,6 +8,7 @@ import { Edit } from './Edit'
 import { DescriptionList } from '../../components/DescriptionList/DescriptionList'
 import { Definition } from '../../components/DescriptionList/Definition'
 import { Identifiers } from '../Identifiers'
+import { truncateUrl } from '../../utils'
 
 function Display({ project, onEditClick, shouldGrow }) {
   const { t } = useTranslation()
@@ -73,7 +74,7 @@ function Display({ project, onEditClick, shouldGrow }) {
                   title={link.url}
                   target="_new">
                   <Icon icon="fas external-link-alt" className="mr-2" />
-                  {link.url}{' '}
+                  {truncateUrl(link.url, 100)}{' '}
                 </a>
               </Definition>
             )
