@@ -68,7 +68,7 @@ function Display({ project, onEditClick, shouldGrow }) {
             return (
               <Definition key={`display-link-${index}`} term={link.title}>
                 <a
-                  className="text-blue-800 hover:text-blue-700"
+                  className="block text-blue-800 hover:text-blue-700 truncate"
                   href={link.url}
                   title={link.url}
                   target="_new">
