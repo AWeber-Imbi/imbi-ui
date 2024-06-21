@@ -4,7 +4,7 @@ export const jsonSchema = {
   properties: {
     package_url: {
       type: 'string',
-      pattern: 'pkg:[^:]+:.*'
+      pattern: 'pkg:[^/]+/.*'
     },
     name: { type: 'string' },
     status: {

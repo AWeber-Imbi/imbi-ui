@@ -38,7 +38,10 @@ function CrudForm({
     let result = null
     if (isEdit === true) {
       const patchValue = compare(originalValues, mapEmptyValues(formValues))
-      url.pathname = itemPath.replace(/{{value}}/, originalValues[itemKey])
+      url.pathname = itemPath.replace(
+        /{{value}}/,
+        encodeURIComponent(originalValues[itemKey])
+      )
       result = await httpPatch(state.fetch, url, patchValue)
     } else {
       url.pathname = itemPath

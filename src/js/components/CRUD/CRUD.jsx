@@ -48,7 +48,7 @@ function CRUD({
   const { t } = useTranslation()
 
   async function deleteItem() {
-    const path = itemPath.replace(/{{value}}/, itemToDelete)
+    const path = itemPath.replace(/{{value}}/, encodeURIComponent(itemToDelete))
     const url = new URL(path, state.baseURL)
     const result = await httpDelete(state.fetch, url)
     if (result.success === true) {
@@ -74,7 +74,7 @@ function CRUD({
 
   async function onEditClick(value) {
     setFetching(true)
-    const path = itemPath.replace(/{{value}}/, value)
+    const path = itemPath.replace(/{{value}}/, encodeURIComponent(value))
     const url = new URL(path, state.baseURL)
     httpGet(
       state.fetch,
