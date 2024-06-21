@@ -26,21 +26,8 @@ function Overview({ factTypes, project, refresh, urlPath }) {
 
   return (
     <Fragment>
-      <div
-        className={`flex flex-col lg:flex-row space-x-0 lg:space-x-3 space-y-3 lg:space-y-0 text-left text-gray-600 ${
-          editing.details === false && editing.facts === false
-            ? 'lg:items-stretch'
-            : ''
-        }`}>
-        <div
-          ref={projectInfoDiv}
-          className={`flex-auto ${
-            factTypes.length > 0 ? 'lg:w-6/12' : ''
-          } w-full ${
-            editing.details === false && editing.facts === false
-              ? 'lg:flex-grow'
-              : ''
-          }`}>
+      <div className="grid grid-cols-1 space-y-3 space-x-0 lg:grid-cols-3 lg:space-y-0 lg:space-x-3 text-left text-gray-600">
+        <div ref={projectInfoDiv}>
           <Details
             project={project}
             editing={editing.details}
@@ -52,12 +39,7 @@ function Overview({ factTypes, project, refresh, urlPath }) {
           />
         </div>
         {factTypes.length > 0 && (
-          <div
-            className={`flex-auto lg:w-6/12 w-full ${
-              editing.details === false && editing.facts === false
-                ? 'lg:flex-grow'
-                : ''
-            }`}>
+          <div>
             <Facts
               project={project}
               factTypes={factTypes}
@@ -70,9 +52,7 @@ function Overview({ factTypes, project, refresh, urlPath }) {
             />
           </div>
         )}
-        <div
-          className="flex-auto lg:w-6/12 w-full"
-          style={height ? { height: height } : null}>
+        <div style={height ? { height: height } : null}>
           <ProjectFeed projectID={project.id} />
         </div>
       </div>
