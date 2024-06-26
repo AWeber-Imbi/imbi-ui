@@ -140,10 +140,10 @@ function ViewSSMParam({
           .sort(([environmentA], [environmentB]) =>
             environmentA > environmentB ? 1 : -1
           )
-          .map(([environment, { value, type }], i) => {
+          .map(([environment, { value, type }]) => {
             return (
               <DefinitionRow
-                key={i}
+                key={environment}
                 className="min-w-0 break-words font-mono"
                 term={
                   param.type.includes(',') ? (
