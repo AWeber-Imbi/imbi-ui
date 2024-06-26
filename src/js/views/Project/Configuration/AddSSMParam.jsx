@@ -29,7 +29,9 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
     if (!saving) return
 
     const data = Object.fromEntries(
-      Object.entries(values).filter(([key, value]) => !!value)
+      Object.entries(values)
+        .filter(([, value]) => !!value)
+        .map(([environment, value]) => [environment, { value, type }])
     )
 
     const create = async () => {
@@ -41,7 +43,6 @@ function AddSSMParam({ onClose, project, pathPrefix }) {
         ),
         {
           name,
-          type,
           values: data
         }
       )
