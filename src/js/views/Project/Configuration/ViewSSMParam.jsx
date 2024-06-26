@@ -34,7 +34,7 @@ function ViewSSMParam({
   const [deleting, setDeleting] = useState(false)
   const [deleteChecklist, setDeleteChecklist] = useState(
     Object.fromEntries(
-      param.values.map(({ environment }) => [environment, true])
+      Object.entries(param.values).map(([environment]) => [environment, true])
     )
   )
 
@@ -100,9 +100,9 @@ function ViewSSMParam({
             {deleting ? (
               <Loading />
             ) : (
-              param.values
-                .sort((a, b) => (a.environment > b.environment ? 1 : -1))
-                .map(({ environment }) => {
+              Object.keys(param.values)
+                .sort()
+                .map((environment) => {
                   return (
                     <Checkbox
                       key={environment}
@@ -136,9 +136,11 @@ function ViewSSMParam({
       </div>
 
       <DescriptionList>
-        {param.values
-          .sort((a, b) => (a.environment > b.environment ? 1 : -1))
-          .map(({ environment, value, type }, i) => {
+        {Object.entries(param.values)
+          .sort(([environmentA], [environmentB]) =>
+            environmentA > environmentB ? 1 : -1
+          )
+          .map(([environment, { value, type }], i) => {
             return (
               <DefinitionRow
                 key={i}

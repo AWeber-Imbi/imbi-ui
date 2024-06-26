@@ -70,13 +70,13 @@ function SSMConfiguration({ project }) {
             .sort((a, b) => (a.name > b.name ? 1 : -1))
             .map((param) => {
               const types = new Set()
-              const environments = new Set()
-              param.values.forEach((value) => {
-                types.add(value.type)
-                environments.add(value.environment)
-              })
+              const environments = []
+              for (const [environment, data] of Object.entries(param.values)) {
+                types.add(data.type)
+                environments.push(environment)
+              }
               param['type'] = Array.from(types).sort().join(', ')
-              param['environments'] = Array.from(environments).sort().join(', ')
+              param['environments'] = environments.sort().join(', ')
               return param
             })
         )
