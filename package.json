@@ -117,5 +117,5 @@
     "*.{css,js,json,jsx}": "prettier --write",
     "*.{js,jsx}": "eslint --cache --fix"
   },
-  "dependencies": {}
+  "packageManager": "yarn@1.22.22"
 }
