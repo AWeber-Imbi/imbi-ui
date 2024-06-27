@@ -77,28 +77,44 @@ function ComponentList({ project, urlPath }) {
         {
           title: t('common.name'),
           name: 'name',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-3/12',
+            className: 'truncate'
+          }
         },
         {
           title: t('terms.package'),
           name: 'package_url',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-4/12',
+            className: 'truncate'
+          }
         },
         {
           title: t('terms.version'),
           name: 'version',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-1/12',
+            className: 'overflow-clip'
+          }
         },
         {
           title: t('project.components.status'),
           name: 'status',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-1/12'
+          }
         },
         {
           title: t('terms.healthScore'),
           name: 'score',
           type: 'text',
           tableOptions: {
+            headerClassName: 'w-2/12',
             lookupFunction: (value) => {
               if (value !== null) {
                 return <ScoreBadge value={value} />
