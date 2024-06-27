@@ -83,6 +83,21 @@ export async function httpRequest(fetchMethod, path, options = requestOptions) {
   }
 }
 
+export function fetchPages(path, { fetch, baseURL }, onDataReceived, onError) {
+  const localFetch = (resource) => {
+    httpGet(fetch, new URL(resource, baseURL), onSuccess, onError)
+  }
+  const onSuccess = ({ data, headers }) => {
+    const links = parseLinkHeader(headers.get('Link'))
+    const nextLink = Object.hasOwn(links, 'next') ? links.next[0] : null
+    onDataReceived(data, nextLink === null)
+    if (nextLink !== null) {
+      setTimeout(localFetch, 25, nextLink)
+    }
+  }
+  localFetch(path)
+}
+
 export function isFunction(func) {
   return func && {}.toString.call(func) === '[object Function]'
 }

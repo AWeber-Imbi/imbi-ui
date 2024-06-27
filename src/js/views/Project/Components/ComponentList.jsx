@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Alert, Loading, ScoreBadge } from '../../../components'
 import { NavigableTable } from '../../../components/Table'
 import { useTranslation } from 'react-i18next'
 import { Context } from '../../../state'
-import { httpGet, parseLinkHeader } from '../../../utils'
+import { fetchPages } from '../../../utils'
 import { ViewComponent } from './ViewComponent'
 
 function ComponentList({ project, urlPath }) {
@@ -26,27 +26,19 @@ function ComponentList({ project, urlPath }) {
   }, [])
 
   useEffect(() => {
-    let allData = []
-    let url = new URL(`/projects/${project.id}/components`, globalState.baseURL)
     setFetching(true)
-    do {
-      const currUrl = url
-      url = null
-      httpGet(
-        globalState.fetch,
-        currUrl,
-        ({ data, headers }) => {
-          const links = parseLinkHeader(headers.get('Link'))
-          url = Object.hasOwn(links, 'next') ? new URL(links.next[0]) : null
-          setComponents((prevState) => prevState.concat(data))
-        },
-        ({ message }) => {
-          setErrorMessage(message)
-          setFetching(false)
-        }
-      )
-    } while (url !== null)
-    setFetching(false)
+    fetchPages(
+      `/projects/${project.id}/components`,
+      globalState,
+      (data, isComplete) => {
+        setComponents((prevState) => prevState.concat(data))
+        if (isComplete) setFetching(false)
+      },
+      (message) => {
+        setErrorMessage(message)
+        setFetching(false)
+      }
+    )
   }, [])
 
   if (fetching) return <Loading />
