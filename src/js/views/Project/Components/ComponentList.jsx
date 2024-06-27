@@ -31,8 +31,16 @@ function ComponentList({ project, urlPath }) {
       `/projects/${project.id}/components`,
       globalState,
       (data, isComplete) => {
-        setComponents((prevState) => prevState.concat(data))
-        if (isComplete) setFetching(false)
+        if (isComplete) {
+          setFetching(false)
+          setComponents((prevState) =>
+            prevState
+              .concat(data)
+              .sort((a, b) => (a['name'] < b['name'] ? -1 : 1))
+          )
+        } else {
+          setComponents((prevState) => prevState.concat(data))
+        }
       },
       (message) => {
         setErrorMessage(message)
@@ -40,6 +48,17 @@ function ComponentList({ project, urlPath }) {
       }
     )
   }, [])
+
+  function onSortChange(column, direction) {
+    setComponents(
+      [...components].sort((a, b) => {
+        if (a[column] == null || a[column] < b[column])
+          return direction === 'asc' ? -1 : 1
+        if (b[column] === null || b[column] < a[column])
+          return direction === 'asc' ? 1 : -1
+      })
+    )
+  }
 
   if (fetching) return <Loading />
   if (errorMessage) return <Alert level="error">{errorMessage}</Alert>
@@ -90,7 +109,9 @@ function ComponentList({ project, urlPath }) {
         }
       ]}
       data={components}
+      defaultSort="name"
       extractSearchParam={(obj) => obj.name}
+      onSortChange={onSortChange}
       title={t('project.components.singular')}
       selectedIndex={selectedIndex}
       setSelectedIndex={setSelectedIndex}
