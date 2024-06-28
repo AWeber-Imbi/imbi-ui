@@ -58,6 +58,13 @@ function SSMConfiguration({ project }) {
     setShowSecureStrings(value)
   }
 
+  function refreshPage() {
+    const newParams = cloneParams(searchParams)
+    newParams.delete('v')
+    setSearchParams(newParams)
+    refreshParams()
+  }
+
   function refreshParams() {
     setFetching(true)
 
@@ -248,12 +255,13 @@ function SSMConfiguration({ project }) {
           param={rows[selectedIndex]}
           showSecureStrings={showSecureStrings}
           onShowSecureStringsChange={onShowSecureStringsChange}
-          onDeleteComplete={() => {
-            const newParams = cloneParams(searchParams)
-            newParams.delete('v')
-            setSearchParams(newParams)
-            refreshParams()
+          onEditComplete={refreshPage}
+          onEditOpen={() => setShowArrows(false)}
+          onEditClose={() => {
+            setShowArrows(true)
+            setSlideOverFocusTrigger({})
           }}
+          onDeleteComplete={refreshPage}
           onDeleteOpen={() => setShowArrows(false)}
           onDeleteClose={() => {
             setShowArrows(true)

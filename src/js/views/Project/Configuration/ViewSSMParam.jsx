@@ -16,6 +16,7 @@ import { httpDelete } from '../../../utils'
 import { Context } from '../../../state'
 import { Checkbox } from '../../../components/Form/Checkbox'
 import { Error } from '../../Error'
+import { EditSSMParam } from './EditSSMParam'
 
 function ViewSSMParam({
   project,
@@ -23,6 +24,9 @@ function ViewSSMParam({
   param,
   showSecureStrings,
   onShowSecureStringsChange,
+  onEditComplete,
+  onEditOpen,
+  onEditClose,
   onDeleteComplete,
   onDeleteOpen,
   onDeleteClose
@@ -30,6 +34,7 @@ function ViewSSMParam({
   const [globalState] = useContext(Context)
   const { t } = useTranslation()
   const [error, setError] = useState()
+  const [isEditing, setIsEditing] = useState(false)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteChecklist, setDeleteChecklist] = useState(
@@ -64,6 +69,16 @@ function ViewSSMParam({
           : response.data
       )
     }
+  }
+
+  function onEditStart() {
+    setIsEditing(true)
+    onEditOpen()
+  }
+
+  function onEditEnd() {
+    setIsEditing(false)
+    onEditClose()
   }
 
   function onDeleteStart() {
@@ -117,58 +132,77 @@ function ViewSSMParam({
           </fieldset>
         </ConfirmationDialog>
       )}
-      <DescriptionList>
-        <Definition term={t('common.name')}>{param.name}</Definition>
-        <Definition term={t('common.type')}>{param.type}</Definition>
-      </DescriptionList>
-      <div className="flex items-center justify-between mt-6 mb-3">
-        <h1 className="text-xl font-medium text-gray-900">Values</h1>
-        {param.type.includes('SecureString') && (
-          <div className="flex items-center gap-1">
-            <p>Show decrypted value</p>
-            <Toggle
-              onChange={(name, value) => onShowSecureStringsChange(value)}
-              name="is-hidden"
-              value={showSecureStrings}
-            />
+      {isEditing ? (
+        <EditSSMParam
+          param={param}
+          project={project}
+          pathPrefix={pathPrefix}
+          onCancel={() => {
+            onEditEnd()
+          }}
+          onError={(error) => setError(error)}
+          onSuccess={onEditComplete}
+        />
+      ) : (
+        <>
+          <DescriptionList>
+            <Definition term={t('common.name')}>{param.name}</Definition>
+            <Definition term={t('common.type')}>{param.type}</Definition>
+          </DescriptionList>
+          <div className="flex items-center justify-between mt-6 mb-3">
+            <h1 className="text-xl font-medium text-gray-900">Values</h1>
+            {param.type.includes('SecureString') && (
+              <div className="flex items-center gap-1">
+                <p>Show decrypted value</p>
+                <Toggle
+                  onChange={(name, value) => onShowSecureStringsChange(value)}
+                  name="is-hidden"
+                  value={showSecureStrings}
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <DescriptionList>
-        {Object.entries(param.values)
-          .sort(([environmentA], [environmentB]) =>
-            environmentA > environmentB ? 1 : -1
-          )
-          .map(([environment, { value, type }]) => {
-            return (
-              <DefinitionRow
-                key={environment}
-                className="min-w-0 break-words font-mono"
-                term={
-                  param.type.includes(',') ? (
-                    <>
-                      {environment}
-                      <br />
-                      <i>{type}</i>
-                    </>
-                  ) : (
-                    environment
-                  )
-                }>
-                {type !== 'SecureString' || showSecureStrings
-                  ? value
-                  : '********'}
-              </DefinitionRow>
-            )
-          })}
-      </DescriptionList>
-      <Modal.Footer>
-        <Button className="btn-red text-s" onClick={() => onDeleteStart()}>
-          <Icon icon="fas trash" className="mr-2" />
-          {t('common.delete')}
-        </Button>
-      </Modal.Footer>
+          <DescriptionList>
+            {Object.entries(param.values)
+              .sort(([environmentA], [environmentB]) =>
+                environmentA > environmentB ? 1 : -1
+              )
+              .map(([environment, { value, type }]) => {
+                return (
+                  <DefinitionRow
+                    key={environment}
+                    className="min-w-0 break-words font-mono"
+                    term={
+                      param.type.includes(',') ? (
+                        <>
+                          {environment}
+                          <br />
+                          <i>{type}</i>
+                        </>
+                      ) : (
+                        environment
+                      )
+                    }>
+                    {type !== 'SecureString' || showSecureStrings
+                      ? value
+                      : '********'}
+                  </DefinitionRow>
+                )
+              })}
+          </DescriptionList>
+          <Modal.Footer>
+            <Button className="btn-red text-s" onClick={() => onDeleteStart()}>
+              <Icon icon="fas trash" className="mr-2" />
+              {t('common.delete')}
+            </Button>
+            <Button className="btn-white text-s" onClick={() => onEditStart()}>
+              <Icon icon="fas edit" className="mr-2" />
+              {t('common.edit')}
+            </Button>
+          </Modal.Footer>
+        </>
+      )}
     </>
   )
 }
@@ -179,6 +213,9 @@ ViewSSMParam.propTypes = {
   param: PropTypes.object,
   showSecureStrings: PropTypes.bool.isRequired,
   onShowSecureStringsChange: PropTypes.func.isRequired,
+  onEditComplete: PropTypes.func.isRequired,
+  onEditOpen: PropTypes.func.isRequired,
+  onEditClose: PropTypes.func.isRequired,
   onDeleteComplete: PropTypes.func.isRequired,
   onDeleteOpen: PropTypes.func.isRequired,
   onDeleteClose: PropTypes.func.isRequired
