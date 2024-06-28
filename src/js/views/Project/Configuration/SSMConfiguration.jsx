@@ -235,6 +235,7 @@ function SSMConfiguration({ project }) {
           newParams.delete('v')
           setSearchParams(newParams)
           setSlideOverOpen(false)
+          setShowSecureStrings(false)
         }}
         onKeyDown={(e) => {
           if (!showArrows) return
