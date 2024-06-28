@@ -31,8 +31,37 @@ function EditSSMParam({
   )
 
   function deleteThenPost(nameSuffix) {
-    let exitEarly = false
-    const deleteParams = async () => {
+    const createParams = async (onSuccess) => {
+      const newValues = {}
+      for (const [environment, { type, value }] of Object.entries(values)) {
+        if (value) {
+          newValues[environment] = { type, value }
+        }
+      }
+      const response = await httpPost(
+        globalState.fetch,
+        new URL(
+          `/projects/${project.id}/configuration/ssm`,
+          globalState.baseURL
+        ),
+        {
+          name,
+          values: newValues
+        }
+      )
+      if (!response.success) {
+        setSaving(false)
+        onError(
+          response?.responseBody?.detail
+            ? response.responseBody.detail
+            : response.data
+        )
+      } else {
+        onSuccess()
+      }
+    }
+
+    const deleteParams = async (onSuccess) => {
       setSaving(true)
       const deleteEnvironments = []
       for (const [environment, { value }] of Object.entries(param.values)) {
@@ -52,49 +81,20 @@ function EditSSMParam({
         }
       )
       if (!response.success) {
-        exitEarly = true
+        setSaving(false)
         onError(
           response?.responseBody?.detail
             ? response.responseBody.detail
             : response.data
         )
+      } else {
+        onSuccess()
       }
     }
-    deleteParams().catch((error) => onError(error))
-    if (exitEarly) return
 
-    const createParams = async () => {
-      const newValues = {}
-      for (const [environment, { type, value }] of Object.entries(values)) {
-        if (value) {
-          newValues[environment] = { type, value }
-        }
-      }
-      const response = await httpPost(
-        globalState.fetch,
-        new URL(
-          `/projects/${project.id}/configuration/ssm`,
-          globalState.baseURL
-        ),
-        {
-          name,
-          values: newValues
-        }
-      )
-      if (!response.success) {
-        onError(
-          response?.responseBody?.detail
-            ? response.responseBody.detail
-            : response.data
-        )
-      }
-    }
-    createParams().catch((error) => {
-      onError(error)
-    })
-
-    setSaving(false)
-    onSuccess()
+    deleteParams(() => {
+      createParams(() => onSuccess()).catch((error) => onError(error))
+    }).catch((error) => onError(error))
   }
 
   function patchParams(nameSuffix) {
