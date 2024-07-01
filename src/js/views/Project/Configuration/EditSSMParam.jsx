@@ -31,7 +31,7 @@ function EditSSMParam({
   )
 
   function deleteThenPost(nameSuffix) {
-    const createParams = async (onSuccess) => {
+    const createParams = async () => {
       const newValues = {}
       for (const [environment, { type, value }] of Object.entries(values)) {
         if (value) {
@@ -61,7 +61,7 @@ function EditSSMParam({
       }
     }
 
-    const deleteParams = async (onSuccess) => {
+    const deleteParams = async () => {
       setSaving(true)
       const deleteEnvironments = []
       for (const [environment, { value }] of Object.entries(param.values)) {
@@ -88,13 +88,11 @@ function EditSSMParam({
             : response.data
         )
       } else {
-        onSuccess()
+        await createParams()
       }
     }
 
-    deleteParams(() => {
-      createParams(() => onSuccess()).catch((error) => onError(error))
-    }).catch((error) => onError(error))
+    deleteParams().catch((error) => onError(error))
   }
 
   function patchParams(nameSuffix) {
