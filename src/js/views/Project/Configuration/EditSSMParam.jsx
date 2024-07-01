@@ -186,7 +186,7 @@ function EditSSMParam({
                   {{ environment }}
                 </Trans>
               }
-              name={`${environment}`}
+              name={environment}
               type="select"
               options={[
                 { label: 'String', value: 'String' },
