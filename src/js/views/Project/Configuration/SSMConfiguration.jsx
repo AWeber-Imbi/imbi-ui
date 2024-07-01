@@ -58,6 +58,13 @@ function SSMConfiguration({ project }) {
     setShowSecureStrings(value)
   }
 
+  function refreshPage() {
+    const newParams = cloneParams(searchParams)
+    newParams.delete('v')
+    setSearchParams(newParams)
+    refreshParams()
+  }
+
   function refreshParams() {
     setFetching(true)
 
@@ -70,13 +77,13 @@ function SSMConfiguration({ project }) {
             .sort((a, b) => (a.name > b.name ? 1 : -1))
             .map((param) => {
               const types = new Set()
-              const environments = new Set()
-              param.values.forEach((value) => {
-                types.add(value.type)
-                environments.add(value.environment)
-              })
+              const environments = []
+              for (const [environment, data] of Object.entries(param.values)) {
+                types.add(data.type)
+                environments.push(environment)
+              }
               param['type'] = Array.from(types).sort().join(', ')
-              param['environments'] = Array.from(environments).sort().join(', ')
+              param['environments'] = environments.sort().join(', ')
               return param
             })
         )
@@ -228,6 +235,7 @@ function SSMConfiguration({ project }) {
           newParams.delete('v')
           setSearchParams(newParams)
           setSlideOverOpen(false)
+          setShowSecureStrings(false)
         }}
         onKeyDown={(e) => {
           if (!showArrows) return
@@ -248,12 +256,13 @@ function SSMConfiguration({ project }) {
           param={rows[selectedIndex]}
           showSecureStrings={showSecureStrings}
           onShowSecureStringsChange={onShowSecureStringsChange}
-          onDeleteComplete={() => {
-            const newParams = cloneParams(searchParams)
-            newParams.delete('v')
-            setSearchParams(newParams)
-            refreshParams()
+          onEditComplete={refreshPage}
+          onEditOpen={() => setShowArrows(false)}
+          onEditClose={() => {
+            setShowArrows(true)
+            setSlideOverFocusTrigger({})
           }}
+          onDeleteComplete={refreshPage}
           onDeleteOpen={() => setShowArrows(false)}
           onDeleteClose={() => {
             setShowArrows(true)

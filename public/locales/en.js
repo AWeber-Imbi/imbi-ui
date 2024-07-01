@@ -353,7 +353,9 @@ export default {
             deleteConfirmation: {
               title: 'Delete SSM Parameters',
               button: 'Delete Checked'
-            }
+            },
+            environmentType: '<0>{{environment}}</0> Type',
+            environmentValue: '<0>{{environment}}</0> Value'
           }
         },
         components: {
