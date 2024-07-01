@@ -118,12 +118,9 @@ function Report({
         endpoint,
         state,
         (data, isComplete) => {
+          setReportData((prevState) => prevState.concat(data))
           if (isComplete) {
             setFetched(true)
-            setReportData((prevState) => prevState.concat(data))
-          } else {
-            setReportData((prevState) => prevState.concat(data))
-          }
         },
         (message) => {
           setErrorMessage(message)
