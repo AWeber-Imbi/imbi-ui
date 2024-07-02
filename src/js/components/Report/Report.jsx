@@ -121,6 +121,7 @@ function Report({
           setReportData((prevState) => prevState.concat(data))
           if (isComplete) {
             setFetched(true)
+          }
         },
         (message) => {
           setErrorMessage(message)
