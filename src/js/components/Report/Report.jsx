@@ -4,11 +4,11 @@ import { Column } from '../../schema'
 import { useContext } from 'react'
 import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
-import { httpGet } from '../../utils'
+import { fetchPages, httpGet } from '../../utils'
 import { Alert } from '../Alert/Alert'
 import { Loading } from '../Loading/Loading'
 import { ContentArea } from '../ContentArea/ContentArea'
-import { Table } from '../Table'
+import { NavigableTable, Table } from '../Table'
 import { Markdown } from '../Markdown/Markdown'
 
 /**
@@ -114,15 +114,18 @@ function Report({
 
   useEffect(() => {
     if (!fetched) {
-      httpGet(
-        state.fetch,
-        new URL(endpoint, state.baseURL),
-        ({ data }) => {
-          setReportData(data)
-          setErrorMessage(null)
-          setFetched(true)
+      fetchPages(
+        endpoint,
+        state,
+        (data, isComplete) => {
+          setReportData((prevState) => prevState.concat(data))
+          if (isComplete) {
+            setFetched(true)
+          }
         },
-        ({ message }) => setErrorMessage(message)
+        (message) => {
+          setErrorMessage(message)
+        }
       )
     }
   }, [fetched])

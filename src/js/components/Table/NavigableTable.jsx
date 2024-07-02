@@ -12,8 +12,13 @@ import { Icon } from '../Icon/Icon'
  *
  * @param columns passed as-is to Table
  * @param data array of data objects, passed to Table and used for navigation
+ * @param defaultSort optional column name that the data is sorted by
+ * @param defaultSortDirection optional "sort direction" in use if defaultSort
+ *                             is included, defaults to "asc"
  * @param extractSearchParam function that returns the property from data[n] used in
  *                           the search params for tracking
+ * @param onSortChange function to call when the user selects a different sort order
+ *                     for the table.
  * @param selectedIndex index of the current value in data
  * @param setSelectedIndex setter used for next/previous
  * @param slideOverElement element to use as the root of the content in the slide over
@@ -22,7 +27,10 @@ import { Icon } from '../Icon/Icon'
 function NavigableTable({
   columns,
   data,
+  defaultSort,
+  defaultSortDirection,
   extractSearchParam,
+  onSortChange,
   selectedIndex,
   setSelectedIndex,
   slideOverElement,
@@ -30,6 +38,10 @@ function NavigableTable({
 }) {
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const [sort, setSort] = useState([
+    defaultSort || '',
+    defaultSortDirection || 'asc'
+  ])
   const [showArrows, setShowArrows] = useState(false)
   const [slideOverOpen, setSlideOverOpen] = useState(false)
   const arrowLeftRef = useRef(null)
@@ -63,10 +75,26 @@ function NavigableTable({
     updateSearchParamsWith(extractSearchParam(data[index]))
   }
 
+  function onSortDirection(column, direction) {
+    const [curCol, curDir] = sort
+    if (curCol !== column || curDir !== direction) {
+      setSort([column, direction])
+      onSortChange(column, direction)
+    }
+  }
+
+  const augmentedColumns = onSortChange
+    ? columns.map((column) => ({
+        ...column,
+        sortCallback: onSortDirection,
+        sortDirection: sort[0] === column.name ? sort[1] : null
+      }))
+    : columns
+
   return (
     <div className="m0">
       <Table
-        columns={columns}
+        columns={augmentedColumns}
         data={data}
         onRowClick={({ index }) => {
           updateSearchParamsWith(extractSearchParam(data[index]))
@@ -147,7 +175,10 @@ function NavigableTable({
 NavigableTable.propTypes = {
   columns: Columns,
   data: PropTypes.arrayOf(PropTypes.object),
+  defaultSort: PropTypes.string,
+  defaultSortDirection: PropTypes.string,
   extractSearchParam: PropTypes.func.isRequired,
+  onSortChange: PropTypes.func,
   selectedIndex: PropTypes.number.isRequired,
   setSelectedIndex: PropTypes.func.isRequired,
   slideOverElement: PropTypes.node.isRequired,

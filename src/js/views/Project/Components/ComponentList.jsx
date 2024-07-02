@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Alert, Loading, ScoreBadge } from '../../../components'
 import { NavigableTable } from '../../../components/Table'
 import { useTranslation } from 'react-i18next'
 import { Context } from '../../../state'
-import { httpGet, parseLinkHeader } from '../../../utils'
+import { fetchPages } from '../../../utils'
 import { ViewComponent } from './ViewComponent'
 
 function ComponentList({ project, urlPath }) {
@@ -26,28 +26,39 @@ function ComponentList({ project, urlPath }) {
   }, [])
 
   useEffect(() => {
-    let allData = []
-    let url = new URL(`/projects/${project.id}/components`, globalState.baseURL)
     setFetching(true)
-    do {
-      const currUrl = url
-      url = null
-      httpGet(
-        globalState.fetch,
-        currUrl,
-        ({ data, headers }) => {
-          const links = parseLinkHeader(headers.get('Link'))
-          url = Object.hasOwn(links, 'next') ? new URL(links.next[0]) : null
-          setComponents((prevState) => prevState.concat(data))
-        },
-        ({ message }) => {
-          setErrorMessage(message)
+    fetchPages(
+      `/projects/${project.id}/components`,
+      globalState,
+      (data, isComplete) => {
+        if (isComplete) {
           setFetching(false)
+          setComponents((prevState) =>
+            prevState
+              .concat(data)
+              .sort((a, b) => (a['name'] < b['name'] ? -1 : 1))
+          )
+        } else {
+          setComponents((prevState) => prevState.concat(data))
         }
-      )
-    } while (url !== null)
-    setFetching(false)
+      },
+      (message) => {
+        setErrorMessage(message)
+        setFetching(false)
+      }
+    )
   }, [])
+
+  function onSortChange(column, direction) {
+    setComponents(
+      [...components].sort((a, b) => {
+        if (a[column] == null || a[column] < b[column])
+          return direction === 'asc' ? -1 : 1
+        if (b[column] === null || b[column] < a[column])
+          return direction === 'asc' ? 1 : -1
+      })
+    )
+  }
 
   if (fetching) return <Loading />
   if (errorMessage) return <Alert level="error">{errorMessage}</Alert>
@@ -66,28 +77,44 @@ function ComponentList({ project, urlPath }) {
         {
           title: t('common.name'),
           name: 'name',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-3/12',
+            className: 'truncate'
+          }
         },
         {
           title: t('terms.package'),
           name: 'package_url',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-4/12',
+            className: 'truncate'
+          }
         },
         {
           title: t('terms.version'),
           name: 'version',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-1/12',
+            className: 'overflow-clip'
+          }
         },
         {
           title: t('project.components.status'),
           name: 'status',
-          type: 'text'
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-1/12'
+          }
         },
         {
           title: t('terms.healthScore'),
           name: 'score',
           type: 'text',
           tableOptions: {
+            headerClassName: 'w-2/12',
             lookupFunction: (value) => {
               if (value !== null) {
                 return <ScoreBadge value={value} />
@@ -98,7 +125,9 @@ function ComponentList({ project, urlPath }) {
         }
       ]}
       data={components}
+      defaultSort="name"
       extractSearchParam={(obj) => obj.name}
+      onSortChange={onSortChange}
       title={t('project.components.singular')}
       selectedIndex={selectedIndex}
       setSelectedIndex={setSelectedIndex}

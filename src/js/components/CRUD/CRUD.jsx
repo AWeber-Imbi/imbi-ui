@@ -13,7 +13,7 @@ import {
 } from '..'
 import { Columns } from '../../schema'
 import { Context } from '../../state'
-import { httpGet, httpDelete } from '../../utils'
+import { httpGet, httpDelete, fetchPages } from '../../utils'
 
 import { Form } from './Form'
 
@@ -131,14 +131,17 @@ function CRUD({
   // Fetch the collection data
   useEffect(() => {
     if (fetchData === true) {
+      const newData = []
       setFetchData(false)
-      const url = new URL(collectionPath, state.baseURL)
-      httpGet(
-        state.fetch,
-        url,
-        ({ data }) => {
-          setData(data)
-          setReady(true)
+      fetchPages(
+        collectionPath,
+        state,
+        (data, finished) => {
+          newData.push(...data)
+          if (finished === true) {
+            setReady(true)
+            setData(newData)
+          }
         },
         ({ message }) => {
           setErrorMessage(message)
