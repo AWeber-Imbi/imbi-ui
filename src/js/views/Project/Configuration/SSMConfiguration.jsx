@@ -19,7 +19,7 @@ function cloneParams(searchParams) {
 }
 
 function SSMConfiguration({ project }) {
-  const [globalState, dispatch] = useContext(Context)
+  const [globalState] = useContext(Context)
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
