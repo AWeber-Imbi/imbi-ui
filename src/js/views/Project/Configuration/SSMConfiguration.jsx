@@ -25,7 +25,9 @@ function SSMConfiguration({ project }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [fetching, setFetching] = useState(false)
   const [errorMessage, setErrorMessage] = useState()
+  const [searchValue, setSearchValue] = useState('')
   const [rows, setRows] = useState([])
+  const [filteredRows, setFilteredRows] = useState([])
   const [slideOverOpen, setSlideOverOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState()
   const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
@@ -35,11 +37,11 @@ function SSMConfiguration({ project }) {
   const arrowLeftRef = useRef(null)
   const arrowRightRef = useRef(null)
 
-  if (searchParams.get('v') && !slideOverOpen && rows.length > 0) {
+  if (searchParams.get('v') && !slideOverOpen && filteredRows.length > 0) {
     setSlideOverOpen(true)
     setShowArrows(true)
     setSelectedIndex(
-      rows.findIndex((row) => row.name === searchParams.get('v'))
+      filteredRows.findIndex((row) => row.name === searchParams.get('v'))
     )
   } else if (!searchParams.get('v') && slideOverOpen) {
     setSlideOverOpen(false)
@@ -49,7 +51,7 @@ function SSMConfiguration({ project }) {
   function move(index) {
     setSelectedIndex(index)
     const newParams = cloneParams(searchParams)
-    newParams.set('v', rows[index].name)
+    newParams.set('v', filteredRows[index].name)
     setSearchParams(newParams)
     setShowSecureStrings(false)
   }
@@ -72,21 +74,23 @@ function SSMConfiguration({ project }) {
       globalState.fetch,
       new URL(`/projects/${project.id}/configuration/ssm`, globalState.baseURL),
       ({ data }) => {
-        setRows(
-          data
-            .sort((a, b) => (a.name > b.name ? 1 : -1))
-            .map((param) => {
-              const types = new Set()
-              const environments = []
-              for (const [environment, data] of Object.entries(param.values)) {
-                types.add(data.type)
-                environments.push(environment)
-              }
-              param['type'] = Array.from(types).sort().join(', ')
-              param['environments'] = environments.sort().join(', ')
-              return param
-            })
-        )
+        const sortedRows = data
+          .sort((a, b) => (a.name > b.name ? 1 : -1))
+          .map((param) => {
+            const types = new Set()
+            const environments = []
+            for (const [environment, data] of Object.entries(param.values)) {
+              types.add(data.type)
+              environments.push(environment)
+            }
+            param['type'] = Array.from(types).sort().join(', ')
+            param['environments'] = environments.sort().join(', ')
+            return param
+          })
+
+        setRows(sortedRows)
+        setFilteredRows(sortedRows)
+        setSearchValue('')
         setFetching(false)
       },
       ({ message, status }) => {
@@ -133,15 +137,35 @@ function SSMConfiguration({ project }) {
     )
   }
 
+  function onSearchChange(event) {
+    const value = event.target.value
+    setSearchValue(value)
+    setFilteredRows(rows.filter((row) => row.name.includes(value)))
+  }
+
   return (
     <>
-      <div className="flex justify-end">
+      <div className="relative flex items-stretch rounded-md flex-grow focus-within:z-10 gap-1">
+        <input
+          autoFocus={true}
+          className="w-full rounded-md shadow-sm pl-10 text-sm border-gray-300 focus:border-gray-300 focus:outline-0 focus:ring-0"
+          type="text"
+          autoComplete="off"
+          onChange={onSearchChange}
+          placeholder={t('common.filter')}
+          style={{ padding: '.575rem' }}
+          value={searchValue}
+        />
         <Button
           className="btn-green"
           type="submit"
           onClick={() => setShowCreatePage(true)}>
-          <Icon className="mr-2" icon="fas plus-circle" />
-          {t('project.configuration.ssm.add')}
+          <div className="flex gap-2">
+            <Icon className="self-center" icon="fas plus-circle" />
+            <p className="whitespace-nowrap">
+              {t('project.configuration.ssm.add')}
+            </p>
+          </div>
         </Button>
       </div>
       <Table
@@ -174,10 +198,10 @@ function SSMConfiguration({ project }) {
             }
           }
         ]}
-        data={rows}
+        data={filteredRows}
         onRowClick={({ index }) => {
           const newParams = cloneParams(searchParams)
-          newParams.set('v', rows[index].name)
+          newParams.set('v', filteredRows[index].name)
           setSearchParams(newParams)
           setSlideOverOpen(true)
           setSelectedIndex(index)
@@ -212,14 +236,15 @@ function SSMConfiguration({ project }) {
                   ref={arrowRightRef}
                   className="outline-offset-4"
                   onClick={() => {
-                    if (selectedIndex < rows.length - 1) move(selectedIndex + 1)
+                    if (selectedIndex < filteredRows.length - 1)
+                      move(selectedIndex + 1)
                   }}
-                  tabIndex={selectedIndex === rows.length - 1 ? -1 : 0}>
+                  tabIndex={selectedIndex === filteredRows.length - 1 ? -1 : 0}>
                   <Icon
                     icon="fas arrow-right"
                     className={
                       'h-4 select-none block' +
-                      (selectedIndex === rows.length - 1
+                      (selectedIndex === filteredRows.length - 1
                         ? ' text-gray-200'
                         : '')
                     }
@@ -243,7 +268,7 @@ function SSMConfiguration({ project }) {
             arrowLeftRef.current?.focus()
             move(selectedIndex - 1)
           } else if (
-            selectedIndex < rows.length - 1 &&
+            selectedIndex < filteredRows.length - 1 &&
             e.key === 'ArrowRight'
           ) {
             arrowRightRef.current?.focus()
@@ -253,7 +278,7 @@ function SSMConfiguration({ project }) {
         <ViewSSMParam
           project={project}
           pathPrefix={prefix}
-          param={rows[selectedIndex]}
+          param={filteredRows[selectedIndex]}
           showSecureStrings={showSecureStrings}
           onShowSecureStringsChange={onShowSecureStringsChange}
           onEditComplete={refreshPage}
