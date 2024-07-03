@@ -30,7 +30,7 @@ function Admin({ user }) {
       <Sidebar>
         <Sidebar.Section name={t('admin.sidebar.settings')} open={true}>
           <Sidebar.MenuItem
-            value={'AWS Roles'}
+            value={t('admin.aws_roles.collectionName')}
             to="/ui/admin/aws-roles"
             icon="fas key"
           />
