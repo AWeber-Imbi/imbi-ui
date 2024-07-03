@@ -35,7 +35,6 @@ export function ProjectFactTypeEnums() {
 
   return (
     <CRUD
-      collectionIcon="fas list-ol"
       collectionName={t('admin.projectFactTypeEnums.collectionName')}
       collectionPath="/project-fact-type-enums"
       columns={[

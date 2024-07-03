@@ -19,6 +19,7 @@ import { ProjectFactTypeRanges } from './ProjectFactTypeRanges'
 import { ProjectLinkTypes } from './ProjectLinkTypes'
 import { ProjectTypes } from './ProjectTypes'
 import { Users } from './Users'
+import { AWSRoles } from './AWSRoles'
 
 function Admin({ user }) {
   const { t } = useTranslation()
@@ -28,6 +29,11 @@ function Admin({ user }) {
     <Fragment>
       <Sidebar>
         <Sidebar.Section name={t('admin.sidebar.settings')} open={true}>
+          <Sidebar.MenuItem
+            value={t('admin.aws_roles.collectionName')}
+            to="/ui/admin/aws-roles"
+            icon="fas key"
+          />
           <Sidebar.MenuItem
             value={t('admin.cookieCutters.collectionName')}
             to="/ui/admin/cookie-cutters"
@@ -90,6 +96,7 @@ function Admin({ user }) {
       <div className="flex-grow py-3 px-4">
         <Routes>
           <Route path="" exact={true} element={<Dashboard />} />
+          <Route path="aws-roles" element={<AWSRoles />} />
           <Route path="cookie-cutters" element={<CookieCutters />} />
           <Route path="components" element={<Components />} />
           <Route path="environments" element={<Environments />} />

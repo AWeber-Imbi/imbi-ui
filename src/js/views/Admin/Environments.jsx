@@ -9,7 +9,6 @@ export function Environments() {
   const { t } = useTranslation()
   return (
     <CRUD
-      collectionIcon="fas tree"
       collectionName={t('admin.environments.collectionName')}
       collectionPath="/environments"
       columns={[

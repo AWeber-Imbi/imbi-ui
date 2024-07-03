@@ -8,7 +8,6 @@ export function ProjectLinkTypes() {
   const { t } = useTranslation()
   return (
     <CRUD
-      collectionIcon="fas external-link-alt"
       collectionName={t('admin.projectLinkTypes.collectionName')}
       collectionPath="/project-link-types"
       columns={[
