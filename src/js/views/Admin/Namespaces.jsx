@@ -12,7 +12,6 @@ export function Namespaces() {
 
   return (
     <CRUD
-      collectionIcon="fas boxes"
       collectionName={t('admin.namespaces.collectionName')}
       collectionPath="/namespaces"
       columns={[

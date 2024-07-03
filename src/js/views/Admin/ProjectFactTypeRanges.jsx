@@ -35,7 +35,6 @@ export function ProjectFactTypeRanges() {
 
   return (
     <CRUD
-      collectionIcon="fas ruler-horizontal"
       collectionName={t('admin.projectFactTypeRanges.collectionName')}
       collectionPath="/project-fact-type-ranges"
       columns={[

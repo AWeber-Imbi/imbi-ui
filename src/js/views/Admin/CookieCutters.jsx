@@ -17,7 +17,6 @@ export function CookieCutters() {
 
   return (
     <CRUD
-      collectionIcon="fas cookie"
       collectionName={t('admin.cookieCutters.collectionName')}
       collectionPath="/cookie-cutters"
       columns={[

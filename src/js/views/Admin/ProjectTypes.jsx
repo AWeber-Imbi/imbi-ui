@@ -9,7 +9,6 @@ export function ProjectTypes() {
   const { t } = useTranslation()
   return (
     <CRUD
-      collectionIcon="fas cubes"
       collectionName={t('admin.projectTypes.collectionName')}
       collectionPath="/project-types"
       columns={[

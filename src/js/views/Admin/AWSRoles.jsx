@@ -19,7 +19,6 @@ export function AWSRoles() {
 
   return (
     <CRUD
-      collectionIcon="fas key"
       collectionName={t('admin.aws_roles.collectionName')}
       collectionPath="/aws-roles"
       columns={[

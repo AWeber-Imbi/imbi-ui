@@ -18,7 +18,6 @@ function Components() {
 
   return (
     <CRUD
-      collectionIcon="fas cog"
       collectionName={t('admin.components.collectionName')}
       collectionPath={'/components'}
       itemKey={'package_url'}

@@ -28,7 +28,6 @@ export function ProjectFactTypes() {
 
   return (
     <CRUD
-      collectionIcon="fas ruler"
       collectionName={t('admin.projectFactTypes.collectionName')}
       collectionPath="/project-fact-types"
       columns={[
