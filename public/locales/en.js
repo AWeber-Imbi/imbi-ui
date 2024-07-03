@@ -64,6 +64,7 @@ export default {
         dataCenter: 'Data Center',
         deploymentType: 'Deployment Type',
         description: 'Description',
+        environment: 'Environment',
         environments: 'Environments',
         healthScore: 'Health Score',
         links: 'Links',
@@ -129,6 +130,14 @@ export default {
         sidebar: {
           settings: 'Settings',
           userManagement: 'User Management'
+        },
+        aws_roles: {
+          collectionName: 'AWS Roles',
+          itemName: 'AWS Role',
+          errors: {
+            uniqueViolation:
+              'A role already exists for that environment and namespace'
+          }
         },
         components: {
           activeVersion: 'Active Version',
