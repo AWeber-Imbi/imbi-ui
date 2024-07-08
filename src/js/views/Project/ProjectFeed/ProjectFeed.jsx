@@ -138,7 +138,7 @@ function ProjectFeed({ projectID }) {
 
   return (
     <ErrorBoundary>
-      <Card className="flow-root max-h-screen">
+      <Card className="flow-root max-h-[900px]">
         <h2 className="font-medium mb-2">{t('project.feed.title')}</h2>
         {content}
       </Card>

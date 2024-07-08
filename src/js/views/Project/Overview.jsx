@@ -21,7 +21,7 @@ function Overview({ factTypes, project, refresh, urlPath }) {
 
   return (
     <Fragment>
-      <div className="grid grid-cols-1 space-y-3 space-x-0 lg:grid-cols-3 lg:space-y-0 lg:space-x-3 text-left text-gray-600">
+      <div className="grid grid-cols-1 space-y-3 space-x-0 lg:grid-cols-3 lg:space-y-0 lg:space-x-3 text-left text-gray-600 items-start">
         <Details
           project={project}
           editing={editing.details}
