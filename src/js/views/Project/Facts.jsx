@@ -78,24 +78,22 @@ function Display({ project, onEditClick }) {
           )
         })}
       </dl>
-      <div className="flex-grow flex flex-row items-end">
-        <div className="flex-grow flex items-center mt-2">
-          {lastUpdated > 0 && (
-            <div className="flex-1 text-xs italic">
-              {t('common.lastUpdated', {
-                date: new Intl.DateTimeFormat('en-US').format(lastUpdated)
-              })}
-            </div>
-          )}
-          {project.archived === false && (
-            <div className="flex-1 text-xs text-right">
-              <Button onClick={onEditClick}>
-                <Icon icon="fas edit" className="mr-2" />
-                {t('project.updateFacts')}
-              </Button>
-            </div>
-          )}
-        </div>
+      <div className="flex flex-row items-end mt-2">
+        {lastUpdated > 0 && (
+          <div className="flex-1 text-xs italic">
+            {t('common.lastUpdated', {
+              date: new Intl.DateTimeFormat('en-US').format(lastUpdated)
+            })}
+          </div>
+        )}
+        {project.archived === false && (
+          <div className="flex-1 text-xs text-right">
+            <Button onClick={onEditClick}>
+              <Icon icon="fas edit" className="mr-2" />
+              {t('project.updateFacts')}
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   )
