@@ -63,39 +63,41 @@ function Display({ project, onEditClick }) {
   const { t } = useTranslation()
   let lastUpdated = 0
   return (
-    <Card className="flex flex-col">
-      <h2 className="font-medium mb-2">{t('project.projectFacts')}</h2>
-      <dl className="lg:ml-4 my-3">
-        {project.facts.map((fact, offset) => {
-          const updated = Date.parse(fact.recorded_at)
-          if (updated > lastUpdated) lastUpdated = updated
-          return (
-            <Fact
-              key={`fact-${fact.fact_type_id}`}
-              fact={fact}
-              offset={offset}
-            />
-          )
-        })}
-      </dl>
-      <div className="flex flex-row items-end mt-2">
-        {lastUpdated > 0 && (
-          <div className="flex-1 text-xs italic">
-            {t('common.lastUpdated', {
-              date: new Intl.DateTimeFormat('en-US').format(lastUpdated)
-            })}
-          </div>
-        )}
-        {project.archived === false && (
-          <div className="flex-1 text-xs text-right">
-            <Button onClick={onEditClick}>
-              <Icon icon="fas edit" className="mr-2" />
-              {t('project.updateFacts')}
-            </Button>
-          </div>
-        )}
-      </div>
-    </Card>
+    <div>
+      <Card className="flex flex-col">
+        <h2 className="font-medium mb-2">{t('project.projectFacts')}</h2>
+        <dl className="lg:ml-4 my-3">
+          {project.facts.map((fact, offset) => {
+            const updated = Date.parse(fact.recorded_at)
+            if (updated > lastUpdated) lastUpdated = updated
+            return (
+              <Fact
+                key={`fact-${fact.fact_type_id}`}
+                fact={fact}
+                offset={offset}
+              />
+            )
+          })}
+        </dl>
+        <div className="flex flex-row items-end mt-2">
+          {lastUpdated > 0 && (
+            <div className="flex-1 text-xs italic">
+              {t('common.lastUpdated', {
+                date: new Intl.DateTimeFormat('en-US').format(lastUpdated)
+              })}
+            </div>
+          )}
+          {project.archived === false && (
+            <div className="flex-1 text-xs text-right">
+              <Button onClick={onEditClick}>
+                <Icon icon="fas edit" className="mr-2" />
+                {t('project.updateFacts')}
+              </Button>
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
   )
 }
 Display.propTypes = {
