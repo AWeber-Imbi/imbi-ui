@@ -137,12 +137,14 @@ function ProjectFeed({ projectID }) {
   }
 
   return (
-    <ErrorBoundary>
-      <Card className="flow-root max-h-[900px]">
-        <h2 className="font-medium mb-2">{t('project.feed.title')}</h2>
-        {content}
-      </Card>
-    </ErrorBoundary>
+    <div className="h-0 min-h-full">
+      <ErrorBoundary>
+        <Card className="max-h-full flex flex-col">
+          <h2 className="font-medium mb-2">{t('project.feed.title')}</h2>
+          {content}
+        </Card>
+      </ErrorBoundary>
+    </div>
   )
 }
 ProjectFeed.propTypes = {
