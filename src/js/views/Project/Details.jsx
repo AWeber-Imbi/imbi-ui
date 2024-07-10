@@ -24,9 +24,9 @@ function Display({ project, onEditClick, shouldGrow }) {
 
   return (
     <div>
-      <Card className={`flex flex-col ${shouldGrow ? 'h-full' : ''}`}>
-        <h2 className="font-medium mb-2">{t('terms.projectInfo')}</h2>
-        <DescriptionList className="my-3">
+      <Card className={`flex flex-col space-y-5 ${shouldGrow ? 'h-full' : ''}`}>
+        <h2 className="font-medium">{t('terms.projectInfo')}</h2>
+        <DescriptionList>
           <Definition term={t('terms.namespace')} icon={project.namespace_icon}>
             {project.namespace}
           </Definition>
@@ -81,7 +81,7 @@ function Display({ project, onEditClick, shouldGrow }) {
         </DescriptionList>
         {project.archived === false && (
           <div className="flex-grow flex flex-row items-end">
-            <div className="flex-grow text-right mt-2">
+            <div className="flex-grow text-right">
               <Button className="btn-white text-xs" onClick={onEditClick}>
                 <Icon icon="fas edit" className="mr-2" />
                 {t('project.editProject')}
@@ -91,14 +91,12 @@ function Display({ project, onEditClick, shouldGrow }) {
         )}
       </Card>
       {displayIdentifiers !== false && (
-        <Card className="flex flex-col mt-3">
-          <h2 className="font-medium mb-2">{t('terms.projectIdentifiers')}</h2>
-          <div className="mt-3 mb-2">
-            <Identifiers
-              project={project}
-              setIntegrationCount={setIntegrationCount}
-            />
-          </div>
+        <Card className="flex flex-col mt-3 space-y-5">
+          <h2 className="font-medium">{t('terms.projectIdentifiers')}</h2>
+          <Identifiers
+            project={project}
+            setIntegrationCount={setIntegrationCount}
+          />
         </Card>
       )}
     </div>

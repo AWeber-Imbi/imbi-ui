@@ -110,7 +110,7 @@ function IdentifierTable({ integrations, identifiers, projectId, onChange }) {
         <div className="flex-grow flex flex-row items-end">
           <div className="flex-grow text-right">
             <Button
-              className="text-xs mt-1 right btn-white"
+              className="text-xs right btn-white"
               onClick={() => {
                 addIdentifier()
               }}>
