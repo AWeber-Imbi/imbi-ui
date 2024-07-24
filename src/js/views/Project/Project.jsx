@@ -144,7 +144,7 @@ function ProjectPage({ project, factTypes, refresh }) {
           />
           <Route
             path={`dependencies`}
-            element={<Dependencies urlPath={baseURL} />}
+            element={<Dependencies project={project} urlPath={baseURL} />}
           />
           <Route path={`logs`} element={<Logs urlPath={baseURL} />} />
           <Route
