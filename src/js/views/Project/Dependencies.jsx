@@ -26,7 +26,7 @@ function Dependencies({ project, urlPath }) {
     httpGet(
       globalState.fetch,
       new URL(
-        `/projects/${project.id}/dependencies?includes=dependency`,
+        `/projects/${project.id}/dependencies?include=dependency`,
         globalState.baseURL
       ),
       ({ data }) => {
