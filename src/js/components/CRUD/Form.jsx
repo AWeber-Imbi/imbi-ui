@@ -1,6 +1,6 @@
 import { compare } from 'fast-json-patch'
 import PropTypes from 'prop-types'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { Columns } from '../../schema'
 import { Form } from '..'
