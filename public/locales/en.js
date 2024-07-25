@@ -382,8 +382,11 @@ export default {
         createSentryProject: 'Create Project in Sentry',
         createSonarqubeProject: 'Create Project in Sonarqube',
         dashboardCookieCutter: 'Dashboard Cookie Cutter',
-        dependencies: 'Dependencies',
-        dependenciesSaved: 'Dependencies Saved',
+        dependencies: {
+          title: 'Dependencies',
+          add: 'Add Dependency',
+          saved: 'Dependencies Saved'
+        },
         descriptionDescription:
           'Provide a high-level purpose and context for the project',
         editFacts: 'Edit Project Facts',

@@ -110,7 +110,9 @@ function ProjectPage({ project, factTypes, refresh }) {
           <Tab to={`${baseURL}/components`}>
             {t('project.components.plural')}
           </Tab>
-          <Tab to={`${baseURL}/dependencies`}>{t('project.dependencies')}</Tab>
+          <Tab to={`${baseURL}/dependencies`}>
+            {t('project.dependencies.title')}
+          </Tab>
           <Tab to={`${baseURL}/logs`}>{t('common.logs')}</Tab>
           <Tab to={`${baseURL}/notes`}>{t('common.notes')}</Tab>
           <Tab to={`${baseURL}/operations-log`} isLast={project.archived}>
