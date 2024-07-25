@@ -16,7 +16,8 @@ function ModalForm({
   onSubmit,
   savingTitle,
   title,
-  values
+  values,
+  className
 }) {
   const { t } = useTranslation()
 
@@ -84,7 +85,7 @@ function ModalForm({
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} className={className}>
       <form onSubmit={handleSubmit}>
         <Modal.Title>{saving ? savingTitle : title}</Modal.Title>
         <div className="text-gray-500 space-y-5">
@@ -140,7 +141,8 @@ ModalForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   savingTitle: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  values: PropTypes.object
+  values: PropTypes.object,
+  className: PropTypes.string
 }
 
 export { ModalForm }
