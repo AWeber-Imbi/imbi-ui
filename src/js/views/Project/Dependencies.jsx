@@ -145,6 +145,7 @@ function Dependencies({ project, urlPath }) {
     )
     const result = await httpPost(globalState.fetch, url, formValues)
     if (result.success === true) {
+      setSuccessMessage(t('project.dependencies.saved'))
       updateDependencies()
     } else {
       setErrorMessage(result.data)

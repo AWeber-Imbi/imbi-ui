@@ -385,7 +385,7 @@ export default {
         dependencies: {
           title: 'Dependencies',
           add: 'Add Dependency',
-          saved: 'Dependencies Saved',
+          saved: 'Dependency added',
           delete: {
             title: 'Delete Dependency',
             text: 'Are you sure you would like to delete "{{dependency}}" from the list of dependencies for "{{project}}"?',
