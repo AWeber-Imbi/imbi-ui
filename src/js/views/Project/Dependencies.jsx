@@ -2,27 +2,30 @@ import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
-import { Alert, Table } from '../../components'
-import { httpGet, lookupNamespaceByID } from '../../utils'
+import { Alert, Icon, Table } from '../../components'
+import { httpGet, httpPost, lookupNamespaceByID } from '../../utils'
 import { useTranslation } from 'react-i18next'
+import { ModalForm } from '../../components/Form/ModalForm'
+import { jsonSchema } from '../../schema/ProjectDependencies'
 
 function Dependencies({ project, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
   const { t } = useTranslation()
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
+  const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
     dispatch({
       type: 'SET_CURRENT_PAGE',
       payload: {
-        title: 'project.dependencies',
+        title: 'project.dependencies.title',
         url: new URL(`${urlPath}/dependencies`, globalState.baseURL)
       }
     })
   }, [])
 
-  useEffect(() => {
+  function updateDependencies() {
     httpGet(
       globalState.fetch,
       new URL(
@@ -52,9 +55,13 @@ function Dependencies({ project, urlPath }) {
       },
       ({ message }) => setErrorMessage(message)
     )
+  }
+
+  useEffect(() => {
+    updateDependencies()
   }, [])
 
-  const columns = [
+  const tableColumns = [
     {
       title: t('terms.namespace'),
       name: 'namespace',
@@ -84,6 +91,34 @@ function Dependencies({ project, urlPath }) {
     }
   ]
 
+  const formColumns = [
+    {
+      title: t('terms.projectType'),
+      name: 'id',
+      type: 'number',
+      omitOnAdd: true
+    },
+    {
+      title: t('terms.projectType'),
+      name: 'dependency_id',
+      type: 'project'
+    }
+  ]
+
+  async function onSubmitAdd(formValues) {
+    const url = new URL(
+      `/projects/${project.id}/dependencies`,
+      globalState.baseURL
+    )
+    const result = await httpPost(globalState.fetch, url, formValues)
+    if (result.success === true) {
+      updateDependencies()
+    } else {
+      setErrorMessage(result.data)
+    }
+    setShowForm(false)
+  }
+
   return (
     <>
       {errorMessage && (
@@ -91,10 +126,38 @@ function Dependencies({ project, urlPath }) {
           {errorMessage}
         </Alert>
       )}
-      <Table columns={columns} data={rows} />
+      <div className="text-right">
+        <button
+          className="btn-green"
+          onClick={() => {
+            setShowForm(true)
+          }}>
+          <Icon className="mr-2" icon="fas plus-circle" />
+          {t('project.dependencies.add')}
+        </button>
+      </div>
+      {showForm && (
+        <ModalForm
+          formType={'add'}
+          columns={formColumns}
+          onClose={() => setShowForm(false)}
+          jsonSchema={jsonSchema}
+          onSubmit={onSubmitAdd}
+          savingTitle={t('admin.crud.savingTitle', {
+            itemName: t('project.dependencies.title')
+          })}
+          title={t('project.dependencies.add')}
+          values={{
+            id: project.id,
+            dependency_id: null
+          }}
+        />
+      )}
+      <Table columns={tableColumns} data={rows} />
     </>
   )
 }
+
 Dependencies.propTypes = {
   project: PropTypes.object.isRequired,
   urlPath: PropTypes.string.isRequired
