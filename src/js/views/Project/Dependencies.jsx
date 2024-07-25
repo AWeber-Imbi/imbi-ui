@@ -228,6 +228,7 @@ function Dependencies({ project, urlPath }) {
             id: project.id,
             dependency_id: null
           }}
+          className={'max-w-4xl mx-8'}
         />
       )}
       <Table
