@@ -48,6 +48,7 @@ export const Column = {
     'internal',
     'markdown',
     'number',
+    'project',
     'select',
     'text',
     'textarea',
