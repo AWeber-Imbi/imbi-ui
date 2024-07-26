@@ -15,6 +15,7 @@ function Dependencies({ project, urlPath }) {
   const [errorMessage, setErrorMessage] = useState()
   const [showForm, setShowForm] = useState(false)
   const [itemToDelete, setItemToDelete] = useState()
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState()
   const [successMessage, setSuccessMessage] = useState()
 
   useEffect(() => {
@@ -168,7 +169,7 @@ function Dependencies({ project, urlPath }) {
       setItemToDelete(null)
       updateDependencies()
     } else {
-      setErrorMessage(result.data)
+      setDeleteErrorMessage(result.data)
     }
   }
 
@@ -207,6 +208,11 @@ function Dependencies({ project, urlPath }) {
             setItemToDelete(null)
           }}
           onConfirm={onDeleteItem}>
+          {deleteErrorMessage && (
+            <Alert className="mb-3" level="error">
+              {deleteErrorMessage}
+            </Alert>
+          )}
           {t('project.dependencies.delete.text', {
             dependency: getDependency(itemToDelete),
             project: project.name
