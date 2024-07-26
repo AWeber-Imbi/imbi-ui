@@ -133,7 +133,7 @@ function Dependencies({ project, urlPath }) {
       omitOnAdd: true
     },
     {
-      title: t('terms.projectType'),
+      title: t('terms.project'),
       name: 'dependency_id',
       type: 'project'
     }
