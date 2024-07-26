@@ -147,10 +147,10 @@ function Dependencies({ project, urlPath }) {
     if (result.success === true) {
       setSuccessMessage(t('project.dependencies.saved'))
       updateDependencies()
+      setShowForm(false)
     } else {
-      setErrorMessage(result.data)
+      return result.data
     }
-    setShowForm(false)
   }
 
   async function onDeleteItem() {
