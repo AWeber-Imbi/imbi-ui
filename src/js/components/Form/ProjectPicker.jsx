@@ -119,7 +119,12 @@ function ProjectPicker({
           }}
           onChange={(event) => {
             event.preventDefault()
-            if (onChange !== undefined) onChange(name, event.target.value)
+            if (onChange !== undefined) {
+              const value = parseInt(event.target.value)
+                ? parseInt(event.target.value)
+                : null
+              onChange(name, value)
+            }
           }}
           required={required}
           value={value && value.project_id}>

@@ -24,7 +24,7 @@ class Modal extends React.PureComponent {
         <div className="flex items-center justify-center min-h-screen">
           <Dialog.Overlay className="fixed inset-0 bg-black opacity-30" />
           <div
-            className={`align-bottom sm:align-middle bg-white cursor-default focus:outline-none focus:ring-0 inline-block sm:max-w-2xl sm:my-8 overflow-hidden px-4 py-5 rounded-lg sm:p-6 shadow-xl text-left transform transition-all sm:w-full ${this.props.className}`}
+            className={`align-bottom sm:align-middle bg-white cursor-default focus:outline-none focus:ring-0 inline-block max-w-2xl sm:my-8 overflow-hidden px-4 py-5 rounded-lg sm:p-6 shadow-xl text-left transform transition-all w-full ${this.props.className}`}
             ref={this.dialogRef}>
             {this.props.children}
           </div>

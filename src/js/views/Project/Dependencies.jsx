@@ -2,27 +2,33 @@ import PropTypes from 'prop-types'
 import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
-import { Alert, Table } from '../../components'
-import { httpGet, lookupNamespaceByID } from '../../utils'
+import { Alert, ConfirmationDialog, Icon, Table } from '../../components'
+import { httpDelete, httpGet, httpPost, lookupNamespaceByID } from '../../utils'
 import { useTranslation } from 'react-i18next'
+import { ModalForm } from '../../components/Form/ModalForm'
+import { jsonSchema } from '../../schema/ProjectDependencies'
 
 function Dependencies({ project, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
   const { t } = useTranslation()
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
+  const [showForm, setShowForm] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState()
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState()
+  const [successMessage, setSuccessMessage] = useState()
 
   useEffect(() => {
     dispatch({
       type: 'SET_CURRENT_PAGE',
       payload: {
-        title: 'project.dependencies',
+        title: 'project.dependencies.title',
         url: new URL(`${urlPath}/dependencies`, globalState.baseURL)
       }
     })
   }, [])
 
-  useEffect(() => {
+  function updateDependencies() {
     httpGet(
       globalState.fetch,
       new URL(
@@ -33,6 +39,7 @@ function Dependencies({ project, urlPath }) {
         setRows(
           data
             .map(({ dependency }) => ({
+              id: dependency.id,
               namespace: lookupNamespaceByID(
                 globalState.metadata.namespaces,
                 dependency.namespace_id
@@ -52,9 +59,36 @@ function Dependencies({ project, urlPath }) {
       },
       ({ message }) => setErrorMessage(message)
     )
+  }
+
+  function getDependency(id) {
+    return rows.find((row) => row.id === id)?.name
+  }
+
+  useEffect(() => {
+    updateDependencies()
   }, [])
 
-  const columns = [
+  useEffect(() => {
+    if (successMessage !== null) {
+      const timerHandle = setTimeout(() => {
+        setSuccessMessage(null)
+      }, 30000)
+      return function cleanup() {
+        clearTimeout(timerHandle)
+      }
+    }
+  }, [successMessage])
+
+  const tableColumns = [
+    {
+      title: t('project.id'),
+      name: 'id',
+      type: 'number',
+      tableOptions: {
+        hide: true
+      }
+    },
     {
       title: t('terms.namespace'),
       name: 'namespace',
@@ -84,6 +118,58 @@ function Dependencies({ project, urlPath }) {
     }
   ]
 
+  const formColumns = [
+    {
+      title: t('terms.projectType'),
+      name: 'id',
+      type: 'number',
+      omitOnAdd: true
+    },
+    {
+      title: t('terms.project'),
+      name: 'dependency_id',
+      type: 'project'
+    }
+  ]
+
+  async function onSubmitAdd(formValues) {
+    const url = new URL(
+      `/projects/${project.id}/dependencies`,
+      globalState.baseURL
+    )
+    const result = await httpPost(globalState.fetch, url, formValues)
+    if (result.success === true) {
+      setSuccessMessage(t('project.dependencies.saved'))
+      updateDependencies()
+      setShowForm(false)
+    } else {
+      return result.data
+    }
+  }
+
+  async function onDeleteItem() {
+    const url = new URL(
+      `/projects/${project.id}/dependencies/${itemToDelete}`,
+      globalState.baseURL
+    )
+    const result = await httpDelete(globalState.fetch, url)
+    if (result.success) {
+      setSuccessMessage(
+        t('project.dependencies.delete.success', {
+          dependency: getDependency(itemToDelete)
+        })
+      )
+      setItemToDelete(null)
+      updateDependencies()
+    } else {
+      setDeleteErrorMessage(result.data)
+    }
+  }
+
+  function onDeleteClick(value) {
+    setItemToDelete(value)
+  }
+
   return (
     <>
       {errorMessage && (
@@ -91,10 +177,69 @@ function Dependencies({ project, urlPath }) {
           {errorMessage}
         </Alert>
       )}
-      <Table columns={columns} data={rows} />
+      <div className="text-right">
+        <button
+          className="btn-green"
+          onClick={() => {
+            setShowForm(true)
+          }}>
+          <Icon className="mr-2" icon="fas plus-circle" />
+          {t('project.dependencies.add')}
+        </button>
+      </div>
+      {successMessage && (
+        <Alert className="mb-3" level="success">
+          {successMessage}
+        </Alert>
+      )}
+      {itemToDelete && (
+        <ConfirmationDialog
+          mode="error"
+          title={t('project.dependencies.delete.title')}
+          confirmationButtonText={t('common.delete')}
+          onCancel={() => {
+            setItemToDelete(null)
+          }}
+          onConfirm={onDeleteItem}>
+          {deleteErrorMessage && (
+            <Alert className="mb-3" level="error">
+              {deleteErrorMessage}
+            </Alert>
+          )}
+          {t('project.dependencies.delete.text', {
+            dependency: getDependency(itemToDelete),
+            project: project.name
+          })}
+        </ConfirmationDialog>
+      )}
+      {showForm && (
+        <ModalForm
+          formType={'add'}
+          columns={formColumns}
+          onClose={() => setShowForm(false)}
+          jsonSchema={jsonSchema}
+          onSubmit={onSubmitAdd}
+          savingTitle={t('admin.crud.savingTitle', {
+            itemName: t('project.dependencies.title')
+          })}
+          title={t('project.dependencies.add')}
+          values={{
+            id: project.id,
+            dependency_id: null
+          }}
+          className={'max-w-4xl mx-8'}
+        />
+      )}
+      <Table
+        columns={tableColumns}
+        data={rows}
+        itemKey={'id'}
+        onDeleteClick={onDeleteClick}
+      />
     </>
   )
 }
+
 Dependencies.propTypes = {
   project: PropTypes.object.isRequired,
   urlPath: PropTypes.string.isRequired
