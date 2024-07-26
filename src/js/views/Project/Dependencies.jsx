@@ -62,14 +62,7 @@ function Dependencies({ project, urlPath }) {
   }
 
   function getDependency(id) {
-    let name
-    for (const row of rows) {
-      if (row.id === id) {
-        name = row.name
-        break
-      }
-    }
-    return name
+    return rows.find((row) => row.id === id)?.name
   }
 
   useEffect(() => {
