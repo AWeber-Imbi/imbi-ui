@@ -368,6 +368,7 @@ export default {
           }
         },
         components: {
+          activeVersion: 'Active Version',
           singular: 'Component',
           plural: 'Components',
           packageURL: 'Package URL',
