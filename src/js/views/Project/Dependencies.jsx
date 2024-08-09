@@ -7,6 +7,7 @@ import { httpDelete, httpGet, httpPost, lookupNamespaceByID } from '../../utils'
 import { useTranslation } from 'react-i18next'
 import { ModalForm } from '../../components/Form/ModalForm'
 import { jsonSchema } from '../../schema/ProjectDependencies'
+import { AutomationList } from './Create/AutomationList'
 
 function Dependencies({ project, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
@@ -17,6 +18,8 @@ function Dependencies({ project, urlPath }) {
   const [itemToDelete, setItemToDelete] = useState()
   const [deleteErrorMessage, setDeleteErrorMessage] = useState()
   const [successMessage, setSuccessMessage] = useState()
+  const [createAutomations, setCreateAutomations] = useState([])
+  const [selectedCreateAutomations, setSelectedCreateAutomations] = useState([])
 
   useEffect(() => {
     dispatch({
@@ -26,6 +29,30 @@ function Dependencies({ project, urlPath }) {
         url: new URL(`${urlPath}/dependencies`, globalState.baseURL)
       }
     })
+  }, [])
+
+  useEffect(() => {
+    const url = new URL('/ui/available-automations', globalState.baseURL)
+    url.searchParams.append('project_type_id', project.project_type_id)
+    url.searchParams.append('category', 'create-project-dependency')
+    httpGet(
+      globalState.fetch,
+      url,
+      ({ data }) => {
+        setCreateAutomations(
+          data.map(
+            ({ automation_name, integration_name, automation_slug }) => ({
+              automationName: automation_name,
+              integrationName: integration_name,
+              automationSlug: automation_slug
+            })
+          )
+        )
+      },
+      ({ error }) => {
+        setErrorMessage(error)
+      }
+    )
   }, [])
 
   function updateDependencies() {
@@ -137,7 +164,10 @@ function Dependencies({ project, urlPath }) {
       `/projects/${project.id}/dependencies`,
       globalState.baseURL
     )
-    const result = await httpPost(globalState.fetch, url, formValues)
+    const result = await httpPost(globalState.fetch, url, {
+      ...formValues,
+      automations: selectedCreateAutomations
+    })
     if (result.success === true) {
       setSuccessMessage(t('project.dependencies.saved'))
       updateDependencies()
@@ -216,7 +246,10 @@ function Dependencies({ project, urlPath }) {
         <ModalForm
           formType={'add'}
           columns={formColumns}
-          onClose={() => setShowForm(false)}
+          onClose={() => {
+            setShowForm(false)
+            setSelectedCreateAutomations([])
+          }}
           jsonSchema={jsonSchema}
           onSubmit={onSubmitAdd}
           savingTitle={t('admin.crud.savingTitle', {
@@ -227,8 +260,13 @@ function Dependencies({ project, urlPath }) {
             id: project.id,
             dependency_id: null
           }}
-          className={'max-w-4xl mx-8'}
-        />
+          className={'max-w-4xl mx-8'}>
+          <AutomationList
+            automations={createAutomations}
+            selectedAutomations={selectedCreateAutomations}
+            setSelectedAutomations={setSelectedCreateAutomations}
+          />
+        </ModalForm>
       )}
       <Table
         columns={tableColumns}
