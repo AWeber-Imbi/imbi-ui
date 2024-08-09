@@ -20,6 +20,8 @@ function Dependencies({ project, urlPath }) {
   const [successMessage, setSuccessMessage] = useState()
   const [createAutomations, setCreateAutomations] = useState([])
   const [selectedCreateAutomations, setSelectedCreateAutomations] = useState([])
+  const [removeAutomations, setRemoveAutomations] = useState([])
+  const [selectedRemoveAutomations, setSelectedRemoveAutomations] = useState([])
 
   useEffect(() => {
     dispatch({
@@ -29,30 +31,6 @@ function Dependencies({ project, urlPath }) {
         url: new URL(`${urlPath}/dependencies`, globalState.baseURL)
       }
     })
-  }, [])
-
-  useEffect(() => {
-    const url = new URL('/ui/available-automations', globalState.baseURL)
-    url.searchParams.append('project_type_id', project.project_type_id)
-    url.searchParams.append('category', 'create-project-dependency')
-    httpGet(
-      globalState.fetch,
-      url,
-      ({ data }) => {
-        setCreateAutomations(
-          data.map(
-            ({ automation_name, integration_name, automation_slug }) => ({
-              automationName: automation_name,
-              integrationName: integration_name,
-              automationSlug: automation_slug
-            })
-          )
-        )
-      },
-      ({ error }) => {
-        setErrorMessage(error)
-      }
-    )
   }, [])
 
   function updateDependencies() {
@@ -88,12 +66,38 @@ function Dependencies({ project, urlPath }) {
     )
   }
 
+  function getAutomations(category, setter) {
+    const url = new URL('/ui/available-automations', globalState.baseURL)
+    url.searchParams.append('project_type_id', project.project_type_id)
+    url.searchParams.append('category', category)
+    httpGet(
+      globalState.fetch,
+      url,
+      ({ data }) => {
+        setter(
+          data.map(
+            ({ automation_name, integration_name, automation_slug }) => ({
+              automationName: automation_name,
+              integrationName: integration_name,
+              automationSlug: automation_slug
+            })
+          )
+        )
+      },
+      ({ error }) => {
+        setErrorMessage(error)
+      }
+    )
+  }
+
   function getDependency(id) {
     return rows.find((row) => row.id === id)?.name
   }
 
   useEffect(() => {
     updateDependencies()
+    getAutomations('create-project-dependency', setCreateAutomations)
+    getAutomations('remove-project-dependency', setRemoveAutomations)
   }, [])
 
   useEffect(() => {
@@ -182,7 +186,9 @@ function Dependencies({ project, urlPath }) {
       `/projects/${project.id}/dependencies/${itemToDelete}`,
       globalState.baseURL
     )
-    const result = await httpDelete(globalState.fetch, url)
+    const result = await httpDelete(globalState.fetch, url, {
+      automations: selectedRemoveAutomations
+    })
     if (result.success) {
       setSuccessMessage(
         t('project.dependencies.delete.success', {
@@ -229,6 +235,7 @@ function Dependencies({ project, urlPath }) {
           confirmationButtonText={t('common.delete')}
           onCancel={() => {
             setItemToDelete(null)
+            setSelectedRemoveAutomations([])
           }}
           onConfirm={onDeleteItem}>
           {deleteErrorMessage && (
@@ -240,6 +247,11 @@ function Dependencies({ project, urlPath }) {
             dependency: getDependency(itemToDelete),
             project: project.name
           })}
+          <AutomationList
+            automations={removeAutomations}
+            selectedAutomations={selectedRemoveAutomations}
+            setSelectedAutomations={setSelectedRemoveAutomations}
+          />
         </ConfirmationDialog>
       )}
       {showForm && (
