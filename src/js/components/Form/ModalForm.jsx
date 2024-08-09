@@ -17,7 +17,8 @@ function ModalForm({
   savingTitle,
   title,
   values,
-  className
+  className,
+  children
 }) {
   const { t } = useTranslation()
 
@@ -107,6 +108,7 @@ function ModalForm({
             )
           })}
         </div>
+        {children}
         <Modal.Footer>
           <Button
             className={'btn-white'}
@@ -142,7 +144,12 @@ ModalForm.propTypes = {
   savingTitle: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   values: PropTypes.object,
-  className: PropTypes.string
+  className: PropTypes.string,
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.element,
+    PropTypes.string
+  ])
 }
 
 export { ModalForm }
