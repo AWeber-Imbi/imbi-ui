@@ -38,6 +38,7 @@ function Create() {
     if (fieldValues.project_type_id) {
       const url = new URL('/ui/available-automations', globalState.baseURL)
       url.searchParams.append('project_type_id', fieldValues.project_type_id)
+      url.searchParams.append('category', 'create-project')
       await httpGet(
         globalState.fetch,
         url,
