@@ -15,7 +15,7 @@ export function ProjectFactTypeRanges() {
   useEffect(() => {
     let options = []
     state.metadata.projectFactTypes
-      .filter((factType) => factType.fact_type === 'enum')
+      .filter((factType) => factType.fact_type === 'range')
       .map((factType) => {
         const displayValues = []
         factType.project_type_ids.map((projectTypeID) => {
@@ -25,7 +25,7 @@ export function ProjectFactTypeRanges() {
         })
         displayValues.sort()
         const option = {
-          label: factType.name + ' (' + displayValues.join(', ') + ')',
+          label: factType.name,
           value: factType.id
         }
         options = [...options, option]
