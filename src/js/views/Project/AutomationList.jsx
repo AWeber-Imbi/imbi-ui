@@ -8,11 +8,12 @@ function AutomationList({
   selectedAutomations,
   setSelectedAutomations
 }) {
+  const { t } = useTranslation()
+
   if (!automations.length) {
     return <></>
   }
 
-  const { t } = useTranslation()
   const fields = automations.map((automation) => (
     <Form.Field
       key={automation.automationSlug}
