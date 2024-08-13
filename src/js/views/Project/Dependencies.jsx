@@ -66,22 +66,38 @@ function Dependencies({ project, urlPath }) {
     )
   }
 
-  function getAutomations(category, setter) {
+  function getAutomations() {
     const url = new URL('/ui/available-automations', globalState.baseURL)
     url.searchParams.append('project_type_id', project.project_type_id)
-    url.searchParams.append('category', category)
+    url.searchParams.append('category', 'create-project-dependency')
+    url.searchParams.append('category', 'remove-project-dependency')
     httpGet(
       globalState.fetch,
       url,
       ({ data }) => {
-        setter(
-          data.map(
-            ({ automation_name, integration_name, automation_slug }) => ({
-              automationName: automation_name,
-              integrationName: integration_name,
-              automationSlug: automation_slug
-            })
-          )
+        const mapForState = ({
+          automation_name,
+          integration_name,
+          automation_slug
+        }) => ({
+          automationName: automation_name,
+          integrationName: integration_name,
+          automationSlug: automation_slug
+        })
+
+        setCreateAutomations(
+          data
+            .filter(({ categories }) =>
+              categories.includes('create-project-dependency')
+            )
+            .map(mapForState)
+        )
+        setRemoveAutomations(
+          data
+            .filter(({ categories }) =>
+              categories.includes('remove-project-dependency')
+            )
+            .map(mapForState)
         )
       },
       ({ error }) => {
@@ -96,8 +112,7 @@ function Dependencies({ project, urlPath }) {
 
   useEffect(() => {
     updateDependencies()
-    getAutomations('create-project-dependency', setCreateAutomations)
-    getAutomations('remove-project-dependency', setRemoveAutomations)
+    getAutomations()
   }, [])
 
   useEffect(() => {
