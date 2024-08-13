@@ -11,7 +11,7 @@ import { jsonSchema } from '../../../schema/Project'
 import { metadataAsOptions } from '../../../settings'
 import { httpGet, httpPost } from '../../../utils'
 
-import { AutomationList } from './AutomationList'
+import { AutomationList } from '../AutomationList'
 
 const EMPTY_FIELDS = {
   namespace_id: null,

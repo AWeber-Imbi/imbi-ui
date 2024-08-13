@@ -7,7 +7,7 @@ import { httpDelete, httpGet, httpPost, lookupNamespaceByID } from '../../utils'
 import { useTranslation } from 'react-i18next'
 import { ModalForm } from '../../components/Form/ModalForm'
 import { jsonSchema } from '../../schema/ProjectDependencies'
-import { AutomationList } from './Create/AutomationList'
+import { AutomationList } from './AutomationList'
 
 function Dependencies({ project, urlPath }) {
   const [globalState, dispatch] = useContext(Context)

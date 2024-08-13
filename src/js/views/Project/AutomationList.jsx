@@ -1,4 +1,4 @@
-import { Form } from '../../../components'
+import { Form } from '../../components'
 import React from 'react'
 import PropTypes, { string } from 'prop-types'
 import { useTranslation } from 'react-i18next'
