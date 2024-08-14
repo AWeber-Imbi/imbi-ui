@@ -11,7 +11,7 @@ import { jsonSchema } from '../../../schema/Project'
 import { metadataAsOptions } from '../../../settings'
 import { httpGet, httpPost } from '../../../utils'
 
-import { AutomationList } from './AutomationList'
+import { AutomationList } from '../AutomationList'
 
 const EMPTY_FIELDS = {
   namespace_id: null,
@@ -38,6 +38,7 @@ function Create() {
     if (fieldValues.project_type_id) {
       const url = new URL('/ui/available-automations', globalState.baseURL)
       url.searchParams.append('project_type_id', fieldValues.project_type_id)
+      url.searchParams.append('category', 'create-project')
       await httpGet(
         globalState.fetch,
         url,

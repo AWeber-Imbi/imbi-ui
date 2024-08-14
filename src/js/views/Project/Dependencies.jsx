@@ -7,6 +7,7 @@ import { httpDelete, httpGet, httpPost, lookupNamespaceByID } from '../../utils'
 import { useTranslation } from 'react-i18next'
 import { ModalForm } from '../../components/Form/ModalForm'
 import { jsonSchema } from '../../schema/ProjectDependencies'
+import { AutomationList } from './AutomationList'
 
 function Dependencies({ project, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
@@ -17,6 +18,10 @@ function Dependencies({ project, urlPath }) {
   const [itemToDelete, setItemToDelete] = useState()
   const [deleteErrorMessage, setDeleteErrorMessage] = useState()
   const [successMessage, setSuccessMessage] = useState()
+  const [createAutomations, setCreateAutomations] = useState([])
+  const [selectedCreateAutomations, setSelectedCreateAutomations] = useState([])
+  const [removeAutomations, setRemoveAutomations] = useState([])
+  const [selectedRemoveAutomations, setSelectedRemoveAutomations] = useState([])
 
   useEffect(() => {
     dispatch({
@@ -61,12 +66,53 @@ function Dependencies({ project, urlPath }) {
     )
   }
 
+  function getAutomations() {
+    const url = new URL('/ui/available-automations', globalState.baseURL)
+    url.searchParams.append('project_type_id', project.project_type_id)
+    url.searchParams.append('category', 'create-project-dependency')
+    url.searchParams.append('category', 'remove-project-dependency')
+    httpGet(
+      globalState.fetch,
+      url,
+      ({ data }) => {
+        const mapForState = ({
+          automation_name,
+          integration_name,
+          automation_slug
+        }) => ({
+          automationName: automation_name,
+          integrationName: integration_name,
+          automationSlug: automation_slug
+        })
+
+        setCreateAutomations(
+          data
+            .filter(({ categories }) =>
+              categories.includes('create-project-dependency')
+            )
+            .map(mapForState)
+        )
+        setRemoveAutomations(
+          data
+            .filter(({ categories }) =>
+              categories.includes('remove-project-dependency')
+            )
+            .map(mapForState)
+        )
+      },
+      ({ error }) => {
+        setErrorMessage(error)
+      }
+    )
+  }
+
   function getDependency(id) {
     return rows.find((row) => row.id === id)?.name
   }
 
   useEffect(() => {
     updateDependencies()
+    getAutomations()
   }, [])
 
   useEffect(() => {
@@ -137,7 +183,10 @@ function Dependencies({ project, urlPath }) {
       `/projects/${project.id}/dependencies`,
       globalState.baseURL
     )
-    const result = await httpPost(globalState.fetch, url, formValues)
+    const result = await httpPost(globalState.fetch, url, {
+      ...formValues,
+      automations: selectedCreateAutomations
+    })
     if (result.success === true) {
       setSuccessMessage(t('project.dependencies.saved'))
       updateDependencies()
@@ -152,7 +201,9 @@ function Dependencies({ project, urlPath }) {
       `/projects/${project.id}/dependencies/${itemToDelete}`,
       globalState.baseURL
     )
-    const result = await httpDelete(globalState.fetch, url)
+    const result = await httpDelete(globalState.fetch, url, {
+      automations: selectedRemoveAutomations
+    })
     if (result.success) {
       setSuccessMessage(
         t('project.dependencies.delete.success', {
@@ -199,6 +250,7 @@ function Dependencies({ project, urlPath }) {
           confirmationButtonText={t('common.delete')}
           onCancel={() => {
             setItemToDelete(null)
+            setSelectedRemoveAutomations([])
           }}
           onConfirm={onDeleteItem}>
           {deleteErrorMessage && (
@@ -210,13 +262,21 @@ function Dependencies({ project, urlPath }) {
             dependency: getDependency(itemToDelete),
             project: project.name
           })}
+          <AutomationList
+            automations={removeAutomations}
+            selectedAutomations={selectedRemoveAutomations}
+            setSelectedAutomations={setSelectedRemoveAutomations}
+          />
         </ConfirmationDialog>
       )}
       {showForm && (
         <ModalForm
           formType={'add'}
           columns={formColumns}
-          onClose={() => setShowForm(false)}
+          onClose={() => {
+            setShowForm(false)
+            setSelectedCreateAutomations([])
+          }}
           jsonSchema={jsonSchema}
           onSubmit={onSubmitAdd}
           savingTitle={t('admin.crud.savingTitle', {
@@ -227,8 +287,13 @@ function Dependencies({ project, urlPath }) {
             id: project.id,
             dependency_id: null
           }}
-          className={'max-w-4xl mx-8'}
-        />
+          className={'max-w-4xl mx-8'}>
+          <AutomationList
+            automations={createAutomations}
+            selectedAutomations={selectedCreateAutomations}
+            setSelectedAutomations={setSelectedCreateAutomations}
+          />
+        </ModalForm>
       )}
       <Table
         columns={tableColumns}

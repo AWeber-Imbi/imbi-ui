@@ -1,4 +1,4 @@
-import { Form } from '../../../components'
+import { Form } from '../../components'
 import React from 'react'
 import PropTypes, { string } from 'prop-types'
 import { useTranslation } from 'react-i18next'
@@ -8,11 +8,12 @@ function AutomationList({
   selectedAutomations,
   setSelectedAutomations
 }) {
+  const { t } = useTranslation()
+
   if (!automations.length) {
     return <></>
   }
 
-  const { t } = useTranslation()
   const fields = automations.map((automation) => (
     <Form.Field
       key={automation.automationSlug}
