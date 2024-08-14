@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Context } from '../../../state'
 import { fetchPages } from '../../../utils'
 import { ViewComponent } from './ViewComponent'
+import { ComponentStatusBadge } from './ComponentStatusBadge'
 
 function ComponentList({ project, urlPath }) {
   const [globalState, dispatch] = useContext(Context)
@@ -93,6 +94,15 @@ function ComponentList({ project, urlPath }) {
           }
         },
         {
+          title: t('project.components.activeVersion'),
+          name: 'active_version',
+          type: 'text',
+          tableOptions: {
+            headerClassName: 'w-1/12',
+            className: 'overflow-clip'
+          }
+        },
+        {
           title: t('terms.version'),
           name: 'version',
           type: 'text',
@@ -106,21 +116,8 @@ function ComponentList({ project, urlPath }) {
           name: 'status',
           type: 'text',
           tableOptions: {
-            headerClassName: 'w-1/12'
-          }
-        },
-        {
-          title: t('terms.healthScore'),
-          name: 'score',
-          type: 'text',
-          tableOptions: {
-            headerClassName: 'w-2/12',
-            lookupFunction: (value) => {
-              if (value !== null) {
-                return <ScoreBadge value={value} />
-              }
-              return null
-            }
+            headerClassName: 'w-1/12',
+            lookupFunction: ComponentStatusBadge
           }
         }
       ]}

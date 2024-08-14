@@ -16,8 +16,8 @@ function ViewComponent({ component }) {
       <Definition term={t('project.components.status')}>
         {component.status}
       </Definition>
-      <Definition term={t('terms.score')}>
-        {component.score || 'N/A'}
+      <Definition term={t('project.components.activeVersion')}>
+        {component.active_version || ''}
       </Definition>
     </DescriptionList>
   )
