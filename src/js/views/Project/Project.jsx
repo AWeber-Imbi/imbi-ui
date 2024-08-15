@@ -29,11 +29,14 @@ import { Settings } from './Settings'
 import { OperationsLog } from '../OperationsLog'
 import { Configuration } from './Configuration/Configuration'
 import { ComponentList } from './Components/ComponentList'
+import { SlideOver } from '../../components/SlideOver/SlideOver'
+import { ViewScoreDetails } from './ViewScoreDetails'
 
 function ProjectPage({ project, factTypes, refresh }) {
   const [state, dispatch] = useContext(Context)
   const { t } = useTranslation()
   const baseURL = `/ui/projects/${project.id}`
+  const [showScoreDetails, setShowScoreDetails] = useState(false)
   let color = '#cccccc'
   if (project.project_score >= 0) color = 'red'
   if (project.project_score > 69) color = 'gold'
@@ -78,7 +81,10 @@ function ProjectPage({ project, factTypes, refresh }) {
           )}
           <div className="flex-1 flex justify-end">
             <div
-              className="flex-shrink mr-2"
+              onClick={() => {
+                setShowScoreDetails(true)
+              }}
+              className="flex-shrink mr-2 hover:cursor-pointer"
               style={{ height: '60px', width: '60px' }}>
               <Tooltip
                 value={t('project.projectHealthScore')}
@@ -165,6 +171,12 @@ function ProjectPage({ project, factTypes, refresh }) {
           />
         </Routes>
         <Outlet />
+        <SlideOver
+          title="Score Details"
+          open={showScoreDetails}
+          onClose={() => setShowScoreDetails(false)}>
+          <ViewScoreDetails project={project} />
+        </SlideOver>
       </div>
     </ErrorBoundary>
   )
