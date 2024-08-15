@@ -111,14 +111,11 @@ const FactDescription = ({ value, totalWeight }) => {
 
 export function ViewScoreDetails({ project }) {
   const [globalState] = useContext(Context)
-  const [fetching, setFetching] = useState(false)
+  const [fetching, setFetching] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
   const [facts, setFacts] = useState([])
   const [totalWeight, setTotalWeight] = useState(0)
   useEffect(() => {
-    setFetching(true)
-    setFacts([])
-    setTotalWeight(0)
     httpGet(
       globalState.fetch,
       new URL(`/projects/${project.id}/score-detail`, globalState.baseURL),
