@@ -1,7 +1,6 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
-
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import { Select } from './Select'
 
 const options = [
@@ -60,7 +59,7 @@ describe('Select', () => {
     expect(select).toHaveClass('border-red-700')
   })
 
-  it('should not show the error state when focused', () => {
+  it('should not show the error state when focused', async () => {
     render(
       <div data-testid="select">
         <Select
@@ -74,7 +73,9 @@ describe('Select', () => {
     const select = screen.getByTestId('select').children[0]
     expect(select).toHaveClass('form-input')
     expect(select).not.toHaveClass('border-red-700')
-    select.blur()
+    await act(() => {
+      select.blur()
+    })
     expect(select).toHaveClass('border-red-700')
   })
 
