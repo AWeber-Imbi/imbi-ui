@@ -29,15 +29,13 @@ function ComponentList() {
   )
 }
 
-class ComponentPreviews extends React.PureComponent {
-  render() {
-    return (
-      <div className="flex-grow flex flex-row p-4 z-10">
-        <Route path="/ui/components" exact={true} component={ComponentList} />
-        <Route path="/ui/components/alert" component={AlertPreview} />
-        <Route path="/ui/components/badge" component={BadgePreview} />
-      </div>
-    )
-  }
+function ComponentPreviews() {
+  return (
+    <div className="flex-grow flex flex-row p-4 z-10">
+      <Route path="/ui/components" exact={true} component={ComponentList} />
+      <Route path="/ui/components/alert" component={AlertPreview} />
+      <Route path="/ui/components/badge" component={BadgePreview} />
+    </div>
+  )
 }
 export { ComponentPreviews }

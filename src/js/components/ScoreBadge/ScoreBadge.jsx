@@ -3,18 +3,16 @@ import React from 'react'
 
 import { Badge } from '../'
 
-class ScoreBadge extends React.PureComponent {
-  render() {
-    let color = 'red'
-    if (this.props.value === 0) color = 'gray'
-    if (this.props.value > 69) color = 'yellow'
-    if (this.props.value > 89) color = 'green'
-    return (
-      <Badge className="text-sm" color={color}>
-        {this.props.value.toLocaleString()}
-      </Badge>
-    )
-  }
+function ScoreBadge({ value }) {
+  let color = 'red'
+  if (value === 0) color = 'gray'
+  if (value > 69) color = 'yellow'
+  if (value > 89) color = 'green'
+  return (
+    <Badge className="text-sm" color={color}>
+      {value.toLocaleString()}
+    </Badge>
+  )
 }
 ScoreBadge.propTypes = {
   value: PropTypes.number.isRequired

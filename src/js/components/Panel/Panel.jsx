@@ -1,17 +1,15 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-class Panel extends React.PureComponent {
-  render() {
-    return (
-      <div
-        className={`bg-white shadow rounded-lg p-3 ${
-          this.props.className !== undefined ? this.props.className : ''
-        }`}>
-        {this.props.children}
-      </div>
-    )
-  }
+function Panel({ children, className }) {
+  return (
+    <div
+      className={`bg-white shadow rounded-lg p-3 ${
+        className !== undefined ? className : ''
+      }`}>
+      {children}
+    </div>
+  )
 }
 Panel.propTypes = {
   children: PropTypes.oneOfType([
