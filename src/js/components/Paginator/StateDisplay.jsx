@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next'
 
 import { Context } from './Context'
 
-function StateDisplay({ nounSingular, nounPlural }) {
+function StateDisplay({
+  nounSingular = 'terms.record',
+  nounPlural = 'terms.records'
+}) {
   const { t } = useTranslation()
   return (
     <Context.Consumer>
@@ -22,12 +25,8 @@ function StateDisplay({ nounSingular, nounPlural }) {
     </Context.Consumer>
   )
 }
-StateDisplay.defaultProps = {
-  nounSingular: 'terms.record',
-  nounPlural: 'terms.records'
-}
+
 StateDisplay.propTypes = {
-  display: PropTypes.bool,
   nounSingular: PropTypes.string,
   nounPlural: PropTypes.string
 }

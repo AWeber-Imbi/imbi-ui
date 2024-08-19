@@ -16,22 +16,22 @@ import { ProjectPicker } from './ProjectPicker'
 import { PrefixTextInput } from './PrefixTextInput'
 
 function Field({
-  autoFocus,
+  autoFocus = false,
   castTo,
-  className,
+  className = '',
   description,
-  disabled,
-  errorMessage,
+  disabled = false,
+  errorMessage = null,
   maximum,
   minimum,
-  multiple,
+  multiple = false,
   name,
   onChange,
   onError,
   options,
   placeholder,
   readOnly,
-  required,
+  required = false,
   step,
   title,
   type,
@@ -213,14 +213,6 @@ function Field({
   )
 }
 
-Field.defaultProps = {
-  autoFocus: false,
-  className: '',
-  disabled: false,
-  errorMessage: null,
-  multiple: false,
-  required: false
-}
 Field.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

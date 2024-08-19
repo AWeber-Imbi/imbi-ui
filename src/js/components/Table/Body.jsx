@@ -38,9 +38,7 @@ function Body({
     </tbody>
   )
 }
-Body.defaultProps = {
-  includeEdit: false
-}
+
 Body.propTypes = {
   columns: Columns.isRequired,
   data: PropTypes.arrayOf(PropTypes.object).isRequired,

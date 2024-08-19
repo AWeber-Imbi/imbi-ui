@@ -2,16 +2,16 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 function TextArea({
-  autoFocus,
+  autoFocus = false,
   className,
-  disabled,
-  hasError,
+  disabled = false,
+  hasError = false,
   name,
   onChange,
   placeholder,
-  readOnly,
-  required,
-  rows,
+  readOnly = false,
+  required = false,
+  rows = 3,
   value
 }) {
   const [hasFocus, setHasFocus] = useState(false)
@@ -61,14 +61,7 @@ function TextArea({
     />
   )
 }
-TextArea.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  readOnly: false,
-  required: false,
-  rows: 3
-}
+
 TextArea.propTypes = {
   autoFocus: PropTypes.bool,
   className: PropTypes.string,

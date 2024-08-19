@@ -6,10 +6,10 @@ import { PageSizeSelector } from './PageSizeSelector'
 import { StateDisplay } from './StateDisplay'
 
 function Controls({
-  positionNounSingular,
-  positionNounPlural,
-  showPageSizeSelector,
-  showStateDisplay
+  positionNounSingular = 'terms.record',
+  positionNounPlural = 'terms.records',
+  showPageSizeSelector = false,
+  showStateDisplay = false
 }) {
   return (
     <div className="flex items-center text-sm text-gray-700">
@@ -31,12 +31,7 @@ function Controls({
     </div>
   )
 }
-Controls.defaultProps = {
-  positionNounSingular: 'terms.record',
-  positionNounPlural: 'terms.records',
-  showPageSizeSelector: false,
-  showStateDisplay: false
-}
+
 Controls.propTypes = {
   positionNounSingular: PropTypes.string,
   positionNounPlural: PropTypes.string,

@@ -4,11 +4,11 @@ import React from 'react'
 import { Context } from './Context'
 
 function Container({
-  adjacentPages,
+  adjacentPages = 2,
   children,
   currentPage,
   itemCount,
-  itemsPerPage,
+  itemsPerPage = 25,
   setCurrentPage,
   setPageSize
 }) {
@@ -42,11 +42,7 @@ function Container({
     </Context.Provider>
   )
 }
-Container.defaultProps = {
-  adjacentPages: 2,
-  itemsPerPage: 25,
-  offset: 0
-}
+
 Container.propTypes = {
   adjacentPages: PropTypes.number,
   children: PropTypes.arrayOf(PropTypes.element).isRequired,

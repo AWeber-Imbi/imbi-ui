@@ -5,25 +5,35 @@ import { Markdown } from './Markdown'
 import { TextArea } from '../Form/TextArea'
 import { Toggle } from '../Form/Toggle'
 
-export const MarkdownField = (props) => {
+export const MarkdownField = ({
+  autoFocus = false,
+  disabled = false,
+  errorMessage = null,
+  name,
+  onChange,
+  placeholder,
+  readOnly = false,
+  required = false,
+  value
+}) => {
   const className = 'overflow-auto h-[25vh] form-input'
-  const [renderMarkdown, changeRenderMarkdown] = useState(false)
+  const [renderMarkdown, setRenderMarkdown] = useState(false)
   return (
     <div>
       {renderMarkdown ? (
-        <Markdown className={className}>{props.value}</Markdown>
+        <Markdown className={className}>{value}</Markdown>
       ) : (
         <TextArea
-          autoFocus={props.autoFocus}
+          autoFocus={autoFocus}
           className={className}
-          disabled={props.disabled}
-          hasError={props.errorMessage && props.errorMessage.length > 0}
-          name={props.name}
-          onChange={props.onChange}
-          placeholder={props.placeholder}
-          readOnly={props.readOnly}
-          required={props.required}
-          value={props.value}
+          disabled={disabled}
+          hasError={errorMessage && errorMessage.length > 0}
+          name={name}
+          onChange={onChange}
+          placeholder={placeholder}
+          readOnly={readOnly}
+          required={required}
+          value={value}
         />
       )}
       <div className="flex">
@@ -33,7 +43,7 @@ export const MarkdownField = (props) => {
         </label>
         <Toggle
           onChange={(n, value) => {
-            changeRenderMarkdown(value)
+            setRenderMarkdown(value)
           }}
           name="renderMarkdown"
           title="Preview"
@@ -43,14 +53,7 @@ export const MarkdownField = (props) => {
     </div>
   )
 }
-MarkdownField.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  errorMessage: null,
-  readOnly: false,
-  required: false,
-  rows: 3
-}
+
 MarkdownField.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,
@@ -60,6 +63,5 @@ MarkdownField.propTypes = {
   placeholder: PropTypes.string,
   readOnly: PropTypes.bool,
   required: PropTypes.bool,
-  rows: PropTypes.number,
   value: PropTypes.string
 }

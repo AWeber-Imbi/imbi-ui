@@ -6,12 +6,12 @@ import { httpGet } from '../../utils'
 import { useTranslation } from 'react-i18next'
 
 function ProjectPicker({
-  disabled,
+  disabled = false,
   name,
   onChange,
   onError,
-  readOnly,
-  required,
+  readOnly = false,
+  required = false,
   value
 }) {
   const [globalState] = useContext(Context)
@@ -140,11 +140,7 @@ function ProjectPicker({
     </div>
   )
 }
-ProjectPicker.defaultProps = {
-  disabled: false,
-  readOnly: false,
-  required: false
-}
+
 ProjectPicker.propTypes = {
   disabled: PropTypes.bool,
   name: PropTypes.string.isRequired,

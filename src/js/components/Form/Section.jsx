@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { Fragment } from 'react'
 
-function Section({ name, title, firstSection, children }) {
+function Section({ name, title, firstSection = false, children }) {
   return (
     <Fragment>
       <div className={firstSection ? '' : 'pt-5'}>
@@ -13,9 +13,7 @@ function Section({ name, title, firstSection, children }) {
     </Fragment>
   )
 }
-Section.defaultProps = {
-  firstSection: false
-}
+
 Section.propTypes = {
   name: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,

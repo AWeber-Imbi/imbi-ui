@@ -15,8 +15,8 @@ function ContentArea({
   className,
   pageIcon,
   pageTitle,
-  setPageTitle,
-  showHeader
+  setPageTitle = true,
+  showHeader = true
 }) {
   if (setPageTitle === true) setDocumentTitle(pageTitle)
   return (
@@ -37,10 +37,7 @@ function ContentArea({
     </div>
   )
 }
-ContentArea.defaultProps = {
-  showHeader: true,
-  setPageTitle: true
-}
+
 ContentArea.propTypes = {
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.node),

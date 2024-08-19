@@ -7,8 +7,8 @@ import { SideBar } from './SideBar'
 
 function MultiSectionForm({
   children,
-  disabled,
-  errorMessage,
+  disabled = false,
+  errorMessage = null,
   icon,
   instructions,
   onSubmit,
@@ -49,10 +49,7 @@ function MultiSectionForm({
     </div>
   )
 }
-MultiSectionForm.defaultProps = {
-  disabled: false,
-  errorMessage: null
-}
+
 MultiSectionForm.propTypes = {
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.element),

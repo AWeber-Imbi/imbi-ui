@@ -2,14 +2,14 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 function TextInput({
-  autoFocus,
-  disabled,
-  hasError,
+  autoFocus = false,
+  disabled = false,
+  hasError = false,
   name,
   onChange,
   placeholder,
-  readOnly,
-  required,
+  readOnly = false,
+  required = false,
   type,
   value
 }) {
@@ -53,13 +53,7 @@ function TextInput({
     />
   )
 }
-TextInput.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  readOnly: false,
-  required: false
-}
+
 TextInput.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

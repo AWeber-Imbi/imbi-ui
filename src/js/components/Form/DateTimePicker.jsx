@@ -2,14 +2,14 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 function DateTimePicker({
-  autoFocus,
-  disabled,
-  hasError,
+  autoFocus = false,
+  disabled = false,
+  hasError = false,
   name,
   onChange,
   placeholder,
-  readOnly,
-  required,
+  readOnly = false,
+  required = false,
   value
 }) {
   const [hasFocus, setHasFocus] = useState(false)
@@ -53,13 +53,7 @@ function DateTimePicker({
     />
   )
 }
-DateTimePicker.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  readOnly: false,
-  required: false
-}
+
 DateTimePicker.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

@@ -13,7 +13,14 @@ const spanInactive = 'bg-transparent absolute inset-x-0 bottom-0 h-0.5'
 const first = 'rounded-l-lg'
 const last = 'rounded-r-lg'
 
-function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
+function Tab({
+  to,
+  disabled = false,
+  isFirst = false,
+  isLast = false,
+  children,
+  shrink = false
+}) {
   let match = useMatch({
     path: to,
     exact: true
@@ -39,12 +46,7 @@ function Tab({ to, disabled, isFirst, isLast, children, shrink }) {
     </NavLink>
   )
 }
-Tab.defaultProps = {
-  disabled: false,
-  isFirst: false,
-  isLast: false,
-  shrink: false
-}
+
 Tab.propTypes = {
   children: PropTypes.oneOfType([PropTypes.element, PropTypes.string])
     .isRequired,

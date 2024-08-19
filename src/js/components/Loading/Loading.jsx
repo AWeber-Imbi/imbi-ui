@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import Logo from '../../../images/logo.svg'
 
-function Loading({ caption, className }) {
+function Loading({ caption = 'common.loading', className = '' }) {
   const { t } = useTranslation()
   return (
     <div
@@ -18,10 +18,6 @@ function Loading({ caption, className }) {
       {t(caption)}
     </div>
   )
-}
-Loading.defaultProps = {
-  caption: 'common.loading',
-  className: ''
 }
 
 Loading.propTypes = {
