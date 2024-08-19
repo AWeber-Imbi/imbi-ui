@@ -2,7 +2,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { Chart, registerables } from 'chart.js'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
 import { useNavigate } from 'react-router-dom'
 import { Validator } from 'jsonschema'
@@ -178,10 +178,10 @@ App.propTypes = {
   version: PropTypes.string
 }
 
-const root = document.getElementById('app')
-render(
+const container = document.getElementById('app')
+const root = createRoot(container)
+root.render(
   <BrowserRouter>
-    <App {...root.dataset} />
-  </BrowserRouter>,
-  root
+    <App {...container.dataset} />
+  </BrowserRouter>
 )
