@@ -7,7 +7,7 @@ import { Context } from '../../state'
 import { GitlabConnectButton } from '../../components'
 import { User } from '../../schema'
 
-function Groups({ groups }) {
+function Groups({ groups = [] }) {
   return (
     <Fragment>
       {groups.map((group) => {
@@ -23,9 +23,7 @@ function Groups({ groups }) {
     </Fragment>
   )
 }
-Groups.defaultProps = {
-  groups: []
-}
+
 Groups.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.string)
 }

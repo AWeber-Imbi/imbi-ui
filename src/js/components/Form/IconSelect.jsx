@@ -5,14 +5,14 @@ import { Icon } from '../'
 import { icons } from '../../icons'
 
 function IconSelect({
-  autoFocus,
-  disabled,
-  hasError,
+  autoFocus = false,
+  disabled = false,
+  hasError = false,
   name,
   onChange,
   placeholder,
-  readOnly,
-  required,
+  readOnly = false,
+  required = false,
   value
 }) {
   const [hasFocus, setHasFocus] = useState(false)
@@ -62,13 +62,7 @@ function IconSelect({
     </Fragment>
   )
 }
-IconSelect.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  readOnly: false,
-  required: false
-}
+
 IconSelect.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

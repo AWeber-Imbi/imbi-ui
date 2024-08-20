@@ -4,17 +4,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import { SelectOptions } from '../../schema/PropTypes'
 
 function Select({
-  autoFocus,
+  autoFocus = false,
   castTo,
-  disabled,
-  hasError,
-  multiple,
+  disabled = false,
+  hasError = false,
+  multiple = false,
   name,
   onChange,
   options,
   placeholder,
-  readOnly,
-  required,
+  readOnly = false,
+  required = false,
   value
 }) {
   function _defaultValue() {
@@ -96,14 +96,7 @@ function Select({
     </select>
   )
 }
-Select.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  multiple: false,
-  readOnly: false,
-  required: false
-}
+
 Select.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

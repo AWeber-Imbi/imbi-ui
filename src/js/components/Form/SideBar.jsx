@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-function SideBar({ links }) {
+function SideBar({ links = [] }) {
   return (
     <ol className="list-decimal list-inside ml-4 text-gray-500 whitespace-nowrap">
       {links.map((link) => {
@@ -16,9 +16,7 @@ function SideBar({ links }) {
     </ol>
   )
 }
-SideBar.defaultProps = {
-  links: []
-}
+
 SideBar.propTypes = {
   links: PropTypes.arrayOf(
     PropTypes.exact({

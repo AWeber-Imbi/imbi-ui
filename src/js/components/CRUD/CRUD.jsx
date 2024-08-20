@@ -22,7 +22,7 @@ function CRUD({
   collectionPath,
   columns,
   errorStrings,
-  itemIgnore,
+  itemIgnore = [],
   itemKey,
   itemName,
   itemPath,
@@ -249,10 +249,7 @@ function CRUD({
     </ErrorBoundary>
   )
 }
-CRUD.defaultProps = {
-  itemIgnore: [],
-  omitOnAdd: []
-}
+
 CRUD.propTypes = {
   collectionName: PropTypes.string.isRequired,
   collectionPath: PropTypes.string.isRequired,
@@ -267,7 +264,6 @@ CRUD.propTypes = {
   itemPath: PropTypes.string.isRequired,
   itemTitle: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   jsonSchema: PropTypes.object.isRequired,
-  omitOnAdd: PropTypes.arrayOf(PropTypes.string),
   onRowClick: PropTypes.func
 }
 export { CRUD }

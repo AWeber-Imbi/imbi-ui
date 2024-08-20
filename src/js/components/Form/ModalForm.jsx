@@ -10,7 +10,7 @@ import { isFunction } from '../../utils'
 
 function ModalForm({
   columns,
-  formType,
+  formType = 'edit',
   jsonSchema,
   onClose,
   onSubmit,
@@ -129,10 +129,6 @@ function ModalForm({
       </form>
     </Modal>
   )
-}
-
-ModalForm.defaultProps = {
-  formType: 'edit'
 }
 
 ModalForm.propTypes = {

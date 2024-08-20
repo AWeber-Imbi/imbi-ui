@@ -14,7 +14,7 @@ function Row({
   onDeleteClick,
   onEditClick,
   rowURL,
-  isHighlighted
+  isHighlighted = false
 }) {
   const { t } = useTranslation()
   const toRender = columns
@@ -101,9 +101,7 @@ function Row({
     </tr>
   )
 }
-Row.defaultProps = {
-  isHighlighted: false
-}
+
 Row.propTypes = {
   columns: Columns.isRequired,
   data: PropTypes.object.isRequired,

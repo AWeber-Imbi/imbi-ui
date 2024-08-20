@@ -17,34 +17,26 @@ const icons = {
   warning: 'fas exclamation-triangle'
 }
 
-class Alert extends React.PureComponent {
-  render() {
-    const className =
-      this.props.className !== undefined ? this.props.className : ''
-    return (
-      <div
-        className={`border px-6 py-4 rounded-lg text-sm ${
-          alertClass[this.props.level]
-        } ${className}`}>
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <Icon icon={icons[this.props.level]} />
-          </div>
-          <div className="ml-3">
-            {typeof this.props.children == 'string' ? (
-              <h3 className="font-medium">{this.props.children}</h3>
-            ) : (
-              this.props.children
-            )}
-          </div>
+function Alert({ className = '', children, level = 'info' }) {
+  return (
+    <div
+      className={`border px-6 py-4 rounded-lg text-sm ${alertClass[level]} ${className}`}>
+      <div className="flex">
+        <div className="flex-shrink-0">
+          <Icon icon={icons[level]} />
+        </div>
+        <div className="ml-3">
+          {typeof children == 'string' ? (
+            <h3 className="font-medium">{children}</h3>
+          ) : (
+            children
+          )}
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 }
-Alert.defaultProps = {
-  level: 'info'
-}
+
 Alert.propTypes = {
   className: PropTypes.string,
   children: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),

@@ -6,7 +6,7 @@ import { Button } from '..'
 
 function Footer({
   children,
-  disabled,
+  disabled = false,
   instructions,
   onSubmitClick,
   onCancelClick
@@ -32,9 +32,7 @@ function Footer({
     </div>
   )
 }
-Footer.defaultProps = {
-  disabled: false
-}
+
 Footer.propTypes = {
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.element),

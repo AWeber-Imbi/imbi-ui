@@ -1,16 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-class Body extends React.PureComponent {
-  render() {
-    return (
-      <div className={`${this.props.className}`}>{this.props.children}</div>
-    )
-  }
-}
-
-Body.defaultProps = {
-  className: 'text-gray-500'
+function Body({ children, className = 'text-gray-500' }) {
+  return <div className={`${className}`}>{children}</div>
 }
 
 Body.propTypes = {

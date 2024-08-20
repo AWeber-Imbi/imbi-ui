@@ -3,37 +3,32 @@ import React from 'react'
 
 import { Chart, Modal } from '../../../components/'
 
-class PopupGraph extends React.PureComponent {
-  render() {
-    const data = {
-      labels: this.props.data.map((entry) => {
-        return entry.date
-      }),
-      datasets: [
-        {
-          fill: false,
-          backgroundColor: 'rgb(0, 99, 255)',
-          borderColor: 'rgba(0, 99, 255)',
-          data: this.props.data.map((entry) => {
-            return entry.value
-          }),
-          label: this.props.label,
-          radius: 0
-        }
-      ]
-    }
-    return (
-      <Modal onClose={this.props.onClose}>
-        <Modal.Title
-          icon={this.props.icon}
-          showClose={true}
-          onClose={this.props.onClose}>
-          {this.props.title}
-        </Modal.Title>
-        <Chart.Line data={data} minValue={0} maxValue={100} />
-      </Modal>
-    )
+function PopupGraph({ title, icon, label, data, onClose }) {
+  const lineData = {
+    labels: data.map((entry) => {
+      return entry.date
+    }),
+    datasets: [
+      {
+        fill: false,
+        backgroundColor: 'rgb(0, 99, 255)',
+        borderColor: 'rgba(0, 99, 255)',
+        data: data.map((entry) => {
+          return entry.value
+        }),
+        label: label,
+        radius: 0
+      }
+    ]
   }
+  return (
+    <Modal onClose={onClose}>
+      <Modal.Title icon={icon} showClose={true} onClose={onClose}>
+        {title}
+      </Modal.Title>
+      <Chart.Line data={lineData} minValue={0} maxValue={100} />
+    </Modal>
+  )
 }
 PopupGraph.propTypes = {
   title: PropTypes.string.isRequired,

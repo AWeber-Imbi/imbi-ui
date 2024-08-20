@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next'
 
 function Toggle({
   name,
-  className,
-  disabled,
+  className = '',
+  disabled = false,
   onChange,
-  readOnly,
+  readOnly = false,
   title,
-  value
+  value = false
 }) {
   const { t } = useTranslation()
   return (
@@ -44,12 +44,6 @@ function Toggle({
   )
 }
 
-Toggle.defaultProps = {
-  className: '',
-  disabled: false,
-  readOnly: false,
-  value: false
-}
 Toggle.propTypes = {
   name: PropTypes.string.isRequired,
   className: PropTypes.string,

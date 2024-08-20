@@ -2,17 +2,17 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 function NumericInput({
-  autoFocus,
-  disabled,
-  hasError,
+  autoFocus = false,
+  disabled = false,
+  hasError = false,
   maximum,
   minimum,
   name,
   onChange,
   placeholder,
-  readOnly,
-  required,
-  step,
+  readOnly = false,
+  required = false,
+  step = '1',
   value
 }) {
   const [hasFocus, setHasFocus] = useState(false)
@@ -67,14 +67,7 @@ function NumericInput({
     />
   )
 }
-NumericInput.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  readOnly: false,
-  required: false,
-  step: '1'
-}
+
 NumericInput.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

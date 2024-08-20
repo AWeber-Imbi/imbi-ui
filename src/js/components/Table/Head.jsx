@@ -6,7 +6,7 @@ import { Columns } from '../../schema'
 
 import { HeadColumn } from './HeadColumn'
 
-function Head({ columns, disabled, includeEdit }) {
+function Head({ columns, disabled = false, includeEdit = false }) {
   const { t } = useTranslation()
   return (
     <thead>
@@ -36,10 +36,6 @@ function Head({ columns, disabled, includeEdit }) {
       </tr>
     </thead>
   )
-}
-Head.defaultProps = {
-  disabled: false,
-  includeEdit: false
 }
 
 Head.propTypes = {

@@ -16,7 +16,13 @@ const SortIcon = {
 const ColClassName =
   'align-middle px-6 py-2 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap'
 
-function HeadColumn({ column, children, className, disabled, srOnly }) {
+function HeadColumn({
+  column = { name: 'default', title: 'default', type: 'text' },
+  children,
+  className,
+  disabled,
+  srOnly = false
+}) {
   function onSortClick(event) {
     event.preventDefault()
     if (disabled) return
@@ -78,11 +84,7 @@ function HeadColumn({ column, children, className, disabled, srOnly }) {
     </th>
   )
 }
-HeadColumn.defaultProps = {
-  column: { name: 'default', title: 'default', type: 'text' },
-  sort: null,
-  srOnly: false
-}
+
 HeadColumn.propTypes = {
   column: PropTypes.exact(Column),
   children: PropTypes.string,

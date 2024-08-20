@@ -33,13 +33,13 @@ function Create() {
   const [automations, setAutomations] = useState([])
   const [selectedAutomations, setSelectedAutomations] = useState([])
 
-  useEffect(async () => {
+  useEffect(() => {
     /* fetch automations available for selected project type */
     if (fieldValues.project_type_id) {
       const url = new URL('/ui/available-automations', globalState.baseURL)
       url.searchParams.append('project_type_id', fieldValues.project_type_id)
       url.searchParams.append('category', 'create-project')
-      await httpGet(
+      httpGet(
         globalState.fetch,
         url,
         ({ data }) => {

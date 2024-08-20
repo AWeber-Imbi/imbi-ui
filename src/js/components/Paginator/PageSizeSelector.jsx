@@ -6,7 +6,7 @@ import { Context } from './Context'
 
 const pageSizes = [10, 25, 50, 100]
 
-function PageSizeSelector({ display }) {
+function PageSizeSelector({ display = false }) {
   const context = useContext(Context)
   const { t } = useTranslation()
   if (!display) return <div className="flex-1" />
@@ -37,9 +37,7 @@ function PageSizeSelector({ display }) {
     </Fragment>
   )
 }
-PageSizeSelector.defaultProps = {
-  display: false
-}
+
 PageSizeSelector.propTypes = {
   display: PropTypes.bool
 }

@@ -14,40 +14,30 @@ const colors = {
   yellow: 'border border-yellow-300 bg-yellow-100 text-yellow-800'
 }
 
-class Badge extends React.PureComponent {
-  render() {
-    if (this.props.href !== undefined)
-      return (
-        <a
-          href={this.props.href}
-          target={this.props.target}
-          className={
-            `inline-flex cursor-pointer items-center px-2.5 py-0.5 rounded-md text-sm font-medium ${
-              colors[this.props.color]
-            }` +
-            (this.props.className !== undefined
-              ? ` ${this.props.className}`
-              : '')
-          }>
-          {this.props.children}
-        </a>
-      )
+function Badge({ className, color = 'gray', children, href, target }) {
+  if (href !== undefined)
     return (
-      <div
+      <a
+        href={href}
+        target={target}
         className={
-          `inline-flex cursor-default items-center px-2.5 py-0.5 rounded-md text-sm font-medium ${
-            colors[this.props.color]
-          }` +
-          (this.props.className !== undefined ? ` ${this.props.className}` : '')
+          `inline-flex cursor-pointer items-center px-2.5 py-0.5 rounded-md text-sm font-medium ${colors[color]}` +
+          (className !== undefined ? ` ${className}` : '')
         }>
-        {this.props.children}
-      </div>
+        {children}
+      </a>
     )
-  }
+  return (
+    <div
+      className={
+        `inline-flex cursor-default items-center px-2.5 py-0.5 rounded-md text-sm font-medium ${colors[color]}` +
+        (className !== undefined ? ` ${className}` : '')
+      }>
+      {children}
+    </div>
+  )
 }
-Badge.defaultProps = {
-  color: 'gray'
-}
+
 Badge.propTypes = {
   className: PropTypes.string,
   color: PropTypes.oneOf([

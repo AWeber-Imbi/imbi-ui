@@ -4,9 +4,9 @@ import React, { Fragment } from 'react'
 import { Button, Icon } from '../'
 
 function PageHeader({
-  buttonClass,
+  buttonClass = 'btn-green',
   buttonDestination,
-  buttonIcon,
+  buttonIcon = 'fas plus-circle',
   buttonOnClick,
   buttonTitle,
   pageIcon,
@@ -33,11 +33,6 @@ function PageHeader({
       )}
     </div>
   )
-}
-
-PageHeader.defaultProps = {
-  buttonClass: 'btn-green',
-  buttonIcon: 'fas plus-circle'
 }
 
 PageHeader.propTypes = {

@@ -1,7 +1,13 @@
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 
-function Tooltip({ always, arrowPosition, children, className, value }) {
+function Tooltip({
+  always = false,
+  arrowPosition = 'left',
+  children,
+  className = 'ml-4',
+  value
+}) {
   const [showTooltip, setShowTooltip] = useState(always)
   let rightMargin = value.length > 12 ? '-ml-20' : '-ml-16'
   const position = arrowPosition === 'left' ? '-ml-3' : rightMargin
@@ -33,12 +39,6 @@ function Tooltip({ always, arrowPosition, children, className, value }) {
       </div>
     </div>
   )
-}
-
-Tooltip.defaultProps = {
-  always: false,
-  className: 'ml-4',
-  arrowPosition: 'left'
 }
 
 Tooltip.propTypes = {

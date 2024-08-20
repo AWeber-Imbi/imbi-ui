@@ -2,14 +2,14 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState } from 'react'
 
 function PrefixTextInput({
-  autoFocus,
-  disabled,
-  hasError,
+  autoFocus = false,
+  disabled = false,
+  hasError = false,
   name,
   onChange,
   placeholder,
-  readOnly,
-  required,
+  readOnly = false,
+  required = false,
   value,
   prefix
 }) {
@@ -57,13 +57,6 @@ function PrefixTextInput({
   )
 }
 
-PrefixTextInput.defaultProps = {
-  autoFocus: false,
-  disabled: false,
-  hasError: false,
-  readOnly: false,
-  required: false
-}
 PrefixTextInput.propTypes = {
   autoFocus: PropTypes.bool,
   disabled: PropTypes.bool,

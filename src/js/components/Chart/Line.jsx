@@ -2,34 +2,32 @@ import { Line } from 'react-chartjs-2'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-class LineChart extends React.PureComponent {
-  render() {
-    return (
-      <div className={this.props.className}>
-        <Line
-          data={this.props.data}
-          height={this.props.height}
-          width={this.props.width}
-          options={{
-            animation: false,
-            responsive: true,
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
-            scales: {
-              y: {
-                suggestedMin: this.props.minValue,
-                suggestedMax: this.props.maxValue
-              }
+function LineChart({ className, data, height, width, minValue, maxValue }) {
+  return (
+    <div className={className}>
+      <Line
+        data={data}
+        height={height}
+        width={width}
+        options={{
+          animation: false,
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
             }
-          }}
-          type="line"
-        />
-      </div>
-    )
-  }
+          },
+          scales: {
+            y: {
+              suggestedMin: minValue,
+              suggestedMax: maxValue
+            }
+          }
+        }}
+        type="line"
+      />
+    </div>
+  )
 }
 LineChart.propTypes = {
   className: PropTypes.string,
