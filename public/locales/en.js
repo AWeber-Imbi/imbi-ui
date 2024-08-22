@@ -557,6 +557,39 @@ export default {
             }
           }
         },
+        outdatedProjects: {
+          title: 'Outdated Projects',
+          columns: {
+            project_namespace: {
+              title: 'Namespace',
+              description: 'Human-readable namespace name'
+            },
+            project_name: {
+              title: 'Project Name',
+              description: 'Human-readable project name'
+            },
+            component_score: {
+              title: 'Component Score',
+              description: "Project's component score out of 100"
+            },
+            up_to_date: {
+              title: 'Up-to-date',
+              description: 'Number of up-to-date components'
+            },
+            deprecated: {
+              title: 'Deprecated',
+              description: 'Number of deprecated components'
+            },
+            forbidden: {
+              title: 'Forbidden',
+              description: 'Number of forbidden components'
+            },
+            outdated: {
+              title: 'Outdated',
+              description: 'Number of outdated components'
+            }
+          }
+        },
         projectTypeDefinitions: {
           title: 'Project Type Definitions'
         }
