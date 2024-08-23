@@ -13,12 +13,16 @@ function Components() {
     params.append('s', JSON.stringify({ name: 'asc' }))
     return `/ui/projects?${params.toString()}`
   }
+  const [reportData, setReportData] = React.useState([])
+
   return (
     <Report
       endpoint="/reports/component-usage"
       keyPrefix="reports.components"
       pageIcon="fas cubes"
+      data={reportData}
       rowURL={packageSearchURL}
+      onDataLoaded={setReportData}
       columns={[
         createColumn('name', 'text', 'w-3/12', 'truncate'),
         createColumn('package_url', 'text', 'w-4/12', 'truncate'),
