@@ -493,8 +493,8 @@ export default {
       },
       reports: {
         available: 'Available Reports',
-        componentUsage: {
-          title: 'Component Usage',
+        components: {
+          title: 'Components',
           columns: {
             active_version: {
               title: 'Active Version',
@@ -522,10 +522,6 @@ export default {
               description:
                 'Administrative status for **all** versions of this component. "Forbidden"' +
                 'or "Deprecated" components always impact the score of project\'s that use any version of the component.'
-            },
-            version_count: {
-              title: 'Version Count',
-              description: 'Number of versions recorded for this component'
             }
           }
         },
