@@ -29,8 +29,13 @@ function Components() {
       )
     }
     if (filterText.length > 0) {
+      const filterColumn = filterText.startsWith('pkg:')
+        ? 'package_url'
+        : 'name'
+      if (filterText.startsWith('pkg:')) {
+      }
       filteredRows = filteredRows.filter((row) =>
-        row.name.toLowerCase().includes(filterText.toLowerCase())
+        row[filterColumn].toLowerCase().includes(filterText.toLowerCase())
       )
     }
     setDisplayedData(filteredRows)
