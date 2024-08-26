@@ -54,7 +54,7 @@ function Components() {
       data={displayedData}
       rowURL={packageSearchURL}
       onDataLoaded={setReportData}
-      onDataSorted={(sortFunc) => {
+      onSortChange={(sortFunc) => {
         const nextData = [...reportData]
         setReportData(nextData.sort(sortFunc))
       }}

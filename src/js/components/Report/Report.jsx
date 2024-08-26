@@ -4,7 +4,7 @@ import { Column } from '../../schema'
 import { useContext } from 'react'
 import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
-import { fetchPages, httpGet } from '../../utils'
+import { createSingleColumnSorter, fetchPages, httpGet } from '../../utils'
 import { Alert } from '../Alert/Alert'
 import { Loading } from '../Loading/Loading'
 import { ContentArea } from '../ContentArea/ContentArea'
@@ -81,7 +81,7 @@ import { Markdown } from '../Markdown/Markdown'
  *
  * @param data {array} -- array of rows to display
  * @param onDataLoaded {function} -- hook to invoke when data is updated
- * @param onDataSorted {function} -- optional hook to invoke when the sort order
+ * @param onSortChange {function} -- optional hook to invoke when the sort order
  *   is updated. Is passed a sorting function suitable for `Array.sort`.
  * @param children -- optional nodes to display above the table content
  * @param columns {ReportColumn} -- array of report columns in the order that
@@ -104,7 +104,7 @@ function Report({
   pageIcon,
   data,
   onDataLoaded,
-  onDataSorted,
+  onSortChange,
   title,
   ...tableProps
 }) {
@@ -149,14 +149,9 @@ function Report({
   function onSortDirection(column, direction) {
     const [curCol, curDir] = sort
     if (curCol !== column || curDir !== direction) {
-      const sorter = (a, b) => {
-        if (a[column] === null || a[column] < b[column])
-          return direction === 'asc' ? -1 : 1
-        if (b[column] === null || b[column] < a[column])
-          return direction === 'asc' ? 1 : -1
-      }
-      if (onDataSorted) {
-        onDataSorted(sorter)
+      const sorter = createSingleColumnSorter(column, direction)
+      if (onSortChange) {
+        onSortChange(sorter)
       } else {
         onDataLoaded([...data].sort(sorter))
       }
@@ -236,7 +231,7 @@ Report.propTypes = {
   endpoint: PropTypes.string.isRequired,
   keyPrefix: PropTypes.string.isRequired,
   onDataLoaded: PropTypes.func.isRequired,
-  onDataSorted: PropTypes.func,
+  onSortChange: PropTypes.func,
   pageIcon: PropTypes.string,
   title: PropTypes.string,
   ...TableProps

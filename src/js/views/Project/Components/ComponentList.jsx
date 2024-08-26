@@ -50,15 +50,9 @@ function ComponentList({ project, urlPath }) {
     )
   }, [])
 
-  function onSortChange(column, direction) {
-    setComponents(
-      [...components].sort((a, b) => {
-        if (a[column] == null || a[column] < b[column])
-          return direction === 'asc' ? -1 : 1
-        if (b[column] === null || b[column] < a[column])
-          return direction === 'asc' ? 1 : -1
-      })
-    )
+  function onSortChange(sortFunction) {
+    const nextComponents = [...components]
+    setComponents(nextComponents.sort(sortFunction))
   }
 
   if (fetching) return <Loading />

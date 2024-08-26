@@ -6,6 +6,7 @@ import { Table } from './Table'
 import { useSearchParams } from 'react-router-dom'
 import { SlideOver } from '../SlideOver/SlideOver'
 import { Icon } from '../Icon/Icon'
+import { createSingleColumnSorter } from '../../utils'
 
 /**
  * Table that shows a slide over when a row is clicked
@@ -78,8 +79,8 @@ function NavigableTable({
   function onSortDirection(column, direction) {
     const [curCol, curDir] = sort
     if (curCol !== column || curDir !== direction) {
+      onSortChange(createSingleColumnSorter(column, direction))
       setSort([column, direction])
-      onSortChange(column, direction)
     }
   }
 
