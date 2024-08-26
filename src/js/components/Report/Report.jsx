@@ -83,6 +83,7 @@ import { Markdown } from '../Markdown/Markdown'
  * @param onDataLoaded {function} -- hook to invoke when data is updated
  * @param onDataSorted {function} -- optional hook to invoke when the sort order
  *   is updated. Is passed a sorting function suitable for `Array.sort`.
+ * @param children -- optional nodes to display above the table content
  * @param columns {ReportColumn} -- array of report columns in the order that
  *  they appear in the table
  * @param endpoint {string} -- Imbi API endpoint to retrieve the report data from
@@ -96,6 +97,7 @@ import { Markdown } from '../Markdown/Markdown'
  * @constructor
  */
 function Report({
+  children,
   columns,
   endpoint,
   keyPrefix,
@@ -182,6 +184,7 @@ function Report({
       pageTitle={title || t(`title`)}
       className="flex-grow"
       pageIcon={pageIcon}>
+      {children}
       <Table {...tableProps} data={data} columns={augmentedColumns} />
       <div className="italic text-gray-600 text-right text-xs">
         {globalT('reports.lastUpdated', { lastUpdated: new Date().toString() })}
@@ -224,6 +227,10 @@ const TableProps = Object.fromEntries(
   )
 )
 Report.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.arrayOf(PropTypes.node)
+  ]),
   columns: PropTypes.arrayOf(PropTypes.exact(ReportColumn)).isRequired,
   data: PropTypes.array.isRequired,
   endpoint: PropTypes.string.isRequired,

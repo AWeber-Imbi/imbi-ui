@@ -523,6 +523,9 @@ export default {
                 'Administrative status for **all** versions of this component. "Forbidden"' +
                 'or "Deprecated" components always impact the score of project\'s that use any version of the component.'
             }
+          },
+          labels: {
+            scoredOnly: 'Hide unscored'
           }
         },
         lastUpdated: 'Last Updated: {{lastUpdated}}',
