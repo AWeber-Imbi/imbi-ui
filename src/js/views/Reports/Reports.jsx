@@ -7,6 +7,7 @@ import { Context } from '../../state'
 
 export { ComponentUsage } from './ComponentUsage'
 export { NamespaceKPIs } from './NamespaceKPIs'
+export { OutdatedProjects } from './OutdatedProjects'
 export { ProjectTypeDefinitions } from './ProjectTypeDefinitions'
 
 function Reports() {
@@ -34,6 +35,11 @@ function Reports() {
           <li>
             <Link to="/ui/reports/namespace-kpis">
               {t('reports.namespaceKPIs.title')}
+            </Link>
+          </li>
+          <li>
+            <Link to="/ui/reports/outdated-projects">
+              {t('reports.outdatedProjects.title')}
             </Link>
           </li>
           <li>

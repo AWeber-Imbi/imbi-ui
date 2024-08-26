@@ -13,6 +13,7 @@ import { Projects } from './Projects/'
 import {
   ComponentUsage,
   NamespaceKPIs,
+  OutdatedProjects,
   ProjectTypeDefinitions,
   Reports
 } from './Reports/Reports'
@@ -76,6 +77,10 @@ function Main({ user }) {
                 <Route
                   path="/ui/reports/namespace-kpis"
                   element={<NamespaceKPIs />}
+                />
+                <Route
+                  path="/ui/reports/outdated-projects"
+                  element={<OutdatedProjects />}
                 />
                 <Route
                   path="/ui/reports/project-type-definitions"
