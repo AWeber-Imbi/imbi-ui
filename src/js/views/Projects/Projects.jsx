@@ -163,13 +163,14 @@ function Projects() {
   function search() {
     if (state.fetching === false) {
       let filter = state.filter
+      if (filter.match(/^[^\s:]+$/)) filter = `*${state.filter}*`
       if (state.filter === '' || state.filter === '*')
         filter = 'NOT archived:true'
       else if (
         state.filter.length > 0 &&
         state.filter.includes('archived:') !== true
       )
-        filter = `(${state.filter}) AND NOT archived:true`
+        filter = `(${filter}) AND NOT archived:true`
 
       let ast
 
