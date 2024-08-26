@@ -17,20 +17,29 @@ function Components() {
     return `/ui/projects?${params.toString()}`
   }
   const [scoredOnly, setScoredOnly] = useState(false)
+  const [filterText, setFilterText] = useState('')
 
   const [reportData, setReportData] = useState([])
   const [displayedData, setDisplayedData] = useState([])
   useEffect(() => {
+    let filteredRows = reportData
     if (scoredOnly) {
-      setDisplayedData(
-        reportData.filter(
-          (row) => row.status !== 'Active' || row.active_version !== null
-        )
+      filteredRows = filteredRows.filter(
+        (row) => row.status !== 'Active' || row.active_version !== null
       )
-    } else {
-      setDisplayedData(reportData)
     }
-  }, [reportData, scoredOnly])
+    if (filterText.length > 0) {
+      filteredRows = filteredRows.filter((row) =>
+        row.name.toLowerCase().includes(filterText.toLowerCase())
+      )
+    }
+    setDisplayedData(filteredRows)
+  }, [filterText, reportData, scoredOnly])
+
+  function onFilterChange(event) {
+    const value = event.target.value
+    setFilterText(value)
+  }
 
   return (
     <Report
@@ -65,10 +74,12 @@ function Components() {
         <input
           autoFocus={true}
           className="w-11/12 rounded-md shadow-sm pl-10 text-sm border-gray-300 focus:border-gray-300 focus:outline-0 focus:ring-0"
+          onChange={onFilterChange}
           type="text"
           autoComplete="off"
           placeholder={t('common.filter')}
           style={{ padding: '.575rem' }}
+          value={filterText}
         />
         <Checkbox
           name="scoredOnly"
