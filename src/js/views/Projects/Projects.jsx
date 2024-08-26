@@ -22,6 +22,9 @@ const sortMap = {
   project_type: byString
 }
 
+// These are used to detect that a query isn't "simple". See the "search" function for usage.
+const searchStopWords = new Set(['NOT', 'AND', 'OR'])
+
 function sortTableData(data, columns) {
   const sortSettings = []
   for (const [column, direction] of Object.entries(columns)) {
@@ -163,7 +166,17 @@ function Projects() {
   function search() {
     if (state.fetching === false) {
       let filter = state.filter
-      if (filter.match(/^[^\s:]+$/)) filter = `*${state.filter}*`
+
+      // Make simple searches do what the user expects ... "foo bar" is converted to a
+      // search for `*foo* OR *bar*`. We need to be careful here since the search could
+      // have `AND`, `OR`, or `NOT` included. We want to leave these alone.
+      if (filter.match(/^[\w\s]+$/)) {
+        const words = filter.split(/\s+/).map((word) => word.trim())
+        if (!words.some((word) => searchStopWords.has(word.toUpperCase())))
+          filter = `${words.map((word) => `*${word}*`).join(' OR ')}`
+      }
+
+      // We also want to filter out archived projects unless the user asks for them
       if (state.filter === '' || state.filter === '*')
         filter = 'NOT archived:true'
       else if (
