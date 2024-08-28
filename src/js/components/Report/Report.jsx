@@ -4,11 +4,11 @@ import { Column } from '../../schema'
 import { useContext } from 'react'
 import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
-import { fetchPages, httpGet } from '../../utils'
+import { createSingleColumnSorter, fetchPages, httpGet } from '../../utils'
 import { Alert } from '../Alert/Alert'
 import { Loading } from '../Loading/Loading'
 import { ContentArea } from '../ContentArea/ContentArea'
-import { NavigableTable, Table } from '../Table'
+import { Table } from '../Table'
 import { Markdown } from '../Markdown/Markdown'
 
 /**
@@ -48,10 +48,13 @@ import { Markdown } from '../Markdown/Markdown'
  *
  * ```
  * function MyReport() {
+ *   const [data, setData] = React.useState([])
  *   return (
  *     <Report
  *       endpoint="/reports/my-report"
  *       keyPrefix="reports.myReport"
+ *       data={data}
+ *       onDataLoaded={setData}
  *       columns={[
  *         { name: 'property_name', type: 'text' }
  *       ]}/>
@@ -71,6 +74,16 @@ import { Markdown } from '../Markdown/Markdown'
  *     descriptions
  *  5. dispatching `SET_CURRENT_PAGE` to update the breadcrumbs
  *
+ *  Note that the client of this component is the owner of the report data.
+ *  This means that you can implement data transformations or filtering as
+ *  you see fit. The `Report` takes care of loading the data from the API
+ *  and displaying it.
+ *
+ * @param data {array} -- array of rows to display
+ * @param onDataLoaded {function} -- hook to invoke when data is updated
+ * @param onSortChange {function} -- optional hook to invoke when the sort order
+ *   is updated. Is passed a sorting function suitable for `Array.sort`.
+ * @param children -- optional nodes to display above the table content
  * @param columns {ReportColumn} -- array of report columns in the order that
  *  they appear in the table
  * @param endpoint {string} -- Imbi API endpoint to retrieve the report data from
@@ -84,10 +97,14 @@ import { Markdown } from '../Markdown/Markdown'
  * @constructor
  */
 function Report({
+  children,
   columns,
   endpoint,
   keyPrefix,
   pageIcon,
+  data,
+  onDataLoaded,
+  onSortChange,
   title,
   ...tableProps
 }) {
@@ -97,7 +114,6 @@ function Report({
 
   const [errorMessage, setErrorMessage] = useState(null)
   const [fetched, setFetched] = useState(false)
-  const [reportData, setReportData] = useState([])
   const [sort, setSort] = useState(['', null])
 
   const pageTitle = title || t('title')
@@ -118,7 +134,7 @@ function Report({
         endpoint,
         state,
         (data, isComplete) => {
-          setReportData((prevState) => prevState.concat(data))
+          onDataLoaded((prevState) => prevState.concat(data))
           if (isComplete) {
             setFetched(true)
           }
@@ -133,14 +149,12 @@ function Report({
   function onSortDirection(column, direction) {
     const [curCol, curDir] = sort
     if (curCol !== column || curDir !== direction) {
-      setReportData(
-        [...reportData].sort((a, b) => {
-          if (a[column] === null || a[column] < b[column])
-            return direction === 'asc' ? -1 : 1
-          if (b[column] === null || b[column] < a[column])
-            return direction === 'asc' ? 1 : -1
-        })
-      )
+      const sorter = createSingleColumnSorter(column, direction)
+      if (onSortChange) {
+        onSortChange(sorter)
+      } else {
+        onDataLoaded([...data].sort(sorter))
+      }
       setSort([column, direction])
     }
   }
@@ -165,7 +179,8 @@ function Report({
       pageTitle={title || t(`title`)}
       className="flex-grow"
       pageIcon={pageIcon}>
-      <Table {...tableProps} data={reportData} columns={augmentedColumns} />
+      {children}
+      <Table {...tableProps} data={data} columns={augmentedColumns} />
       <div className="italic text-gray-600 text-right text-xs">
         {globalT('reports.lastUpdated', { lastUpdated: new Date().toString() })}
       </div>
@@ -207,9 +222,16 @@ const TableProps = Object.fromEntries(
   )
 )
 Report.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.arrayOf(PropTypes.node)
+  ]),
   columns: PropTypes.arrayOf(PropTypes.exact(ReportColumn)).isRequired,
+  data: PropTypes.array.isRequired,
   endpoint: PropTypes.string.isRequired,
   keyPrefix: PropTypes.string.isRequired,
+  onDataLoaded: PropTypes.func.isRequired,
+  onSortChange: PropTypes.func,
   pageIcon: PropTypes.string,
   title: PropTypes.string,
   ...TableProps

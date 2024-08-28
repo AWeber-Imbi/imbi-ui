@@ -24,6 +24,7 @@ function formatNumber(value) {
 
 function NamespaceKPIs() {
   const [globalState] = useContext(Context)
+  const [reportData, setReportData] = React.useState([])
   const namespaceNameToSlug = new Map(
     globalState.metadata.namespaces.map((namespace) => [
       namespace.name,
@@ -36,6 +37,8 @@ function NamespaceKPIs() {
       endpoint="/reports/namespace-kpis"
       keyPrefix="reports.namespaceKPIs"
       pageIcon="fas chart-line"
+      data={reportData}
+      onDataLoaded={setReportData}
       columns={[
         {
           name: 'namespace',

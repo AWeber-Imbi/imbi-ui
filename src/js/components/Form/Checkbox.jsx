@@ -1,10 +1,16 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-function Checkbox({ name, label, onChange, value }) {
+function Checkbox({
+  name,
+  label,
+  onChange,
+  value,
+  className = 'relative flex items-start'
+}) {
   return (
     <>
-      <div className="relative flex items-start">
+      <div className={className}>
         <div className="flex h-6 items-center">
           <input
             id={name}
@@ -27,6 +33,7 @@ function Checkbox({ name, label, onChange, value }) {
 Checkbox.propTypes = {
   name: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
+  className: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.bool.isRequired
 }

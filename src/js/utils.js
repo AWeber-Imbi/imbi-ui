@@ -155,3 +155,22 @@ export function camelCase(s) {
     .toLowerCase()
     .replace(/(_[a-z])/g, (group) => group.toUpperCase().replace('_', ''))
 }
+
+/**
+ * Create a function suitable for use with Array.sort
+ *
+ * The function will sort objects into the selected `direction` using `column` as the sort key
+ *
+ * @param column name of the property to sort rows by
+ * @param direction 'asc' or 'desc'
+ * @returns {function(a:number, b:number): number}
+ */
+export function createSingleColumnSorter(column, direction) {
+  return (a, b) => {
+    if (a[column] === null || a[column] < b[column])
+      return direction === 'asc' ? -1 : 1
+    if (b[column] === null || b[column] < a[column])
+      return direction === 'asc' ? 1 : -1
+    return 0
+  }
+}

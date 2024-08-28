@@ -10,7 +10,8 @@ module.exports = {
     hot: true,
     headers: {
       'Access-Control-Allow-Origin': '*'
-    }
+    },
+    port: 8080
   },
   performance: { hints: false },
   resolve: {
