@@ -84,21 +84,16 @@ function Projects() {
   // hook and update the filter appropriately.
   useEffect(() => {
     if (searchParams.get('f') && state.filter !== searchParams.get('f')) {
-      setState((prevState) => ({
-        ...prevState,
-        filter: searchParams.get('f') || '',
-        refresh: true
-      }))
+      onRefresh()
     }
   }, [location])
 
   function onRefresh() {
-    setState({
-      ...state,
-      data: [],
-      filter: searchParams.get('f') ? searchParams.get('f') : '',
+    setState((prevState) => ({
+      ...prevState,
+      filter: searchParams.get('f') || '',
       refresh: true
-    })
+    }))
   }
 
   function onSortChange(column, direction) {
