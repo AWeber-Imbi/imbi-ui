@@ -51,8 +51,7 @@ function ComponentList({ project, urlPath }) {
   }, [])
 
   function onSortChange(sortFunction) {
-    const nextComponents = [...components]
-    setComponents(nextComponents.sort(sortFunction))
+    setComponents((prevState) => [...prevState].sort(sortFunction))
   }
 
   if (fetching) return <Loading />
