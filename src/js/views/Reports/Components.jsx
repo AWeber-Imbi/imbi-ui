@@ -32,8 +32,6 @@ function Components() {
       const filterColumn = filterText.startsWith('pkg:')
         ? 'package_url'
         : 'name'
-      if (filterText.startsWith('pkg:')) {
-      }
       filteredRows = filteredRows.filter((row) =>
         row[filterColumn].toLowerCase().includes(filterText.toLowerCase())
       )
