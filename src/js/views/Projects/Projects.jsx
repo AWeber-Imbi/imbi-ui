@@ -5,7 +5,7 @@ import {
   toElasticsearchQuery
 } from '@cybernetex/kbn-es-query'
 import { byString, byNumber, byValues } from 'sort-es'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 
 import { Alert, ScoreBadge, Table } from '../../components'
 import { Context } from '../../state'
@@ -37,6 +37,7 @@ function Projects() {
   const [globalState, dispatch] = useContext(Context)
   const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
+  const location = useLocation()
 
   const [state, setState] = useState({
     columns: [],
@@ -76,13 +77,23 @@ function Projects() {
     )
   }
 
+  // Users can use the <ProjectSearch> component to change the filter
+  // The component changes the `f` parameter via `navigate(...)`. However,
+  // if we are already on the projects page, then the `navigate()` function
+  // does not rerender the page. We can catch this with the `useLocation()`
+  // hook and update the filter appropriately.
+  useEffect(() => {
+    if (searchParams.get('f') && state.filter !== searchParams.get('f')) {
+      onRefresh()
+    }
+  }, [location])
+
   function onRefresh() {
-    setState({
-      ...state,
-      data: [],
-      filter: searchParams.get('f') ? searchParams.get('f') : '',
+    setState((prevState) => ({
+      ...prevState,
+      filter: searchParams.get('f') || '',
       refresh: true
-    })
+    }))
   }
 
   function onSortChange(column, direction) {
