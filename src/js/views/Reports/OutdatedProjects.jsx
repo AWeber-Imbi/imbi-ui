@@ -7,11 +7,14 @@ function createColumn(name, type, headerClassName, className) {
 }
 
 function OutdatedProjects() {
+  const [reportData, setReportData] = React.useState([])
   return (
     <Report
       endpoint="/reports/outdated-projects"
       keyPrefix="reports.outdatedProjects"
       pageIcon="fas cubes"
+      data={reportData}
+      onDataLoaded={setReportData}
       rowURL={({ project_id }) => `/ui/projects/${project_id}/components`}
       columns={[
         createColumn('project_namespace', 'text', 'w-3/12', 'truncate'),
