@@ -9,6 +9,7 @@ import { httpGet, httpPatch, ISO8601ToDatetimeLocal } from '../../utils'
 import { compare } from 'fast-json-patch'
 import { jsonSchema } from '../../schema/OperationsLog'
 import { useValidation } from '../../components/Form/validate'
+import { normalizeTicketSlug } from './NewEntry'
 
 function toSchemaValues(fieldValues) {
   const values = {
@@ -23,9 +24,7 @@ function toSchemaValues(fieldValues) {
     project_id: fieldValues.project.project_id
       ? parseInt(fieldValues.project.project_id.trim())
       : null,
-    ticket_slug: fieldValues.ticket_slug
-      ? fieldValues.ticket_slug.trim()
-      : null,
+    ticket_slug: normalizeTicketSlug(fieldValues.ticket_slug),
     link: fieldValues.link ? fieldValues.link.trim() : null,
     notes: fieldValues.notes ? fieldValues.notes.trim() : null
   }

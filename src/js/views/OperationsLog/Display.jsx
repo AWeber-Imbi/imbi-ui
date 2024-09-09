@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { DescriptionList } from '../../components/DescriptionList/DescriptionList'
 import { Definition } from '../../components/DescriptionList/Definition'
 import { Context } from '../../state'
+import { normalizeTicketSlug } from './NewEntry'
 
 function renderURLTemplate(urlTemplate, slug, environment) {
   return urlTemplate
@@ -16,6 +17,32 @@ function renderURLTemplate(urlTemplate, slug, environment) {
 function Display({ entry }) {
   const [globalState] = useContext(Context)
   const { t } = useTranslation()
+
+  const renderIssueLinks = () => {
+    if (!globalState.opsLogURLTemplate) {
+      return entry.ticket_slug
+    }
+    const slugs = normalizeTicketSlug(entry.ticket_slug).split(',')
+    return slugs.map((slug, index) => (
+      <span key={`${slug}-${index}`}>
+        <a
+          title={slug}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-800 hover:text-blue-700"
+          href={renderURLTemplate(
+            globalState.opsLogURLTemplate,
+            slug,
+            entry.environment
+          )}>
+          {slug}
+        </a>
+        <React.Fragment>
+          {index !== slugs.length - 1 ? ', ' : ''}
+        </React.Fragment>
+      </span>
+    ))
+  }
 
   return (
     <DescriptionList>
@@ -64,22 +91,7 @@ function Display({ entry }) {
       )}
       {entry.ticket_slug && (
         <Definition term={t('operationsLog.ticketSlug')}>
-          {globalState.opsLogURLTemplate ? (
-            <a
-              className="text-blue-800 hover:text-blue-700"
-              href={renderURLTemplate(
-                globalState.opsLogURLTemplate,
-                entry.ticket_slug,
-                entry.environment
-              )}
-              title={entry.ticket_slug}
-              target="_blank">
-              <Icon icon="fas external-link-alt" className="mr-2" />
-              {entry.ticket_slug}
-            </a>
-          ) : (
-            entry.ticket_slug
-          )}
+          {renderIssueLinks()}
         </Definition>
       )}
       {entry.link && (

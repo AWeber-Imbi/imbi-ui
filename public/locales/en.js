@@ -343,7 +343,7 @@ export default {
           projectError: 'Project must either be or a number',
           versionError: 'Version must either be empty or a string',
           ticketSlugError:
-            'Ticket slug must either be empty or a string containing only letters, numbers, hyphen, and underscore',
+            'Ticket slug must either be empty or a string containing only slugs separated by spaces or commas',
           linkError: 'Link must either be empty or a string',
           notesError: 'Notes must either be empty or a string'
         }

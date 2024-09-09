@@ -30,7 +30,7 @@ export const jsonSchema = {
       oneOf: [{ type: 'string' }, { type: 'null' }]
     },
     ticket_slug: {
-      oneOf: [{ type: 'string', pattern: '^[\\w-]+$' }, { type: 'null' }]
+      oneOf: [{ type: 'string', pattern: '^[\\w-, ]+$' }, { type: 'null' }]
     },
     version: {
       oneOf: [{ type: 'string' }, { type: 'null' }]
