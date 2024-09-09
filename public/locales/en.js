@@ -339,7 +339,7 @@ export default {
             'Recorded at cannot be empty and must be a valid ISO-8601 datetime string',
           completedAtError:
             'Completed at must either be empty or a valid ISO-8601 datetime string',
-          descriptionError: 'Description must either be empty or a string',
+          descriptionError: 'Description must be a non-empty string',
           projectError: 'Project must either be or a number',
           versionError: 'Version must either be empty or a string',
           ticketSlugError:

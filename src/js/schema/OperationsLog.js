@@ -20,7 +20,8 @@ export const jsonSchema = {
         '^(Configured|Decommissioned|Deployed|Migrated|Provisioned|Restarted|Rolled Back|Scaled|Upgraded)$'
     },
     description: {
-      oneOf: [{ type: 'string' }, { type: 'null' }]
+      type: 'string',
+      pattern: '[\\w]'
     },
     link: {
       oneOf: [{ type: 'string' }, { type: 'null' }]
@@ -53,7 +54,7 @@ export const propTypes = {
   project_id: PropTypes.number,
   environment: PropTypes.string.isRequired,
   change_type: PropTypes.string.isRequired,
-  description: PropTypes.string,
+  description: PropTypes.string.isRequired,
   link: PropTypes.string,
   notes: PropTypes.string,
   ticket_slug: PropTypes.string,
