@@ -320,6 +320,7 @@ export default {
         ticketSlug: 'Ticket Slug',
         link: 'Link',
         project: 'Project',
+        occurredAt: 'Occurred At',
         recordedAt: 'Recorded At',
         completedAt: 'Completed At',
         recordedBy: 'Recorded By',

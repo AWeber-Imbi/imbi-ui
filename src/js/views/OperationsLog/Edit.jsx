@@ -14,7 +14,7 @@ import { normalizeTicketSlug } from './NewEntry'
 function toSchemaValues(fieldValues) {
   const values = {
     ...fieldValues,
-    recorded_at: new Date(fieldValues.recorded_at).toISOString(),
+    occurred_at: new Date(fieldValues.occurred_at).toISOString(),
     completed_at: fieldValues.completed_at
       ? new Date(fieldValues.completed_at).toISOString()
       : null,
@@ -42,7 +42,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   useEffect(() => {
     const values = {
       ...operationsLog,
-      recorded_at: ISO8601ToDatetimeLocal(operationsLog.recorded_at),
+      occurred_at: ISO8601ToDatetimeLocal(operationsLog.occurred_at),
       completed_at: operationsLog.completed_at
         ? ISO8601ToDatetimeLocal(operationsLog.completed_at)
         : operationsLog.completed_at
@@ -80,7 +80,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
     const update = async () => {
       const oldValues = {
         ...operationsLog,
-        recorded_at: new Date(operationsLog.recorded_at).toISOString(),
+        occurred_at: new Date(operationsLog.occurred_at).toISOString(),
         completed_at: operationsLog.completed_at
           ? new Date(operationsLog.completed_at).toISOString()
           : null
@@ -156,14 +156,14 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         errorMessage={errors?.environment}
       />
       <Form.Field
-        title={t('operationsLog.recordedAt')}
-        name="recorded_at"
+        title={t('operationsLog.occurredAt')}
+        name="occurred_at"
         type="datetime"
         required={true}
         onChange={onValueChange}
-        value={fieldValues.recorded_at}
+        value={fieldValues.occurred_at}
         className="text-gray-600"
-        errorMessage={errors?.recorded_at}
+        errorMessage={errors?.occurred_at}
       />
       <Form.Field
         title={t('operationsLog.completedAt')}
