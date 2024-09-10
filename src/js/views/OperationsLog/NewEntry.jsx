@@ -12,6 +12,16 @@ import { Error } from '../Error'
 import { jsonSchema } from '../../schema/OperationsLog'
 import { useValidation } from '../../components/Form/validate'
 
+export function normalizeTicketSlug(ticketSlug) {
+  if (ticketSlug) {
+    return ticketSlug
+      .split(/[,\s]+/)
+      .join(',')
+      .replace(/[,\s]+$/, '')
+  }
+  return null
+}
+
 function NewEntry({ user }) {
   const [globalState, dispatch] = useContext(Context)
   const [saving, setSaving] = useState(false)
@@ -57,7 +67,7 @@ function NewEntry({ user }) {
       description: fields.description ? fields.description : null,
       link: fields.link ? fields.link : null,
       notes: fields.notes ? fields.notes : null,
-      ticket_slug: fields.ticket_slug ? fields.ticket_slug : null,
+      ticket_slug: normalizeTicketSlug(fields.ticket_slug),
       version: fields.version ? fields.version : null
     }
   }
