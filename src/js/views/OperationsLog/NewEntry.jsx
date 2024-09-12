@@ -31,7 +31,7 @@ function NewEntry({ user }) {
   const [fields, setFields] = useState({
     change_type: null,
     environment: null,
-    recorded_at: ISO8601ToDatetimeLocal(new Date().toISOString()).slice(0, -7),
+    occurred_at: ISO8601ToDatetimeLocal(new Date().toISOString()).slice(0, -7),
     completed_at: null,
     description: '',
     project: null,
@@ -56,10 +56,9 @@ function NewEntry({ user }) {
 
   function values() {
     return {
-      recorded_by: user.username,
       environment: fields.environment,
       change_type: fields.change_type,
-      recorded_at: new Date(fields.recorded_at).toISOString(),
+      occurred_at: new Date(fields.occurred_at).toISOString(),
       completed_at: fields.completed_at
         ? new Date(fields.completed_at).toISOString()
         : null,
@@ -109,7 +108,7 @@ function NewEntry({ user }) {
         disabled={
           !fields.change_type ||
           !fields.environment ||
-          !fields.recorded_at ||
+          !fields.occurred_at ||
           !fields.description
         }
         sideBarTitle={t('operationsLog.create.sideBarTitle')}
@@ -149,13 +148,13 @@ function NewEntry({ user }) {
           errorMessage={errors.environment}
         />
         <Form.Field
-          title={t('operationsLog.recordedAt')}
-          name="recorded_at"
+          title={t('operationsLog.occurredAt')}
+          name="occurred_at"
           type="datetime"
           required={true}
           onChange={onChange}
-          value={fields.recorded_at}
-          errorMessage={errors.recorded_at}
+          value={fields.occurred_at}
+          errorMessage={errors.occurred_at}
         />
         <Form.Field
           title={t('operationsLog.completedAt')}
