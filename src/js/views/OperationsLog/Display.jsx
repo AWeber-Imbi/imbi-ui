@@ -67,8 +67,8 @@ function Display({ entry }) {
       <Definition term={t('operationsLog.changeType')}>
         {entry.change_type}
       </Definition>
-      <Definition term={t('operationsLog.recordedAt')}>
-        {DateTime.fromISO(entry.recorded_at).toLocaleString(
+      <Definition term={t('operationsLog.occurredAt')}>
+        {DateTime.fromISO(entry.occurred_at).toLocaleString(
           DateTime.DATETIME_MED
         )}
       </Definition>

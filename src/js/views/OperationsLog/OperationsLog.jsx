@@ -98,7 +98,7 @@ function OperationsLog({ projectID, urlPath, className }) {
         fromKueryExpression(query),
         metadataAsOptions.openSearch
       ),
-      sort: [{ recorded_at: { order: 'desc' } }],
+      sort: [{ occurred_at: { order: 'desc' } }],
       fields: globalState.fields,
       size: 1000
     }
@@ -138,8 +138,8 @@ function OperationsLog({ projectID, urlPath, className }) {
   function buildColumns() {
     const columns = [
       {
-        title: t('operationsLog.recordedAt'),
-        name: 'recorded_at',
+        title: t('operationsLog.occurredAt'),
+        name: 'occurred_at',
         type: 'datetime',
         tableOptions: {
           headerClassName: 'w-2/12 truncate',
@@ -334,6 +334,7 @@ function OperationsLog({ projectID, urlPath, className }) {
             'project_id',
             'project_name',
             'environment',
+            'occurred_at',
             'recorded_by',
             'recorded_at',
             'link',
