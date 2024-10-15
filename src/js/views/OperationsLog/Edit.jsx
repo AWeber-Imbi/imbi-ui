@@ -21,6 +21,9 @@ function toSchemaValues(fieldValues) {
     description: fieldValues.description
       ? fieldValues.description.trim()
       : null,
+    performed_by: fieldValues.performed_by
+      ? fieldValues.performed_by.trim()
+      : null,
     project_id: fieldValues.project.project_id
       ? parseInt(fieldValues.project.project_id.trim())
       : null,
@@ -154,6 +157,17 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         value={fieldValues.environment}
         className="text-gray-600"
         errorMessage={errors?.environment}
+      />
+      <Form.Field
+        title={t('operationsLog.recordedBy')}
+        name="performed_by"
+        type="text"
+        required={true}
+        description={t('operationsLog.recordedByDescription')}
+        onChange={onValueChange}
+        value={fieldValues.performed_by || fieldValues.recorded_by}
+        className="text-gray-600"
+        errorMessage={errors?.performed_by}
       />
       <Form.Field
         title={t('operationsLog.occurredAt')}

@@ -324,6 +324,7 @@ export default {
         recordedAt: 'Recorded At',
         completedAt: 'Completed At',
         recordedBy: 'Recorded By',
+        recordedByDescription: 'User name that recorded this operations log',
         completedAtDescription:
           'When the change completed, if it occurred over a period of time',
         descriptionDescription: 'Single line description of the change',
