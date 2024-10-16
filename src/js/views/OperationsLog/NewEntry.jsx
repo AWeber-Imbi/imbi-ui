@@ -34,6 +34,7 @@ function NewEntry({ user }) {
     occurred_at: ISO8601ToDatetimeLocal(new Date().toISOString()).slice(0, -7),
     completed_at: null,
     description: '',
+    performed_by: user.username,
     project: null,
     version: '',
     ticket_slug: '',
@@ -55,7 +56,7 @@ function NewEntry({ user }) {
   }, [])
 
   function values() {
-    return {
+    const fieldValues = {
       environment: fields.environment,
       change_type: fields.change_type,
       occurred_at: new Date(fields.occurred_at).toISOString(),
@@ -69,6 +70,15 @@ function NewEntry({ user }) {
       ticket_slug: normalizeTicketSlug(fields.ticket_slug),
       version: fields.version ? fields.version : null
     }
+    // only include performed_by when it differs from current user
+    // nothing depends on this ... but searching for documents in the
+    // index with the field set is possible (eg, NOT performed_by:*)
+    // whereas it is not possible to find documents where performed_by
+    // is different from recorded_by :p
+    if (fields.performed_by !== user.username) {
+      fieldValues.performed_by = fields.performed_by
+    }
+    return fieldValues
   }
 
   useEffect(() => {
@@ -109,7 +119,8 @@ function NewEntry({ user }) {
           !fields.change_type ||
           !fields.environment ||
           !fields.occurred_at ||
-          !fields.description
+          !fields.description ||
+          !fields.performed_by
         }
         sideBarTitle={t('operationsLog.create.sideBarTitle')}
         icon="fas file"
@@ -122,6 +133,15 @@ function NewEntry({ user }) {
           <div className="ml-2 text-sm">* {t('common.required')}</div>
         }
         submitButtonText={saving ? t('common.saving') : t('common.save')}>
+        <Form.Field
+          title={t('operationsLog.performedBy')}
+          name="performed_by"
+          type="text"
+          required={true}
+          onChange={onChange}
+          errorMessage={errors.performed_by}
+          value={fields.performed_by}
+        />
         <Form.Field
           title={t('operationsLog.changeType')}
           name="change_type"
