@@ -186,7 +186,7 @@ function OperationsLog({ projectID, urlPath, className }) {
         }
       },
       {
-        title: t('operationsLog.recordedBy'),
+        title: t('operationsLog.performedBy'),
         name: 'display_name',
         type: 'text',
         tableOptions: {
@@ -330,15 +330,20 @@ function OperationsLog({ projectID, urlPath, className }) {
           searchHelp={t('operationsLog.searchHelp')}
           fields={[
             'change_type',
+            'completed_at',
             'description',
-            'project_id',
-            'project_name',
+            'display_name',
             'environment',
-            'occurred_at',
-            'recorded_by',
-            'recorded_at',
+            'id',
             'link',
             'notes',
+            'occurred_at',
+            'performed_by',
+            'project_id',
+            'project_name',
+            'recorded_at',
+            'recorded_by',
+            'ticket_slug',
             'version'
           ]}
         />
