@@ -159,11 +159,11 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         errorMessage={errors?.environment}
       />
       <Form.Field
-        title={t('operationsLog.recordedBy')}
+        title={t('operationsLog.performedBy')}
         name="performed_by"
         type="text"
         required={true}
-        description={t('operationsLog.recordedByDescription')}
+        description={t('operationsLog.performedByDescription')}
         onChange={onValueChange}
         value={fieldValues.performed_by || fieldValues.recorded_by}
         className="text-gray-600"

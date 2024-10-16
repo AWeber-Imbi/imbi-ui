@@ -46,7 +46,7 @@ function Display({ entry }) {
 
   return (
     <DescriptionList>
-      <Definition term={t('operationsLog.recordedBy')}>
+      <Definition term={t('operationsLog.performedBy')}>
         {entry.display_name}
       </Definition>
       <Definition term={t('operationsLog.environment')}>

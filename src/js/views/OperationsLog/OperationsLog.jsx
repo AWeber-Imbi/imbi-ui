@@ -186,7 +186,7 @@ function OperationsLog({ projectID, urlPath, className }) {
         }
       },
       {
-        title: t('operationsLog.recordedBy'),
+        title: t('operationsLog.performedBy'),
         name: 'display_name',
         type: 'text',
         tableOptions: {

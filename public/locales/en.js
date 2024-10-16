@@ -323,8 +323,8 @@ export default {
         occurredAt: 'Occurred At',
         recordedAt: 'Recorded At',
         completedAt: 'Completed At',
-        recordedBy: 'Recorded By',
-        recordedByDescription: 'User name that recorded this operations log',
+        performedBy: 'Performed By',
+        performedByDescription: 'User that performed this action',
         completedAtDescription:
           'When the change completed, if it occurred over a period of time',
         descriptionDescription: 'Single line description of the change',
