@@ -173,18 +173,19 @@ function Dependencies({ project, urlPath }) {
     },
     {
       title: t('terms.project'),
-      name: 'dependency_id',
+      name: 'dependency',
       type: 'project'
     }
   ]
 
   async function onSubmitAdd(formValues) {
+    console.log('FORM', formValues)
     const url = new URL(
       `/projects/${project.id}/dependencies`,
       globalState.baseURL
     )
     const result = await httpPost(globalState.fetch, url, {
-      ...formValues,
+      dependency_id: formValues.dependency.project_id,
       automations: selectedCreateAutomations
     })
     if (result.success === true) {
@@ -285,7 +286,7 @@ function Dependencies({ project, urlPath }) {
           title={t('project.dependencies.add')}
           values={{
             id: project.id,
-            dependency_id: null
+            dependency: null
           }}
           className={'max-w-4xl mx-8'}>
           <AutomationList
