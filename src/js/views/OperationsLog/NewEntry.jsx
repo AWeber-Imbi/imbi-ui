@@ -7,7 +7,7 @@ import { ErrorBoundary, Form, SavingModal } from '../../components'
 import { useTranslation } from 'react-i18next'
 import { metadataAsOptions } from '../../settings'
 import { httpPost, ISO8601ToDatetimeLocal } from '../../utils'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Error } from '../Error'
 import { jsonSchema } from '../../schema/OperationsLog'
 import { useValidation } from '../../components/Form/validate'
@@ -23,25 +23,42 @@ export function normalizeTicketSlug(ticketSlug) {
 }
 
 function NewEntry({ user }) {
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+
   const [globalState, dispatch] = useContext(Context)
   const [saving, setSaving] = useState(false)
   const [savingComplete, setSavingComplete] = useState(false)
   const [error, setError] = useState()
   const [errors, validate] = useValidation('operationsLog', jsonSchema)
   const [fields, setFields] = useState({
-    change_type: null,
-    environment: null,
+    change_type: params.get('change_type'),
+    environment: params.get('environment'),
     occurred_at: ISO8601ToDatetimeLocal(new Date().toISOString()).slice(0, -7),
     completed_at: null,
-    description: '',
-    performed_by: user.username,
-    project: null,
-    version: '',
-    ticket_slug: '',
-    link: '',
-    notes: ''
+    description: params.get('description') || '',
+    performed_by: params.get('performed_by') || user.username,
+    project:
+      params.has('namespace_id') ||
+      params.has('project_id') ||
+      params.has('project_type_id')
+        ? {
+            namespace_id: params.has('namespace_id')
+              ? parseInt(params.get('namespace_id'))
+              : null,
+            project_id: params.has('project_id')
+              ? parseInt(params.get('project_id'))
+              : null,
+            project_type_id: params.has('project_type_id')
+              ? parseInt(params.get('project_type_id'))
+              : null
+          }
+        : null,
+    version: params.get('version') || '',
+    ticket_slug: params.get('ticket_slug') || '',
+    link: params.get('link') || '',
+    notes: params.get('notes') || ''
   })
-  const navigate = useNavigate()
 
   const { t } = useTranslation()
 
@@ -54,6 +71,21 @@ function NewEntry({ user }) {
       }
     })
   }, [])
+  useEffect(() => {
+    const parsedFields = {}
+    for (const dateField of ['occurred_at', 'completed_at']) {
+      try {
+        if (params.has(dateField)) {
+          parsedFields[dateField] = ISO8601ToDatetimeLocal(
+            params.get(dateField)
+          )
+        }
+      } catch (error) {
+        console.log(`Ignoring ${dateField} parameter: ${error.message} `)
+      }
+    }
+    setFields((curr) => ({ ...curr, ...parsedFields }))
+  }, [])
 
   function values() {
     const fieldValues = {
@@ -63,7 +95,7 @@ function NewEntry({ user }) {
       completed_at: fields.completed_at
         ? new Date(fields.completed_at).toISOString()
         : null,
-      project_id: fields.project ? parseInt(fields.project) : null,
+      project_id: fields.project ? fields.project.project_id : null,
       description: fields.description ? fields.description : null,
       link: fields.link ? fields.link : null,
       notes: fields.notes ? fields.notes : null,
@@ -152,6 +184,7 @@ function NewEntry({ user }) {
           }))}
           required={true}
           onChange={onChange}
+          value={fields.change_type}
           errorMessage={errors.change_type}
         />
         <Form.Field
@@ -165,6 +198,7 @@ function NewEntry({ user }) {
           )}
           required={true}
           onChange={onChange}
+          value={fields.environment}
           errorMessage={errors.environment}
         />
         <Form.Field
@@ -202,6 +236,7 @@ function NewEntry({ user }) {
           type="project"
           required={false}
           onChange={onChange}
+          value={fields.project}
           onError={(error) => setError(error)}
           errorMessage={errors.project}
         />

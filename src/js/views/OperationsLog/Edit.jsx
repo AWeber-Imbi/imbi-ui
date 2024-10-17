@@ -24,9 +24,7 @@ function toSchemaValues(fieldValues) {
     performed_by: fieldValues.performed_by
       ? fieldValues.performed_by.trim()
       : null,
-    project_id: fieldValues.project.project_id
-      ? parseInt(fieldValues.project.project_id.trim())
-      : null,
+    project_id: fieldValues.project.project_id,
     ticket_slug: normalizeTicketSlug(fieldValues.ticket_slug),
     link: fieldValues.link ? fieldValues.link.trim() : null,
     notes: fieldValues.notes ? fieldValues.notes.trim() : null
@@ -57,9 +55,9 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         new URL(`/projects/${operationsLog.project_id}`, globalState.baseURL),
         ({ data }) => {
           values.project = {
-            project_id: data.id.toString(),
-            namespace_id: data.namespace_id.toString(),
-            project_type_id: data.project_type_id.toString()
+            project_id: data.id,
+            namespace_id: data.namespace_id,
+            project_type_id: data.project_type_id
           }
           delete values.project_id
           setFieldValues(values)
@@ -67,7 +65,11 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
         ({ message }) => onError(message)
       )
     } else {
-      values.project = { project_id: '', namespace_id: '', project_type_id: '' }
+      values.project = {
+        project_id: null,
+        namespace_id: null,
+        project_type_id: null
+      }
       setFieldValues(values)
     }
   }, [])
@@ -113,7 +115,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
   function onValueChange(key, value) {
     setFieldValues((prevValues) => ({
       ...prevValues,
-      [key]: key === 'project' ? { project_id: value } : value
+      [key]: value
     }))
   }
 
