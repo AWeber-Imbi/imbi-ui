@@ -4,7 +4,7 @@ import {
   fromKueryExpression,
   toElasticsearchQuery
 } from '@cybernetex/kbn-es-query'
-import { byString, byNumber, byValues } from 'sort-es'
+import { byString, byNumber, byValues, byValue } from 'sort-es'
 import { useLocation, useSearchParams } from 'react-router-dom'
 
 import { Alert, ScoreBadge, Table } from '../../components'
@@ -18,7 +18,8 @@ import { HelpDialog } from './HelpDialog'
 const sortMap = {
   namespace: byString,
   name: byString,
-  project_score: byNumber,
+  project_score: (options) =>
+    byValue((s) => Number.parseFloat(s), byNumber(options)),
   project_type: byString
 }
 
