@@ -18,17 +18,44 @@ function ProjectPicker({
   const [projects, setProjects] = useState([])
   const [namespaceID, setNamespaceID] = useState(value?.namespace_id)
   const [projectTypeID, setProjectTypeID] = useState(value?.project_type_id)
+  const [projectID, setProjectID] = useState(value?.project_id)
 
   const { t } = useTranslation()
 
   useEffect(() => {
+    if (projectID && (!projectTypeID || !namespaceID)) {
+      httpGet(
+        globalState.fetch,
+        new URL(`/projects/${projectID}`, globalState.baseURL),
+        ({ data }) => {
+          setNamespaceID(data.namespace_id)
+          setProjectTypeID(data.project_type_id)
+        },
+        (error) => {
+          console.debug(`failed to retrieve project ${value.project_id}`, error)
+          setProjectID(null)
+          if (onChange !== undefined) {
+            onChange(name, null)
+          }
+        }
+      )
+    }
     if (!projectTypeID || !namespaceID) {
       setProjects([])
       return
     }
-
     fetchProjects()
   }, [namespaceID, projectTypeID])
+
+  useEffect(() => {
+    if (onChange !== undefined) {
+      onChange(name, {
+        project_id: projectID,
+        namespace_id: namespaceID,
+        project_type_id: projectTypeID
+      })
+    }
+  }, [namespaceID, projectTypeID, projectID])
 
   function fetchProjects(offset = 0) {
     const limit = 100
@@ -67,10 +94,12 @@ function ProjectPicker({
           }}
           onChange={(event) => {
             event.preventDefault()
-            setNamespaceID(event.target.value)
+            setNamespaceID(
+              event.target.value === '' ? null : parseInt(event.target.value)
+            )
           }}
           required={required}
-          value={namespaceID}>
+          value={namespaceID ? namespaceID : ''}>
           <option value="" />
           {globalState.metadata.namespaces.map((n) => (
             <option value={n.id} key={n.id}>
@@ -93,10 +122,12 @@ function ProjectPicker({
           }}
           onChange={(event) => {
             event.preventDefault()
-            setProjectTypeID(event.target.value)
+            setProjectTypeID(
+              event.target.value === '' ? null : parseInt(event.target.value)
+            )
           }}
           required={required}
-          value={projectTypeID}>
+          value={projectTypeID ? projectTypeID : ''}>
           <option value="" />
           {globalState.metadata.projectTypes.map((t) => (
             <option value={t.id} key={t.id}>
@@ -119,15 +150,12 @@ function ProjectPicker({
           }}
           onChange={(event) => {
             event.preventDefault()
-            if (onChange !== undefined) {
-              const value = parseInt(event.target.value)
-                ? parseInt(event.target.value)
-                : null
-              onChange(name, value)
-            }
+            setProjectID(
+              event.target.value === '' ? null : parseInt(event.target.value)
+            )
           }}
           required={required}
-          value={value && value.project_id}>
+          value={projectID ? projectID : ''}>
           <option value="" />
           {projects.map((p) => (
             <option value={p.id} key={p.id}>
@@ -148,6 +176,10 @@ ProjectPicker.propTypes = {
   onError: PropTypes.func,
   readOnly: PropTypes.bool,
   required: PropTypes.bool,
-  value: PropTypes.object
+  value: PropTypes.shape({
+    namespace_id: PropTypes.number,
+    project_id: PropTypes.number,
+    project_type_id: PropTypes.number
+  })
 }
 export { ProjectPicker }

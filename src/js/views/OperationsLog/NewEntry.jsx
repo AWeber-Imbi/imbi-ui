@@ -63,7 +63,7 @@ function NewEntry({ user }) {
       completed_at: fields.completed_at
         ? new Date(fields.completed_at).toISOString()
         : null,
-      project_id: fields.project ? parseInt(fields.project) : null,
+      project_id: fields.project ? fields.project.project_id : null,
       description: fields.description ? fields.description : null,
       link: fields.link ? fields.link : null,
       notes: fields.notes ? fields.notes : null,
@@ -152,6 +152,7 @@ function NewEntry({ user }) {
           }))}
           required={true}
           onChange={onChange}
+          value={fields.change_type}
           errorMessage={errors.change_type}
         />
         <Form.Field
@@ -165,6 +166,7 @@ function NewEntry({ user }) {
           )}
           required={true}
           onChange={onChange}
+          value={fields.environment}
           errorMessage={errors.environment}
         />
         <Form.Field
@@ -202,6 +204,7 @@ function NewEntry({ user }) {
           type="project"
           required={false}
           onChange={onChange}
+          value={fields.project}
           onError={(error) => setError(error)}
           errorMessage={errors.project}
         />
