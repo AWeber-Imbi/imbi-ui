@@ -4,14 +4,20 @@ export const jsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   type: 'object',
   properties: {
-    dependency_id: {
-      type: 'number'
+    dependency: {
+      type: 'object',
+      properties: {
+        namespace_id: { type: 'number' },
+        project_id: { type: 'number' },
+        project_type: { type: 'number' }
+      },
+      required: ['project_id']
     }
   },
   additionalProperties: false,
-  required: ['dependency_id']
+  required: ['dependency']
 }
 
 export const propTypes = {
-  dependency_id: PropTypes.number.isRequired
+  dependency: PropTypes.object.isRequired
 }
