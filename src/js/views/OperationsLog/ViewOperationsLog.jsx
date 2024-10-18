@@ -104,11 +104,11 @@ function ViewOperationsLog({
 
   const duplicatesOpsLog = useCallback(() => {
     const url = new URL('/ui/operations-log/create', globalState.baseURL)
-    Object.keys(cachedEntry)
+    Object.keys(entry)
       .filter((k) => !IGNORE_DURING_DUP.has(k))
-      .filter((k) => !!cachedEntry[k])
+      .filter((k) => !!entry[k])
       .forEach((k) => {
-        url.searchParams.set(k, cachedEntry[k])
+        url.searchParams.set(k, entry[k])
       })
     navigate(url, { replace: true })
   }, [entry])
