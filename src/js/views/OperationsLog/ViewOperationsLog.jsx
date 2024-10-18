@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { useTranslation } from 'react-i18next'
@@ -8,6 +8,16 @@ import { Button, ConfirmationDialog, Icon, Modal } from '../../components'
 import { Error } from '../Error'
 import { Display } from './Display'
 import { Edit } from './Edit'
+import { useNavigate } from 'react-router-dom'
+
+const IGNORE_DURING_DUP = new Set([
+  'completed_at',
+  'environment',
+  'id',
+  'occurred_at',
+  'recorded_at',
+  'recorded_by'
+])
 
 function ViewOperationsLog({
   cachedEntry,
@@ -19,6 +29,7 @@ function ViewOperationsLog({
   onEditClose,
   onDeleteClose
 }) {
+  const navigate = useNavigate()
   const [globalState] = useContext(Context)
   const { t } = useTranslation()
   const [entry, setEntry] = useState(cachedEntry)
@@ -91,6 +102,17 @@ function ViewOperationsLog({
     onDeleteClose()
   }
 
+  const duplicatesOpsLog = useCallback(() => {
+    const url = new URL('/ui/operations-log/create', globalState.baseURL)
+    Object.keys(entry)
+      .filter((k) => !IGNORE_DURING_DUP.has(k))
+      .filter((k) => !!entry[k])
+      .forEach((k) => {
+        url.searchParams.set(k, entry[k])
+      })
+    navigate(url, { replace: true })
+  }, [entry])
+
   useEffect(() => {
     if (!cachedEntry) loadOpsLog()
   }, [])
@@ -129,6 +151,12 @@ function ViewOperationsLog({
             <Button className="btn-red text-s" onClick={() => onDeleteStart()}>
               <Icon icon="fas trash" className="mr-2" />
               {t('common.delete')}
+            </Button>
+            <Button
+              className="btn-white text-s"
+              onClick={() => duplicatesOpsLog()}>
+              <Icon icon="fa clone" className="mr-2" />
+              Duplicate
             </Button>
             <Button className="btn-white text-s" onClick={() => onEditStart()}>
               <Icon icon="fas edit" className="mr-2" />
