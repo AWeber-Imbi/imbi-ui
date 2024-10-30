@@ -20,7 +20,7 @@ import { createSingleColumnSorter } from '../../utils'
  *                           the search params for tracking
  * @param onSortChange function to call when the user selects a different sort order
  *                     for the table.
- * @param selectedIndex index of the current value in data
+ * @param selectedIndex index of the current value in data or undefined
  * @param setSelectedIndex setter used for next/previous
  * @param slideOverElement element to use as the root of the content in the slide over
  * @param title title of the slide over
@@ -48,15 +48,18 @@ function NavigableTable({
   const arrowLeftRef = useRef(null)
   const arrowRightRef = useRef(null)
 
-  if (searchParams.get('v') && !slideOverOpen && data.length > 0) {
-    setSlideOverOpen(true)
-    setShowArrows(true)
-    setSelectedIndex(
-      data.findIndex((row) => extractSearchParam(row) === searchParams.get('v'))
-    )
-  } else if (!searchParams.get('v') && slideOverOpen) {
+  if (!searchParams.get('v') && slideOverOpen) {
     setSlideOverOpen(false)
     setShowArrows(false)
+  }
+  if (
+    searchParams.get('v') &&
+    !slideOverOpen &&
+    data.length > 0 &&
+    selectedIndex !== undefined
+  ) {
+    setSlideOverOpen(true)
+    setShowArrows(true)
   }
 
   function updateSearchParamsWith(newValue) {
@@ -114,7 +117,7 @@ function NavigableTable({
           setSlideOverOpen(false)
         }}
         onKeyDown={(e) => {
-          if (!showArrows) return
+          if (!showArrows || selectedIndex !== undefined) return
           if (selectedIndex > 0 && e.key === 'ArrowLeft') {
             arrowLeftRef.current?.focus()
             move(selectedIndex - 1)
@@ -180,7 +183,7 @@ NavigableTable.propTypes = {
   defaultSortDirection: PropTypes.string,
   extractSearchParam: PropTypes.func.isRequired,
   onSortChange: PropTypes.func,
-  selectedIndex: PropTypes.number.isRequired,
+  selectedIndex: PropTypes.number,
   setSelectedIndex: PropTypes.func.isRequired,
   slideOverElement: PropTypes.node.isRequired,
   title: PropTypes.string.isRequired
