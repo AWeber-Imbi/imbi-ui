@@ -8,7 +8,7 @@ import { Button, ConfirmationDialog, Icon, Modal } from '../../components'
 import { Error } from '../Error'
 import { Display } from './Display'
 import { Edit } from './Edit'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const IGNORE_DURING_DUP = new Set([
   'completed_at',
@@ -29,6 +29,7 @@ function ViewOperationsLog({
   onEditClose,
   onDeleteClose
 }) {
+  const location = useLocation()
   const navigate = useNavigate()
   const [globalState] = useContext(Context)
   const { t } = useTranslation()
@@ -102,7 +103,8 @@ function ViewOperationsLog({
     onDeleteClose()
   }
 
-  const duplicatesOpsLog = useCallback(() => {
+  const duplicateOpsLog = useCallback(() => {
+    const match = location.pathname.match('/projects/(\\d+)')
     const url = new URL('/ui/operations-log/create', globalState.baseURL)
     Object.keys(entry)
       .filter((k) => !IGNORE_DURING_DUP.has(k))
@@ -110,6 +112,9 @@ function ViewOperationsLog({
       .forEach((k) => {
         url.searchParams.set(k, entry[k])
       })
+    if (match?.length > 0) {
+      url.searchParams.set('returnTo', location.pathname)
+    }
     navigate(url, { replace: true })
   }, [entry])
 
@@ -156,7 +161,7 @@ function ViewOperationsLog({
             </Button>
             <Button
               className="btn-white text-s"
-              onClick={() => duplicatesOpsLog()}>
+              onClick={() => duplicateOpsLog()}>
               <Icon icon="fa clone" className="mr-2" />
               Duplicate
             </Button>
