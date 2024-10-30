@@ -103,7 +103,7 @@ function Edit({ onCancel, onError, onSuccess, operationsLog }) {
       const response = await httpPatch(globalState.fetch, url, patchValue)
       setSaving(false)
       if (response.success) {
-        onSuccess()
+        onSuccess(response.data)
       } else {
         onError(response.data)
       }

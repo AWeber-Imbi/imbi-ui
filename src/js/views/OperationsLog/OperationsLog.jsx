@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { Context } from '../../state'
 import { Filter } from '../Projects/Filter'
-import { Alert, Icon, Table } from '../../components'
+import { Alert } from '../../components'
 import {
   fromKueryExpression,
   toElasticsearchQuery
@@ -13,8 +13,8 @@ import { useTranslation } from 'react-i18next'
 import { HelpDialog } from '../Projects/HelpDialog'
 import { useSearchParams } from 'react-router-dom'
 import { ViewOperationsLog } from './ViewOperationsLog'
-import { SlideOver } from '../../components/SlideOver/SlideOver'
 import PropTypes from 'prop-types'
+import { NavigableTable } from '../../components/Table'
 
 function cloneParams(searchParams) {
   const newParams = new URLSearchParams()
@@ -32,43 +32,23 @@ function OperationsLog({ projectID, urlPath, className }) {
   )
   const [onFetch, setOnFetch] = useState(true)
   const [fetching, setFetching] = useState(false)
-  const [updated, setUpdated] = useState(false)
+  const [updated, setUpdated] = useState(null)
   const [deletedID, setDeletedID] = useState()
   const [rows, setRows] = useState([])
   const [errorMessage, setErrorMessage] = useState()
   const [showHelp, setShowHelp] = useState(false)
-  const [slideOverOpen, setSlideOverOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState()
-  const [slideOverFocusTrigger, setSlideOverFocusTrigger] = useState({})
-  const [showArrows, setShowArrows] = useState(false)
-  const arrowLeftRef = useRef(null)
-  const arrowRightRef = useRef(null)
   const { t } = useTranslation()
-
-  if (searchParams.get('v') && !slideOverOpen) {
-    setSlideOverOpen(true)
-    setShowArrows(true)
-  } else if (!searchParams.get('v') && slideOverOpen) {
-    setSlideOverOpen(false)
-    setShowArrows(false)
-  }
 
   if (deletedID) {
     setRows((prevRows) => prevRows.filter((r) => r.id !== deletedID))
     setDeletedID(null)
   }
-
-  if (searchParams.get('v') && slideOverOpen && selectedIndex === undefined) {
-    let index
-    rows.forEach((entry, i) => {
-      if (entry.id === parseInt(searchParams.get('v'))) {
-        index = i
-      }
-    })
-    if (index !== undefined) {
-      setSelectedIndex(index)
-      setShowArrows(true)
-    }
+  if (updated !== null) {
+    setRows((prevRows) =>
+      prevRows.map((r) => (r.id === updated.id ? updated : r))
+    )
+    setUpdated(null)
   }
 
   useEffect(() => {
@@ -81,6 +61,16 @@ function OperationsLog({ projectID, urlPath, className }) {
       }
     })
   }, [])
+
+  useEffect(() => {
+    const selectedId = searchParams.get('v')
+    if (rows && selectedId) {
+      const index = rows.findIndex((r) => r.id.toString() === selectedId)
+      if (index !== -1) {
+        setSelectedIndex(index)
+      }
+    }
+  }, [rows, setSelectedIndex])
 
   useEffect(() => {
     if (fetching || !onFetch) return
@@ -105,7 +95,7 @@ function OperationsLog({ projectID, urlPath, className }) {
 
     httpPost(
       globalState.fetch,
-      buildURL('/opensearch/operations-log'),
+      new URL('/opensearch/operations-log', globalState.baseURL),
       payload
     ).then(({ data, success }) => {
       if (success) {
@@ -123,17 +113,6 @@ function OperationsLog({ projectID, urlPath, className }) {
       setOnFetch(false)
     })
   }, [onFetch])
-
-  function move(index) {
-    setSelectedIndex(index)
-    const newParams = cloneParams(searchParams)
-    newParams.set('v', rows[index].id)
-    setSearchParams(newParams)
-  }
-
-  function buildURL(path) {
-    return new URL(path, globalState.baseURL)
-  }
 
   function buildColumns() {
     const columns = [
@@ -218,110 +197,38 @@ function OperationsLog({ projectID, urlPath, className }) {
         onShowHelp={() => setShowHelp(true)}
         value={filter}
       />
-      <Table
+      <NavigableTable
+        title={t('operationsLog.entry')}
         columns={buildColumns()}
         data={rows}
-        onRowClick={({ index }) => {
-          const newParams = cloneParams(searchParams)
-          newParams.set('v', rows[index].id)
-          setSearchParams(newParams)
-          setSlideOverOpen(true)
-          setSelectedIndex(index)
-          setShowArrows(true)
+        extractSearchParam={(row) => row.id.toString()}
+        selectedIndex={selectedIndex}
+        setSelectedIndex={setSelectedIndex}
+        defaultSort="occurred_at"
+        defaultSortDirection="desc"
+        onSortChange={(sorter) => {
+          setRows((prevRows) => [...prevRows].sort(sorter))
         }}
-        checkIsHighlighted={(row) => row.id === parseInt(searchParams.get('v'))}
-      />
-      <SlideOver
-        open={slideOverOpen}
-        title={
-          <div className="flex items-center">
-            {t('operationsLog.entry')}
-            {selectedIndex !== undefined && showArrows && (
-              <>
-                <button
-                  ref={arrowLeftRef}
-                  className="ml-4 mr-2 h-min outline-offset-4"
-                  onClick={() => {
-                    if (selectedIndex > 0) move(selectedIndex - 1)
-                  }}
-                  tabIndex={selectedIndex === 0 ? -1 : 0}>
-                  <Icon
-                    icon="fas arrow-left"
-                    className={
-                      'h-4 select-none block' +
-                      (selectedIndex === 0 ? ' text-gray-200' : '')
-                    }
-                  />
-                </button>
-
-                <button
-                  ref={arrowRightRef}
-                  className="outline-offset-4"
-                  onClick={() => {
-                    if (selectedIndex < rows.length - 1) move(selectedIndex + 1)
-                  }}
-                  tabIndex={selectedIndex === rows.length - 1 ? -1 : 0}>
-                  <Icon
-                    icon="fas arrow-right"
-                    className={
-                      'h-4 select-none block' +
-                      (selectedIndex === rows.length - 1
-                        ? ' text-gray-200'
-                        : '')
-                    }
-                  />
-                </button>
-              </>
-            )}
-          </div>
+        slideOverElement={
+          <ViewOperationsLog
+            cachedEntry={rows[selectedIndex]}
+            operationsLogID={parseInt(searchParams.get('v'))}
+            onDelete={(operationsLogID) => {
+              const newParams = cloneParams(searchParams)
+              newParams.delete('v')
+              setSearchParams(newParams)
+              setDeletedID(operationsLogID)
+            }}
+            onDeleteOpen={() => {}}
+            onDeleteClose={() => {}}
+            onEditOpen={() => {}}
+            onEditClose={() => {}}
+            onUpdate={(entry) => {
+              setUpdated(entry)
+            }}
+          />
         }
-        onClose={() => {
-          const newParams = cloneParams(searchParams)
-          newParams.delete('v')
-          setSearchParams(newParams)
-          if (updated) {
-            setOnFetch(true)
-            setUpdated(false)
-          }
-          setSlideOverOpen(false)
-          setSelectedIndex(null)
-        }}
-        onKeyDown={(e) => {
-          if (!showArrows) return
-          if (selectedIndex > 0 && e.key === 'ArrowLeft') {
-            arrowLeftRef.current?.focus()
-            move(selectedIndex - 1)
-          } else if (
-            selectedIndex < rows.length - 1 &&
-            e.key === 'ArrowRight'
-          ) {
-            arrowRightRef.current?.focus()
-            move(selectedIndex + 1)
-          }
-        }}
-        focusTrigger={slideOverFocusTrigger}>
-        <ViewOperationsLog
-          cachedEntry={rows[selectedIndex]}
-          operationsLogID={parseInt(searchParams.get('v'))}
-          onUpdate={() => setUpdated(true)}
-          onDelete={(operationsLogID) => {
-            const newParams = cloneParams(searchParams)
-            newParams.delete('v')
-            setSearchParams(newParams)
-            setDeletedID(operationsLogID)
-          }}
-          onEditOpen={() => setShowArrows(false)}
-          onDeleteOpen={() => setShowArrows(false)}
-          onEditClose={() => {
-            setShowArrows(true)
-            setSlideOverFocusTrigger({})
-          }}
-          onDeleteClose={() => {
-            setShowArrows(true)
-            setSlideOverFocusTrigger({})
-          }}
-        />
-      </SlideOver>
+      />
 
       {showHelp && (
         <HelpDialog
