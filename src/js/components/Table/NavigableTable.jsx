@@ -52,12 +52,7 @@ function NavigableTable({
     setSlideOverOpen(false)
     setShowArrows(false)
   }
-  if (
-    searchParams.get('v') &&
-    !slideOverOpen &&
-    data.length > 0 &&
-    selectedIndex !== undefined
-  ) {
+  if (searchParams.get('v') && !slideOverOpen && data.length > 0) {
     setSlideOverOpen(true)
     setShowArrows(true)
   }
