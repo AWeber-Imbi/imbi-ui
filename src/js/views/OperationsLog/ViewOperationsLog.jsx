@@ -138,10 +138,12 @@ function ViewOperationsLog({
           onCancel={() => {
             onEditEnd()
           }}
-          onSuccess={() => {
+          onSuccess={(newData) => {
             onEditEnd()
-            onUpdate()
             loadOpsLog()
+            // NB -- loadOpsLog has not called setEntry() yet so this is an
+            // optimistic update of our parent data
+            onUpdate(newData)
           }}
         />
       ) : (
