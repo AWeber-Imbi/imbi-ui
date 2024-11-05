@@ -1,6 +1,6 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation, useSearchParams } from 'react-router-dom'
 import { Menu } from '@headlessui/react'
-import React from 'react'
+import React, { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
@@ -27,6 +27,15 @@ NewMenuItem.propTypes = {
 
 function NewMenu({ user }) {
   const { t } = useTranslation()
+
+  const location = useLocation()
+  const createOpsLogParams = new URLSearchParams(location.search)
+  const match = location.pathname.match('/projects/(\\d+)')
+  if (match?.length > 0) {
+    createOpsLogParams.set('project_id', match[1])
+    createOpsLogParams.set('returnTo', location.pathname)
+  }
+
   return (
     <Menu as="div" className="flex-shrink mr-3">
       <Menu.Button
@@ -40,7 +49,7 @@ function NewMenu({ user }) {
         aria-orientation="vertical"
         className="origin-top-right absolute right-20 mt-1 w-48 rounded-md shadow-lg py-1 focus:outline-none bg-white ring-1 ring-gray-300 ring-opacity-5 z-40">
         <NewMenuItem
-          to="/ui/operations-log/create"
+          to={`/ui/operations-log/create?${createOpsLogParams.toString()}`}
           value={t('headerNavItems.newOperationsLogEntry')}
         />
         <NewMenuItem

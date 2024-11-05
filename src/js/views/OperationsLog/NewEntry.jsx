@@ -292,7 +292,11 @@ function NewEntry({ user }) {
           ]}
           onSaveComplete={(event) => {
             event.preventDefault()
-            navigate('/ui/operations-log')
+            navigate(
+              params.has('returnTo')
+                ? params.get('returnTo')
+                : '/ui/operations-log'
+            )
           }}
         />
       )}

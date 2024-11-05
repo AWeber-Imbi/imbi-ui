@@ -7,6 +7,7 @@ import { DescriptionList } from '../../components/DescriptionList/DescriptionLis
 import { Definition } from '../../components/DescriptionList/Definition'
 import { Context } from '../../state'
 import { normalizeTicketSlug } from './NewEntry'
+import { Link } from 'react-router-dom'
 
 function renderURLTemplate(urlTemplate, slug, environment) {
   return urlTemplate
@@ -54,14 +55,11 @@ function Display({ entry }) {
       </Definition>
       {(entry.project_name || entry.project_id) && (
         <Definition term={t('operationsLog.project')}>
-          <a
-            className="text-blue-800 hover:text-blue-700"
-            href={`/ui/projects/${entry.project_id}`}
-            title={entry.project_name}
-            target="_blank">
-            <Icon icon="fas external-link-alt" className="mr-2" />
+          <Link
+            to={`/ui/projects/${entry.project_id}`}
+            className="text-blue-800 hover:text-blue-700">
             {entry.project_name || entry.project_id}
-          </a>
+          </Link>
         </Definition>
       )}
       <Definition term={t('operationsLog.changeType')}>
