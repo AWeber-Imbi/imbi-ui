@@ -4,17 +4,26 @@ import React from 'react'
 import { Badge } from '../'
 
 function ScoreBadge({ value }) {
+  // Handle null, undefined or non-numeric values
+  const numValue =
+    value === null || value === undefined || isNaN(Number(value))
+      ? 0
+      : Number(value)
+
   let color = 'red'
-  if (value === 0) color = 'gray'
-  if (value > 69) color = 'yellow'
-  if (value > 89) color = 'green'
+  if (numValue === 0) color = 'gray'
+  if (numValue > 69) color = 'yellow'
+  if (numValue > 89) color = 'green'
+
   return (
     <Badge className="text-sm" color={color}>
-      {value.toLocaleString()}
+      {numValue.toLocaleString()}
     </Badge>
   )
 }
+
 ScoreBadge.propTypes = {
-  value: PropTypes.number.isRequired
+  value: PropTypes.number
 }
+
 export { ScoreBadge }
