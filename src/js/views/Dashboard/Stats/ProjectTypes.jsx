@@ -64,7 +64,7 @@ function ProjectTypes({ onReady }) {
                 icon={row.icon}
                 url={
                   '/ui/projects?f=' +
-                  encodeURIComponent('project_type_slug:' + row.slug)
+                  encodeURIComponent('project_type_slug.keyword:' + row.slug)
                 }
                 value={row.count}
               />
