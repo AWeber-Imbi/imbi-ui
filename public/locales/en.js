@@ -413,6 +413,9 @@ export default {
           opsLogVersion:
             '<0>{{displayName}}</0> <1>{{changeType}}</1> <2>{{project}}</2> in the <3>{{environment}}</3> environment. (<4>{{version}}</4>)'
         },
+        github: {
+          connect: 'Connect to GitHub'
+        },
         gitlab: {
           connect: 'Connect to GitLab',
           notConnected:
