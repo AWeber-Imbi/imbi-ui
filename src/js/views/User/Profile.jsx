@@ -4,7 +4,7 @@ import React, { Fragment, useContext, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Context } from '../../state'
-import { GitlabConnectButton } from '../../components'
+import { GitHubConnectButton, GitlabConnectButton } from '../../components'
 import { User } from '../../schema'
 
 function Groups({ groups = [] }) {
@@ -93,6 +93,11 @@ function Profile({ user }) {
           {!user.integrations.includes('gitlab') && (
             <div className="py-3 px-5 text-sm font-medium">
               <GitlabConnectButton user={user} />
+            </div>
+          )}
+          {!user.integrations.includes('github') && (
+            <div className="py-3 px-5 text-sm font-medium">
+              <GitHubConnectButton user={user} />
             </div>
           )}
         </dl>
