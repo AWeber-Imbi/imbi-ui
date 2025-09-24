@@ -44,13 +44,18 @@ function Create() {
         url,
         ({ data }) => {
           setAutomations(
-            data.map(
-              ({ automation_name, integration_name, automation_slug }) => ({
-                automationName: automation_name,
-                integrationName: integration_name,
-                automationSlug: automation_slug
-              })
-            )
+            data
+              .filter(
+                ({ integration_name }) =>
+                  globalState.integrations[integration_name]?.enabled
+              )
+              .map(
+                ({ automation_name, integration_name, automation_slug }) => ({
+                  automationName: automation_name,
+                  integrationName: integration_name,
+                  automationSlug: automation_slug
+                })
+              )
           )
         },
         ({ error }) => {
