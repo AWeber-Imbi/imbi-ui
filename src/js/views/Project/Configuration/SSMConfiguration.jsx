@@ -118,9 +118,20 @@ function SSMConfiguration({ project }) {
       break
     }
   }
+
+  let projectTypeSlug = project.project_type_slug
+  for (const projectType of globalState.metadata.projectTypes) {
+    if (projectType.slug === project.project_type_slug) {
+      if (projectType.ssm_path_override) {
+        projectTypeSlug = projectType.ssm_path_override
+      }
+      break
+    }
+  }
+
   const prefix = globalState.ssmPrefixTemplate
     .replace('{namespace_slug}', namespaceSlug)
-    .replace('{project_type_slug}', project.project_type_slug)
+    .replace('{project_type_slug}', projectTypeSlug)
     .replace('{project_slug}', project.slug)
 
   if (showCreatePage) {
