@@ -90,16 +90,18 @@ function Profile({ user }) {
             label={t('user.profile.integrations')}
             value={user.integrations.join()}
           />
-          {!user.integrations.includes('gitlab') && (
-            <div className="py-3 px-5 text-sm font-medium">
-              <GitlabConnectButton user={user} />
-            </div>
-          )}
-          {!user.integrations.includes('github') && (
-            <div className="py-3 px-5 text-sm font-medium">
-              <GitHubConnectButton user={user} />
-            </div>
-          )}
+          {state.integrations?.gitlab?.enabled &&
+            !user.integrations.includes('gitlab') && (
+              <div className="py-3 px-5 text-sm font-medium">
+                <GitlabConnectButton user={user} />
+              </div>
+            )}
+          {state.integrations?.github?.enabled &&
+            !user.integrations.includes('github') && (
+              <div className="py-3 px-5 text-sm font-medium">
+                <GitHubConnectButton user={user} />
+              </div>
+            )}
         </dl>
       </div>
     </div>
