@@ -154,10 +154,13 @@ function ActionRunner({ project }) {
     value: action.id
   }))
 
-  const tagOptions = state.tags.map((tag) => ({
-    label: tag,
-    value: tag
-  }))
+  const tagOptions = state.tags
+    .slice()
+    .reverse()
+    .map((tag) => ({
+      label: tag,
+      value: tag
+    }))
 
   const environmentOptions = (project.environments || []).map((env) => ({
     label: env,
