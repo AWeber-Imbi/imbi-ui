@@ -82,12 +82,14 @@ function ProjectPage({ project, factTypes, refresh }) {
             </div>
           )}
           <div className="flex-1 flex justify-end items-center">
-            <button
-              onClick={() => setShowActionRunner(true)}
-              className="flex-shrink mr-3 text-gray-600 hover:text-blue-600 focus:outline-none"
-              aria-label="Run actions">
-              <Icon icon="fas play-circle" className="text-3xl" />
-            </button>
+            <Tooltip value={t('project.runActions')} arrowPosition="right">
+              <button
+                onClick={() => setShowActionRunner(true)}
+                className="flex-shrink mr-3 text-gray-600 hover:text-blue-600 focus:outline-none"
+                aria-label="Run actions">
+                <Icon icon="fas play-circle" className="text-3xl" />
+              </button>
+            </Tooltip>
             <div
               onClick={() => {
                 setShowScoreDetails(true)
