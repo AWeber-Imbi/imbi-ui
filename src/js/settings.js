@@ -28,6 +28,15 @@ function useSettings() {
       redirectURI: null,
       project_link_type_id: null
     },
+    github: {
+      enabled: false,
+      error: null,
+      authorizationEndpoint: null,
+      clientId: null,
+      redirectURI: null,
+      apiEndpoint: null,
+      project_link_type_id: null
+    },
     grafana: {
       enabled: false,
       project_link_type_id: null
