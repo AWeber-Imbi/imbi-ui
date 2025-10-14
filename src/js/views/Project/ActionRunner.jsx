@@ -14,9 +14,11 @@ function ActionRunner({ project }) {
     tags: [],
     selectedTag: '',
     selectedEnvironment: '',
+    selectedEnvironmentSlug: '',
     loading: false,
     error: null,
     success: false,
+    deploymentUrl: null,
     resetKey: 0
   })
 
@@ -83,22 +85,22 @@ function ActionRunner({ project }) {
       })
     })
     if (result.success) {
+      const apiEndpoint = globalState.integrations?.github?.apiEndpoint
+      let deploymentUrl = null
+
+      if (apiEndpoint && state.selectedEnvironmentSlug) {
+        const baseUrl = apiEndpoint.replace('api.', '')
+        const projectTypeSlug =
+          project.project_type_slug || project.project_type
+        deploymentUrl = `${baseUrl}/${projectTypeSlug}/${project.slug}/deployments/${state.selectedEnvironmentSlug}`
+      }
+
       setState((prev) => ({
         ...prev,
         loading: false,
-        success: true
+        success: true,
+        deploymentUrl
       }))
-      setTimeout(() => {
-        setState((prev) => ({
-          ...prev,
-          success: false,
-          selectedAction: '',
-          selectedTag: '',
-          selectedEnvironment: '',
-          tags: [],
-          resetKey: prev.resetKey + 1
-        }))
-      }, 2000)
     } else {
       setState((prev) => ({
         ...prev,
@@ -128,7 +130,15 @@ function ActionRunner({ project }) {
   }
 
   function handleEnvironmentChange(name, value) {
-    setState((prev) => ({ ...prev, selectedEnvironment: value, error: null }))
+    const environment = globalState.metadata.environments.find(
+      (env) => env.name === value
+    )
+    setState((prev) => ({
+      ...prev,
+      selectedEnvironment: value,
+      selectedEnvironmentSlug: environment?.slug || '',
+      error: null
+    }))
   }
 
   function handleCancel() {
@@ -137,8 +147,10 @@ function ActionRunner({ project }) {
       selectedAction: '',
       selectedTag: '',
       selectedEnvironment: '',
+      selectedEnvironmentSlug: '',
       tags: [],
       error: null,
+      deploymentUrl: null,
       resetKey: prev.resetKey + 1
     }))
   }
@@ -177,7 +189,18 @@ function ActionRunner({ project }) {
     <div className="space-y-4">
       {state.success && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-          Deployment created successfully
+          <div>Deployment created successfully</div>
+          {state.deploymentUrl && (
+            <div className="mt-2">
+              <a
+                href={state.deploymentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline">
+                View deployment
+              </a>
+            </div>
+          )}
         </div>
       )}
 
