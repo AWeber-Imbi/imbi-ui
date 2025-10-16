@@ -169,6 +169,7 @@ function ActionRunner({ project }) {
   const tagOptions = state.tags
     .slice()
     .reverse()
+    .slice(0, 25)
     .map((tag) => ({
       label: tag,
       value: tag
