@@ -30,6 +30,7 @@ import { OperationsLog } from '../OperationsLog'
 import { Configuration } from './Configuration/Configuration'
 import { ComponentList } from './Components/ComponentList'
 import { SlideOver } from '../../components/SlideOver/SlideOver'
+import { ActionRunner } from './ActionRunner'
 import { ViewScoreDetails } from './ViewScoreDetails'
 
 function ProjectPage({ project, factTypes, refresh }) {
@@ -37,6 +38,7 @@ function ProjectPage({ project, factTypes, refresh }) {
   const { t } = useTranslation()
   const baseURL = `/ui/projects/${project.id}`
   const [showScoreDetails, setShowScoreDetails] = useState(false)
+  const [showActionRunner, setShowActionRunner] = useState(false)
   let color = '#cccccc'
   if (project.project_score >= 0) color = 'red'
   if (project.project_score > 69) color = 'gold'
@@ -79,7 +81,15 @@ function ProjectPage({ project, factTypes, refresh }) {
               </Alert>
             </div>
           )}
-          <div className="flex-1 flex justify-end">
+          <div className="flex-1 flex justify-end items-center">
+            <Tooltip value={t('project.runActions')} arrowPosition="right">
+              <button
+                onClick={() => setShowActionRunner(true)}
+                className="flex-shrink mr-3 text-gray-600 hover:text-blue-600 focus:outline-none"
+                aria-label="Run actions">
+                <Icon icon="fas play-circle" className="text-3xl" />
+              </button>
+            </Tooltip>
             <div
               onClick={() => {
                 setShowScoreDetails(true)
@@ -176,6 +186,12 @@ function ProjectPage({ project, factTypes, refresh }) {
           open={showScoreDetails}
           onClose={() => setShowScoreDetails(false)}>
           <ViewScoreDetails project={project} />
+        </SlideOver>
+        <SlideOver
+          title="Run Action"
+          open={showActionRunner}
+          onClose={() => setShowActionRunner(false)}>
+          <ActionRunner project={project} />
         </SlideOver>
       </div>
     </ErrorBoundary>

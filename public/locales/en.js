@@ -460,6 +460,7 @@ export default {
         projectFacts: 'Project Facts',
         projectHealthScore: 'Project Health Score',
         projectLinks: 'Project Links',
+        runActions: 'Run Actions',
         projectType: 'Project Type',
         projectSaved: 'Project Saved',
         projectURLs: 'Per-Environment URLs',
