@@ -85,21 +85,11 @@ function ActionRunner({ project }) {
       })
     })
     if (result.success) {
-      const apiEndpoint = globalState.integrations?.github?.apiEndpoint
-      let deploymentUrl = null
-
-      if (apiEndpoint && state.selectedEnvironmentSlug) {
-        const baseUrl = apiEndpoint.replace('api.', '')
-        const projectTypeSlug =
-          project.project_type_slug || project.project_type
-        deploymentUrl = `${baseUrl}/${projectTypeSlug}/${project.slug}/deployments/${state.selectedEnvironmentSlug}`
-      }
-
       setState((prev) => ({
         ...prev,
         loading: false,
         success: true,
-        deploymentUrl
+        deploymentUrl: result.data.deployments_url || null
       }))
     } else {
       setState((prev) => ({
