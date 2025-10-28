@@ -39,10 +39,23 @@ function ProjectPage({ project, factTypes, refresh }) {
   const baseURL = `/ui/projects/${project.id}`
   const [showScoreDetails, setShowScoreDetails] = useState(false)
   const [showActionRunner, setShowActionRunner] = useState(false)
+  const [hasAvailableActions, setHasAvailableActions] = useState(true)
   let color = '#cccccc'
   if (project.project_score >= 0) color = 'red'
   if (project.project_score > 69) color = 'gold'
   if (project.project_score > 89) color = '#00c800'
+
+  // Check if any actions are available for this project
+  useEffect(() => {
+    async function checkAvailableActions() {
+      const url = new URL(`/ui/projects/${project.id}/actions`, state.baseURL)
+      const result = await httpRequest(state.fetch, url, requestOptions)
+      if (result.success) {
+        setHasAvailableActions(result.data.length > 0)
+      }
+    }
+    checkAvailableActions()
+  }, [project.id, state.baseURL, state.fetch])
 
   useEffect(() => {
     dispatch({
@@ -82,14 +95,16 @@ function ProjectPage({ project, factTypes, refresh }) {
             </div>
           )}
           <div className="flex-1 flex justify-end items-center">
-            <Tooltip value={t('project.runActions')} arrowPosition="right">
-              <button
-                onClick={() => setShowActionRunner(true)}
-                className="flex-shrink mr-3 text-gray-600 hover:text-blue-600 focus:outline-none"
-                aria-label="Run actions">
-                <Icon icon="fas play-circle" className="text-3xl" />
-              </button>
-            </Tooltip>
+            {hasAvailableActions && (
+              <Tooltip value={t('project.runActions')} arrowPosition="right">
+                <button
+                  onClick={() => setShowActionRunner(true)}
+                  className="flex-shrink mr-3 text-gray-600 hover:text-blue-600 focus:outline-none"
+                  aria-label="Run actions">
+                  <Icon icon="fas play-circle" className="text-3xl" />
+                </button>
+              </Tooltip>
+            )}
             <div
               onClick={() => {
                 setShowScoreDetails(true)
