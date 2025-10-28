@@ -100,6 +100,35 @@ function ActionRunner({ project }) {
     }
   }
 
+  async function triggerAcceptanceTests() {
+    setState((prev) => ({ ...prev, loading: true, error: null }))
+    const url = new URL(
+      `/github/projects/${project.id}/acceptance-tests`,
+      globalState.baseURL
+    )
+    const result = await httpRequest(globalState.fetch, url, {
+      ...requestOptions,
+      method: 'POST',
+      body: JSON.stringify({
+        environment: state.selectedEnvironment
+      })
+    })
+    if (result.success) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        success: true,
+        deploymentUrl: null
+      }))
+    } else {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: result.data
+      }))
+    }
+  }
+
   function handleActionChange(name, value) {
     setState((prev) => ({
       ...prev,
@@ -148,6 +177,8 @@ function ActionRunner({ project }) {
   function handleSubmit() {
     if (state.selectedAction === 'github_deployment') {
       createGitHubDeployment()
+    } else if (state.selectedAction === 'acceptance_tests') {
+      triggerAcceptanceTests()
     }
   }
 
@@ -171,16 +202,23 @@ function ActionRunner({ project }) {
   }))
 
   const canSubmit =
-    state.selectedAction === 'github_deployment' &&
-    state.selectedTag &&
-    state.selectedEnvironment &&
-    !state.loading
+    (state.selectedAction === 'github_deployment' &&
+      state.selectedTag &&
+      state.selectedEnvironment &&
+      !state.loading) ||
+    (state.selectedAction === 'acceptance_tests' &&
+      state.selectedEnvironment &&
+      !state.loading)
 
   return (
     <div className="space-y-4">
       {state.success && (
         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-          <div>Deployment created successfully</div>
+          <div>
+            {state.selectedAction === 'github_deployment'
+              ? 'Deployment created successfully'
+              : 'Acceptance tests triggered successfully'}
+          </div>
           {state.deploymentUrl && (
             <div className="mt-2">
               <a
@@ -276,6 +314,38 @@ function ActionRunner({ project }) {
                   onClick={handleSubmit}
                   disabled={!canSubmit}>
                   Create Deployment
+                </Button>
+                <Button className="btn-white" onClick={handleCancel}>
+                  Cancel
+                </Button>
+              </div>
+            </>
+          )}
+
+          {state.selectedAction === 'acceptance_tests' && (
+            <>
+              <div>
+                <label
+                  htmlFor="field-environment"
+                  className="block text-sm font-medium text-gray-700 mb-1">
+                  Select an environment
+                </label>
+                <Select
+                  name="environment"
+                  placeholder="Choose an environment..."
+                  options={environmentOptions}
+                  value={state.selectedEnvironment}
+                  onChange={handleEnvironmentChange}
+                  disabled={state.loading}
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-2">
+                <Button
+                  className="btn-green"
+                  onClick={handleSubmit}
+                  disabled={!canSubmit}>
+                  Run Tests
                 </Button>
                 <Button className="btn-white" onClick={handleCancel}>
                   Cancel
