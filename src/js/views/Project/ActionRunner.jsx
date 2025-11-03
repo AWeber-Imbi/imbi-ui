@@ -100,10 +100,10 @@ function ActionRunner({ project }) {
     }
   }
 
-  async function triggerAcceptanceTests() {
+  async function triggerWorkflowDispatch() {
     setState((prev) => ({ ...prev, loading: true, error: null }))
     const url = new URL(
-      `/github/projects/${project.id}/acceptance-tests`,
+      `/github/projects/${project.id}/workflows/${state.selectedAction}`,
       globalState.baseURL
     )
     const result = await httpRequest(globalState.fetch, url, {
@@ -118,8 +118,13 @@ function ActionRunner({ project }) {
         ...prev,
         loading: false,
         success: true,
-        deploymentUrl: null
+        selectedAction: '',
+        selectedEnvironment: '',
+        resetKey: prev.resetKey + 1
       }))
+      setTimeout(() => {
+        setState((prev) => ({ ...prev, success: false }))
+      }, 5000)
     } else {
       setState((prev) => ({
         ...prev,
@@ -177,8 +182,9 @@ function ActionRunner({ project }) {
   function handleSubmit() {
     if (state.selectedAction === 'github_deployment') {
       createGitHubDeployment()
-    } else if (state.selectedAction === 'acceptance_tests') {
-      triggerAcceptanceTests()
+    } else {
+      // All other actions are workflow dispatches (identified by workflow_id)
+      triggerWorkflowDispatch()
     }
   }
 
@@ -206,7 +212,8 @@ function ActionRunner({ project }) {
       state.selectedTag &&
       state.selectedEnvironment &&
       !state.loading) ||
-    (state.selectedAction === 'acceptance_tests' &&
+    (state.selectedAction &&
+      state.selectedAction !== 'github_deployment' &&
       state.selectedEnvironment &&
       !state.loading)
 
@@ -322,37 +329,38 @@ function ActionRunner({ project }) {
             </>
           )}
 
-          {state.selectedAction === 'acceptance_tests' && (
-            <>
-              <div>
-                <label
-                  htmlFor="field-environment"
-                  className="block text-sm font-medium text-gray-700 mb-1">
-                  Select an environment
-                </label>
-                <Select
-                  name="environment"
-                  placeholder="Choose an environment..."
-                  options={environmentOptions}
-                  value={state.selectedEnvironment}
-                  onChange={handleEnvironmentChange}
-                  disabled={state.loading}
-                />
-              </div>
+          {state.selectedAction &&
+            state.selectedAction !== 'github_deployment' && (
+              <>
+                <div>
+                  <label
+                    htmlFor="field-environment"
+                    className="block text-sm font-medium text-gray-700 mb-1">
+                    Select an environment
+                  </label>
+                  <Select
+                    name="environment"
+                    placeholder="Choose an environment..."
+                    options={environmentOptions}
+                    value={state.selectedEnvironment}
+                    onChange={handleEnvironmentChange}
+                    disabled={state.loading}
+                  />
+                </div>
 
-              <div className="flex space-x-3 pt-2">
-                <Button
-                  className="btn-green"
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}>
-                  Run Tests
-                </Button>
-                <Button className="btn-white" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </div>
-            </>
-          )}
+                <div className="flex space-x-3 pt-2">
+                  <Button
+                    className="btn-green"
+                    onClick={handleSubmit}
+                    disabled={!canSubmit}>
+                    Run Tests
+                  </Button>
+                  <Button className="btn-white" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                </div>
+              </>
+            )}
         </>
       )}
     </div>
