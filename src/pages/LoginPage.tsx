@@ -45,18 +45,7 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // Check if there's a stored redirect path from a 401
-      const redirectPath = sessionStorage.getItem('imbi_redirect_after_login')
-
-      if (redirectPath) {
-        // Clear the stored path
-        sessionStorage.removeItem('imbi_redirect_after_login')
-        console.log('[Login] Redirecting to stored path:', redirectPath)
-        navigate(redirectPath, { replace: true })
-      } else {
-        // Default to dashboard
-        navigate('/dashboard', { replace: true })
-      }
+      navigate('/dashboard', { replace: true })
     }
   }, [isAuthenticated, navigate])
 

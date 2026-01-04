@@ -13,9 +13,7 @@ import type {
   LoginRequest,
   UserResponse,
   AdminUser,
-  AdminUserCreate,
-  Group,
-  Role
+  AdminUserCreate
 } from '@/types'
 
 // Status/Health
@@ -114,27 +112,3 @@ export const updateAdminUser = (email: string, user: AdminUserCreate) =>
 
 export const deleteAdminUser = (email: string) =>
   apiClient.delete<void>(`/users/${encodeURIComponent(email)}`)
-
-// Admin - Groups Management
-export const getGroups = async (): Promise<Group[]> => {
-  try {
-    const response = await apiClient.get<Group[]>('/groups/')
-    console.log('[API] getGroups response:', response)
-    return Array.isArray(response) ? response : []
-  } catch (error) {
-    console.error('[API] getGroups error:', error)
-    return []
-  }
-}
-
-// Admin - Roles Management
-export const getRoles = async (): Promise<Role[]> => {
-  try {
-    const response = await apiClient.get<Role[]>('/roles/')
-    console.log('[API] getRoles response:', response)
-    return Array.isArray(response) ? response : []
-  } catch (error) {
-    console.error('[API] getRoles error:', error)
-    return []
-  }
-}
