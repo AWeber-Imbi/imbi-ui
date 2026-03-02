@@ -245,6 +245,7 @@ export function EnvironmentManagement({ isDarkMode }: EnvironmentManagementProps
                     setViewMode('detail')
                   }}
                   onKeyDown={(e) => {
+                    if (e.currentTarget !== e.target) return
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
                       setSelectedEnvSlug(env.slug)
@@ -288,11 +289,12 @@ export function EnvironmentManagement({ isDarkMode }: EnvironmentManagementProps
                   <td className={`px-6 py-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {env.organization.name}
                   </td>
-                  <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
+                        aria-label={`Delete environment ${env.name}`}
                         onClick={() => handleDelete(env.slug)}
                         disabled={deleteMutation.isPending}
                         className={isDarkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-900/20' : 'text-red-600 hover:text-red-700 hover:bg-red-50'}

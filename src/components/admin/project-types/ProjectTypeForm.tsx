@@ -53,7 +53,7 @@ export function ProjectTypeForm({
     const newErrors: Record<string, string> = {}
     if (!name.trim()) newErrors.name = 'Project type name is required'
     if (!slug.trim()) newErrors.slug = 'Slug is required'
-    if (slug && !/^[a-z0-9-_]+$/.test(slug)) {
+    if (slug && !/^[a-z0-9_-]+$/.test(slug)) {
       newErrors.slug = 'Slug must be lowercase and can only contain letters, numbers, hyphens, and underscores'
     }
     if (!orgSlug) newErrors.organization = 'Organization is required'
