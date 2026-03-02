@@ -7,6 +7,7 @@ import { OrganizationForm } from './organizations/OrganizationForm'
 import { OrganizationDetail } from './organizations/OrganizationDetail'
 import {
   listOrganizations,
+  listTeams,
   deleteOrganization,
   createOrganization,
   updateOrganization
@@ -29,6 +30,26 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
     queryKey: ['organizations'],
     queryFn: listOrganizations,
   })
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: listTeams,
+  })
+
+  const canDeleteOrg = (slug: string): { allowed: boolean; reason?: string } => {
+    if (organizations.length <= 1) {
+      return { allowed: false, reason: 'Cannot delete the only organization' }
+    }
+    const orgTeams = teams.filter((t) => t.organization.slug === slug)
+    if (orgTeams.length > 0) {
+      const names = orgTeams.map((t) => t.name).join(', ')
+      return {
+        allowed: false,
+        reason: `Has ${orgTeams.length} team(s): ${names}`,
+      }
+    }
+    return { allowed: true }
+  }
 
   const createMutation = useMutation({
     mutationFn: createOrganization,
@@ -74,6 +95,9 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
   const selectedOrg = organizations.find((o) => o.slug === selectedOrgSlug) || null
 
   const handleDelete = (slug: string) => {
+    const check = canDeleteOrg(slug)
+    if (!check.allowed) return
+
     const org = organizations.find((o) => o.slug === slug)
     if (org && confirm(`Delete organization "${org.name}"? This action cannot be undone.`)) {
       deleteMutation.mutate(slug)
@@ -217,8 +241,8 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                     isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
                   }`}>
-                    {org.icon_url ? (
-                      <img src={org.icon_url} alt="" className="w-8 h-8 rounded object-cover" />
+                    {org.icon ? (
+                      <img src={org.icon} alt="" className="w-8 h-8 rounded object-cover" />
                     ) : (
                       <Building2 className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
                     )}
@@ -255,16 +279,22 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
                   <Edit2 className="w-3 h-3 mr-1" />
                   Edit
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(org.slug)}
-                  disabled={deleteMutation.isPending}
-                  className={isDarkMode ? 'border-gray-700 hover:bg-gray-700 text-red-400' : 'text-red-600'}
-                >
-                  <Trash2 className="w-3 h-3 mr-1" />
-                  Delete
-                </Button>
+                {(() => {
+                  const check = canDeleteOrg(org.slug)
+                  return (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(org.slug)}
+                      disabled={!check.allowed || deleteMutation.isPending}
+                      title={check.reason}
+                      className={isDarkMode ? 'border-gray-700 hover:bg-gray-700 text-red-400' : 'text-red-600'}
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Delete
+                    </Button>
+                  )
+                })()}
               </div>
             </div>
           ))}

@@ -9,7 +9,7 @@ import { getTeamMembers, addTeamMember, removeTeamMember, getTeamSchema } from '
 import type { Team } from '@/types'
 
 const BASE_TEAM_FIELDS = new Set([
-  'name', 'slug', 'description', 'icon', 'icon_url',
+  'name', 'slug', 'description', 'icon',
   'organization', 'organization_slug', 'created_at', 'last_modified_at',
 ])
 
@@ -90,8 +90,8 @@ export function TeamDetail({ team, onEdit, onBack, isDarkMode }: TeamDetailProps
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              {team.icon_url && (
-                <img src={team.icon_url} alt="" className="w-8 h-8 rounded object-cover" />
+              {team.icon && (
+                <img src={team.icon} alt="" className="w-8 h-8 rounded object-cover" />
               )}
               <h2 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {team.name}

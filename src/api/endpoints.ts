@@ -314,7 +314,7 @@ export const getDynamicSchema = async (
 }
 
 const TEAM_BASE_FIELDS = [
-  'name', 'slug', 'description', 'icon', 'icon_url',
+  'name', 'slug', 'description', 'icon',
   'organization', 'organization_slug', 'created_at', 'last_modified_at',
 ]
 

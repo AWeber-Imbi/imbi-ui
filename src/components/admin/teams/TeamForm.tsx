@@ -10,7 +10,7 @@ import { getTeamSchema } from '@/api/endpoints'
 import type { Team, TeamCreate } from '@/types'
 
 const BASE_TEAM_FIELDS = new Set([
-  'name', 'slug', 'description', 'icon', 'icon_url',
+  'name', 'slug', 'description', 'icon',
   'organization', 'organization_slug', 'created_at', 'last_modified_at',
 ])
 
@@ -47,7 +47,7 @@ export function TeamForm({
   const [name, setName] = useState(team?.name || '')
   const [slug, setSlug] = useState(team?.slug || '')
   const [description, setDescription] = useState(team?.description || '')
-  const [icon, setIcon] = useState(team?.icon_url || '')
+  const [icon, setIcon] = useState(team?.icon || '')
   const [orgSlug, setOrgSlug] = useState(
     team?.organization.slug || selectedOrganization?.slug || ''
   )
@@ -88,7 +88,7 @@ export function TeamForm({
       name: name.trim(),
       slug: slug.trim(),
       description: description.trim() || null,
-      icon_url: icon.trim() || null,
+      icon: icon.trim() || null,
       organization_slug: orgSlug,
       ...dynamicFormData,
     })
