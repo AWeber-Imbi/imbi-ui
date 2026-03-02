@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, Trash2, Layers, AlertCircle } from 'lucide-react'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { ProjectTypeForm } from './project-types/ProjectTypeForm'
 import { ProjectTypeDetail } from './project-types/ProjectTypeDetail'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -244,6 +244,15 @@ export function ProjectTypeManagement({ isDarkMode }: ProjectTypeManagementProps
                     setSelectedPtSlug(pt.slug)
                     setViewMode('detail')
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedPtSlug(pt.slug)
+                      setViewMode('detail')
+                    }
+                  }}
+                  tabIndex={0}
+                  aria-label={`View project type ${pt.name}`}
                   className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
                 >
                   <td className="px-6 py-4">
