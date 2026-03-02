@@ -31,7 +31,7 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
     queryFn: listOrganizations,
   })
 
-  const { data: teams = [], isLoading: teamsLoading } = useQuery({
+  const { data: teams = [], isLoading: teamsLoading, isError: teamsError } = useQuery({
     queryKey: ['teams'],
     queryFn: listTeams,
   })
@@ -39,6 +39,9 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
   const canDeleteOrg = (slug: string): { allowed: boolean; reason?: string } => {
     if (teamsLoading) {
       return { allowed: false, reason: 'Loading team data...' }
+    }
+    if (teamsError) {
+      return { allowed: false, reason: 'Unable to verify team associations' }
     }
     if (organizations.length <= 1) {
       return { allowed: false, reason: 'Cannot delete the only organization' }
