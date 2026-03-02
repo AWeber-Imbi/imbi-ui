@@ -23,9 +23,14 @@ interface CommandBarProps {
 
 export function CommandBar({ isDarkMode }: CommandBarProps) {
   const [input, setInput] = useState('')
+  const [panelHeight, setPanelHeight] = useState(() => {
+    const saved = localStorage.getItem('imbi-assistant-height')
+    return saved ? Number(saved) : Math.round(window.innerHeight * 0.6)
+  })
   const inputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const dragRef = useRef<{ startY: number; startHeight: number } | null>(null)
 
   const {
     isExpanded,
@@ -216,6 +221,33 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
     ],
   )
 
+  const handleDragStart = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault()
+      dragRef.current = { startY: e.clientY, startHeight: panelHeight }
+      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+    },
+    [panelHeight],
+  )
+
+  const handleDragMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return
+    const delta = dragRef.current.startY - e.clientY
+    const minH = 150
+    const maxH = window.innerHeight - 120
+    const newHeight = Math.min(
+      maxH,
+      Math.max(minH, dragRef.current.startHeight + delta),
+    )
+    setPanelHeight(newHeight)
+  }, [])
+
+  const handleDragEnd = useCallback(() => {
+    if (!dragRef.current) return
+    dragRef.current = null
+    localStorage.setItem('imbi-assistant-height', String(panelHeight))
+  }, [panelHeight])
+
   const handleClearHistory = useCallback(() => {
     if (abortRef.current) {
       abortRef.current.abort()
@@ -234,8 +266,25 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
             ? 'bg-gray-900 border-gray-700'
             : 'bg-gray-50 border-gray-200'
         } border-t shadow-2xl`}
-        style={{ height: '60vh', maxHeight: '600px' }}
+        style={{ height: `${panelHeight}px` }}
       >
+        {/* Resize Handle */}
+        <div
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          className={`h-1.5 cursor-ns-resize flex items-center justify-center group ${
+            isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-200'
+          } transition-colors`}
+        >
+          <div
+            className={`w-8 h-0.5 rounded-full ${
+              isDarkMode
+                ? 'bg-gray-700 group-hover:bg-gray-500'
+                : 'bg-gray-300 group-hover:bg-gray-400'
+            } transition-colors`}
+          />
+        </div>
         {/* Panel Header */}
         <div
           className={`flex items-center justify-between px-4 py-2 border-b ${
@@ -323,7 +372,7 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
           className={`overflow-y-auto px-6 py-4 space-y-3 ${
             isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
           }`}
-          style={{ height: 'calc(100% - 37px)' }}
+          style={{ height: 'calc(100% - 43px)' }}
         >
           {messages.length === 0 && !isStreaming ? (
             <div className="h-full" />
