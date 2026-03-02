@@ -31,12 +31,15 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
     queryFn: listOrganizations,
   })
 
-  const { data: teams = [] } = useQuery({
+  const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: listTeams,
   })
 
   const canDeleteOrg = (slug: string): { allowed: boolean; reason?: string } => {
+    if (teamsLoading) {
+      return { allowed: false, reason: 'Loading team data...' }
+    }
     if (organizations.length <= 1) {
       return { allowed: false, reason: 'Cannot delete the only organization' }
     }
@@ -223,81 +226,79 @@ export function OrganizationManagement({ isDarkMode }: OrganizationManagementPro
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredOrgs.map((org) => (
-            <div
-              key={org.slug}
-              onClick={() => {
-                setSelectedOrgSlug(org.slug)
-                setViewMode('detail')
-              }}
-              className={`p-6 rounded-lg border cursor-pointer transition-shadow hover:shadow-lg ${
-                isDarkMode
-                  ? 'bg-gray-800 border-gray-700 hover:border-blue-500'
-                  : 'bg-white border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-3">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                    isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
-                  }`}>
-                    {org.icon ? (
-                      <img src={org.icon} alt="" className="w-8 h-8 rounded object-cover" />
-                    ) : (
-                      <Building2 className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {org.name}
-                    </h3>
-                    {org.description && (
-                      <p className={`mt-1 text-sm line-clamp-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {org.description}
-                      </p>
-                    )}
-                    <code className={`inline-block mt-2 px-2 py-1 rounded text-xs ${
-                      isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+          {filteredOrgs.map((org) => {
+            const deleteCheck = canDeleteOrg(org.slug)
+            return (
+              <div
+                key={org.slug}
+                onClick={() => {
+                  setSelectedOrgSlug(org.slug)
+                  setViewMode('detail')
+                }}
+                className={`p-6 rounded-lg border cursor-pointer transition-shadow hover:shadow-lg ${
+                  isDarkMode
+                    ? 'bg-gray-800 border-gray-700 hover:border-blue-500'
+                    : 'bg-white border-gray-200 hover:border-blue-300'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                      isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
                     }`}>
-                      {org.slug}
-                    </code>
+                      {org.icon ? (
+                        <img src={org.icon} alt="" className="w-8 h-8 rounded object-cover" />
+                      ) : (
+                        <Building2 className={`w-6 h-6 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {org.name}
+                      </h3>
+                      {org.description && (
+                        <p className={`mt-1 text-sm line-clamp-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {org.description}
+                        </p>
+                      )}
+                      <code className={`inline-block mt-2 px-2 py-1 rounded text-xs ${
+                        isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {org.slug}
+                      </code>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedOrgSlug(org.slug)
-                    setViewMode('edit')
-                  }}
-                  className={isDarkMode ? 'border-gray-700 hover:bg-gray-700' : ''}
-                >
-                  <Edit2 className="w-3 h-3 mr-1" />
-                  Edit
-                </Button>
-                {(() => {
-                  const check = canDeleteOrg(org.slug)
-                  return (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDelete(org.slug)}
-                      disabled={!check.allowed || deleteMutation.isPending}
-                      title={check.reason}
-                      className={isDarkMode ? 'border-gray-700 hover:bg-gray-700 text-red-400' : 'text-red-600'}
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Delete
-                    </Button>
-                  )
-                })()}
+                {/* Actions */}
+                <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedOrgSlug(org.slug)
+                      setViewMode('edit')
+                    }}
+                    className={isDarkMode ? 'border-gray-700 hover:bg-gray-700' : ''}
+                  >
+                    <Edit2 className="w-3 h-3 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(org.slug)}
+                    disabled={!deleteCheck.allowed || deleteMutation.isPending}
+                    title={deleteCheck.reason}
+                    className={isDarkMode ? 'border-gray-700 hover:bg-gray-700 text-red-400' : 'text-red-600'}
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Delete
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

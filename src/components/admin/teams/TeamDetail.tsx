@@ -6,17 +6,13 @@ import { Input } from '../../ui/input'
 import { Gravatar } from '../../ui/gravatar'
 import { DynamicDetailFields } from '../../ui/dynamic-fields'
 import { getTeamMembers, addTeamMember, removeTeamMember, getTeamSchema } from '@/api/endpoints'
+import { TEAM_BASE_FIELDS_SET } from '@/lib/constants'
 import type { Team } from '@/types'
-
-const BASE_TEAM_FIELDS = new Set([
-  'name', 'slug', 'description', 'icon',
-  'organization', 'organization_slug', 'created_at', 'last_modified_at',
-])
 
 function extractDynamicFields(team: Team): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(team)) {
-    if (!BASE_TEAM_FIELDS.has(key)) {
+    if (!TEAM_BASE_FIELDS_SET.has(key)) {
       result[key] = value
     }
   }
