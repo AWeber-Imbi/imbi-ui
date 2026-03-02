@@ -31,5 +31,5 @@ export function slugify(value: string): string {
     .replace(/[^a-z0-9\s-_]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim()
+    .replace(/^-+|-+$/g, '')
 }

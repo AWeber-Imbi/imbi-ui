@@ -33,7 +33,7 @@ export function ProjectTypeDetail({ projectType, onEdit, onBack, isDarkMode }: P
           <div>
             <div className="flex items-center gap-3">
               {projectType.icon && (
-                <img src={projectType.icon ?? undefined} alt="" className="w-8 h-8 rounded object-cover" />
+                <img src={projectType.icon} alt="" className="w-8 h-8 rounded object-cover" />
               )}
               <h2 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {projectType.name}

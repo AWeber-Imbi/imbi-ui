@@ -261,7 +261,7 @@ export function ProjectTypeManagement({ isDarkMode }: ProjectTypeManagementProps
                         isDarkMode ? 'bg-purple-900/30' : 'bg-purple-50'
                       }`}>
                         {pt.icon ? (
-                          <img src={pt.icon ?? undefined} alt="" className="w-5 h-5 rounded object-cover" />
+                          <img src={pt.icon} alt="" className="w-5 h-5 rounded object-cover" />
                         ) : (
                           <Layers className={`w-4 h-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         )}

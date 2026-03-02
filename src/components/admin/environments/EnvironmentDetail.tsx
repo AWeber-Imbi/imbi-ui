@@ -33,7 +33,7 @@ export function EnvironmentDetail({ environment, onEdit, onBack, isDarkMode }: E
           <div>
             <div className="flex items-center gap-3">
               {environment.icon && (
-                <img src={environment.icon ?? undefined} alt="" className="w-8 h-8 rounded object-cover" />
+                <img src={environment.icon} alt="" className="w-8 h-8 rounded object-cover" />
               )}
               <h2 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                 {environment.name}

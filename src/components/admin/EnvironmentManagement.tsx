@@ -261,7 +261,7 @@ export function EnvironmentManagement({ isDarkMode }: EnvironmentManagementProps
                         isDarkMode ? 'bg-green-900/30' : 'bg-green-50'
                       }`}>
                         {env.icon ? (
-                          <img src={env.icon ?? undefined} alt="" className="w-5 h-5 rounded object-cover" />
+                          <img src={env.icon} alt="" className="w-5 h-5 rounded object-cover" />
                         ) : (
                           <Globe className={`w-4 h-4 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`} />
                         )}
