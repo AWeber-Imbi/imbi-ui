@@ -120,7 +120,6 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
           const conv = await createConversation()
           conversationId = conv.id
           setCurrentConversation(conv.id)
-          useAssistantStore.getState().addMessage(userMessage)
         } catch (err) {
           console.error(
             '[Assistant] Failed to create conversation:',
