@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { MessageSquare, Plus, Archive, Trash2 } from 'lucide-react'
 import {
   listConversations,
@@ -22,29 +26,45 @@ export function ConversationHistory({
   onNewConversation,
 }: ConversationHistoryProps) {
   const [showHistory, setShowHistory] = useState(false)
+  const queryClient = useQueryClient()
 
-  const { data: conversations = [], refetch } = useQuery({
+  const { data: conversations = [] } = useQuery({
     queryKey: ['assistant', 'conversations'],
     queryFn: () => listConversations({ limit: 20 }),
     enabled: showHistory,
   })
 
-  const handleDelete = async (
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteConversation(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['assistant', 'conversations'],
+      }),
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) =>
+      updateConversation(id, { is_archived: true }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['assistant', 'conversations'],
+      }),
+  })
+
+  const handleDelete = (
     e: React.MouseEvent,
     id: string,
   ) => {
     e.stopPropagation()
-    await deleteConversation(id)
-    refetch()
+    deleteMutation.mutate(id)
   }
 
-  const handleArchive = async (
+  const handleArchive = (
     e: React.MouseEvent,
     id: string,
   ) => {
     e.stopPropagation()
-    await updateConversation(id, { is_archived: true })
-    refetch()
+    archiveMutation.mutate(id)
   }
 
   if (!showHistory) {
@@ -89,9 +109,18 @@ export function ConversationHistory({
         {conversations.map((conv: Conversation) => (
           <div
             key={conv.id}
+            role="button"
+            tabIndex={0}
             onClick={() => {
               onSelectConversation(conv.id)
               setShowHistory(false)
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onSelectConversation(conv.id)
+                setShowHistory(false)
+              }
             }}
             className={`flex items-center justify-between px-3 py-2 rounded text-sm cursor-pointer ${
               conv.id === currentConversationId
@@ -109,6 +138,7 @@ export function ConversationHistory({
             <div className="flex items-center gap-1 ml-2">
               <button
                 onClick={(e) => handleArchive(e, conv.id)}
+                aria-label={`Archive ${conv.title ?? 'conversation'}`}
                 className={`p-1 rounded ${
                   isDarkMode
                     ? 'hover:bg-gray-600'
@@ -119,6 +149,7 @@ export function ConversationHistory({
               </button>
               <button
                 onClick={(e) => handleDelete(e, conv.id)}
+                aria-label={`Delete ${conv.title ?? 'conversation'}`}
                 className={`p-1 rounded ${
                   isDarkMode
                     ? 'hover:bg-gray-600 text-red-400'

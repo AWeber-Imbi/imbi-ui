@@ -52,6 +52,7 @@ export const useAssistantStore = create<AssistantStore>()(
       set({
         currentConversationId: id,
         messages: [],
+        isStreaming: false,
         streamingContent: '',
         activeToolUse: null,
         pendingToolUses: [],
@@ -86,6 +87,20 @@ export const useAssistantStore = create<AssistantStore>()(
 
     finishStreaming: (messageId) => {
       const state = get()
+      const hasOutput =
+        state.streamingContent.trim().length > 0 ||
+        state.pendingToolUses.length > 0
+
+      if (!hasOutput) {
+        set({
+          isStreaming: false,
+          streamingContent: '',
+          activeToolUse: null,
+          pendingToolUses: [],
+        })
+        return
+      }
+
       const assistantMessage: AssistantMessage = {
         id: messageId,
         role: 'assistant',

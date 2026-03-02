@@ -109,15 +109,6 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
         setExpanded(true)
       }
 
-      // Add user message optimistically
-      const userMessage = {
-        id: Date.now().toString(),
-        role: 'user' as const,
-        content: userText,
-        timestamp: new Date(),
-      }
-      addMessage(userMessage)
-
       // Create conversation if none active
       let conversationId = currentConversationId
       if (!conversationId) {
@@ -140,6 +131,16 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
           return
         }
       }
+
+      // Add user message optimistically after conversation
+      // context is set (setCurrentConversation clears messages)
+      const userMessage = {
+        id: Date.now().toString(),
+        role: 'user' as const,
+        content: userText,
+        timestamp: new Date(),
+      }
+      addMessage(userMessage)
 
       // Start streaming
       startStreaming()
@@ -179,12 +180,12 @@ export function CommandBar({ isDarkMode }: CommandBarProps) {
               finishStreaming(messageId)
             },
             onError: (message) => {
-              useAssistantStore
-                .getState()
-                .finishStreaming(Date.now().toString())
-              if (
-                !useAssistantStore.getState().streamingContent
-              ) {
+              const {
+                streamingContent: previousContent,
+                finishStreaming: finish,
+              } = useAssistantStore.getState()
+              finish(Date.now().toString())
+              if (!previousContent) {
                 addMessage({
                   id: (Date.now() + 1).toString(),
                   role: 'assistant',

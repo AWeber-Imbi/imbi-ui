@@ -71,6 +71,10 @@ export async function sendMessageSSE(
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.location.assign('/login')
+      return
+    }
     const errorText = await response.text()
     handlers.onError?.(errorText || `HTTP ${response.status}`)
     return
@@ -91,49 +95,51 @@ export async function sendMessageSSE(
       if (done) break
 
       buffer += decoder.decode(value, { stream: true })
-      const lines = buffer.split('\n')
-      buffer = lines.pop() ?? ''
+      const chunks = buffer.split('\n\n')
+      buffer = chunks.pop() ?? ''
 
-      let currentEvent = ''
-      for (const line of lines) {
-        if (line.startsWith('event: ')) {
-          currentEvent = line.slice(7).trim()
-        } else if (line.startsWith('data: ')) {
-          const data = line.slice(6)
-          try {
-            const parsed = JSON.parse(data)
-            switch (currentEvent) {
-              case 'text':
-                handlers.onText?.(parsed.text)
-                break
-              case 'tool_use_start':
-                handlers.onToolUseStart?.(
-                  parsed.id,
-                  parsed.name,
-                )
-                break
-              case 'tool_input':
-                handlers.onToolInput?.(parsed.partial_json)
-                break
-              case 'content_block_stop':
-                handlers.onContentBlockStop?.()
-                break
-              case 'done':
-                handlers.onDone?.(
-                  parsed.message_id,
-                  parsed.usage,
-                )
-                break
-              case 'error':
-                handlers.onError?.(parsed.message)
-                break
-            }
-          } catch {
-            // Skip unparseable data lines
+      for (const chunk of chunks) {
+        const lines = chunk.split('\n')
+        const eventLine = lines.find((l) =>
+          l.startsWith('event: '),
+        )
+        const currentEvent =
+          eventLine?.slice(7).trim() ?? ''
+        const data = lines
+          .filter((l) => l.startsWith('data: '))
+          .map((l) => l.slice(6))
+          .join('\n')
+        if (!data) continue
+        try {
+          const parsed = JSON.parse(data)
+          switch (currentEvent) {
+            case 'text':
+              handlers.onText?.(parsed.text)
+              break
+            case 'tool_use_start':
+              handlers.onToolUseStart?.(
+                parsed.id,
+                parsed.name,
+              )
+              break
+            case 'tool_input':
+              handlers.onToolInput?.(parsed.partial_json)
+              break
+            case 'content_block_stop':
+              handlers.onContentBlockStop?.()
+              break
+            case 'done':
+              handlers.onDone?.(
+                parsed.message_id,
+                parsed.usage,
+              )
+              break
+            case 'error':
+              handlers.onError?.(parsed.message)
+              break
           }
-          currentEvent = ''
-        } else if (line.trim() === '') {
-          currentEvent = ''
+        } catch {
+          // Skip unparseable event payload
         }
       }
     }
