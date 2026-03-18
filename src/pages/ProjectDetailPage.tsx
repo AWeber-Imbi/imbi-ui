@@ -63,7 +63,7 @@ export function ProjectDetailPage() {
           {project && (
             <ProjectDetail
               project={project}
-              onBack={() => navigate('/projects')}
+              onBack={() => navigate(-1)}
               isDarkMode={isDarkMode}
             />
           )}
