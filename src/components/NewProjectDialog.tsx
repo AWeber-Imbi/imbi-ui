@@ -68,7 +68,7 @@ export function NewProjectDialog({ isOpen, onClose, onProjectCreated }: NewProje
   })
 
   const createMutation = useMutation({
-    mutationFn: (data: ProjectCreate) => createProject(orgSlug, data),
+    mutationFn: (data: ProjectCreate) => createProject(orgSlug, projectTypeSlug, data),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ['projects', orgSlug] })
       onProjectCreated?.(created.slug)
@@ -109,7 +109,6 @@ export function NewProjectDialog({ isOpen, onClose, onProjectCreated }: NewProje
       slug,
       description: description || null,
       team_slug: teamSlug,
-      project_type_slug: projectTypeSlug,
       environment_slugs: selectedEnvSlugs.length > 0 ? selectedEnvSlugs : undefined,
       links: Object.keys(links).length > 0 ? links : undefined,
     }

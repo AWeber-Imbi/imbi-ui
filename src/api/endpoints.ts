@@ -90,9 +90,9 @@ export const getProject = (orgSlug: string, projectTypeSlug: string, slug: strin
     `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectTypeSlug)}/${encodeURIComponent(slug)}`
   )
 
-export const createProject = (orgSlug: string, project: ProjectCreate) =>
+export const createProject = (orgSlug: string, projectTypeSlug: string, project: ProjectCreate) =>
   apiClient.post<Project>(
-    `/organizations/${encodeURIComponent(orgSlug)}/projects/`,
+    `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectTypeSlug)}`,
     project
   )
 
