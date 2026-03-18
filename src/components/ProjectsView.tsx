@@ -20,7 +20,11 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
 
-  const viewMode = (searchParams.get('view') as 'grid' | 'list' | 'graph') || 'grid'
+  const rawView = searchParams.get('view')
+  const viewMode: 'grid' | 'list' | 'graph' =
+    rawView === 'grid' || rawView === 'list' || rawView === 'graph'
+      ? rawView
+      : 'grid'
   const searchQuery = searchParams.get('q') ?? ''
 
   const setViewMode = (v: 'grid' | 'list' | 'graph') =>
@@ -145,6 +149,7 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
                 size="sm"
                 onClick={() => setViewMode('grid')}
                 className="rounded-r-none"
+                aria-label="Grid view"
               >
                 <Grid3x3 className="w-4 h-4" />
               </Button>
@@ -153,6 +158,7 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
                 size="sm"
                 onClick={() => setViewMode('list')}
                 className="rounded-none"
+                aria-label="List view"
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -161,6 +167,7 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
                 size="sm"
                 onClick={() => setViewMode('graph')}
                 className="rounded-l-none"
+                aria-label="Graph view"
               >
                 <Network className="w-4 h-4" />
               </Button>

@@ -82,8 +82,10 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
   // Stable key that forces GraphCanvas to remount when layout or node set changes.
   // reagraph's internal graphology instance doesn't sync prop removals, so we
   // must remount to reflect any change in which nodes are visible.
+  // Uses composite "typeSlug/slug" keys so two projects with the same slug
+  // but different project types produce distinct hashes.
   const graphKey = useMemo(() => {
-    const ids = projects.map(p => p.slug).sort().join('|')
+    const ids = projects.map(p => `${p.project_type.slug}/${p.slug}`).sort().join('|')
     let h = 5381
     for (let i = 0; i < ids.length; i++) h = (((h << 5) + h) ^ ids.charCodeAt(i)) >>> 0
     return `${layout}-${h}`
@@ -151,11 +153,15 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
     [projects]
   )
 
-  // Map raw slug → composite node ID for edge resolution.
-  // Last write wins when slugs collide across project types.
-  const slugToNodeId = useMemo(() => {
+  // Map composite "typeSlug/slug" → node ID for edge resolution.
+  // Using the composite key avoids last-write-wins collisions when two
+  // projects share the same slug but belong to different project types.
+  const compositeToNodeId = useMemo(() => {
     const map = new Map<string, string>()
-    projects.forEach(p => map.set(p.slug, `${p.project_type.slug}/${p.slug}`))
+    projects.forEach(p => {
+      const composite = `${p.project_type.slug}/${p.slug}`
+      map.set(composite, composite)
+    })
     return map
   }, [projects])
 
@@ -166,8 +172,11 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
       return [...new Set(p.dependency_uris ?? [])].flatMap(uri => {
         // URI format: /organizations/<org>/projects/<typeSlug>/<slug>
         const parts = uri.split('/')
+        // Extract the last two path segments as the composite key
+        const depTypeSlug = parts[parts.length - 2]
         const depSlug = parts[parts.length - 1]
-        const targetId = slugToNodeId.get(depSlug)
+        const composite = `${depTypeSlug}/${depSlug}`
+        const targetId = compositeToNodeId.get(composite)
         if (!targetId) return []
         const edgeId = `${sourceId}->${targetId}`
         if (seen.has(edgeId)) return []
@@ -175,7 +184,7 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
         return [{ id: edgeId, source: sourceId, target: targetId, label: 'depends on' }]
       })
     })
-  }, [projects, slugToNodeId])
+  }, [projects, compositeToNodeId])
 
   const { selections, actives, onNodeClick, onCanvasClick } = useSelection({
     ref,
