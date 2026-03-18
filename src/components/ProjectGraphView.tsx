@@ -186,7 +186,7 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
     })
   }, [projects, compositeToNodeId])
 
-  const { selections, actives, onNodeClick, onCanvasClick } = useSelection({
+  const { selections, actives, onNodeClick: selectNode, onCanvasClick } = useSelection({
     ref,
     nodes,
     edges,
@@ -194,6 +194,11 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
     pathSelectionType: 'all',
     focusOnSelect: false,
   })
+
+  const handleNodeClick = useCallback(
+    (node: InternalGraphNode) => selectNode?.(node),
+    [selectNode]
+  )
 
   const handleNodeDoubleClick = useCallback(
     (node: InternalGraphNode) => {
@@ -241,10 +246,10 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
           </DropdownMenu>
 
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" title="Zoom in" onClick={() => ref.current?.zoomIn()} className={btnClass}>
+            <Button variant="outline" size="sm" title="Zoom in" aria-label="Zoom in" onClick={() => ref.current?.zoomIn()} className={btnClass}>
               <ZoomIn className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="sm" title="Zoom out" onClick={() => ref.current?.zoomOut()} className={btnClass}>
+            <Button variant="outline" size="sm" title="Zoom out" aria-label="Zoom out" onClick={() => ref.current?.zoomOut()} className={btnClass}>
               <ZoomOut className="w-4 h-4" />
             </Button>
             <Button
@@ -257,10 +262,10 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
             >
               {currentZoom}%
             </Button>
-            <Button variant="outline" size="sm" title="Fit to view" onClick={() => ref.current?.fitNodesInView()} className={btnClass}>
+            <Button variant="outline" size="sm" title="Fit to view" aria-label="Fit to view" onClick={() => ref.current?.fitNodesInView()} className={btnClass}>
               <Maximize2 className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="sm" title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} onClick={toggleFullscreen} className={btnClass}>
+            <Button variant="outline" size="sm" title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'} onClick={toggleFullscreen} className={btnClass}>
               {isFullscreen ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
             </Button>
           </div>
@@ -306,8 +311,7 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
               actives={actives}
               draggable
               cameraMode="pan"
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onNodeClick={onNodeClick as any}
+              onNodeClick={handleNodeClick}
               onCanvasClick={onCanvasClick}
               onNodeDoubleClick={handleNodeDoubleClick}
             />
