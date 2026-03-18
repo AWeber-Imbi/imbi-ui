@@ -313,7 +313,7 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
       <NewProjectDialog
         isOpen={newProjectDialogOpen}
         onClose={() => setNewProjectDialogOpen(false)}
-        onProjectCreated={(slug) => navigate(`/projects/${slug}`)}
+        onProjectCreated={(typeSlug, slug) => navigate(`/projects/${typeSlug}/${slug}`)}
       />
     </div>
   )
