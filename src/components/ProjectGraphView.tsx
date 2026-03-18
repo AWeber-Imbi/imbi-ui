@@ -163,7 +163,10 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
     const seen = new Set<string>()
     return projects.flatMap(p => {
       const sourceId = `${p.project_type.slug}/${p.slug}`
-      return [...new Set(p.dependency_slugs ?? [])].flatMap(depSlug => {
+      return [...new Set(p.dependency_uris ?? [])].flatMap(uri => {
+        // URI format: /organizations/<org>/projects/<typeSlug>/<slug>
+        const parts = uri.split('/')
+        const depSlug = parts[parts.length - 1]
         const targetId = slugToNodeId.get(depSlug)
         if (!targetId) return []
         const edgeId = `${sourceId}->${targetId}`
@@ -184,7 +187,10 @@ export function ProjectGraphView({ projects, isDarkMode }: ProjectGraphViewProps
   })
 
   const handleNodeDoubleClick = useCallback(
-    (node: InternalGraphNode) => navigate(`/projects/${(node.data as Project).slug}`),
+    (node: InternalGraphNode) => {
+      const p = node.data as Project
+      navigate(`/projects/${p.project_type.slug}/${p.slug}`)
+    },
     [navigate]
   )
 

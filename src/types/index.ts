@@ -61,7 +61,7 @@ export interface Project {
     environments?: RelationshipLink
     dependencies?: RelationshipLink
   }
-  dependency_slugs?: string[]
+  dependency_uris?: string[]
   [key: string]: unknown
 }
 

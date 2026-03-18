@@ -76,8 +76,8 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
     return 70 + Math.abs(hash % 30)
   }
 
-  const handleProjectSelect = (slug: string) => {
-    navigate(`/projects/${slug}`)
+  const handleProjectSelect = (typeSlug: string, slug: string) => {
+    navigate(`/projects/${typeSlug}/${slug}`)
   }
 
   const filteredProjects = useMemo(() => {
@@ -182,7 +182,7 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
                 className={`p-5 hover:shadow-md transition-shadow cursor-pointer ${
                   isDarkMode ? 'bg-gray-800 border-gray-700' : ''
                 }`}
-                onClick={() => handleProjectSelect(project.slug)}
+                onClick={() => handleProjectSelect(project.project_type.slug, project.slug)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ export function ProjectsView({ isDarkMode }: ProjectsViewProps) {
                       className={`transition-colors cursor-pointer ${
                         isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-slate-50'
                       }`}
-                      onClick={() => handleProjectSelect(project.slug)}
+                      onClick={() => handleProjectSelect(project.project_type.slug, project.slug)}
                     >
                       <td className={`px-6 py-4 font-medium ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                         {project.name}
