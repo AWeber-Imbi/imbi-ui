@@ -169,6 +169,17 @@ export function getIconUrl(iconName: string | null | undefined): string | null {
 }
 
 function computeIconUrl(iconName: string): string | null {
+  // Uploaded files: /uploads/{id} → resolve via API base URL
+  if (iconName.startsWith('/uploads/')) {
+    const baseUrl = import.meta.env.VITE_API_URL || '/api'
+    return `${baseUrl}${iconName}`
+  }
+
+  // Absolute URLs: already a full image URL
+  if (iconName.startsWith('http://') || iconName.startsWith('https://')) {
+    return iconName
+  }
+
   // AWS icons: direct URL from pre-built index
   if (iconName.startsWith('aws-')) {
     return resolveAwsUrl(iconName)
