@@ -220,8 +220,8 @@ function computeIconUrl(iconName: string, color?: string): string | null {
   try {
     const markup = renderToStaticMarkup(
       createElement(Component, {
-        width: 32,
-        height: 32,
+        width: 128,
+        height: 128,
         ...(color ? { color } : {}),
       }),
     )
