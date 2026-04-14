@@ -56,6 +56,7 @@ export function EditRelationshipsDialog({
     if (isOpen && !hasInitialized) {
       setSelected(new Set(existingIds))
       setSearch('')
+      mutation.reset()
       setHasInitialized(true)
     }
     if (!isOpen) {
