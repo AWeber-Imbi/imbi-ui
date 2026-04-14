@@ -20,7 +20,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from '@/components/ui/tooltip'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -194,6 +194,13 @@ export function ProjectDetail({
         : `/projects/${project.id}/${value}`
     navigate(path, { replace: true })
   }
+
+  // Redirect to clean URL when the tab slug is invalid
+  useEffect(() => {
+    if (initialTab && !VALID_TAB_SET.has(initialTab)) {
+      navigate(`/projects/${project.id}`, { replace: true })
+    }
+  }, [initialTab, navigate, project.id])
 
   // Mock data for aspects not yet available from the API
   const healthScore = 66
@@ -912,9 +919,9 @@ function RelationshipsTab({
         </Card>
       ) : (
         <div
-          className="grid grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]"
+          className="grid min-h-[24rem] grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]"
           style={{
-            height: 'calc(100vh - 340px - var(--assistant-height, 64px))',
+            height: 'calc(100vh - 22rem - var(--assistant-height, 4rem))',
           }}
         >
           <RelationshipsSidebar
@@ -993,6 +1000,8 @@ function RelationshipsSidebar({
           {(['all', 'uses', 'used-by'] as const).map((f) => (
             <button
               key={f}
+              type="button"
+              aria-pressed={filter === f}
               onClick={() => onFilterChange(f)}
               className={`${chipBase} ${filter === f ? chipSelected : chipUnselected}`}
             >

@@ -128,6 +128,12 @@ export function getIcon(
     return fallback
   }
 
+  // Lucide Icons: lucide-external-link → ExternalLink
+  if (iconName.startsWith('lucide-')) {
+    const name = toPascalCase(iconName.slice(7)) as keyof typeof lucideIcons
+    return (lucideIcons[name] as IconComponent) || fallback
+  }
+
   // AWS Icons: aws-lambda, aws-systems-manager-parameter-store
   if (iconName.startsWith('aws-')) {
     const url = resolveAwsUrl(iconName)

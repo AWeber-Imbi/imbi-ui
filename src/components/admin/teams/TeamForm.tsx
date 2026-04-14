@@ -317,10 +317,14 @@ export function TeamForm({
                   <p
                     className={`mb-1.5 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}
                   >
-                    Pick from Simple Icons
+                    Pick an icon
                   </p>
                   <IconPicker
-                    value={icon.startsWith('si-') ? icon : ''}
+                    value={
+                      icon.startsWith('si-') || icon.startsWith('lucide-')
+                        ? icon
+                        : ''
+                    }
                     onChange={handleIconChange}
                     isDarkMode={isDarkMode}
                   />
@@ -332,7 +336,11 @@ export function TeamForm({
                     Or upload a custom image
                   </p>
                   <IconUpload
-                    value={icon.startsWith('si-') ? '' : icon}
+                    value={
+                      icon.startsWith('si-') || icon.startsWith('lucide-')
+                        ? ''
+                        : icon
+                    }
                     onChange={handleIconChange}
                     isDarkMode={isDarkMode}
                   />

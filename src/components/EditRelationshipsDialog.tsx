@@ -72,7 +72,11 @@ export function EditRelationshipsDialog({
     }
   }, [isOpen])
 
-  const { data: allProjects = [], isLoading } = useQuery({
+  const {
+    data: allProjects = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['projects', orgSlug],
     queryFn: () => getProjects(orgSlug),
     enabled: !!orgSlug && isOpen,
@@ -148,7 +152,7 @@ export function EditRelationshipsDialog({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <Input
             ref={searchRef}
             type="text"
@@ -165,8 +169,12 @@ export function EditRelationshipsDialog({
             <div className="flex items-center justify-center py-12">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent opacity-50" />
             </div>
+          ) : isError ? (
+            <p className="py-8 text-center text-sm text-red-600 dark:text-red-400">
+              Failed to load projects. Please try again.
+            </p>
           ) : filtered.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">
+            <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
               {search
                 ? 'No projects match your search'
                 : 'No projects available'}
@@ -183,19 +191,19 @@ export function EditRelationshipsDialog({
               return (
                 <label
                   key={p.id}
-                  className={`flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 ${
-                    isChanged ? 'bg-amber-50' : ''
+                  className={`flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                    isChanged ? 'bg-amber-50 dark:bg-amber-900/30' : ''
                   }`}
                 >
                   <Checkbox
                     checked={isChecked}
                     onCheckedChange={() => toggle(p.id)}
                   />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900">
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                     {p.name}
                   </span>
                   {typeLabel && (
-                    <span className="flex-shrink-0 text-xs text-slate-400">
+                    <span className="flex-shrink-0 text-xs text-slate-400 dark:text-slate-500">
                       {typeLabel}
                     </span>
                   )}
@@ -207,15 +215,17 @@ export function EditRelationshipsDialog({
 
         {/* Summary + actions */}
         <DialogFooter className="items-center gap-2 sm:justify-between">
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-slate-500 dark:text-slate-400">
             {changeCount > 0 ? (
               <>
                 {added.length > 0 && (
-                  <span className="text-green-600">+{added.length} added</span>
+                  <span className="text-green-600 dark:text-green-400">
+                    +{added.length} added
+                  </span>
                 )}
                 {added.length > 0 && removed.length > 0 && ', '}
                 {removed.length > 0 && (
-                  <span className="text-red-600">
+                  <span className="text-red-600 dark:text-red-400">
                     -{removed.length} removed
                   </span>
                 )}

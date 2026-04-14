@@ -37,7 +37,7 @@ const LUCIDE_ICONS: IconEntry[] = Object.keys(lucideIcons)
   .map((k) => {
     // ExternalLink → external-link
     const kebab = k.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
-    return { label: k, value: kebab }
+    return { label: k, value: `lucide-${kebab}` }
   })
   .sort((a, b) => a.label.localeCompare(b.label))
 
