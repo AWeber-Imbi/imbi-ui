@@ -73,9 +73,9 @@ function resolveAwsUrl(iconName: string): string | null {
 
 const iconUrlCache = new Map<string, string | null>()
 
-/** Create a React component that renders an <img> for an AWS SVG icon URL. */
-function createAwsImgComponent(url: string): IconComponent {
-  const AwsIcon: IconComponent = (props) => {
+/** Create a React component that renders an <img> for a given URL. */
+function createImgComponent(url: string): IconComponent {
+  const ImgIcon: IconComponent = (props) => {
     const { className, width, height, ...rest } = props as Record<
       string,
       unknown
@@ -89,7 +89,7 @@ function createAwsImgComponent(url: string): IconComponent {
       ...rest,
     })
   }
-  return AwsIcon
+  return ImgIcon
 }
 
 const siLookup = simpleIcons as Record<string, unknown>
@@ -137,8 +137,17 @@ export function getIcon(
   // AWS Icons: aws-lambda, aws-systems-manager-parameter-store
   if (iconName.startsWith('aws-')) {
     const url = resolveAwsUrl(iconName)
-    if (url) return createAwsImgComponent(url)
+    if (url) return createImgComponent(url)
     return fallback
+  }
+
+  // Uploaded files or absolute URLs → render as <img>
+  if (
+    iconName.startsWith('/uploads/') ||
+    iconName.startsWith('http://') ||
+    iconName.startsWith('https://')
+  ) {
+    return createImgComponent(iconName)
   }
 
   // Lucide: external-link → ExternalLink
