@@ -179,28 +179,16 @@ export function ProjectsGraphCanvas({
     }
   }, [])
 
-  // Build a map of node ID → edge color for icon tinting
-  const nodeEdgeColor = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const e of edges) {
-      if (!map.has(e.source)) map.set(e.source, e.fill ?? '')
-      if (!map.has(e.target)) map.set(e.target, e.fill ?? '')
-    }
-    return map
-  }, [edges])
-
   const nodes = useMemo(
     () =>
       projects.map((p) => {
-        const isCenter = centerId && p.id === centerId
-        const iconColor = isCenter
-          ? '#f59e0b'
-          : nodeEdgeColor.get(p.id) || undefined
-        const iconUrl = getIconUrl(
-          (p.project_types || [])[0]?.icon ?? null,
-          iconColor,
-        )
-        const fill = isCenter ? '#f59e0b' : isDarkMode ? '#94a3b8' : '#64748b'
+        const iconUrl = getIconUrl((p.project_types || [])[0]?.icon ?? null)
+        const fill =
+          centerId && p.id === centerId
+            ? '#f59e0b'
+            : isDarkMode
+              ? '#94a3b8'
+              : '#64748b'
         return {
           id: p.id,
           label: p.name,
@@ -209,7 +197,7 @@ export function ProjectsGraphCanvas({
           data: p,
         }
       }),
-    [projects, centerId, isDarkMode, nodeEdgeColor],
+    [projects, centerId, isDarkMode],
   )
 
   const {
@@ -364,18 +352,10 @@ export function ProjectsGraphCanvas({
               />
               Uses
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5">
               <span
-                className="inline-block h-0.5 w-3 rounded-l"
+                className="inline-block h-0.5 w-4 rounded"
                 style={{ backgroundColor: EDGE_COLOR_DEPENDED_UPON }}
-              />
-              <span
-                className="inline-block"
-                style={{
-                  borderLeft: `5px solid ${EDGE_COLOR_DEPENDED_UPON}`,
-                  borderTop: '3px solid transparent',
-                  borderBottom: '3px solid transparent',
-                }}
               />
               Used by
             </span>

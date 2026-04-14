@@ -6,6 +6,7 @@ export interface GraphEdge {
   target: string
   label: string
   fill?: string
+  arrowPlacement?: 'none' | 'mid' | 'end'
 }
 
 /** Orange for "depends on" (outbound), blue for "depended upon" (inbound). */
@@ -33,6 +34,7 @@ export function buildRelationshipEdges(
       target,
       label: isOutbound ? 'depends on' : 'depended upon',
       fill: isOutbound ? EDGE_COLOR_DEPENDS_ON : EDGE_COLOR_DEPENDED_UPON,
+      arrowPlacement: isOutbound ? 'end' : 'none',
     }
   })
 }
