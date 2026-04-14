@@ -179,16 +179,28 @@ export function ProjectsGraphCanvas({
     }
   }, [])
 
+  // Map each node to its edge color for icon tinting
+  const nodeEdgeColor = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const e of edges) {
+      if (!map.has(e.source)) map.set(e.source, e.fill ?? '')
+      if (!map.has(e.target)) map.set(e.target, e.fill ?? '')
+    }
+    return map
+  }, [edges])
+
   const nodes = useMemo(
     () =>
       projects.map((p) => {
-        const iconUrl = getIconUrl((p.project_types || [])[0]?.icon ?? null)
-        const fill =
-          centerId && p.id === centerId
-            ? '#f59e0b'
-            : isDarkMode
-              ? '#94a3b8'
-              : '#64748b'
+        const isCenter = centerId && p.id === centerId
+        const iconColor = isCenter
+          ? '#f59e0b'
+          : nodeEdgeColor.get(p.id) || undefined
+        const iconUrl = getIconUrl(
+          (p.project_types || [])[0]?.icon ?? null,
+          iconColor,
+        )
+        const fill = isCenter ? '#f59e0b' : isDarkMode ? '#94a3b8' : '#64748b'
         return {
           id: p.id,
           label: p.name,
@@ -197,7 +209,7 @@ export function ProjectsGraphCanvas({
           data: p,
         }
       }),
-    [projects, centerId, isDarkMode],
+    [projects, centerId, isDarkMode, nodeEdgeColor],
   )
 
   const {
