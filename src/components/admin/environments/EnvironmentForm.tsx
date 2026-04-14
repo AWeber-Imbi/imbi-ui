@@ -357,7 +357,9 @@ export function EnvironmentForm({
                   </p>
                   <IconPicker
                     value={
-                      icon.startsWith('si-') || icon.startsWith('lucide-')
+                      icon.startsWith('si-') ||
+                      icon.startsWith('lucide-') ||
+                      icon.startsWith('aws-')
                         ? icon
                         : ''
                     }
@@ -373,7 +375,9 @@ export function EnvironmentForm({
                   </p>
                   <IconUpload
                     value={
-                      icon.startsWith('si-') || icon.startsWith('lucide-')
+                      icon.startsWith('si-') ||
+                      icon.startsWith('lucide-') ||
+                      icon.startsWith('aws-')
                         ? ''
                         : icon
                     }

@@ -3,7 +3,7 @@ import { Search, X, icons as lucideIcons } from 'lucide-react'
 import * as simpleIcons from '@icons-pack/react-simple-icons'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { getIcon } from '@/lib/icons'
+import { getIcon, AWS_ICONS } from '@/lib/icons'
 import type { ComponentType, SVGProps } from 'react'
 
 type IconComponent = ComponentType<
@@ -17,7 +17,7 @@ interface IconEntry {
   value: string
 }
 
-type IconSet = 'simple' | 'lucide'
+type IconSet = 'simple' | 'lucide' | 'aws'
 
 // Build the index once at module level
 const siLookup = simpleIcons as Record<string, unknown>
@@ -55,7 +55,12 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
   const [iconSet, setIconSet] = useState<IconSet>('simple')
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const icons = iconSet === 'simple' ? SI_ICONS : LUCIDE_ICONS
+  const icons =
+    iconSet === 'simple'
+      ? SI_ICONS
+      : iconSet === 'lucide'
+        ? LUCIDE_ICONS
+        : AWS_ICONS
 
   const filtered = useMemo(() => {
     if (!query.trim()) return icons.slice(0, MAX_RESULTS)
@@ -175,6 +180,7 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
                 [
                   ['simple', 'Simple Icons'],
                   ['lucide', 'Lucide'],
+                  ['aws', 'AWS'],
                 ] as const
               ).map(([key, label]) => (
                 <button

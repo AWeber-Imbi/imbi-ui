@@ -405,7 +405,9 @@ export function ThirdPartyServiceForm({
                   </p>
                   <IconPicker
                     value={
-                      icon.startsWith('si-') || icon.startsWith('lucide-')
+                      icon.startsWith('si-') ||
+                      icon.startsWith('lucide-') ||
+                      icon.startsWith('aws-')
                         ? icon
                         : ''
                     }
@@ -421,7 +423,9 @@ export function ThirdPartyServiceForm({
                   </p>
                   <IconUpload
                     value={
-                      icon.startsWith('si-') || icon.startsWith('lucide-')
+                      icon.startsWith('si-') ||
+                      icon.startsWith('lucide-') ||
+                      icon.startsWith('aws-')
                         ? ''
                         : icon
                     }
