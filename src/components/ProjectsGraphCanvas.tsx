@@ -364,10 +364,18 @@ export function ProjectsGraphCanvas({
               />
               Uses
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1">
               <span
-                className="inline-block h-0.5 w-4 rounded"
+                className="inline-block h-0.5 w-3 rounded-l"
                 style={{ backgroundColor: EDGE_COLOR_DEPENDED_UPON }}
+              />
+              <span
+                className="inline-block"
+                style={{
+                  borderLeft: `5px solid ${EDGE_COLOR_DEPENDED_UPON}`,
+                  borderTop: '3px solid transparent',
+                  borderBottom: '3px solid transparent',
+                }}
               />
               Used by
             </span>
