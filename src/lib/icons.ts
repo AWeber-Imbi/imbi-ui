@@ -74,6 +74,9 @@ export const AWS_ICONS: { label: string; value: string }[] = Object.entries(
   .map(([key, entry]) => ({ label: entry.label, value: key }))
   .sort((a, b) => a.label.localeCompare(b.label))
 
+/** Set of all AWS icon keys for fast membership checks. */
+const awsIconNames = new Set(Object.keys(awsIndex))
+
 function resolveAwsUrl(iconName: string): string | null {
   const key = iconName.toLowerCase()
   const direct = awsIndex[key]
@@ -147,8 +150,8 @@ export function getIcon(
     return (lucideIcons[name] as IconComponent) || fallback
   }
 
-  // AWS Icons: aws-lambda, aws-systems-manager-parameter-store
-  if (iconName.startsWith('aws-')) {
+  // AWS Icons: aws-lambda, amazon-s3, bottlerocket, etc.
+  if (awsIconNames.has(iconName)) {
     const url = resolveAwsUrl(iconName)
     if (url) return createImgComponent(url)
     return fallback
@@ -207,7 +210,7 @@ function computeIconUrl(iconName: string, color?: string): string | null {
   }
 
   // AWS icons: direct URL from pre-built index
-  if (iconName.startsWith('aws-')) {
+  if (awsIconNames.has(iconName)) {
     return resolveAwsUrl(iconName)
   }
 
