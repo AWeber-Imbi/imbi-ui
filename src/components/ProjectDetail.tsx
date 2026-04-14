@@ -4,7 +4,6 @@ import {
   TrendingDown,
   Settings as SettingsIcon,
   ArrowRight,
-  Plus,
   Rocket,
 } from 'lucide-react'
 import { getIcon } from '@/lib/icons'
@@ -46,15 +45,20 @@ interface ProjectDetailProps {
   initialTab?: string
 }
 
-type TabType =
-  | 'overview'
-  | 'configuration'
-  | 'components'
-  | 'relationships'
-  | 'logs'
-  | 'notes'
-  | 'operations-log'
-  | 'settings'
+const VALID_TABS = [
+  'overview',
+  'configuration',
+  'components',
+  'relationships',
+  'logs',
+  'notes',
+  'operations-log',
+  'settings',
+] as const
+
+type TabType = (typeof VALID_TABS)[number]
+
+const VALID_TAB_SET: Set<string> = new Set(VALID_TABS)
 
 const COLOR_TEXT: Record<string, string> = {
   green: 'text-green-600',
@@ -169,17 +173,6 @@ function resolveFieldValue(
   return undefined
 }
 
-const VALID_TABS: Set<string> = new Set([
-  'overview',
-  'configuration',
-  'components',
-  'relationships',
-  'logs',
-  'notes',
-  'operations-log',
-  'settings',
-])
-
 export function ProjectDetail({
   project,
   isDarkMode,
@@ -190,7 +183,7 @@ export function ProjectDetail({
   const navigate = useNavigate()
 
   const activeTab: TabType =
-    initialTab && VALID_TABS.has(initialTab)
+    initialTab && VALID_TAB_SET.has(initialTab)
       ? (initialTab as TabType)
       : 'overview'
 
@@ -850,30 +843,6 @@ function RelationshipsTab({
   }
 
   const rels = data?.relationships ?? []
-  if (rels.length === 0) {
-    return (
-      <>
-        <Card className={`${cardClass} flex items-center justify-between`}>
-          <p className={sub}>This project has no relationships.</p>
-          <Button
-            size="sm"
-            className="gap-1 border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
-            onClick={() => setEditDialogOpen(true)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add
-          </Button>
-        </Card>
-        <EditRelationshipsDialog
-          isOpen={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          projectId={projectId}
-          projectName={project.name}
-          relationships={rels}
-        />
-      </>
-    )
-  }
 
   const outbound = rels.filter((r) => r.direction === 'outbound')
   const inbound = rels.filter((r) => r.direction === 'inbound')
@@ -929,28 +898,43 @@ function RelationshipsTab({
   )
 
   return (
-    <div
-      className="grid grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]"
-      style={{
-        height: 'calc(100vh - 340px - var(--assistant-height, 64px))',
-      }}
-    >
-      <RelationshipsSidebar
-        outbound={outbound}
-        inbound={inbound}
-        outboundVisible={outboundVisible}
-        inboundVisible={inboundVisible}
-        filter={filter}
-        onFilterChange={setFilter}
-        onAdd={() => setEditDialogOpen(true)}
-        isDarkMode={isDarkMode}
-      />
-      <ProjectsGraphCanvas
-        projects={projects}
-        edges={edges}
-        isDarkMode={isDarkMode}
-        centerId={projectId}
-      />
+    <>
+      {rels.length === 0 ? (
+        <Card className={`${cardClass} flex items-center justify-between`}>
+          <p className={sub}>This project has no relationships.</p>
+          <Button
+            size="sm"
+            className="gap-1 border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
+            onClick={() => setEditDialogOpen(true)}
+          >
+            Edit
+          </Button>
+        </Card>
+      ) : (
+        <div
+          className="grid grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]"
+          style={{
+            height: 'calc(100vh - 340px - var(--assistant-height, 64px))',
+          }}
+        >
+          <RelationshipsSidebar
+            outbound={outbound}
+            inbound={inbound}
+            outboundVisible={outboundVisible}
+            inboundVisible={inboundVisible}
+            filter={filter}
+            onFilterChange={setFilter}
+            onAdd={() => setEditDialogOpen(true)}
+            isDarkMode={isDarkMode}
+          />
+          <ProjectsGraphCanvas
+            projects={projects}
+            edges={edges}
+            isDarkMode={isDarkMode}
+            centerId={projectId}
+          />
+        </div>
+      )}
       <EditRelationshipsDialog
         isOpen={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
@@ -958,7 +942,7 @@ function RelationshipsTab({
         projectName={project.name}
         relationships={rels}
       />
-    </div>
+    </>
   )
 }
 
@@ -1018,11 +1002,10 @@ function RelationshipsSidebar({
         </div>
         <Button
           size="sm"
-          className="gap-1 border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
+          className="border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
           onClick={onAdd}
         >
-          <Plus className="h-3.5 w-3.5" />
-          Add
+          Edit
         </Button>
       </div>
 

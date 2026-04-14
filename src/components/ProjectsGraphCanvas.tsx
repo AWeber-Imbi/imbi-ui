@@ -101,7 +101,8 @@ export function ProjectsGraphCanvas({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [layout, setLayoutState] = useState<LayoutTypes>(() => {
     const stored = localStorage.getItem('imbi-graph-layout')
-    return (stored as LayoutTypes) || 'forceDirected2d'
+    const valid = LAYOUT_OPTIONS.some((o) => o.value === stored)
+    return valid ? (stored as LayoutTypes) : 'forceDirected2d'
   })
   const setLayout = (v: LayoutTypes) => {
     localStorage.setItem('imbi-graph-layout', v)
