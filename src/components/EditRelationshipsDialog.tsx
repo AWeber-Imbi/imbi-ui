@@ -254,7 +254,7 @@ export function EditRelationshipsDialog({
         </DialogFooter>
 
         {mutation.isError && (
-          <p className="text-center text-sm text-red-600">
+          <p className="text-center text-sm text-red-600 dark:text-red-400">
             Failed to save. Please try again.
           </p>
         )}
