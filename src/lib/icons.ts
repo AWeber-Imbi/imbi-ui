@@ -167,17 +167,21 @@ export function getIcon(
  * caller can tint by setting the color on an enclosing element. Colors in
  * Simple Icons are baked in (they ship colored SVGs).
  */
-export function getIconUrl(iconName: string | null | undefined): string | null {
+export function getIconUrl(
+  iconName: string | null | undefined,
+  color?: string,
+): string | null {
   if (!iconName) return null
-  const cached = iconUrlCache.get(iconName)
+  const cacheKey = color ? `${iconName}@${color}` : iconName
+  const cached = iconUrlCache.get(cacheKey)
   if (cached !== undefined) return cached
 
-  const result = computeIconUrl(iconName)
-  iconUrlCache.set(iconName, result)
+  const result = computeIconUrl(iconName, color)
+  iconUrlCache.set(cacheKey, result)
   return result
 }
 
-function computeIconUrl(iconName: string): string | null {
+function computeIconUrl(iconName: string, color?: string): string | null {
   // Uploaded files: /uploads/{id} → resolve via API base URL
   if (iconName.startsWith('/uploads/')) {
     const baseUrl = import.meta.env.VITE_API_URL || '/api'
@@ -199,7 +203,11 @@ function computeIconUrl(iconName: string): string | null {
   if (!Component) return null
   try {
     const markup = renderToStaticMarkup(
-      createElement(Component, { width: 32, height: 32 }),
+      createElement(Component, {
+        width: 32,
+        height: 32,
+        ...(color ? { color } : {}),
+      }),
     )
     const encoded =
       typeof btoa === 'function'
