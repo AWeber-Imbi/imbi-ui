@@ -1009,11 +1009,7 @@ function RelationshipsSidebar({
             </button>
           ))}
         </div>
-        <Button
-          size="sm"
-          className="border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
-          onClick={onAdd}
-        >
+        <Button variant="ghost" size="sm" onClick={onAdd}>
           Edit
         </Button>
       </div>
