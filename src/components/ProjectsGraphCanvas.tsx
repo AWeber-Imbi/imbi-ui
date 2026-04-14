@@ -26,6 +26,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { getIconUrl } from '@/lib/icons'
+import {
+  EDGE_COLOR_DEPENDS_ON,
+  EDGE_COLOR_DEPENDED_UPON,
+} from '@/lib/relationship-edges'
 
 export interface GraphProject {
   id: string
@@ -95,7 +99,14 @@ export function ProjectsGraphCanvas({
   const navigate = useNavigate()
   const ref = useRef<GraphCanvasRef | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [layout, setLayout] = useState<LayoutTypes>('concentric2d')
+  const [layout, setLayoutState] = useState<LayoutTypes>(() => {
+    const stored = localStorage.getItem('imbi-graph-layout')
+    return (stored as LayoutTypes) || 'forceDirected2d'
+  })
+  const setLayout = (v: LayoutTypes) => {
+    localStorage.setItem('imbi-graph-layout', v)
+    setLayoutState(v)
+  }
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentZoom, setCurrentZoom] = useState(100)
   const [isRendering, setIsRendering] = useState(true)
@@ -226,11 +237,11 @@ export function ProjectsGraphCanvas({
   return (
     <div
       ref={containerRef}
-      className={isFullscreen ? 'flex h-screen flex-col' : ''}
+      className={isFullscreen ? 'flex h-screen flex-col' : 'h-full'}
     >
       <Card
         className={`flex flex-col overflow-hidden ${
-          isFullscreen ? 'h-full rounded-none border-0' : ''
+          isFullscreen ? 'h-full rounded-none border-0' : 'h-full'
         } ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
       >
         {/* Toolbar */}
@@ -322,25 +333,33 @@ export function ProjectsGraphCanvas({
             </Button>
           </div>
 
-          <span
-            className={`ml-auto text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+          <div
+            className={`ml-auto flex items-center gap-4 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
           >
-            {nodes.length} projects · {edges.length} relationships ·
-            Double-click to open
-          </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-0.5 w-4 rounded"
+                style={{ backgroundColor: EDGE_COLOR_DEPENDS_ON }}
+              />
+              Uses
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block h-0.5 w-4 rounded"
+                style={{ backgroundColor: EDGE_COLOR_DEPENDED_UPON }}
+              />
+              Used by
+            </span>
+            <span>
+              {nodes.length} projects · {edges.length} relationships ·
+              Double-click to open
+            </span>
+          </div>
         </div>
 
         {/* Canvas */}
         <div
-          className={`relative ${isFullscreen ? 'flex-1' : 'min-h-[400px]'}`}
-          style={
-            isFullscreen
-              ? undefined
-              : {
-                  height:
-                    'calc(100vh - 250px - var(--assistant-height, 64px) - 16px)',
-                }
-          }
+          className={`relative ${isFullscreen ? 'flex-1' : 'min-h-[400px] flex-1'}`}
         >
           {isRendering && nodes.length > 0 && (
             <div
@@ -373,7 +392,7 @@ export function ProjectsGraphCanvas({
               layoutType={layout}
               theme={isDarkMode ? darkTheme : lightTheme}
               labelType="nodes"
-              edgeArrowPosition="end"
+              edgeArrowPosition="none"
               selections={selections}
               actives={actives}
               draggable

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useMemo, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import {
@@ -37,11 +37,13 @@ import {
   ProjectsGraphCanvas,
   type GraphProject,
 } from '@/components/ProjectsGraphCanvas'
+import { EditRelationshipsDialog } from '@/components/EditRelationshipsDialog'
 import type { Project, ProjectRelationship } from '@/types'
 
 interface ProjectDetailProps {
   project: Project
   isDarkMode: boolean
+  initialTab?: string
 }
 
 type TabType =
@@ -167,9 +169,38 @@ function resolveFieldValue(
   return undefined
 }
 
-export function ProjectDetail({ project, isDarkMode }: ProjectDetailProps) {
+const VALID_TABS: Set<string> = new Set([
+  'overview',
+  'configuration',
+  'components',
+  'relationships',
+  'logs',
+  'notes',
+  'operations-log',
+  'settings',
+])
+
+export function ProjectDetail({
+  project,
+  isDarkMode,
+  initialTab,
+}: ProjectDetailProps) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
+  const navigate = useNavigate()
+
+  const activeTab: TabType =
+    initialTab && VALID_TABS.has(initialTab)
+      ? (initialTab as TabType)
+      : 'overview'
+
+  const handleTabChange = (value: string) => {
+    const path =
+      value === 'overview'
+        ? `/projects/${project.id}`
+        : `/projects/${project.id}/${value}`
+    navigate(path, { replace: true })
+  }
 
   // Mock data for aspects not yet available from the API
   const healthScore = 66
@@ -436,7 +467,7 @@ export function ProjectDetail({ project, isDarkMode }: ProjectDetailProps) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-6">
           {tabs.map((tab) => (
             <TabsTrigger
@@ -798,6 +829,7 @@ function RelationshipsTab({
     queryFn: () => getProjectRelationships(orgSlug, projectId),
   })
   const [filter, setFilter] = useState<RelFilter>('all')
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
   const cardClass = `p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`
   const sub = isDarkMode ? 'text-gray-400' : 'text-slate-500'
@@ -820,9 +852,26 @@ function RelationshipsTab({
   const rels = data?.relationships ?? []
   if (rels.length === 0) {
     return (
-      <Card className={cardClass}>
-        <p className={sub}>This project has no relationships.</p>
-      </Card>
+      <>
+        <Card className={`${cardClass} flex items-center justify-between`}>
+          <p className={sub}>This project has no relationships.</p>
+          <Button
+            size="sm"
+            className="gap-1 border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
+            onClick={() => setEditDialogOpen(true)}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add
+          </Button>
+        </Card>
+        <EditRelationshipsDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          projectId={projectId}
+          projectName={project.name}
+          relationships={rels}
+        />
+      </>
     )
   }
 
@@ -880,7 +929,12 @@ function RelationshipsTab({
   )
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
+    <div
+      className="grid grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]"
+      style={{
+        height: 'calc(100vh - 340px - var(--assistant-height, 64px))',
+      }}
+    >
       <RelationshipsSidebar
         outbound={outbound}
         inbound={inbound}
@@ -888,6 +942,7 @@ function RelationshipsTab({
         inboundVisible={inboundVisible}
         filter={filter}
         onFilterChange={setFilter}
+        onAdd={() => setEditDialogOpen(true)}
         isDarkMode={isDarkMode}
       />
       <ProjectsGraphCanvas
@@ -895,6 +950,13 @@ function RelationshipsTab({
         edges={edges}
         isDarkMode={isDarkMode}
         centerId={projectId}
+      />
+      <EditRelationshipsDialog
+        isOpen={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        projectId={projectId}
+        projectName={project.name}
+        relationships={rels}
       />
     </div>
   )
@@ -911,6 +973,7 @@ interface RelationshipsSidebarProps {
   inboundVisible: boolean
   filter: RelFilter
   onFilterChange: (f: RelFilter) => void
+  onAdd: () => void
   isDarkMode: boolean
 }
 
@@ -921,6 +984,7 @@ function RelationshipsSidebar({
   inboundVisible,
   filter,
   onFilterChange,
+  onAdd,
   isDarkMode,
 }: RelationshipsSidebarProps) {
   const sectionLabel = isDarkMode ? 'text-gray-500' : 'text-slate-400'
@@ -934,29 +998,32 @@ function RelationshipsSidebar({
     : 'border border-slate-300 text-slate-600 hover:border-slate-400'
 
   return (
-    <div
-      className={`w-full flex-shrink-0 rounded-lg border p-4 ${
-        isDarkMode ? 'border-gray-700 bg-gray-800' : 'border-slate-200 bg-white'
+    <Card
+      className={`h-full min-h-0 w-full flex-shrink-0 overflow-y-auto p-4 ${
+        isDarkMode ? 'border-gray-700 bg-gray-800' : ''
       }`}
     >
-      {/* Filter chips */}
-      <div className="mb-4 flex flex-wrap gap-1.5">
-        {(['all', 'uses', 'used-by'] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => onFilterChange(f)}
-            className={`${chipBase} ${filter === f ? chipSelected : chipUnselected}`}
-          >
-            {f === 'all' ? 'All' : f === 'uses' ? 'Uses' : 'Used by'}
-          </button>
-        ))}
-        <button
-          disabled
-          className={`${chipBase} flex cursor-not-allowed items-center gap-1 opacity-50 ${chipUnselected}`}
+      {/* Filter chips + Add button */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          {(['all', 'uses', 'used-by'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => onFilterChange(f)}
+              className={`${chipBase} ${filter === f ? chipSelected : chipUnselected}`}
+            >
+              {f === 'all' ? 'All' : f === 'uses' ? 'Uses' : 'Used by'}
+            </button>
+          ))}
+        </div>
+        <Button
+          size="sm"
+          className="gap-1 border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
+          onClick={onAdd}
         >
-          <Plus className="mr-1 h-3.5 w-3.5" />
+          <Plus className="h-3.5 w-3.5" />
           Add
-        </button>
+        </Button>
       </div>
 
       {/* Outbound (USES) section */}
@@ -1006,7 +1073,7 @@ function RelationshipsSidebar({
           )}
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -1022,11 +1089,6 @@ function SidebarProjectRow({
 
   return (
     <li className="flex items-center gap-2 py-1">
-      <span
-        className={`inline-block h-2 w-2 flex-shrink-0 rounded-full ${
-          isDarkMode ? 'bg-slate-500' : 'bg-slate-400'
-        }`}
-      />
       <Link
         to={`/projects/${rel.project.id}`}
         className={`truncate text-sm hover:underline ${
