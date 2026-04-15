@@ -16,6 +16,7 @@ export { iconRegistry } from '@/lib/icon-registry'
 export type { IconComponent } from '@/lib/icon-registry'
 export { AWS_ICONS } from '@/lib/icon-sets/aws'
 
+const MAX_ICON_CACHE_SIZE = 500
 const iconUrlCache = new Map<string, string | null>()
 
 // ---------------------------------------------------------------------------
@@ -76,6 +77,9 @@ export function getIconUrl(
   const cached = iconUrlCache.get(cacheKey)
   if (cached !== undefined) return cached
   const result = computeIconUrl(iconName, color)
+  if (iconUrlCache.size >= MAX_ICON_CACHE_SIZE) {
+    iconUrlCache.delete(iconUrlCache.keys().next().value!)
+  }
   iconUrlCache.set(cacheKey, result)
   return result
 }

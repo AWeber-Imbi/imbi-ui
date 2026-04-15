@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import type { FC } from 'react'
 import { IconRegistry } from '@/lib/icon-registry'
-import type { IconSetDefinition } from '@/lib/icon-registry'
+import type { IconSetDefinition, IconComponent } from '@/lib/icon-registry'
 
 function makeSet(
   id: string,
@@ -13,7 +14,8 @@ function makeSet(
     description: `${label} icons`,
     valueFormat: `${id}-{name}`,
     icons,
-    resolve: (v) => (v.startsWith(`${id}-`) ? ((() => null) as never) : null),
+    resolve: (v) =>
+      v.startsWith(`${id}-`) ? ((() => null) as FC as IconComponent) : null,
     resolveUrl: (v) =>
       v.startsWith(`${id}-`) ? `https://example.com/${v}` : null,
   }
@@ -41,7 +43,7 @@ describe('IconRegistry', () => {
 
   describe('resolve()', () => {
     it('dispatches to the matching set', () => {
-      const mockComponent = (() => null) as never
+      const mockComponent = (() => null) as FC as IconComponent
       const set = makeSet('foo', 'Foo')
       set.resolve = (v) => (v === 'foo-bar' ? mockComponent : null)
       registry.register(set)

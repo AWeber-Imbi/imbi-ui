@@ -21,7 +21,7 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
 
   const sets = iconRegistry.getSets()
   const currentSet = sets.find((s) => s.id === iconSet)
-  const icons = currentSet?.icons ?? []
+  const icons = useMemo(() => currentSet?.icons ?? [], [currentSet])
 
   const filtered = useMemo(() => {
     if (!query.trim()) return icons.slice(0, MAX_RESULTS)
@@ -188,7 +188,8 @@ export function IconPicker({ value, onChange, isDarkMode }: IconPickerProps) {
             ) : (
               <div className="grid grid-cols-6 gap-1">
                 {filtered.map((icon) => {
-                  const Icon = getIcon(icon.value)
+                  const Icon = getIcon(icon.value, null)
+                  if (!Icon) return null
                   const isSelected = value === icon.value
                   return (
                     <button

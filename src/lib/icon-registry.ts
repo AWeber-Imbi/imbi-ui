@@ -76,7 +76,7 @@ export class IconRegistry {
       for (const icon of set.icons) {
         if (
           icon.label.toLowerCase().includes(q) ||
-          icon.value.includes(q) ||
+          icon.value.toLowerCase().includes(q) ||
           icon.keywords?.some((k) => k.toLowerCase().includes(q))
         ) {
           results.push(icon)
