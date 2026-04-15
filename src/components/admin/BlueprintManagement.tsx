@@ -6,7 +6,6 @@ import {
   Plus,
   Search,
   Edit2,
-  Trash2,
   FileJson,
   AlertCircle,
   CheckCircle,
@@ -15,8 +14,8 @@ import {
   Filter,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
+import { AdminTable } from '@/components/ui/admin-table'
 import {
   Tooltip,
   TooltipContent,
@@ -163,9 +162,6 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [enabledFilter, setEnabledFilter] = useState<string>('')
   const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<
-    (BlueprintKey & { name: string }) | null
-  >(null)
 
   // Parse compound key from URL slug (format: "type:slug")
   const selectedKey = useMemo<BlueprintKey | null>(() => {
@@ -272,20 +268,6 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
     if (enabledFilter === 'disabled' && bp.enabled) return false
     return true
   })
-
-  const handleDelete = (key: BlueprintKey, name: string) => {
-    setDeleteTarget({ ...key, name })
-  }
-
-  const onDeleteConfirm = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate({
-        type: deleteTarget.type,
-        slug: deleteTarget.slug,
-      })
-      setDeleteTarget(null)
-    }
-  }
 
   const handleCreateClick = () => {
     goToCreate()
@@ -394,12 +376,6 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
   // View mode: List (default)
   return (
     <div className="space-y-6">
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title={`Delete "${deleteTarget?.name}"?`}
-        onConfirm={onDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center gap-3">
@@ -454,161 +430,137 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
         </div>
       </div>
 
-      {/* Blueprints Table */}
-      <div className="overflow-hidden rounded-md border border-tertiary bg-primary">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-tertiary bg-secondary">
-              <tr>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-secondary">
-                  Name
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-secondary">
-                  Slug
-                </th>
-                <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-secondary">
-                  Type
-                </th>
-                <th className="px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-secondary">
-                  Enabled
-                </th>
-                <th className="px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-secondary">
-                  Filter
-                </th>
-                <th className="px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-secondary">
-                  Priority
-                </th>
-                <th className="px-5 py-3 text-center text-xs font-medium uppercase tracking-wider text-secondary">
-                  Version
-                </th>
-                <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wider text-secondary">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--color-border-tertiary)]">
-              {filteredBlueprints.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-5 py-12 text-center">
-                    <div className="text-sm text-tertiary">
-                      {searchQuery || typeFilter || enabledFilter
-                        ? 'No blueprints match your filters'
-                        : 'No blueprints created yet'}
+      <AdminTable<Blueprint>
+        columns={[
+          {
+            key: 'name',
+            header: 'Name',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (bp) => (
+              <div className="flex items-center gap-2.5">
+                <FileJson className="h-4 w-4 flex-shrink-0 text-amber-text-mid" />
+                <div>
+                  <span className="text-sm font-medium text-primary">
+                    {bp.name}
+                  </span>
+                  {bp.description && (
+                    <div className="mt-0.5 text-xs text-tertiary">
+                      {bp.description}
                     </div>
-                  </td>
-                </tr>
+                  )}
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: 'slug',
+            header: 'Slug',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (bp) => (
+              <span className="whitespace-nowrap font-mono text-sm text-secondary">
+                {bp.slug}
+              </span>
+            ),
+          },
+          {
+            key: 'type',
+            header: 'Type',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (bp) => (
+              <span
+                className={`inline-flex items-center whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-medium ${getTypeBadgeClasses(blueprintPathType(bp), blueprintTypes, isDarkMode)}`}
+              >
+                {blueprintTypeLabel(bp)}
+              </span>
+            ),
+          },
+          {
+            key: 'enabled',
+            header: 'Enabled',
+            headerAlign: 'center',
+            cellAlign: 'center',
+            render: (bp) =>
+              bp.enabled ? (
+                <CheckCircle className="mx-auto h-4 w-4 text-success" />
               ) : (
-                filteredBlueprints.map((bp: Blueprint) => (
-                  <tr
-                    key={`${blueprintPathType(bp)}/${bp.slug}`}
-                    onClick={() =>
-                      handleViewClick({
-                        type: blueprintPathType(bp),
-                        slug: bp.slug,
-                      })
-                    }
-                    className="cursor-pointer transition-colors hover:bg-secondary"
-                  >
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <FileJson className="h-4 w-4 flex-shrink-0 text-amber-text-mid" />
-                        <div>
-                          <span className="text-sm font-medium text-primary">
-                            {bp.name}
-                          </span>
-                          {bp.description && (
-                            <div className="mt-0.5 text-xs text-tertiary">
-                              {bp.description}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 font-mono text-sm text-secondary">
-                      {bp.slug}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5">
-                      <span
-                        className={`inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium ${getTypeBadgeClasses(blueprintPathType(bp), blueprintTypes, isDarkMode)}`}
-                      >
-                        {blueprintTypeLabel(bp)}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center">
-                      {bp.enabled ? (
-                        <CheckCircle className="mx-auto h-4 w-4 text-success" />
-                      ) : (
-                        <XCircle className="mx-auto h-4 w-4 text-tertiary" />
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center">
-                      {renderFilterCell(bp.filter, isDarkMode) || (
-                        <span className="text-xs text-tertiary">&mdash;</span>
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center text-sm text-primary">
-                      {bp.priority}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5 text-center font-mono text-sm text-secondary">
-                      v{bp.version}
-                    </td>
-                    <td className="whitespace-nowrap px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-1">
-                        <TooltipProvider delayDuration={200}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleEditClick({
-                                    type: blueprintPathType(bp),
-                                    slug: bp.slug,
-                                  })
-                                }}
-                                className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-secondary hover:text-primary"
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider delayDuration={200}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDelete(
-                                    {
-                                      type: blueprintPathType(bp),
-                                      slug: bp.slug,
-                                    },
-                                    bp.name,
-                                  )
-                                }}
-                                disabled={deleteMutation.isPending}
-                                className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-danger hover:text-danger"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                <XCircle className="mx-auto h-4 w-4 text-tertiary" />
+              ),
+          },
+          {
+            key: 'filter',
+            header: 'Filter',
+            headerAlign: 'center',
+            cellAlign: 'center',
+            render: (bp) =>
+              renderFilterCell(bp.filter, isDarkMode) || (
+                <span className="text-xs text-tertiary">&mdash;</span>
+              ),
+          },
+          {
+            key: 'priority',
+            header: 'Priority',
+            headerAlign: 'center',
+            cellAlign: 'center',
+            render: (bp) => (
+              <span className="whitespace-nowrap text-sm text-primary">
+                {bp.priority}
+              </span>
+            ),
+          },
+          {
+            key: 'version',
+            header: 'Version',
+            headerAlign: 'center',
+            cellAlign: 'center',
+            render: (bp) => (
+              <span className="whitespace-nowrap font-mono text-sm text-secondary">
+                v{bp.version}
+              </span>
+            ),
+          },
+        ]}
+        rows={filteredBlueprints}
+        getRowKey={(bp) => `${blueprintPathType(bp)}/${bp.slug}`}
+        getDeleteLabel={(bp) => bp.name}
+        onRowClick={(bp) =>
+          handleViewClick({ type: blueprintPathType(bp), slug: bp.slug })
+        }
+        onDelete={(bp) =>
+          deleteMutation.mutate({ type: blueprintPathType(bp), slug: bp.slug })
+        }
+        isDeleting={deleteMutation.isPending}
+        actions={(bp) => (
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleEditClick({
+                      type: blueprintPathType(bp),
+                      slug: bp.slug,
+                    })
+                  }}
+                  className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-secondary hover:text-primary"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        emptyMessage={
+          searchQuery || typeFilter || enabledFilter
+            ? 'No blueprints match your filters'
+            : 'No blueprints created yet'
+        }
+      />
 
       {/* Import Dialog */}
       <ImportBlueprintDialog
