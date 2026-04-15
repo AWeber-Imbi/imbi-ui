@@ -15,6 +15,7 @@ import {
   Filter,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { BlueprintForm } from './blueprints/BlueprintForm'
 import { BlueprintDetail } from './blueprints/BlueprintDetail'
@@ -141,13 +142,15 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
     slug: selectedSlug,
     goToList,
     goToCreate,
-    goToDetail,
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [enabledFilter, setEnabledFilter] = useState<string>('')
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<
+    (BlueprintKey & { name: string }) | null
+  >(null)
 
   // Parse compound key from URL slug (format: "type:slug")
   const selectedKey = useMemo<BlueprintKey | null>(() => {
@@ -255,13 +258,17 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
     return true
   })
 
-  const handleDelete = (key: BlueprintKey) => {
-    if (
-      confirm(
-        'Are you sure you want to delete this blueprint? This action cannot be undone.',
-      )
-    ) {
-      deleteMutation.mutate(key)
+  const handleDelete = (key: BlueprintKey, name: string) => {
+    setDeleteTarget({ ...key, name })
+  }
+
+  const onDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({
+        type: deleteTarget.type,
+        slug: deleteTarget.slug,
+      })
+      setDeleteTarget(null)
     }
   }
 
@@ -274,7 +281,7 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
   }
 
   const handleViewClick = (key: BlueprintKey) => {
-    goToDetail(`${key.type}:${key.slug}`)
+    goToEdit(`${key.type}:${key.slug}`)
   }
 
   const handleSave = (data: BlueprintCreate) => {
@@ -372,6 +379,12 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
   // View mode: List (default)
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete "${deleteTarget?.name}"?`}
+        onConfirm={onDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center gap-3">
@@ -542,10 +555,13 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleDelete({
-                              type: blueprintPathType(bp),
-                              slug: bp.slug,
-                            })
+                            handleDelete(
+                              {
+                                type: blueprintPathType(bp),
+                                slug: bp.slug,
+                              },
+                              bp.name,
+                            )
                           }}
                           disabled={deleteMutation.isPending}
                           className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-danger hover:text-danger"

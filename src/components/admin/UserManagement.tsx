@@ -13,6 +13,8 @@ import {
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Gravatar } from '../ui/gravatar'
+import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { UserForm } from './users/UserForm'
 import { UserDetail } from './users/UserDetail'
 import { useAdminNav } from '@/hooks/useAdminNav'
@@ -39,13 +41,16 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
     slug: selectedUserEmail,
     goToList,
     goToCreate,
-    goToDetail,
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
   const [userFilter, setUserFilter] = useState<UserFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set())
+  const [deleteTarget, setDeleteTarget] = useState<{
+    email: string
+    name: string
+  } | null>(null)
 
   // Fetch users from API
   const {
@@ -150,12 +155,16 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
   }
 
   const handleDelete = (email: string) => {
-    if (
-      confirm(
-        'Are you sure you want to delete this user? This action cannot be undone.',
-      )
-    ) {
-      deleteMutation.mutate(email)
+    const user = users.find((u) => u.email === email)
+    if (user) {
+      setDeleteTarget({ email: user.email, name: user.display_name })
+    }
+  }
+
+  const onDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.email)
+      setDeleteTarget(null)
     }
   }
 
@@ -227,7 +236,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
   }
 
   const handleViewClick = (user: AdminUser) => {
-    goToDetail(user.email)
+    goToEdit(user.email)
   }
 
   const handleSave = (userData: AdminUserCreate) => {
@@ -322,6 +331,13 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
   // View mode: List (default)
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete "${deleteTarget?.name}"?`}
+        confirmLabel="Delete"
+        onConfirm={onDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center gap-3">
@@ -430,218 +446,216 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
       )}
 
       {/* Users Table */}
-      <div
-        className={`overflow-hidden rounded-lg border ${
-          isDarkMode
-            ? 'border-gray-700 bg-gray-800'
-            : 'border-gray-200 bg-white'
-        }`}
+      <Card
+        className={`overflow-hidden ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
       >
-        <table className="w-full">
-          <thead className="border-b border-tertiary bg-secondary">
-            <tr>
-              <th className="w-12 px-4 py-3">
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedEmails.size === filteredUsers.length &&
-                    filteredUsers.length > 0
-                  }
-                  onChange={toggleSelectAll}
-                  className="rounded"
-                />
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                User
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Email
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Type
-              </th>
-              <th
-                className={`px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Status
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Last Login
-              </th>
-              <th
-                className={`px-4 py-3 text-right text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            className={
-              isDarkMode
-                ? 'divide-y divide-gray-700'
-                : 'divide-y divide-gray-200'
-            }
-          >
-            {filteredUsers.length === 0 ? (
+        <CardContent className="p-0">
+          <table className="w-full">
+            <thead className="border-b border-tertiary bg-secondary">
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center">
-                  <div
-                    className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                  >
-                    {searchQuery ||
-                    userFilter !== 'all' ||
-                    statusFilter !== 'all'
-                      ? 'No users match your filters'
-                      : 'No users created yet'}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              filteredUsers.map((user) => (
-                <tr
-                  key={user.email}
-                  onClick={() => handleViewClick(user)}
-                  className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} ${
-                    !user.is_active ? 'opacity-60' : ''
-                  }`}
+                <th className="w-12 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedEmails.size === filteredUsers.length &&
+                      filteredUsers.length > 0
+                    }
+                    onChange={toggleSelectAll}
+                    className="rounded"
+                  />
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
                 >
-                  <td
-                    className="px-4 py-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedEmails.has(user.email)}
-                      onChange={() => toggleSelection(user.email)}
-                      className="rounded"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <Gravatar
-                        email={user.email}
-                        size={32}
-                        alt={user.display_name}
-                        className="h-8 w-8 rounded-full"
-                      />
-                      <div>
-                        <div
-                          className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                        >
-                          {user.display_name}
-                        </div>
-                        <div
-                          className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-                        >
-                          {getGroupNames(user)}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                  >
-                    {user.email}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      {user.is_admin ? (
-                        <span
-                          className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium ${
-                            isDarkMode
-                              ? 'bg-red-900/30 text-red-400'
-                              : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          <Crown className="h-3 w-3" />
-                          Admin
-                        </span>
-                      ) : (
-                        <span
-                          className={`rounded px-2 py-1 text-xs font-medium ${
-                            isDarkMode
-                              ? 'bg-blue-900/30 text-blue-400'
-                              : 'bg-blue-100 text-blue-700'
-                          }`}
-                        >
-                          User
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleToggleActive(user)
-                      }}
-                      disabled={toggleActiveMutation.isPending}
-                      className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium ${
-                        user.is_active
-                          ? isDarkMode
-                            ? 'bg-green-900/30 text-green-400'
-                            : 'bg-green-100 text-green-700'
-                          : isDarkMode
-                            ? 'bg-gray-700 text-gray-400'
-                            : 'bg-gray-100 text-gray-600'
-                      }`}
+                  User
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Email
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Type
+                </th>
+                <th
+                  className={`px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Status
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Last Login
+                </th>
+                <th
+                  className={`px-4 py-3 text-right text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              className={
+                isDarkMode
+                  ? 'divide-y divide-gray-700'
+                  : 'divide-y divide-gray-200'
+              }
+            >
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center">
+                    <div
+                      className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
                     >
-                      <Power className="h-3 w-3" />
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </button>
-                  </td>
-                  <td
-                    className={`px-4 py-3 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-                  >
-                    {formatDate(user.last_login)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleEditClick(user)
-                        }}
-                        className={`rounded p-1.5 ${
-                          isDarkMode
-                            ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                        }`}
-                        title="Edit"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDelete(user.email)
-                        }}
-                        disabled={deleteMutation.isPending}
-                        className={`rounded p-1.5 ${
-                          isDarkMode
-                            ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
-                            : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
-                        }`}
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      {searchQuery ||
+                      userFilter !== 'all' ||
+                      statusFilter !== 'all'
+                        ? 'No users match your filters'
+                        : 'No users created yet'}
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                filteredUsers.map((user) => (
+                  <tr
+                    key={user.email}
+                    onClick={() => handleViewClick(user)}
+                    className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} ${
+                      !user.is_active ? 'opacity-60' : ''
+                    }`}
+                  >
+                    <td
+                      className="px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedEmails.has(user.email)}
+                        onChange={() => toggleSelection(user.email)}
+                        className="rounded"
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <Gravatar
+                          email={user.email}
+                          size={32}
+                          alt={user.display_name}
+                          className="h-8 w-8 rounded-full"
+                        />
+                        <div>
+                          <div
+                            className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                          >
+                            {user.display_name}
+                          </div>
+                          <div
+                            className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                          >
+                            {getGroupNames(user)}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td
+                      className={`px-4 py-3 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                    >
+                      {user.email}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        {user.is_admin ? (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium ${
+                              isDarkMode
+                                ? 'bg-red-900/30 text-red-400'
+                                : 'bg-red-100 text-red-700'
+                            }`}
+                          >
+                            <Crown className="h-3 w-3" />
+                            Admin
+                          </span>
+                        ) : (
+                          <span
+                            className={`rounded px-2 py-1 text-xs font-medium ${
+                              isDarkMode
+                                ? 'bg-blue-900/30 text-blue-400'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}
+                          >
+                            User
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleToggleActive(user)
+                        }}
+                        disabled={toggleActiveMutation.isPending}
+                        className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium ${
+                          user.is_active
+                            ? isDarkMode
+                              ? 'bg-green-900/30 text-green-400'
+                              : 'bg-green-100 text-green-700'
+                            : isDarkMode
+                              ? 'bg-gray-700 text-gray-400'
+                              : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        <Power className="h-3 w-3" />
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </button>
+                    </td>
+                    <td
+                      className={`px-4 py-3 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                    >
+                      {formatDate(user.last_login)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEditClick(user)
+                          }}
+                          className={`rounded p-1.5 ${
+                            isDarkMode
+                              ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          }`}
+                          title="Edit"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDelete(user.email)
+                          }}
+                          disabled={deleteMutation.isPending}
+                          className={`rounded p-1.5 ${
+                            isDarkMode
+                              ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
+                              : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
+                          }`}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
 
       {/* Summary */}
       {filteredUsers.length > 0 && (

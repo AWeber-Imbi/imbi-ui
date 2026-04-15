@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
 import { Plus, Search, Trash2, Users, AlertCircle } from 'lucide-react'
@@ -29,6 +30,11 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{
+    slug: string
+    name: string
+    orgSlug: string
+  } | null>(null)
 
   const orgSlug = selectedOrganization?.slug
 
@@ -99,11 +105,22 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
 
   const handleDelete = (slug: string) => {
     const team = teams.find((t) => t.slug === slug)
-    if (
-      team &&
-      confirm(`Delete team "${team.name}"? This action cannot be undone.`)
-    ) {
-      deleteMutation.mutate({ orgSlug: team.organization.slug, slug })
+    if (team) {
+      setDeleteTarget({
+        slug,
+        name: team.name,
+        orgSlug: team.organization.slug,
+      })
+    }
+  }
+
+  const onDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate({
+        orgSlug: deleteTarget.orgSlug,
+        slug: deleteTarget.slug,
+      })
+      setDeleteTarget(null)
     }
   }
 
@@ -191,6 +208,12 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete "${deleteTarget?.name}"?`}
+        onConfirm={onDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -436,25 +459,27 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
                               : '',
                             memberCount > 0 ? `${memberCount} member(s)` : '',
                           ].filter(Boolean)
+                          const tooltipText = !canDelete
+                            ? `Cannot delete: has ${disabledParts.join(' and ')}`
+                            : undefined
                           return (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(team.slug)}
-                              disabled={deleteMutation.isPending || !canDelete}
-                              title={
-                                !canDelete
-                                  ? `Cannot delete: has ${disabledParts.join(' and ')}`
-                                  : undefined
-                              }
-                              className={
-                                isDarkMode
-                                  ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300 disabled:opacity-30'
-                                  : 'text-red-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30'
-                              }
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <span className="inline-flex" title={tooltipText}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(team.slug)}
+                                disabled={
+                                  deleteMutation.isPending || !canDelete
+                                }
+                                className={
+                                  isDarkMode
+                                    ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300 disabled:pointer-events-none disabled:opacity-30'
+                                    : 'text-red-600 hover:bg-red-50 hover:text-red-700 disabled:pointer-events-none disabled:opacity-30'
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </span>
                           )
                         })()}
                       </div>

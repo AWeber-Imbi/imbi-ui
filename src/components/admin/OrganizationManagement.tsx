@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
 import { Plus, Search, Trash2, Building2, AlertCircle } from 'lucide-react'
@@ -6,6 +7,7 @@ import { formatRelativeDate } from '@/lib/formatDate'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { EntityIcon } from '@/components/ui/entity-icon'
+import { Card, CardContent } from '@/components/ui/card'
 import { OrganizationForm } from './organizations/OrganizationForm'
 import { OrganizationDetail } from './organizations/OrganizationDetail'
 import { useAdminNav } from '@/hooks/useAdminNav'
@@ -30,10 +32,13 @@ export function OrganizationManagement({
     slug: selectedOrgSlug,
     goToList,
     goToCreate,
-    goToDetail,
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{
+    slug: string
+    name: string
+  } | null>(null)
 
   const {
     data: organizations = [],
@@ -112,13 +117,15 @@ export function OrganizationManagement({
     if (!check.allowed) return
 
     const org = organizations.find((o) => o.slug === slug)
-    if (
-      org &&
-      confirm(
-        `Delete organization "${org.name}"? This action cannot be undone.`,
-      )
-    ) {
-      deleteMutation.mutate(slug)
+    if (org) {
+      setDeleteTarget({ slug, name: org.name })
+    }
+  }
+
+  const onDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.slug)
+      setDeleteTarget(null)
     }
   }
 
@@ -207,6 +214,12 @@ export function OrganizationManagement({
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete "${deleteTarget?.name}"?`}
+        onConfirm={onDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -234,212 +247,208 @@ export function OrganizationManagement({
       </div>
 
       {/* Organizations Table */}
-      <div
-        className={`rounded-lg border ${
-          isDarkMode
-            ? 'border-gray-700 bg-gray-800'
-            : 'border-gray-200 bg-white'
-        }`}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-tertiary bg-secondary">
-              <tr>
-                <th
-                  className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Organization
-                </th>
-                <th
-                  className={`px-6 py-3 text-center text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Slug
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Teams
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Members
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Projects
-                </th>
-                <th
-                  className={`whitespace-nowrap px-6 py-3 text-center text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Last Updated
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}
-            >
-              {filteredOrgs.map((org) => {
-                const deleteCheck = canDeleteOrg(org.slug)
-                return (
-                  <tr
-                    key={org.slug}
-                    onClick={() => goToDetail(org.slug)}
-                    className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
+      <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b border-tertiary bg-secondary">
+                <tr>
+                  <th
+                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
-                            isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+                    Organization
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-center text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Slug
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Teams
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Members
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Projects
+                  </th>
+                  <th
+                    className={`whitespace-nowrap px-6 py-3 text-center text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Last Updated
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}
+              >
+                {filteredOrgs.map((org) => {
+                  const deleteCheck = canDeleteOrg(org.slug)
+                  return (
+                    <tr
+                      key={org.slug}
+                      onClick={() => goToEdit(org.slug)}
+                      className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
+                              isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+                            }`}
+                          >
+                            {org.icon ? (
+                              <EntityIcon
+                                icon={org.icon}
+                                className="h-5 w-5 rounded object-cover"
+                              />
+                            ) : (
+                              <Building2
+                                className={`h-4 w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                              />
+                            )}
+                          </div>
+                          <div>
+                            <div
+                              className={
+                                isDarkMode ? 'text-white' : 'text-gray-900'
+                              }
+                            >
+                              {org.name}
+                            </div>
+                            {org.description && (
+                              <div
+                                className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                              >
+                                {org.description}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                      >
+                        <code
+                          className={`rounded px-2 py-1 ${
+                            isDarkMode
+                              ? 'bg-gray-700 text-gray-300'
+                              : 'bg-gray-100 text-gray-700'
                           }`}
                         >
-                          {org.icon ? (
-                            <EntityIcon
-                              icon={org.icon}
-                              className="h-5 w-5 rounded object-cover"
-                            />
-                          ) : (
-                            <Building2
-                              className={`h-4 w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
-                            />
-                          )}
-                        </div>
-                        <div>
-                          <div
-                            className={
-                              isDarkMode ? 'text-white' : 'text-gray-900'
-                            }
-                          >
-                            {org.name}
-                          </div>
-                          {org.description && (
-                            <div
-                              className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                            >
-                              {org.description}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                    >
-                      <code
-                        className={`rounded px-2 py-1 ${
-                          isDarkMode
-                            ? 'bg-gray-700 text-gray-300'
-                            : 'bg-gray-100 text-gray-700'
+                          {org.slug}
+                        </code>
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
+                          (org.relationships?.teams?.count ?? 0) === 0
+                            ? isDarkMode
+                              ? 'text-gray-600'
+                              : 'text-gray-400'
+                            : isDarkMode
+                              ? 'text-gray-300'
+                              : 'text-gray-600'
                         }`}
                       >
-                        {org.slug}
-                      </code>
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                        (org.relationships?.teams?.count ?? 0) === 0
-                          ? isDarkMode
-                            ? 'text-gray-600'
-                            : 'text-gray-400'
-                          : isDarkMode
-                            ? 'text-gray-300'
-                            : 'text-gray-600'
-                      }`}
-                    >
-                      {org.relationships?.teams?.count ?? 0}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                        (org.relationships?.members?.count ?? 0) === 0
-                          ? isDarkMode
-                            ? 'text-gray-600'
-                            : 'text-gray-400'
-                          : isDarkMode
-                            ? 'text-gray-300'
-                            : 'text-gray-600'
-                      }`}
-                    >
-                      {org.relationships?.members?.count ?? 0}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                        (org.relationships?.projects?.count ?? 0) === 0
-                          ? isDarkMode
-                            ? 'text-gray-600'
-                            : 'text-gray-400'
-                          : isDarkMode
-                            ? 'text-gray-300'
-                            : 'text-gray-600'
-                      }`}
-                    >
-                      {org.relationships?.projects?.count ?? 0}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                    >
-                      {formatRelativeDate(org.updated_at ?? org.created_at)}
-                    </td>
-                    <td
-                      className="whitespace-nowrap px-6 py-4 text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(org.slug)}
-                          disabled={
-                            !deleteCheck.allowed || deleteMutation.isPending
-                          }
-                          title={deleteCheck.reason}
-                          className={
-                            isDarkMode
-                              ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300'
-                              : 'text-red-600 hover:bg-red-50 hover:text-red-700'
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                        {org.relationships?.teams?.count ?? 0}
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
+                          (org.relationships?.members?.count ?? 0) === 0
+                            ? isDarkMode
+                              ? 'text-gray-600'
+                              : 'text-gray-400'
+                            : isDarkMode
+                              ? 'text-gray-300'
+                              : 'text-gray-600'
+                        }`}
+                      >
+                        {org.relationships?.members?.count ?? 0}
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
+                          (org.relationships?.projects?.count ?? 0) === 0
+                            ? isDarkMode
+                              ? 'text-gray-600'
+                              : 'text-gray-400'
+                            : isDarkMode
+                              ? 'text-gray-300'
+                              : 'text-gray-600'
+                        }`}
+                      >
+                        {org.relationships?.projects?.count ?? 0}
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                      >
+                        {formatRelativeDate(org.updated_at ?? org.created_at)}
+                      </td>
+                      <td
+                        className="whitespace-nowrap px-6 py-4 text-right"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(org.slug)}
+                            disabled={
+                              !deleteCheck.allowed || deleteMutation.isPending
+                            }
+                            title={deleteCheck.reason}
+                            className={
+                              isDarkMode
+                                ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300'
+                                : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
 
-          {filteredOrgs.length === 0 && (
-            <div
-              className={`py-12 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-            >
-              {searchQuery
-                ? 'No organizations match your search.'
-                : 'No organizations created yet.'}
-            </div>
-          )}
-        </div>
-      </div>
+            {filteredOrgs.length === 0 && (
+              <div
+                className={`py-12 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+              >
+                {searchQuery
+                  ? 'No organizations match your search.'
+                  : 'No organizations created yet.'}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

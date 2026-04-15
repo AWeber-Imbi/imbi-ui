@@ -13,6 +13,8 @@ import {
 import { formatRelativeDate } from '@/lib/formatDate'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { RoleForm } from './roles/RoleForm'
 import { RoleDetail } from './roles/RoleDetail'
 import { useAdminNav } from '@/hooks/useAdminNav'
@@ -38,10 +40,13 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
     slug: selectedRoleSlug,
     goToList,
     goToCreate,
-    goToDetail,
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<{
+    slug: string
+    name: string
+  } | null>(null)
 
   // Fetch roles from API
   const {
@@ -142,12 +147,16 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
   })
 
   const handleDelete = (slug: string) => {
-    if (
-      confirm(
-        'Are you sure you want to delete this role? This action cannot be undone.',
-      )
-    ) {
-      deleteMutation.mutate(slug)
+    const role = roles.find((r) => r.slug === slug)
+    if (role) {
+      setDeleteTarget({ slug: role.slug, name: role.name })
+    }
+  }
+
+  const onDeleteConfirm = () => {
+    if (deleteTarget) {
+      deleteMutation.mutate(deleteTarget.slug)
+      setDeleteTarget(null)
     }
   }
 
@@ -160,7 +169,7 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
   }
 
   const handleViewClick = (slug: string) => {
-    goToDetail(slug)
+    goToEdit(slug)
   }
 
   const handleSave = (roleData: RoleCreate, permissions: string[]) => {
@@ -245,6 +254,13 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
   // View mode: List (default)
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete "${deleteTarget?.name}"?`}
+        confirmLabel="Delete"
+        onConfirm={onDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -272,181 +288,181 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
       </div>
 
       {/* Roles Table */}
-      <div
-        className={`overflow-hidden rounded-lg border ${
-          isDarkMode
-            ? 'border-gray-700 bg-gray-800'
-            : 'border-gray-200 bg-white'
-        }`}
+      <Card
+        className={`overflow-hidden ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
       >
-        <table className="w-full">
-          <thead className="border-b border-tertiary bg-secondary">
-            <tr>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Role
-              </th>
-              <th
-                className={`px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Slug
-              </th>
-              <th
-                className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Description
-              </th>
-              <th
-                className={`px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Type
-              </th>
-              <th
-                className={`whitespace-nowrap px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Last Updated
-              </th>
-              <th
-                className={`px-4 py-3 text-right text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            className={
-              isDarkMode
-                ? 'divide-y divide-gray-700'
-                : 'divide-y divide-gray-200'
-            }
-          >
-            {filteredRoles.length === 0 ? (
+        <CardContent className="p-0">
+          <table className="w-full">
+            <thead className="border-b border-tertiary bg-secondary">
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center">
-                  <div
-                    className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                  >
-                    {searchQuery
-                      ? 'No roles match your search'
-                      : 'No roles created yet'}
-                  </div>
-                </td>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Role
+                </th>
+                <th
+                  className={`px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Slug
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Description
+                </th>
+                <th
+                  className={`px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Type
+                </th>
+                <th
+                  className={`whitespace-nowrap px-4 py-3 text-center text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Last Updated
+                </th>
+                <th
+                  className={`px-4 py-3 text-right text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Actions
+                </th>
               </tr>
-            ) : (
-              filteredRoles.map((role) => {
-                const isSystem =
-                  'is_system' in role && (role as RoleDetailType).is_system
-                return (
-                  <tr
-                    key={role.slug}
-                    onClick={() => handleViewClick(role.slug)}
-                    className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Shield
-                          className={`h-4 w-4 flex-shrink-0 ${
-                            isDarkMode ? 'text-blue-400' : 'text-blue-600'
-                          }`}
-                        />
-                        <span
-                          className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                        >
-                          {role.name}
-                        </span>
-                      </div>
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-4 py-3 text-center font-mono text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+            </thead>
+            <tbody
+              className={
+                isDarkMode
+                  ? 'divide-y divide-gray-700'
+                  : 'divide-y divide-gray-200'
+              }
+            >
+              {filteredRoles.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center">
+                    <div
+                      className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
                     >
-                      {role.slug}
-                    </td>
-                    <td
-                      className={`px-4 py-3 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      {searchQuery
+                        ? 'No roles match your search'
+                        : 'No roles created yet'}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredRoles.map((role) => {
+                  const isSystem =
+                    'is_system' in role && (role as RoleDetailType).is_system
+                  return (
+                    <tr
+                      key={role.slug}
+                      onClick={() => handleViewClick(role.slug)}
+                      className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
                     >
-                      {role.description || '-'}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center">
-                      {isSystem ? (
-                        <span
-                          className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium ${
-                            isDarkMode
-                              ? 'bg-amber-900/30 text-amber-400'
-                              : 'bg-amber-100 text-amber-700'
-                          }`}
-                        >
-                          <Lock className="h-3 w-3" />
-                          System
-                        </span>
-                      ) : (
-                        <span
-                          className={`rounded px-2 py-1 text-xs font-medium ${
-                            isDarkMode
-                              ? 'bg-blue-900/30 text-blue-400'
-                              : 'bg-blue-100 text-blue-700'
-                          }`}
-                        >
-                          Custom
-                        </span>
-                      )}
-                    </td>
-                    <td
-                      className={`whitespace-nowrap px-4 py-3 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                    >
-                      {formatRelativeDate(role.updated_at)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleEditClick(role.slug)
-                          }}
-                          disabled={isSystem}
-                          className={`rounded p-1.5 ${
-                            isSystem
-                              ? 'cursor-not-allowed opacity-40'
-                              : isDarkMode
-                                ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                          }`}
-                          title={
-                            isSystem ? 'System roles cannot be edited' : 'Edit'
-                          }
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDelete(role.slug)
-                          }}
-                          disabled={deleteMutation.isPending || isSystem}
-                          className={`rounded p-1.5 ${
-                            isSystem
-                              ? 'cursor-not-allowed opacity-40'
-                              : isDarkMode
-                                ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
-                                : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
-                          }`}
-                          title={
-                            isSystem
-                              ? 'System roles cannot be deleted'
-                              : 'Delete'
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Shield
+                            className={`h-4 w-4 flex-shrink-0 ${
+                              isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                            }`}
+                          />
+                          <span
+                            className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+                          >
+                            {role.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-4 py-3 text-center font-mono text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                      >
+                        {role.slug}
+                      </td>
+                      <td
+                        className={`px-4 py-3 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
+                        {role.description || '-'}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-center">
+                        {isSystem ? (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium ${
+                              isDarkMode
+                                ? 'bg-amber-900/30 text-amber-400'
+                                : 'bg-amber-100 text-amber-700'
+                            }`}
+                          >
+                            <Lock className="h-3 w-3" />
+                            System
+                          </span>
+                        ) : (
+                          <span
+                            className={`rounded px-2 py-1 text-xs font-medium ${
+                              isDarkMode
+                                ? 'bg-blue-900/30 text-blue-400'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}
+                          >
+                            Custom
+                          </span>
+                        )}
+                      </td>
+                      <td
+                        className={`whitespace-nowrap px-4 py-3 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                      >
+                        {formatRelativeDate(role.updated_at)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditClick(role.slug)
+                            }}
+                            disabled={isSystem}
+                            className={`rounded p-1.5 ${
+                              isSystem
+                                ? 'cursor-not-allowed opacity-40'
+                                : isDarkMode
+                                  ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            }`}
+                            title={
+                              isSystem
+                                ? 'System roles cannot be edited'
+                                : 'Edit'
+                            }
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDelete(role.slug)
+                            }}
+                            disabled={deleteMutation.isPending || isSystem}
+                            className={`rounded p-1.5 ${
+                              isSystem
+                                ? 'cursor-not-allowed opacity-40'
+                                : isDarkMode
+                                  ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
+                                  : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
+                            }`}
+                            title={
+                              isSystem
+                                ? 'System roles cannot be deleted'
+                                : 'Delete'
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
