@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Plus,
   Search,
-  Edit2,
   FileJson,
   AlertCircle,
   CheckCircle,
@@ -532,29 +531,6 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
           deleteMutation.mutate({ type: blueprintPathType(bp), slug: bp.slug })
         }
         isDeleting={deleteMutation.isPending}
-        actions={(bp) => (
-          <TooltipProvider delayDuration={200}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleEditClick({
-                      type: blueprintPathType(bp),
-                      slug: bp.slug,
-                    })
-                  }}
-                  className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-secondary hover:text-primary"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
         emptyMessage={
           searchQuery || typeFilter || enabledFilter
             ? 'No blueprints match your filters'
