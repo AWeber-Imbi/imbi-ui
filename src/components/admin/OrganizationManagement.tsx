@@ -55,7 +55,7 @@ export function OrganizationManagement({
     if (teamCount > 0) {
       return {
         allowed: false,
-        blockedBy: [{ count: teamCount, label: 'team' }],
+        blockedBy: [{ count: teamCount, label: 'team', href: '/admin/teams' }],
       }
     }
     return { allowed: true }

@@ -187,7 +187,9 @@ export function AdminTable<T>({
                     deleted because it is referenced by {joined}. Remove or
                     reassign
                     {blockedBy.length === 1
-                      ? ` those ${blockedBy[0].label}s`
+                      ? blockedBy[0].count === 1
+                        ? ` that ${blockedBy[0].label}`
+                        : ` those ${blockedBy[0].label}s`
                       : ' them'}{' '}
                     before deleting this item.
                   </p>
