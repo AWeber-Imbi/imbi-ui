@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, type MouseEvent, type ReactNode } from 'react'
 import { Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from './button'
@@ -33,7 +33,7 @@ export interface AdminTableColumn<T> {
   header: string
   headerAlign?: 'left' | 'center' | 'right'
   cellAlign?: 'left' | 'center' | 'right'
-  render: (row: T) => React.ReactNode
+  render: (row: T) => ReactNode
 }
 
 export interface CanDeleteResult {
@@ -51,7 +51,7 @@ interface AdminTableProps<T> {
   onDelete: (row: T) => void
   canDelete?: (row: T) => CanDeleteResult
   isDeleting?: boolean
-  actions?: (row: T) => React.ReactNode
+  actions?: (row: T) => ReactNode
   emptyMessage?: string
 }
 
@@ -81,8 +81,18 @@ export function AdminTable<T>({
   emptyMessage = 'No items found.',
 }: AdminTableProps<T>) {
   const [deleteTarget, setDeleteTarget] = useState<T | null>(null)
+  const [wasDeleting, setWasDeleting] = useState(false)
 
-  const handleDeleteClick = (row: T, e: React.MouseEvent) => {
+  useEffect(() => {
+    if (isDeleting) {
+      setWasDeleting(true)
+    } else if (wasDeleting) {
+      setWasDeleting(false)
+      setDeleteTarget(null)
+    }
+  }, [isDeleting, wasDeleting])
+
+  const handleDeleteClick = (row: T, e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation()
     setDeleteTarget(row)
   }
@@ -90,7 +100,7 @@ export function AdminTable<T>({
   const handleDeleteConfirm = () => {
     if (deleteTarget) {
       onDelete(deleteTarget)
-      setDeleteTarget(null)
+      // Don't close here — caller signals success by completing the mutation
     }
   }
 
@@ -99,7 +109,7 @@ export function AdminTable<T>({
       <AlertDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null)
+          if (!open && !isDeleting) setDeleteTarget(null)
         }}
       >
         <AlertDialogContent>
