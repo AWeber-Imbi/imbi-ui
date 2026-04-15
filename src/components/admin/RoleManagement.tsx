@@ -14,6 +14,12 @@ import { formatRelativeDate } from '@/lib/formatDate'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { RoleForm } from './roles/RoleForm'
 import { RoleDetail } from './roles/RoleDetail'
@@ -411,48 +417,70 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleEditClick(role.slug)
-                            }}
-                            disabled={isSystem}
-                            className={`rounded p-1.5 ${
-                              isSystem
-                                ? 'cursor-not-allowed opacity-40'
-                                : isDarkMode
-                                  ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                            }`}
-                            title={
-                              isSystem
-                                ? 'System roles cannot be edited'
-                                : 'Edit'
-                            }
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDelete(role.slug)
-                            }}
-                            disabled={deleteMutation.isPending || isSystem}
-                            className={`rounded p-1.5 ${
-                              isSystem
-                                ? 'cursor-not-allowed opacity-40'
-                                : isDarkMode
-                                  ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
-                                  : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
-                            }`}
-                            title={
-                              isSystem
-                                ? 'System roles cannot be deleted'
-                                : 'Delete'
-                            }
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleEditClick(role.slug)
+                                    }}
+                                    disabled={isSystem}
+                                    className={`rounded p-1.5 ${
+                                      isSystem
+                                        ? 'cursor-not-allowed opacity-40'
+                                        : isDarkMode
+                                          ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                    }`}
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {isSystem
+                                    ? 'System roles cannot be edited'
+                                    : 'Edit'}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDelete(role.slug)
+                                    }}
+                                    disabled={
+                                      deleteMutation.isPending || isSystem
+                                    }
+                                    className={`rounded p-1.5 ${
+                                      isSystem
+                                        ? 'cursor-not-allowed opacity-40'
+                                        : isDarkMode
+                                          ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
+                                          : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
+                                    }`}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {isSystem
+                                    ? 'System roles cannot be deleted'
+                                    : 'Delete'}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </td>
                     </tr>

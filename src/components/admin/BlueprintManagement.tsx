@@ -17,6 +17,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { BlueprintForm } from './blueprints/BlueprintForm'
 import { BlueprintDetail } from './blueprints/BlueprintDetail'
 import { ImportBlueprintDialog } from './blueprints/ImportBlueprintDialog'
@@ -120,18 +126,27 @@ function renderFilterCell(
 ): React.ReactNode {
   const f = parseFilterFromBlueprint(filter)
   if (!f) return null
-  const title = [
+  const tooltipLines = [
     f.project_type?.length ? `Project Types: ${f.project_type.join(', ')}` : '',
     f.environment?.length ? `Environments: ${f.environment.join(', ')}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n')
+  ].filter(Boolean)
   return (
-    <span title={title}>
-      <Filter
-        className={`mx-auto h-4 w-4 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}
-      />
-    </span>
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>
+            <Filter
+              className={`mx-auto h-4 w-4 ${isDarkMode ? 'text-amber-400' : 'text-amber-600'}`}
+            />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          {tooltipLines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 
@@ -539,36 +554,52 @@ export function BlueprintManagement({ isDarkMode }: BlueprintManagementProps) {
                     </td>
                     <td className="whitespace-nowrap px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleEditClick({
-                              type: blueprintPathType(bp),
-                              slug: bp.slug,
-                            })
-                          }}
-                          className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-secondary hover:text-primary"
-                          title="Edit"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDelete(
-                              {
-                                type: blueprintPathType(bp),
-                                slug: bp.slug,
-                              },
-                              bp.name,
-                            )
-                          }}
-                          disabled={deleteMutation.isPending}
-                          className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-danger hover:text-danger"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditClick({
+                                    type: blueprintPathType(bp),
+                                    slug: bp.slug,
+                                  })
+                                }}
+                                className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-secondary hover:text-primary"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDelete(
+                                    {
+                                      type: blueprintPathType(bp),
+                                      slug: bp.slug,
+                                    },
+                                    bp.name,
+                                  )
+                                }}
+                                disabled={deleteMutation.isPending}
+                                className="rounded-sm p-1.5 text-tertiary transition-colors hover:bg-danger hover:text-danger"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </td>
                   </tr>

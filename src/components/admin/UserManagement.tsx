@@ -14,6 +14,12 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Gravatar } from '../ui/gravatar'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { UserForm } from './users/UserForm'
 import { UserDetail } from './users/UserDetail'
@@ -618,35 +624,51 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleEditClick(user)
-                          }}
-                          className={`rounded p-1.5 ${
-                            isDarkMode
-                              ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                          }`}
-                          title="Edit"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDelete(user.email)
-                          }}
-                          disabled={deleteMutation.isPending}
-                          className={`rounded p-1.5 ${
-                            isDarkMode
-                              ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
-                              : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
-                          }`}
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditClick(user)
+                                }}
+                                className={`rounded p-1.5 ${
+                                  isDarkMode
+                                    ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
+                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                }`}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDelete(user.email)
+                                }}
+                                disabled={deleteMutation.isPending}
+                                className={`rounded p-1.5 ${
+                                  isDarkMode
+                                    ? 'text-red-400 hover:bg-gray-700 hover:text-red-300'
+                                    : 'text-red-600 hover:bg-gray-100 hover:text-red-700'
+                                }`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </td>
                   </tr>

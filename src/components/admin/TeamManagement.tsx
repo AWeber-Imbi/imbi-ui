@@ -1,4 +1,10 @@
 import { useState, useMemo } from 'react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
@@ -463,23 +469,34 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
                             ? `Cannot delete: has ${disabledParts.join(' and ')}`
                             : undefined
                           return (
-                            <span className="inline-flex" title={tooltipText}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(team.slug)}
-                                disabled={
-                                  deleteMutation.isPending || !canDelete
-                                }
-                                className={
-                                  isDarkMode
-                                    ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300 disabled:pointer-events-none disabled:opacity-30'
-                                    : 'text-red-600 hover:bg-red-50 hover:text-red-700 disabled:pointer-events-none disabled:opacity-30'
-                                }
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </span>
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDelete(team.slug)}
+                                      disabled={
+                                        deleteMutation.isPending || !canDelete
+                                      }
+                                      className={
+                                        isDarkMode
+                                          ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300 disabled:pointer-events-none disabled:opacity-30'
+                                          : 'text-red-600 hover:bg-red-50 hover:text-red-700 disabled:pointer-events-none disabled:opacity-30'
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                {tooltipText && (
+                                  <TooltipContent>
+                                    <p>{tooltipText}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
                           )
                         })()}
                       </div>
