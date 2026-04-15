@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '@/api/client'
-import { Plus, Search, Trash2, Webhook, AlertCircle } from 'lucide-react'
+import { Plus, Search, Webhook, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
+import { AdminTable } from '@/components/ui/admin-table'
 import { WebhookForm } from './webhooks/WebhookForm'
 import { WebhookDetail } from './webhooks/WebhookDetail'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAdminNav } from '@/hooks/useAdminNav'
 import {
@@ -33,10 +33,6 @@ export function WebhookManagement({ isDarkMode }: WebhookManagementProps) {
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
-  const [deleteTarget, setDeleteTarget] = useState<{
-    slug: string
-    name: string
-  } | null>(null)
 
   const orgSlug = selectedOrganization?.slug
 
@@ -97,16 +93,8 @@ export function WebhookManagement({ isDarkMode }: WebhookManagementProps) {
     [webhooks, selectedSlug],
   )
 
-  const handleDelete = (slug: string) => {
-    const item = webhooks.find((x) => x.slug === slug)
-    if (item) setDeleteTarget({ slug, name: item.name })
-  }
-
-  const onDeleteConfirm = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate(deleteTarget.slug)
-      setDeleteTarget(null)
-    }
+  const handleDelete = (wh: (typeof webhooks)[number]) => {
+    deleteMutation.mutate(wh.slug)
   }
 
   const handleSave = (data: WebhookCreate) => {
@@ -175,12 +163,6 @@ export function WebhookManagement({ isDarkMode }: WebhookManagementProps) {
 
   return (
     <div className="space-y-6">
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title={`Delete "${deleteTarget?.name}"?`}
-        onConfirm={onDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -254,168 +236,90 @@ export function WebhookManagement({ isDarkMode }: WebhookManagementProps) {
       </div>
 
       {/* Webhooks Table */}
-      <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead
-                className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}
-              >
-                <tr>
-                  <th
-                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Webhook
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Path
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Service
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Rules
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}
-              >
-                {filteredWebhooks.map((wh) => (
-                  <tr
-                    key={wh.slug}
-                    onClick={() => goToEdit(wh.slug)}
-                    onKeyDown={(e) => {
-                      if (e.currentTarget !== e.target) return
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        goToEdit(wh.slug)
-                      }
-                    }}
-                    tabIndex={0}
-                    aria-label={`Edit webhook ${wh.name}`}
-                    className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
-                            isDarkMode ? 'bg-indigo-900/30' : 'bg-indigo-50'
-                          }`}
-                        >
-                          <Webhook
-                            className={`h-4 w-4 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}
-                          />
-                        </div>
-                        <div>
-                          <div
-                            className={
-                              isDarkMode ? 'text-white' : 'text-gray-900'
-                            }
-                          >
-                            {wh.name}
-                          </div>
-                          {wh.description && (
-                            <div
-                              className={`max-w-xs truncate text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                            >
-                              {wh.description}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className={`px-6 py-4`}>
-                      <code
-                        className={`rounded px-2 py-1 text-xs ${
-                          isDarkMode
-                            ? 'bg-gray-700 text-gray-300'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {wh.notification_path}
-                      </code>
-                    </td>
-                    <td
-                      className={`px-6 py-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+      <AdminTable
+        columns={[
+          {
+            key: 'name',
+            header: 'Webhook',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (wh) => (
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex size-8 flex-shrink-0 items-center justify-center rounded-lg ${isDarkMode ? 'bg-indigo-900/30' : 'bg-indigo-50'}`}
+                >
+                  <Webhook
+                    className={`h-4 w-4 ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}
+                  />
+                </div>
+                <div>
+                  <div className={isDarkMode ? 'text-white' : 'text-gray-900'}>
+                    {wh.name}
+                  </div>
+                  {wh.description && (
+                    <div
+                      className={`max-w-xs truncate text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
                     >
-                      {wh.third_party_service?.name || (
-                        <span
-                          className={
-                            isDarkMode ? 'text-gray-500' : 'text-gray-400'
-                          }
-                        >
-                          --
-                        </span>
-                      )}
-                    </td>
-                    <td
-                      className={`px-6 py-4 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                    >
-                      {wh.rules.length}
-                    </td>
-                    <td
-                      className="px-6 py-4 text-right"
-                      onClick={(e) => e.stopPropagation()}
-                      onKeyDown={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          aria-label={`Delete webhook ${wh.name}`}
-                          onClick={() => handleDelete(wh.slug)}
-                          disabled={deleteMutation.isPending}
-                          className={
-                            isDarkMode
-                              ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300'
-                              : 'text-red-600 hover:bg-red-50 hover:text-red-700'
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {filteredWebhooks.length === 0 && (
-              <div
-                className={`py-12 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-              >
-                {searchQuery
-                  ? 'No webhooks found matching your search.'
-                  : selectedOrganization
-                    ? `No webhooks in ${selectedOrganization.name} yet.`
-                    : 'No webhooks created yet.'}
+                      {wh.description}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            ),
+          },
+          {
+            key: 'path',
+            header: 'Path',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (wh) => (
+              <code
+                className={`rounded px-2 py-1 text-xs ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}
+              >
+                {wh.notification_path}
+              </code>
+            ),
+          },
+          {
+            key: 'service',
+            header: 'Service',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (wh) =>
+              wh.third_party_service?.name || (
+                <span
+                  className={isDarkMode ? 'text-gray-500' : 'text-gray-400'}
+                >
+                  --
+                </span>
+              ),
+          },
+          {
+            key: 'rules',
+            header: 'Rules',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (wh) => (
+              <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                {wh.rules.length}
+              </span>
+            ),
+          },
+        ]}
+        rows={filteredWebhooks}
+        getRowKey={(wh) => wh.slug}
+        getDeleteLabel={(wh) => wh.name}
+        onRowClick={(wh) => goToEdit(wh.slug)}
+        onDelete={handleDelete}
+        isDeleting={deleteMutation.isPending}
+        emptyMessage={
+          searchQuery
+            ? 'No webhooks found matching your search.'
+            : selectedOrganization
+              ? `No webhooks in ${selectedOrganization.name} yet.`
+              : 'No webhooks created yet.'
+        }
+      />
     </div>
   )
 }
