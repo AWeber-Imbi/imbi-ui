@@ -109,6 +109,8 @@ export function EditableKeyValueCard({
               className={`flex-1 text-sm ${inputClass}`}
             />
             <button
+              type="button"
+              aria-label={`Remove ${title.toLowerCase()} row ${index + 1}`}
               onClick={() => removeRow(index)}
               disabled={isSaving}
               className={`rounded p-1.5 ${

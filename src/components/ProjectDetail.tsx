@@ -11,6 +11,7 @@ import { resolveColor, resolveIcon } from '@/lib/ui-maps'
 import type { XUiMaps } from '@/lib/ui-maps'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -1087,7 +1088,10 @@ function SettingsTab({
   const orgSlug = selectedOrganization?.slug || ''
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const projectTypeSlug = project.project_types?.[0]?.slug ?? ''
+  const projectTypeSlug =
+    project.project_type?.slug ?? project.project_types?.[0]?.slug ?? ''
+  const [deleteConfirmSlug, setDeleteConfirmSlug] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const invalidateProject = () => {
     queryClient.invalidateQueries({
@@ -1096,29 +1100,50 @@ function SettingsTab({
   }
 
   const linksMutation = useMutation({
-    mutationFn: (links: Record<string, string>) =>
-      updateProject(orgSlug, projectTypeSlug, project.slug, { links }),
+    mutationFn: (links: Record<string, string>) => {
+      if (!orgSlug || !projectTypeSlug)
+        return Promise.reject(new Error('Missing project type'))
+      return updateProject(orgSlug, projectTypeSlug, project.slug, { links })
+    },
     onSuccess: invalidateProject,
   })
 
   const identifiersMutation = useMutation({
-    mutationFn: (identifiers: Record<string, string>) =>
-      updateProject(orgSlug, projectTypeSlug, project.slug, { identifiers }),
+    mutationFn: (identifiers: Record<string, string>) => {
+      if (!orgSlug || !projectTypeSlug)
+        return Promise.reject(new Error('Missing project type'))
+      return updateProject(orgSlug, projectTypeSlug, project.slug, {
+        identifiers,
+      })
+    },
     onSuccess: invalidateProject,
   })
 
   const envMutation = useMutation({
-    mutationFn: (environments: Record<string, Record<string, string>>) =>
-      updateProject(orgSlug, projectTypeSlug, project.slug, { environments }),
+    mutationFn: (environments: Record<string, Record<string, string>>) => {
+      if (!orgSlug || !projectTypeSlug)
+        return Promise.reject(new Error('Missing project type'))
+      return updateProject(orgSlug, projectTypeSlug, project.slug, {
+        environments,
+      })
+    },
     onSuccess: invalidateProject,
   })
 
   const deleteMutation = useMutation({
-    mutationFn: () => deleteProject(orgSlug, projectTypeSlug, project.slug),
+    mutationFn: () => {
+      if (!orgSlug || !projectTypeSlug)
+        return Promise.reject(new Error('Missing project type'))
+      return deleteProject(orgSlug, projectTypeSlug, project.slug)
+    },
     onSuccess: () => navigate('/'),
   })
 
-  const { data: linkDefs = [] } = useQuery({
+  const {
+    data: linkDefs = [],
+    isLoading: linkDefsLoading,
+    isError: linkDefsError,
+  } = useQuery({
     queryKey: ['linkDefinitions', orgSlug],
     queryFn: () => listLinkDefinitions(orgSlug),
     enabled: !!orgSlug,
@@ -1137,7 +1162,27 @@ function SettingsTab({
     <div className="space-y-6">
       <EditProjectForm project={project} isDarkMode={isDarkMode} />
 
-      {linkDefs.length > 0 && (
+      {linkDefsLoading && (
+        <Card
+          className={`p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
+        >
+          <p
+            className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`}
+          >
+            Loading link definitions...
+          </p>
+        </Card>
+      )}
+      {linkDefsError && (
+        <Card
+          className={`p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
+        >
+          <p className="text-sm text-red-600 dark:text-red-400">
+            Failed to load link definitions.
+          </p>
+        </Card>
+      )}
+      {!linkDefsLoading && !linkDefsError && linkDefs.length > 0 && (
         <EditLinksCard
           linkDefs={linkDefs}
           links={project.links || {}}
@@ -1217,15 +1262,66 @@ function SettingsTab({
         >
           Are you ABSOLUTELY SURE you wish to delete this project?
         </p>
-        <Button
-          variant="outline"
-          size="sm"
-          className={`bg-red-700 text-white hover:bg-red-800 ${isDarkMode ? 'border-red-700' : 'border-red-300'}`}
-          onClick={() => deleteMutation.mutate()}
-          disabled={deleteMutation.isPending}
-        >
-          {deleteMutation.isPending ? 'Deleting...' : 'Delete Project'}
-        </Button>
+        {!showDeleteConfirm ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className={`bg-red-700 text-white hover:bg-red-800 ${isDarkMode ? 'border-red-700' : 'border-red-300'}`}
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={!projectTypeSlug}
+          >
+            Delete Project
+          </Button>
+        ) : (
+          <div className="space-y-3">
+            <p
+              className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-slate-700'}`}
+            >
+              Type{' '}
+              <code
+                className={`rounded px-1.5 py-0.5 font-mono text-sm ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-slate-100 text-slate-900'}`}
+              >
+                {project.slug}
+              </code>{' '}
+              to confirm deletion:
+            </p>
+            <Input
+              value={deleteConfirmSlug}
+              onChange={(e) => setDeleteConfirmSlug(e.target.value)}
+              placeholder={project.slug}
+              disabled={deleteMutation.isPending}
+              className={
+                isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : ''
+              }
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className={`bg-red-700 text-white hover:bg-red-800 ${isDarkMode ? 'border-red-700' : 'border-red-300'}`}
+                onClick={() => deleteMutation.mutate()}
+                disabled={
+                  deleteConfirmSlug !== project.slug ||
+                  deleteMutation.isPending ||
+                  !projectTypeSlug
+                }
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Confirm Delete'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setDeleteConfirmSlug('')
+                }}
+                disabled={deleteMutation.isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   )

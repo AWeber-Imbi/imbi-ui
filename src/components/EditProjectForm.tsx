@@ -30,13 +30,21 @@ export function EditProjectForm({ project, isDarkMode }: EditProjectFormProps) {
   const [dynamicData, setDynamicData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const { data: teams = [], isLoading: teamsLoading } = useQuery({
+  const {
+    data: teams = [],
+    isLoading: teamsLoading,
+    isError: teamsError,
+  } = useQuery({
     queryKey: ['teams', orgSlug],
     queryFn: () => listTeams(orgSlug),
     enabled: !!orgSlug,
   })
 
-  const { data: projectSchema } = useQuery({
+  const {
+    data: projectSchema,
+    isLoading: schemaLoading,
+    isError: schemaError,
+  } = useQuery({
     queryKey: ['projectSchema', orgSlug, project.id],
     queryFn: () => getProjectSchema(orgSlug, project.id),
     enabled: !!orgSlug,
@@ -81,7 +89,8 @@ export function EditProjectForm({ project, isDarkMode }: EditProjectFormProps) {
     setDynamicData(initial)
   }, [editableSchema, project])
 
-  const projectTypeSlug = project.project_types?.[0]?.slug ?? ''
+  const projectTypeSlug =
+    project.project_type?.slug ?? project.project_types?.[0]?.slug ?? ''
 
   const mutation = useMutation({
     mutationFn: (payload: Record<string, unknown>) =>
@@ -93,8 +102,15 @@ export function EditProjectForm({ project, isDarkMode }: EditProjectFormProps) {
     },
   })
 
+  const isLoading = teamsLoading || schemaLoading
+  const isDataError = teamsError || schemaError
+
   const handleSave = () => {
     const newErrors: Record<string, string> = {}
+
+    if (!projectTypeSlug) {
+      newErrors.projectType = 'Project type is missing'
+    }
 
     if (!name.trim()) {
       newErrors.name = 'Name is required'
@@ -119,6 +135,38 @@ export function EditProjectForm({ project, isDarkMode }: EditProjectFormProps) {
 
   const inputClass = isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : ''
   const labelClass = `mb-1.5 block text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`
+
+  if (isLoading) {
+    return (
+      <Card
+        className={`p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
+      >
+        <h3 className={`mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+          Project Details
+        </h3>
+        <p
+          className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`}
+        >
+          Loading...
+        </p>
+      </Card>
+    )
+  }
+
+  if (isDataError) {
+    return (
+      <Card
+        className={`p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}
+      >
+        <h3 className={`mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+          Project Details
+        </h3>
+        <p className="text-sm text-red-600 dark:text-red-400">
+          Failed to load form data. Please try refreshing the page.
+        </p>
+      </Card>
+    )
+  }
 
   return (
     <Card className={`p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}>
@@ -198,7 +246,7 @@ export function EditProjectForm({ project, isDarkMode }: EditProjectFormProps) {
           size="sm"
           className="border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
           onClick={handleSave}
-          disabled={mutation.isPending}
+          disabled={mutation.isPending || !projectTypeSlug}
         >
           {mutation.isPending ? 'Saving...' : 'Save'}
         </Button>
