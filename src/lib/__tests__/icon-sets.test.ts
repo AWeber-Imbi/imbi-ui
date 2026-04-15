@@ -3,6 +3,7 @@ import { iconRegistry } from '@/lib/icon-registry'
 import '@/lib/icon-sets/lucide'
 import '@/lib/icon-sets/simple-icons'
 import '@/lib/icon-sets/phosphor'
+import '@/lib/icon-sets/tabler'
 
 describe('Lucide icon set', () => {
   it('registers under id "lucide" with label "Lucide"', () => {
@@ -83,6 +84,36 @@ describe('Phosphor icon set', () => {
 
   it('returns null for non-phosphor values', () => {
     const set = iconRegistry.getSets().find((s) => s.id === 'phosphor')!
+    expect(set.resolve('lucide-home')).toBeNull()
+  })
+})
+
+describe('Tabler icon set', () => {
+  it('registers under id "tabler" with label "Tabler"', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'tabler')
+    expect(set).toBeDefined()
+    expect(set?.label).toBe('Tabler')
+  })
+
+  it('resolves tabler-home', () => {
+    expect(iconRegistry.resolve('tabler-home')).not.toBeNull()
+  })
+
+  it('resolves tabler-home-filled', () => {
+    expect(iconRegistry.resolve('tabler-home-filled')).not.toBeNull()
+  })
+
+  it('resolves tabler-settings', () => {
+    expect(iconRegistry.resolve('tabler-settings')).not.toBeNull()
+  })
+
+  it('icon values use tabler- prefix', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'tabler')!
+    expect(set.icons.every((i) => i.value.startsWith('tabler-'))).toBe(true)
+  })
+
+  it('returns null for non-tabler values', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'tabler')!
     expect(set.resolve('lucide-home')).toBeNull()
   })
 })
