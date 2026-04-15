@@ -1,19 +1,13 @@
 import { useState, useMemo } from 'react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { AdminTable } from '@/components/ui/admin-table'
+import type { CanDeleteResult } from '@/components/ui/admin-table'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
-import { Plus, Search, Trash2, Building2, AlertCircle } from 'lucide-react'
+import { Plus, Search, Building2, AlertCircle } from 'lucide-react'
 import { formatRelativeDate } from '@/lib/formatDate'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { EntityIcon } from '@/components/ui/entity-icon'
-import { Card, CardContent } from '@/components/ui/card'
 import { OrganizationForm } from './organizations/OrganizationForm'
 import { OrganizationDetail } from './organizations/OrganizationDetail'
 import { useAdminNav } from '@/hooks/useAdminNav'
@@ -41,10 +35,6 @@ export function OrganizationManagement({
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
-  const [deleteTarget, setDeleteTarget] = useState<{
-    slug: string
-    name: string
-  } | null>(null)
 
   const {
     data: organizations = [],
@@ -55,19 +45,15 @@ export function OrganizationManagement({
     queryFn: listOrganizations,
   })
 
-  const canDeleteOrg = (
-    slug: string,
-  ): { allowed: boolean; reason?: string } => {
+  type Organization = (typeof organizations)[number]
+
+  const canDeleteOrganization = (org: Organization): CanDeleteResult => {
     if (organizations.length <= 1) {
       return { allowed: false, reason: 'Cannot delete the only organization' }
     }
-    const org = organizations.find((o) => o.slug === slug)
-    const teamCount = org?.relationships?.teams?.count ?? 0
+    const teamCount = org.relationships?.teams?.count ?? 0
     if (teamCount > 0) {
-      return {
-        allowed: false,
-        reason: `Has ${teamCount} team(s)`,
-      }
+      return { allowed: false, reason: `Has ${teamCount} team(s)` }
     }
     return { allowed: true }
   }
@@ -118,21 +104,8 @@ export function OrganizationManagement({
     [organizations, selectedOrgSlug],
   )
 
-  const handleDelete = (slug: string) => {
-    const check = canDeleteOrg(slug)
-    if (!check.allowed) return
-
-    const org = organizations.find((o) => o.slug === slug)
-    if (org) {
-      setDeleteTarget({ slug, name: org.name })
-    }
-  }
-
-  const onDeleteConfirm = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate(deleteTarget.slug)
-      setDeleteTarget(null)
-    }
+  const handleDelete = (org: Organization) => {
+    deleteMutation.mutate(org.slug)
   }
 
   const handleSave = (orgData: OrganizationCreate) => {
@@ -220,12 +193,6 @@ export function OrganizationManagement({
 
   return (
     <div className="space-y-6">
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        title={`Delete "${deleteTarget?.name}"?`}
-        onConfirm={onDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -252,222 +219,142 @@ export function OrganizationManagement({
         </Button>
       </div>
 
-      {/* Organizations Table */}
-      <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-tertiary bg-secondary">
-                <tr>
-                  <th
-                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Organization
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-center text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Slug
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Teams
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Members
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Projects
-                  </th>
-                  <th
-                    className={`whitespace-nowrap px-6 py-3 text-center text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Last Updated
-                  </th>
-                  <th
-                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody
-                className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}
-              >
-                {filteredOrgs.map((org) => {
-                  const deleteCheck = canDeleteOrg(org.slug)
-                  return (
-                    <tr
-                      key={org.slug}
-                      onClick={() => goToEdit(org.slug)}
-                      className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
+      <AdminTable
+        columns={[
+          {
+            key: 'name',
+            header: 'Organization',
+            headerAlign: 'left',
+            cellAlign: 'left',
+            render: (org) => (
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex size-8 flex-shrink-0 items-center justify-center rounded-lg ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'}`}
+                >
+                  {org.icon ? (
+                    <EntityIcon
+                      icon={org.icon}
+                      className="size-5 rounded object-cover"
+                    />
+                  ) : (
+                    <Building2
+                      className={`h-4 w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                    />
+                  )}
+                </div>
+                <div>
+                  <div className={isDarkMode ? 'text-white' : 'text-gray-900'}>
+                    {org.name}
+                  </div>
+                  {org.description && (
+                    <div
+                      className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
-                              isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
-                            }`}
-                          >
-                            {org.icon ? (
-                              <EntityIcon
-                                icon={org.icon}
-                                className="h-5 w-5 rounded object-cover"
-                              />
-                            ) : (
-                              <Building2
-                                className={`h-4 w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <div
-                              className={
-                                isDarkMode ? 'text-white' : 'text-gray-900'
-                              }
-                            >
-                              {org.name}
-                            </div>
-                            {org.description && (
-                              <div
-                                className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                              >
-                                {org.description}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                      >
-                        <code
-                          className={`rounded px-2 py-1 ${
-                            isDarkMode
-                              ? 'bg-gray-700 text-gray-300'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {org.slug}
-                        </code>
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                          (org.relationships?.teams?.count ?? 0) === 0
-                            ? isDarkMode
-                              ? 'text-gray-600'
-                              : 'text-gray-400'
-                            : isDarkMode
-                              ? 'text-gray-300'
-                              : 'text-gray-600'
-                        }`}
-                      >
-                        {org.relationships?.teams?.count ?? 0}
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                          (org.relationships?.members?.count ?? 0) === 0
-                            ? isDarkMode
-                              ? 'text-gray-600'
-                              : 'text-gray-400'
-                            : isDarkMode
-                              ? 'text-gray-300'
-                              : 'text-gray-600'
-                        }`}
-                      >
-                        {org.relationships?.members?.count ?? 0}
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                          (org.relationships?.projects?.count ?? 0) === 0
-                            ? isDarkMode
-                              ? 'text-gray-600'
-                              : 'text-gray-400'
-                            : isDarkMode
-                              ? 'text-gray-300'
-                              : 'text-gray-600'
-                        }`}
-                      >
-                        {org.relationships?.projects?.count ?? 0}
-                      </td>
-                      <td
-                        className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                      >
-                        {formatRelativeDate(org.updated_at ?? org.created_at)}
-                      </td>
-                      <td
-                        className="whitespace-nowrap px-6 py-4 text-right"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          <TooltipProvider delayDuration={200}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDelete(org.slug)}
-                                    disabled={
-                                      !deleteCheck.allowed ||
-                                      deleteMutation.isPending
-                                    }
-                                    className={
-                                      isDarkMode
-                                        ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300 disabled:pointer-events-none'
-                                        : 'text-red-600 hover:bg-red-50 hover:text-red-700 disabled:pointer-events-none'
-                                    }
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </span>
-                              </TooltipTrigger>
-                              {deleteCheck.reason && (
-                                <TooltipContent>
-                                  <p>{deleteCheck.reason}</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-
-            {filteredOrgs.length === 0 && (
-              <div
-                className={`py-12 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-              >
-                {searchQuery
-                  ? 'No organizations match your search.'
-                  : 'No organizations created yet.'}
+                      {org.description}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+            ),
+          },
+          {
+            key: 'slug',
+            header: 'Slug',
+            headerAlign: 'center',
+            cellAlign: 'center',
+            render: (org) => (
+              <code
+                className={`rounded px-2 py-1 ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}
+              >
+                {org.slug}
+              </code>
+            ),
+          },
+          {
+            key: 'teams',
+            header: 'Teams',
+            headerAlign: 'right',
+            cellAlign: 'right',
+            render: (org) => (
+              <span
+                className={
+                  (org.relationships?.teams?.count ?? 0) === 0
+                    ? isDarkMode
+                      ? 'text-gray-600'
+                      : 'text-gray-400'
+                    : isDarkMode
+                      ? 'text-gray-300'
+                      : 'text-gray-600'
+                }
+              >
+                {org.relationships?.teams?.count ?? 0}
+              </span>
+            ),
+          },
+          {
+            key: 'members',
+            header: 'Members',
+            headerAlign: 'right',
+            cellAlign: 'right',
+            render: (org) => (
+              <span
+                className={
+                  (org.relationships?.members?.count ?? 0) === 0
+                    ? isDarkMode
+                      ? 'text-gray-600'
+                      : 'text-gray-400'
+                    : isDarkMode
+                      ? 'text-gray-300'
+                      : 'text-gray-600'
+                }
+              >
+                {org.relationships?.members?.count ?? 0}
+              </span>
+            ),
+          },
+          {
+            key: 'projects',
+            header: 'Projects',
+            headerAlign: 'right',
+            cellAlign: 'right',
+            render: (org) => (
+              <span
+                className={
+                  (org.relationships?.projects?.count ?? 0) === 0
+                    ? isDarkMode
+                      ? 'text-gray-600'
+                      : 'text-gray-400'
+                    : isDarkMode
+                      ? 'text-gray-300'
+                      : 'text-gray-600'
+                }
+              >
+                {org.relationships?.projects?.count ?? 0}
+              </span>
+            ),
+          },
+          {
+            key: 'updated',
+            header: 'Last Updated',
+            headerAlign: 'center',
+            cellAlign: 'center',
+            render: (org) =>
+              formatRelativeDate(org.updated_at ?? org.created_at),
+          },
+        ]}
+        rows={filteredOrgs}
+        getRowKey={(org) => org.slug}
+        getDeleteLabel={(org) => org.name}
+        onRowClick={(org) => goToEdit(org.slug)}
+        onDelete={handleDelete}
+        canDelete={canDeleteOrganization}
+        isDeleting={deleteMutation.isPending}
+        emptyMessage={
+          searchQuery
+            ? 'No organizations match your search.'
+            : 'No organizations created yet.'
+        }
+      />
     </div>
   )
 }
