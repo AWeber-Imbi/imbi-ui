@@ -71,6 +71,10 @@ describe('IconRegistry', () => {
       registry.register(makeSet('foo', 'Foo'))
       expect(registry.resolveUrl('unknown-icon')).toBeNull()
     })
+
+    it('returns null when registry is empty', () => {
+      expect(registry.resolveUrl('foo-bar')).toBeNull()
+    })
   })
 
   describe('search()', () => {
@@ -79,6 +83,13 @@ describe('IconRegistry', () => {
         makeSet('aaa', 'Aaa', [{ label: 'Home', value: 'aaa-home' }]),
       )
       expect(registry.search('')).toEqual([])
+    })
+
+    it('returns empty array for whitespace-only query', () => {
+      registry.register(
+        makeSet('aaa', 'Aaa', [{ label: 'Home', value: 'aaa-home' }]),
+      )
+      expect(registry.search('   ')).toEqual([])
     })
 
     it('finds icons matching the query across all sets', () => {
