@@ -26,6 +26,8 @@ import { formatDistanceToNow } from 'date-fns'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { ApiError } from '@/api/client'
+import { sortEnvironments } from '@/lib/utils'
 import {
   listLinkDefinitions,
   getProjectSchema,
@@ -273,11 +275,7 @@ export function ProjectDetail({
   ]
 
   const sortedEnvironments = useMemo(
-    () =>
-      [...(project.environments || [])].sort((a, b) => {
-        const orderDiff = (a.sort_order ?? 0) - (b.sort_order ?? 0)
-        return orderDiff !== 0 ? orderDiff : a.name.localeCompare(b.name)
-      }),
+    () => sortEnvironments(project.environments || []),
     [project.environments],
   )
 
@@ -1099,6 +1097,16 @@ function SettingsTab({
     })
   }
 
+  const mutationErrorHandler = (label: string) => {
+    return (error: ApiError<{ detail?: string }> | Error) => {
+      const detail =
+        error instanceof ApiError
+          ? error.response?.data?.detail || error.message
+          : error.message
+      alert(`Failed to ${label}: ${detail}`)
+    }
+  }
+
   const linksMutation = useMutation({
     mutationFn: (links: Record<string, string>) => {
       if (!orgSlug || !projectTypeSlug)
@@ -1106,6 +1114,7 @@ function SettingsTab({
       return updateProject(orgSlug, projectTypeSlug, project.slug, { links })
     },
     onSuccess: invalidateProject,
+    onError: mutationErrorHandler('save links'),
   })
 
   const identifiersMutation = useMutation({
@@ -1117,6 +1126,7 @@ function SettingsTab({
       })
     },
     onSuccess: invalidateProject,
+    onError: mutationErrorHandler('save identifiers'),
   })
 
   const envMutation = useMutation({
@@ -1128,6 +1138,7 @@ function SettingsTab({
       })
     },
     onSuccess: invalidateProject,
+    onError: mutationErrorHandler('save environments'),
   })
 
   const deleteMutation = useMutation({
@@ -1137,6 +1148,7 @@ function SettingsTab({
       return deleteProject(orgSlug, projectTypeSlug, project.slug)
     },
     onSuccess: () => navigate('/'),
+    onError: mutationErrorHandler('delete project'),
   })
 
   const {
@@ -1150,11 +1162,7 @@ function SettingsTab({
   })
 
   const sortedEnvironments = useMemo(
-    () =>
-      [...(project.environments || [])].sort((a, b) => {
-        const orderDiff = (a.sort_order ?? 0) - (b.sort_order ?? 0)
-        return orderDiff !== 0 ? orderDiff : a.name.localeCompare(b.name)
-      }),
+    () => sortEnvironments(project.environments || []),
     [project.environments],
   )
 
