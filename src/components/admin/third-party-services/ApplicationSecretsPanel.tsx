@@ -251,31 +251,34 @@ export function ApplicationSecretsPanel({
                       value
                     )}
                   </code>
-                  <TooltipProvider delayDuration={200}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleCopy(field, value!)}
-                          className={
-                            isDarkMode
-                              ? 'text-gray-400 hover:text-gray-200'
-                              : ''
-                          }
-                        >
-                          {copiedField === field ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Copy to clipboard</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {value != null && (
+                    <TooltipProvider delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-label={`Copy ${FIELD_LABELS[field]}`}
+                            onClick={() => handleCopy(field, value)}
+                            className={
+                              isDarkMode
+                                ? 'text-gray-400 hover:text-gray-200'
+                                : ''
+                            }
+                          >
+                            {copiedField === field ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Copy to clipboard</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               </div>
             )

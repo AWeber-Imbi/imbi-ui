@@ -89,7 +89,7 @@ export function ServiceAccountDetail({
   const [newOrgSlug, setNewOrgSlug] = useState('')
   const [newRoleSlug, setNewRoleSlug] = useState('')
 
-  const { data: availableRoles = [] } = useQuery({
+  const { data: availableRoles = [], isError: rolesError } = useQuery({
     queryKey: ['roles'],
     queryFn: getRoles,
   })
@@ -527,22 +527,30 @@ export function ServiceAccountDetail({
                   >
                     Role
                   </label>
-                  <select
-                    value={newRoleSlug}
-                    onChange={(e) => setNewRoleSlug(e.target.value)}
-                    className={`w-full rounded-md border px-3 py-2 text-sm ${
-                      isDarkMode
-                        ? 'border-gray-600 bg-gray-700 text-white'
-                        : 'border-gray-300 bg-white text-gray-900'
-                    }`}
-                  >
-                    <option value="">Select...</option>
-                    {availableRoles.map((role) => (
-                      <option key={role.slug} value={role.slug}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
+                  {rolesError ? (
+                    <p
+                      className={`text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}
+                    >
+                      Failed to load roles
+                    </p>
+                  ) : (
+                    <select
+                      value={newRoleSlug}
+                      onChange={(e) => setNewRoleSlug(e.target.value)}
+                      className={`w-full rounded-md border px-3 py-2 text-sm ${
+                        isDarkMode
+                          ? 'border-gray-600 bg-gray-700 text-white'
+                          : 'border-gray-300 bg-white text-gray-900'
+                      }`}
+                    >
+                      <option value="">Select...</option>
+                      {availableRoles.map((role) => (
+                        <option key={role.slug} value={role.slug}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
               <div className="mt-3 flex items-center gap-2">
@@ -603,31 +611,42 @@ export function ServiceAccountDetail({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <select
-                        value={membership.role}
-                        onChange={(e) =>
-                          updateOrgRoleMutation.mutate({
-                            orgSlug: membership.organization_slug,
-                            roleSlug: e.target.value,
-                          })
-                        }
-                        disabled={updateOrgRoleMutation.isPending}
-                        className={`rounded border px-2 py-1 text-xs ${
-                          isDarkMode
-                            ? 'border-gray-600 bg-gray-700 text-white'
-                            : 'border-gray-300 bg-white text-gray-900'
-                        }`}
-                      >
-                        {availableRoles.map((role) => (
-                          <option key={role.slug} value={role.slug}>
-                            {role.name}
-                          </option>
-                        ))}
-                      </select>
+                      {rolesError ? (
+                        <span
+                          className={`text-xs ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}
+                        >
+                          Roles unavailable
+                        </span>
+                      ) : (
+                        <select
+                          value={membership.role}
+                          onChange={(e) =>
+                            updateOrgRoleMutation.mutate({
+                              orgSlug: membership.organization_slug,
+                              roleSlug: e.target.value,
+                            })
+                          }
+                          disabled={updateOrgRoleMutation.isPending}
+                          aria-label={`Role for ${membership.organization_name}`}
+                          className={`rounded border px-2 py-1 text-xs ${
+                            isDarkMode
+                              ? 'border-gray-600 bg-gray-700 text-white'
+                              : 'border-gray-300 bg-white text-gray-900'
+                          }`}
+                        >
+                          {availableRoles.map((role) => (
+                            <option key={role.slug} value={role.slug}>
+                              {role.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                       <TooltipProvider delayDuration={200}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label={`Remove from ${membership.organization_name}`}
                               onClick={() => {
                                 if (
                                   confirm(
@@ -848,6 +867,8 @@ export function ServiceAccountDetail({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
+                            type="button"
+                            aria-label="Copy client ID"
                             onClick={() =>
                               copyToClipboard(
                                 newlyCreatedCredential.client_id,
@@ -892,6 +913,8 @@ export function ServiceAccountDetail({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
+                            type="button"
+                            aria-label="Copy client secret"
                             onClick={() =>
                               copyToClipboard(
                                 newlyCreatedCredential.client_secret,
@@ -1022,6 +1045,8 @@ export function ServiceAccountDetail({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label={`Rotate credential ${cred.name}`}
                               onClick={() =>
                                 handleRotateCredential(cred.client_id)
                               }
@@ -1044,6 +1069,8 @@ export function ServiceAccountDetail({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label={`Revoke credential ${cred.name}`}
                               onClick={() =>
                                 handleRevokeCredential(cred.client_id)
                               }
@@ -1172,6 +1199,8 @@ export function ServiceAccountDetail({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
+                        type="button"
+                        aria-label="Copy API key"
                         onClick={() =>
                           copyToClipboard(newlyCreatedKey.key_secret, 'new-key')
                         }
@@ -1290,6 +1319,8 @@ export function ServiceAccountDetail({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label={`Rotate API key ${key.name}`}
                               onClick={() => handleRotateKey(key.key_id)}
                               disabled={rotateKeyMutation.isPending}
                               className={`rounded p-1.5 ${
@@ -1310,6 +1341,8 @@ export function ServiceAccountDetail({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label={`Revoke API key ${key.name}`}
                               onClick={() => handleRevokeKey(key.key_id)}
                               disabled={revokeKeyMutation.isPending}
                               className={`rounded p-1.5 ${

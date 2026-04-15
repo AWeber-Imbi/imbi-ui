@@ -1347,6 +1347,8 @@ export function BlueprintForm({
                             <TooltipTrigger asChild>
                               <span className="inline-flex">
                                 <button
+                                  type="button"
+                                  aria-label="Move property up"
                                   onClick={() => moveProperty(index, 'up')}
                                   disabled={index === 0}
                                   className={`rounded p-0.5 ${
@@ -1371,6 +1373,8 @@ export function BlueprintForm({
                             <TooltipTrigger asChild>
                               <span className="inline-flex">
                                 <button
+                                  type="button"
+                                  aria-label="Move property down"
                                   onClick={() => moveProperty(index, 'down')}
                                   disabled={
                                     index === schemaProperties.length - 1
@@ -1465,6 +1469,12 @@ export function BlueprintForm({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label={
+                                isExpanded
+                                  ? 'Collapse advanced options'
+                                  : 'Expand advanced options'
+                              }
                               onClick={() => toggleExpandProp(prop.id)}
                               className={`rounded p-1.5 text-xs ${
                                 isDarkMode
@@ -1489,6 +1499,8 @@ export function BlueprintForm({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
+                              aria-label="Remove property"
                               onClick={() => removeProperty(prop.id)}
                               className={`rounded p-1.5 ${
                                 isDarkMode

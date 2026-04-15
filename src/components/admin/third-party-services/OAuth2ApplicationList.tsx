@@ -365,6 +365,7 @@ export function OAuth2ApplicationList({
                                   href={app.application_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  aria-label={`Open ${app.name} application`}
                                   className={`inline-flex items-center rounded p-1.5 ${
                                     isDarkMode
                                       ? 'text-blue-400 hover:bg-blue-900/20 hover:text-blue-300'

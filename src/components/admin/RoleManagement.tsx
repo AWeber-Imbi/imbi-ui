@@ -387,7 +387,11 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
         rows={filteredRoles}
         getRowKey={(role) => role.slug}
         getDeleteLabel={(role) => role.name}
-        onRowClick={(role) => handleViewClick(role.slug)}
+        onRowClick={(role) => {
+          const isSystem =
+            'is_system' in role && (role as RoleDetailType).is_system
+          if (!isSystem) handleViewClick(role.slug)
+        }}
         onDelete={handleDelete}
         canDelete={canDeleteRole}
         isDeleting={deleteMutation.isPending}

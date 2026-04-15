@@ -43,7 +43,11 @@ export function ServiceAccountForm({
   const [roleSlug, setRoleSlug] = useState('')
 
   // Fetch available roles
-  const { data: availableRoles = [], isLoading: rolesLoading } = useQuery({
+  const {
+    data: availableRoles = [],
+    isLoading: rolesLoading,
+    isError: rolesError,
+  } = useQuery({
     queryKey: ['roles'],
     queryFn: getRoles,
   })
@@ -367,6 +371,12 @@ export function ServiceAccountForm({
                     className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
                   >
                     Loading roles...
+                  </p>
+                ) : rolesError ? (
+                  <p
+                    className={`text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}
+                  >
+                    Failed to load roles. Please refresh and try again.
                   </p>
                 ) : (
                   <select
