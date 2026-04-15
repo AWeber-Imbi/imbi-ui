@@ -20,7 +20,7 @@ function resolve(value: string): IconComponent | null {
   if (!value.startsWith('si-')) return null
   const name = 'Si' + toPascalCase(value.slice(3))
   const Component = siLookup[name]
-  return typeof Component === 'function' ? (Component as IconComponent) : null
+  return Component != null ? (Component as IconComponent) : null
 }
 
 function resolveUrl(value: string, color?: string): string | null {

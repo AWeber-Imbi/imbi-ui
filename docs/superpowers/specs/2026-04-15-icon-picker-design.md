@@ -75,7 +75,7 @@ export const iconRegistry: IconRegistry  // singleton
 
 Current `src/lib/icons.ts` is split into focused modules:
 
-```
+```text
 src/lib/
   icon-registry.ts        ← registry class, interfaces, singleton export
   icon-sets/
