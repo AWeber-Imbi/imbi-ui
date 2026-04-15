@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { iconRegistry } from '@/lib/icon-registry'
 import '@/lib/icon-sets/lucide'
 import '@/lib/icon-sets/simple-icons'
+import '@/lib/icon-sets/phosphor'
 
 describe('Lucide icon set', () => {
   it('registers under id "lucide" with label "Lucide"', () => {
@@ -56,6 +57,32 @@ describe('Simple Icons icon set', () => {
 
   it('returns null for lucide- prefixed values', () => {
     const set = iconRegistry.getSets().find((s) => s.id === 'simple-icons')!
+    expect(set.resolve('lucide-home')).toBeNull()
+  })
+})
+
+describe('Phosphor icon set', () => {
+  it('registers under id "phosphor" with label "Phosphor"', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'phosphor')
+    expect(set).toBeDefined()
+    expect(set?.label).toBe('Phosphor')
+  })
+
+  it('resolves phosphor-house', () => {
+    expect(iconRegistry.resolve('phosphor-house')).not.toBeNull()
+  })
+
+  it('resolves phosphor-star', () => {
+    expect(iconRegistry.resolve('phosphor-star')).not.toBeNull()
+  })
+
+  it('icon values use phosphor- prefix', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'phosphor')!
+    expect(set.icons.every((i) => i.value.startsWith('phosphor-'))).toBe(true)
+  })
+
+  it('returns null for non-phosphor values', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'phosphor')!
     expect(set.resolve('lucide-home')).toBeNull()
   })
 })
