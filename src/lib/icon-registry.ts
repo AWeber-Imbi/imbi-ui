@@ -33,15 +33,20 @@ export interface AgentIconManifest {
 
 export class IconRegistry {
   private sets: Map<string, IconSetDefinition> = new Map()
+  private cachedSets: IconSetDefinition[] | null = null
 
   register(set: IconSetDefinition): void {
     this.sets.set(set.id, set)
+    this.cachedSets = null
   }
 
   getSets(): IconSetDefinition[] {
-    return Array.from(this.sets.values()).sort((a, b) =>
-      a.label.localeCompare(b.label),
-    )
+    if (!this.cachedSets) {
+      this.cachedSets = Array.from(this.sets.values()).sort((a, b) =>
+        a.label.localeCompare(b.label),
+      )
+    }
+    return this.cachedSets
   }
 
   resolve(value: string): IconComponent | null {

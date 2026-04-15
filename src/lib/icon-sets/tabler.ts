@@ -3,30 +3,17 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { iconRegistry } from '@/lib/icon-registry'
 import type { IconComponent, IconEntry } from '@/lib/icon-registry'
+import {
+  toPascalCase,
+  encodeSvgToDataUrl,
+  isForwardRefComponent,
+} from '@/lib/icon-sets/utils'
 
 const tablerLookup = TablerIcons as Record<string, unknown>
 
-// Tabler exports React.forwardRef components ($$typeof === Symbol.for('react.forward_ref'))
-const REACT_FORWARD_REF = Symbol.for('react.forward_ref')
-
-function isTablerIcon(v: unknown): v is IconComponent {
-  return (
-    v !== null &&
-    typeof v === 'object' &&
-    (v as Record<string, unknown>)['$$typeof'] === REACT_FORWARD_REF
-  )
-}
-
-function toPascalCase(str: string): string {
-  return str
-    .split('-')
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join('')
-}
-
-// All Tabler icon exports start with "Icon"
+// Tabler icon exports are named "Icon*" (e.g. IconHome, IconHomeFilled)
 export const TABLER_ICONS: IconEntry[] = Object.keys(tablerLookup)
-  .filter((k) => isTablerIcon(tablerLookup[k]) && k.startsWith('Icon'))
+  .filter((k) => isForwardRefComponent(tablerLookup[k]) && k.startsWith('Icon'))
   .map((k) => {
     const stripped = k.slice(4) // "IconHome" → "Home", "IconHomeFilled" → "HomeFilled"
     const kebab = stripped.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
@@ -38,7 +25,7 @@ function resolve(value: string): IconComponent | null {
   if (!value.startsWith('tabler-')) return null
   const name = 'Icon' + toPascalCase(value.slice(7))
   const Component = tablerLookup[name]
-  return isTablerIcon(Component) ? Component : null
+  return isForwardRefComponent(Component) ? Component : null
 }
 
 function resolveUrl(value: string, color?: string): string | null {
@@ -52,8 +39,7 @@ function resolveUrl(value: string, color?: string): string | null {
         ...(color ? { color } : {}),
       }),
     )
-    const encoded = btoa(unescape(encodeURIComponent(markup)))
-    return `data:image/svg+xml;base64,${encoded}`
+    return encodeSvgToDataUrl(markup)
   } catch {
     return null
   }

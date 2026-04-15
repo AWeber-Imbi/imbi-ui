@@ -3,31 +3,18 @@ import { type ComponentType, createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { iconRegistry } from '@/lib/icon-registry'
 import type { IconComponent, IconEntry } from '@/lib/icon-registry'
+import {
+  toPascalCase,
+  encodeSvgToDataUrl,
+  isForwardRefComponent,
+} from '@/lib/icon-sets/utils'
 
 const phosphorLookup = PhosphorIcons as Record<string, unknown>
-
-// Phosphor exports React.forwardRef components ($$typeof === Symbol.for('react.forward_ref'))
-const REACT_FORWARD_REF = Symbol.for('react.forward_ref')
-
-function isPhosphorIcon(v: unknown): v is IconComponent {
-  return (
-    v !== null &&
-    typeof v === 'object' &&
-    (v as Record<string, unknown>)['$$typeof'] === REACT_FORWARD_REF
-  )
-}
-
-function toPascalCase(str: string): string {
-  return str
-    .split('-')
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join('')
-}
 
 // Deduplicate by component identity (some icons have both Base and BaseIcon export
 // pointing to the same component; 18 icons exist only under the *Icon name)
 export const PHOSPHOR_ICONS: IconEntry[] = Object.keys(phosphorLookup)
-  .filter((k) => isPhosphorIcon(phosphorLookup[k]) && /^[A-Z]/.test(k))
+  .filter((k) => isForwardRefComponent(phosphorLookup[k]) && /^[A-Z]/.test(k))
   .reduce<{ seen: Set<unknown>; entries: IconEntry[] }>(
     (acc, k) => {
       const comp = phosphorLookup[k]
@@ -47,7 +34,7 @@ function resolve(value: string): IconComponent | null {
   if (!value.startsWith('phosphor-')) return null
   const name = toPascalCase(value.slice(9))
   const Component = phosphorLookup[name]
-  return isPhosphorIcon(Component) ? Component : null
+  return isForwardRefComponent(Component) ? Component : null
 }
 
 function resolveUrl(value: string, color?: string): string | null {
@@ -62,8 +49,7 @@ function resolveUrl(value: string, color?: string): string | null {
         ...(color ? { color } : {}),
       }),
     )
-    const encoded = btoa(unescape(encodeURIComponent(markup)))
-    return `data:image/svg+xml;base64,${encoded}`
+    return encodeSvgToDataUrl(markup)
   } catch {
     return null
   }

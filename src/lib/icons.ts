@@ -1,7 +1,7 @@
 import { ExternalLink } from 'lucide-react'
-import { createElement } from 'react'
 import { iconRegistry } from '@/lib/icon-registry'
 import type { IconComponent } from '@/lib/icon-registry'
+import { createImgComponent } from '@/lib/icon-sets/utils'
 
 // Side-effect imports — each file self-registers with iconRegistry
 import '@/lib/icon-sets/lucide'
@@ -16,31 +16,7 @@ export { iconRegistry } from '@/lib/icon-registry'
 export type { IconComponent } from '@/lib/icon-registry'
 export { AWS_ICONS } from '@/lib/icon-sets/aws'
 
-// ---------------------------------------------------------------------------
-// URL cache
-// ---------------------------------------------------------------------------
 const iconUrlCache = new Map<string, string | null>()
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-function createImgComponent(url: string): IconComponent {
-  const ImgIcon: IconComponent = (props) => {
-    const { className, width, height, ...rest } = props as Record<
-      string,
-      unknown
-    >
-    return createElement('img', {
-      src: url,
-      alt: '',
-      className,
-      width: width ?? 16,
-      height: height ?? 16,
-      ...rest,
-    })
-  }
-  return ImgIcon
-}
 
 // ---------------------------------------------------------------------------
 // Public API

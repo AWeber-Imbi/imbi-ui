@@ -3,13 +3,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { iconRegistry } from '@/lib/icon-registry'
 import type { IconComponent, IconEntry } from '@/lib/icon-registry'
-
-function toPascalCase(str: string): string {
-  return str
-    .split('-')
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join('')
-}
+import { toPascalCase, encodeSvgToDataUrl } from '@/lib/icon-sets/utils'
 
 export const LUCIDE_ICONS: IconEntry[] = Object.keys(lucideIcons)
   .filter((k) => k !== 'default' && k !== 'icons' && k !== 'createLucideIcon')
@@ -36,8 +30,7 @@ function resolveUrl(value: string, color?: string): string | null {
         ...(color ? { color } : {}),
       }),
     )
-    const encoded = btoa(unescape(encodeURIComponent(markup)))
-    return `data:image/svg+xml;base64,${encoded}`
+    return encodeSvgToDataUrl(markup)
   } catch {
     return null
   }

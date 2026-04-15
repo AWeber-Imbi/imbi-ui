@@ -3,15 +3,9 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { iconRegistry } from '@/lib/icon-registry'
 import type { IconComponent, IconEntry } from '@/lib/icon-registry'
+import { toPascalCase, encodeSvgToDataUrl } from '@/lib/icon-sets/utils'
 
 const siLookup = simpleIcons as Record<string, unknown>
-
-function toPascalCase(str: string): string {
-  return str
-    .split('-')
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join('')
-}
 
 export const SI_ICONS: IconEntry[] = Object.keys(siLookup)
   .filter((k) => k.startsWith('Si') && !k.endsWith('Hex') && k !== 'default')
@@ -39,8 +33,7 @@ function resolveUrl(value: string, color?: string): string | null {
         ...(color ? { color } : {}),
       }),
     )
-    const encoded = btoa(unescape(encodeURIComponent(markup)))
-    return `data:image/svg+xml;base64,${encoded}`
+    return encodeSvgToDataUrl(markup)
   } catch {
     return null
   }
