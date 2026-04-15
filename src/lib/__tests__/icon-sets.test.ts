@@ -4,6 +4,8 @@ import '@/lib/icon-sets/lucide'
 import '@/lib/icon-sets/simple-icons'
 import '@/lib/icon-sets/phosphor'
 import '@/lib/icon-sets/tabler'
+import '@/lib/icon-sets/devicon'
+import '@/lib/icon-sets/aws'
 
 describe('Lucide icon set', () => {
   it('registers under id "lucide" with label "Lucide"', () => {
@@ -115,5 +117,46 @@ describe('Tabler icon set', () => {
   it('returns null for non-tabler values', () => {
     const set = iconRegistry.getSets().find((s) => s.id === 'tabler')!
     expect(set.resolve('lucide-home')).toBeNull()
+  })
+})
+
+describe('Devicon icon set', () => {
+  it('registers under id "devicon" with label "Devicon"', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'devicon')
+    expect(set).toBeDefined()
+    expect(set?.label).toBe('Devicon')
+  })
+
+  it('icon values use devicon- prefix', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'devicon')!
+    expect(set.icons.every((i) => i.value.startsWith('devicon-'))).toBe(true)
+  })
+
+  it('returns null for non-devicon values', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'devicon')!
+    expect(set.resolve('lucide-home')).toBeNull()
+  })
+
+  it('returns null for unknown devicon values', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'devicon')!
+    expect(set.resolve('devicon-nonexistent-xyz-999')).toBeNull()
+  })
+})
+
+describe('AWS icon set', () => {
+  it('registers under id "aws" with label "AWS"', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'aws')
+    expect(set).toBeDefined()
+    expect(set?.label).toBe('AWS')
+  })
+
+  it('returns null for lucide- prefixed values', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'aws')!
+    expect(set.resolve('lucide-home')).toBeNull()
+  })
+
+  it('returns null for devicon- prefixed values', () => {
+    const set = iconRegistry.getSets().find((s) => s.id === 'aws')!
+    expect(set.resolve('devicon-javascript-original')).toBeNull()
   })
 })
