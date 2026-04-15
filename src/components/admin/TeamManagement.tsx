@@ -6,6 +6,7 @@ import { formatRelativeDate } from '@/lib/formatDate'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { EntityIcon } from '@/components/ui/entity-icon'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { TeamForm } from './teams/TeamForm'
 import { TeamDetail } from './teams/TeamDetail'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -25,7 +26,6 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
     slug: selectedTeamSlug,
     goToList,
     goToCreate,
-    goToDetail,
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
@@ -219,260 +219,265 @@ export function TeamManagement({ isDarkMode }: TeamManagementProps) {
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div
-          className={`rounded-lg border p-4 ${
-            isDarkMode
-              ? 'border-gray-700 bg-gray-800'
-              : 'border-gray-200 bg-white'
-          }`}
-        >
-          <div
-            className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-          >
-            Total Teams
-          </div>
-          <div
-            className={`mt-1 text-2xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-          >
-            {filteredTeams.length}
-          </div>
-        </div>
-        <div
-          className={`rounded-lg border p-4 ${
-            isDarkMode
-              ? 'border-gray-700 bg-gray-800'
-              : 'border-gray-200 bg-white'
-          }`}
-        >
-          <div
-            className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-          >
-            Total Projects
-          </div>
-          <div
-            className={`mt-1 text-2xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-          >
-            {filteredTeams.reduce(
-              (sum, t) => sum + (t.relationships?.projects?.count ?? 0),
-              0,
-            )}
-          </div>
-        </div>
-        <div
-          className={`rounded-lg border p-4 ${
-            isDarkMode
-              ? 'border-gray-700 bg-gray-800'
-              : 'border-gray-200 bg-white'
-          }`}
-        >
-          <div
-            className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-          >
-            Total Members
-          </div>
-          <div
-            className={`mt-1 text-2xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-          >
-            {filteredTeams.reduce(
-              (sum, t) => sum + (t.relationships?.members?.count ?? 0),
-              0,
-            )}
-          </div>
-        </div>
+        <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+          <CardContent className="p-4">
+            <CardDescription
+              className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}
+            >
+              Total Teams
+            </CardDescription>
+            <div
+              className={`mt-1 text-2xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+            >
+              {filteredTeams.length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+          <CardContent className="p-4">
+            <CardDescription
+              className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}
+            >
+              Total Projects
+            </CardDescription>
+            <div
+              className={`mt-1 text-2xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+            >
+              {filteredTeams.reduce(
+                (sum, t) => sum + (t.relationships?.projects?.count ?? 0),
+                0,
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+          <CardContent className="p-4">
+            <CardDescription
+              className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}
+            >
+              Total Members
+            </CardDescription>
+            <div
+              className={`mt-1 text-2xl ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
+            >
+              {filteredTeams.reduce(
+                (sum, t) => sum + (t.relationships?.members?.count ?? 0),
+                0,
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Teams Table */}
-      <div
-        className={`rounded-lg border ${
-          isDarkMode
-            ? 'border-gray-700 bg-gray-800'
-            : 'border-gray-200 bg-white'
-        }`}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-tertiary bg-secondary">
-              <tr>
-                <th
-                  className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Team
-                </th>
-                <th
-                  className={`px-6 py-3 text-center text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Slug
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Projects
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Members
-                </th>
-                <th
-                  className={`whitespace-nowrap px-6 py-3 text-center text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Last Updated
-                </th>
-                <th
-                  className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}
-            >
-              {filteredTeams.map((team) => (
-                <tr
-                  key={team.slug}
-                  onClick={() => goToDetail(team.slug)}
-                  onKeyDown={(e) => {
-                    if (e.currentTarget !== e.target) return
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      goToDetail(team.slug)
-                    }
-                  }}
-                  tabIndex={0}
-                  aria-label={`View team ${team.name}`}
-                  className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
-                          isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+      <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b border-tertiary bg-secondary">
+                <tr>
+                  <th
+                    className={`px-6 py-3 text-left text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Team
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-center text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Slug
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Projects
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Members
+                  </th>
+                  <th
+                    className={`whitespace-nowrap px-6 py-3 text-center text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Last Updated
+                  </th>
+                  <th
+                    className={`px-6 py-3 text-right text-xs uppercase tracking-wider ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                    }`}
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}
+              >
+                {filteredTeams.map((team) => (
+                  <tr
+                    key={team.slug}
+                    onClick={() => goToEdit(team.slug)}
+                    onKeyDown={(e) => {
+                      if (e.currentTarget !== e.target) return
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        goToEdit(team.slug)
+                      }
+                    }}
+                    tabIndex={0}
+                    aria-label={`Edit team ${team.name}`}
+                    className={`cursor-pointer ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${
+                            isDarkMode ? 'bg-blue-900/30' : 'bg-blue-50'
+                          }`}
+                        >
+                          {team.icon ? (
+                            <EntityIcon
+                              icon={team.icon}
+                              className="h-5 w-5 rounded object-cover"
+                            />
+                          ) : (
+                            <Users
+                              className={`h-4 w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <div
+                            className={
+                              isDarkMode ? 'text-white' : 'text-gray-900'
+                            }
+                          >
+                            {team.name}
+                          </div>
+                          {team.description && (
+                            <div
+                              className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                            >
+                              {team.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                    >
+                      <code
+                        className={`rounded px-2 py-1 ${
+                          isDarkMode
+                            ? 'bg-gray-700 text-gray-300'
+                            : 'bg-gray-100 text-gray-700'
                         }`}
                       >
-                        {team.icon ? (
-                          <EntityIcon
-                            icon={team.icon}
-                            className="h-5 w-5 rounded object-cover"
-                          />
-                        ) : (
-                          <Users
-                            className={`h-4 w-4 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
-                          />
-                        )}
-                      </div>
-                      <div>
-                        <div
-                          className={
-                            isDarkMode ? 'text-white' : 'text-gray-900'
-                          }
-                        >
-                          {team.name}
-                        </div>
-                        {team.description && (
-                          <div
-                            className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                          >
-                            {team.description}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td
-                    className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                  >
-                    <code
-                      className={`rounded px-2 py-1 ${
-                        isDarkMode
-                          ? 'bg-gray-700 text-gray-300'
-                          : 'bg-gray-100 text-gray-700'
+                        {team.slug}
+                      </code>
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
+                        (team.relationships?.projects?.count ?? 0) === 0
+                          ? isDarkMode
+                            ? 'text-gray-600'
+                            : 'text-gray-400'
+                          : isDarkMode
+                            ? 'text-gray-300'
+                            : 'text-gray-600'
                       }`}
                     >
-                      {team.slug}
-                    </code>
-                  </td>
-                  <td
-                    className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                      (team.relationships?.projects?.count ?? 0) === 0
-                        ? isDarkMode
-                          ? 'text-gray-600'
-                          : 'text-gray-400'
-                        : isDarkMode
-                          ? 'text-gray-300'
-                          : 'text-gray-600'
-                    }`}
-                  >
-                    {team.relationships?.projects?.count ?? 0}
-                  </td>
-                  <td
-                    className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
-                      (team.relationships?.members?.count ?? 0) === 0
-                        ? isDarkMode
-                          ? 'text-gray-600'
-                          : 'text-gray-400'
-                        : isDarkMode
-                          ? 'text-gray-300'
-                          : 'text-gray-600'
-                    }`}
-                  >
-                    {team.relationships?.members?.count ?? 0}
-                  </td>
-                  <td
-                    className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
-                  >
-                    {formatRelativeDate(team.updated_at ?? team.created_at)}
-                  </td>
-                  <td
-                    className="whitespace-nowrap px-6 py-4 text-right"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(team.slug)}
-                        disabled={deleteMutation.isPending}
-                        className={
-                          isDarkMode
-                            ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300'
-                            : 'text-red-600 hover:bg-red-50 hover:text-red-700'
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      {team.relationships?.projects?.count ?? 0}
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-6 py-4 text-right text-sm ${
+                        (team.relationships?.members?.count ?? 0) === 0
+                          ? isDarkMode
+                            ? 'text-gray-600'
+                            : 'text-gray-400'
+                          : isDarkMode
+                            ? 'text-gray-300'
+                            : 'text-gray-600'
+                      }`}
+                    >
+                      {team.relationships?.members?.count ?? 0}
+                    </td>
+                    <td
+                      className={`whitespace-nowrap px-6 py-4 text-center text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                    >
+                      {formatRelativeDate(team.updated_at ?? team.created_at)}
+                    </td>
+                    <td
+                      className="whitespace-nowrap px-6 py-4 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-end gap-2">
+                        {(() => {
+                          const projectCount =
+                            team.relationships?.projects?.count ?? 0
+                          const memberCount =
+                            team.relationships?.members?.count ?? 0
+                          const canDelete =
+                            projectCount === 0 && memberCount === 0
+                          const disabledParts = [
+                            projectCount > 0
+                              ? `${projectCount} project(s)`
+                              : '',
+                            memberCount > 0 ? `${memberCount} member(s)` : '',
+                          ].filter(Boolean)
+                          return (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(team.slug)}
+                              disabled={deleteMutation.isPending || !canDelete}
+                              title={
+                                !canDelete
+                                  ? `Cannot delete: has ${disabledParts.join(' and ')}`
+                                  : undefined
+                              }
+                              className={
+                                isDarkMode
+                                  ? 'text-red-400 hover:bg-red-900/20 hover:text-red-300 disabled:opacity-30'
+                                  : 'text-red-600 hover:bg-red-50 hover:text-red-700 disabled:opacity-30'
+                              }
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )
+                        })()}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {filteredTeams.length === 0 && (
-            <div
-              className={`py-12 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
-            >
-              {searchQuery
-                ? 'No teams found matching your search.'
-                : selectedOrganization
-                  ? `No teams in ${selectedOrganization.name} yet.`
-                  : 'No teams created yet.'}
-            </div>
-          )}
-        </div>
-      </div>
+            {filteredTeams.length === 0 && (
+              <div
+                className={`py-12 text-center ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}
+              >
+                {searchQuery
+                  ? 'No teams found matching your search.'
+                  : selectedOrganization
+                    ? `No teams in ${selectedOrganization.name} yet.`
+                    : 'No teams created yet.'}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
