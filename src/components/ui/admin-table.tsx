@@ -48,6 +48,7 @@ interface AdminTableProps<T> {
   getRowLabel?: (row: T) => string
   getDeleteLabel: (row: T) => string
   onRowClick?: (row: T) => void
+  isRowClickable?: (row: T) => boolean
   onDelete: (row: T) => void
   canDelete?: (row: T) => CanDeleteResult
   isDeleting?: boolean
@@ -74,6 +75,7 @@ export function AdminTable<T>({
   getRowLabel,
   getDeleteLabel,
   onRowClick,
+  isRowClickable,
   onDelete,
   canDelete,
   isDeleting = false,
@@ -171,13 +173,15 @@ export function AdminTable<T>({
                     : { allowed: true }
                   const canDeleteRow = deleteCheck.allowed
                   const deleteReason = deleteCheck.reason
+                  const rowClickable =
+                    onRowClick && (isRowClickable ? isRowClickable(row) : true)
 
                   return (
                     <TableRow
                       key={key}
-                      onClick={onRowClick ? () => onRowClick(row) : undefined}
+                      onClick={rowClickable ? () => onRowClick(row) : undefined}
                       onKeyDown={
-                        onRowClick
+                        rowClickable
                           ? (e) => {
                               if (e.currentTarget !== e.target) return
                               if (e.key === 'Enter' || e.key === ' ') {
@@ -187,9 +191,9 @@ export function AdminTable<T>({
                             }
                           : undefined
                       }
-                      tabIndex={onRowClick ? 0 : undefined}
-                      aria-label={onRowClick ? `Edit ${label}` : undefined}
-                      className={cn(onRowClick && 'cursor-pointer')}
+                      tabIndex={rowClickable ? 0 : undefined}
+                      aria-label={rowClickable ? `Edit ${label}` : undefined}
+                      className={cn(rowClickable && 'cursor-pointer')}
                     >
                       {columns.map((col) => (
                         <TableCell

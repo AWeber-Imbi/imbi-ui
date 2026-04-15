@@ -161,6 +161,12 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
           <TooltipTrigger asChild>
             <span className="inline-flex">
               <button
+                type="button"
+                aria-label={
+                  isSystem
+                    ? `System role ${role.name} cannot be edited`
+                    : `Edit role ${role.name}`
+                }
                 onClick={(e) => {
                   e.stopPropagation()
                   handleEditClick(role.slug)
@@ -387,11 +393,10 @@ export function RoleManagement({ isDarkMode }: RoleManagementProps) {
         rows={filteredRoles}
         getRowKey={(role) => role.slug}
         getDeleteLabel={(role) => role.name}
-        onRowClick={(role) => {
-          const isSystem =
-            'is_system' in role && (role as RoleDetailType).is_system
-          if (!isSystem) handleViewClick(role.slug)
-        }}
+        onRowClick={(role) => handleViewClick(role.slug)}
+        isRowClickable={(role) =>
+          !('is_system' in role && (role as RoleDetailType).is_system)
+        }
         onDelete={handleDelete}
         canDelete={canDeleteRole}
         isDeleting={deleteMutation.isPending}
