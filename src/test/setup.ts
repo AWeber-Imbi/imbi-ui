@@ -21,11 +21,24 @@ Object.defineProperty(globalThis, 'localStorage', {
   writable: true,
 })
 
-globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+globalThis.ResizeObserver = vi.fn(function (this: unknown) {
+  return {
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }
+}) as any
+
+globalThis.MutationObserver = vi.fn(function (this: unknown) {
+  return {
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }
+}) as any
+
+// Mock scrollIntoView for Radix Select
+Element.prototype.scrollIntoView = vi.fn()
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
