@@ -1066,7 +1066,7 @@ fg = lighten(hex, 0.30)             <span class="k">// shift toward white</span>
 
       function renderLabelTable() {
         const tbody = document.querySelector('#labelTable tbody');
-        const dark = document.body.classList.contains('dark');
+        const dark = document.documentElement.classList.contains('dark');
         tbody.innerHTML = LABELS.map(s => {
           const bg = hexAlpha(s.hex, 0.2);
           const fg = dark ? lighten(s.hex, 0.3) : darken(s.hex, 0.35);
@@ -1079,20 +1079,43 @@ fg = lighten(hex, 0.30)             <span class="k">// shift toward white</span>
           '</tr>';
         }).join('');
       }
+
+      // Match the app contract: stored preference wins, otherwise follow the
+      // OS preference. Apply .dark to <html> (not <body>) before the first
+      // renderLabelTable() call so chip foregrounds are derived with the
+      // correct mode on initial paint.
+      const root = document.documentElement;
+      const stored = localStorage.getItem('imbi-theme');
+      const hasExplicit = stored === 'dark' || stored === 'light';
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      const initialTheme = hasExplicit
+        ? stored
+        : media.matches
+          ? 'dark'
+          : 'light';
+      root.classList.toggle('dark', initialTheme === 'dark');
+      document.getElementById('themeToggle').textContent =
+        root.classList.contains('dark') ? '☀' : '☾';
+
       renderLabelTable();
 
-      const saved = localStorage.getItem('imbi-theme') || 'light';
-      if (saved === 'dark') document.body.classList.add('dark');
-      document.getElementById('themeToggle').textContent =
-        document.body.classList.contains('dark') ? '☀' : '☾';
-
       document.getElementById('themeToggle').addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
+        root.classList.toggle('dark');
+        const isDark = root.classList.contains('dark');
         localStorage.setItem('imbi-theme', isDark ? 'dark' : 'light');
         document.getElementById('themeToggle').textContent = isDark ? '☀' : '☾';
         renderLabelTable();
       });
+
+      if (!hasExplicit) {
+        media.addEventListener('change', (e) => {
+          // Only follow OS when user hasn't made an explicit choice since load.
+          if (localStorage.getItem('imbi-theme')) return;
+          root.classList.toggle('dark', e.matches);
+          document.getElementById('themeToggle').textContent = e.matches ? '☀' : '☾';
+          renderLabelTable();
+        });
+      }
     </script>
   </body>
 </html>

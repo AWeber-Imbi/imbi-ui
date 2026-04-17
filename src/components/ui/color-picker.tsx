@@ -121,7 +121,10 @@ export function ColorPicker({
           `rgb(${effectiveBg.r},${effectiveBg.g},${effectiveBg.b})`,
         )
       : null
-  const hasLowContrast = isValidHex && contrast !== null && contrast < 3.0
+  // WCAG AA minimum for small text (11.5-13px chip labels here).
+  const MIN_TEXT_CONTRAST = 4.5
+  const hasLowContrast =
+    isValidHex && contrast !== null && contrast < MIN_TEXT_CONTRAST
 
   const previewText = labelValue.trim() || 'Label'
 
