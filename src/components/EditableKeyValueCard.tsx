@@ -67,7 +67,7 @@ export function EditableKeyValueCard({
 
   return (
     <Card className="p-6">
-      <h3 className="mb-4 text-primary">{title}</h3>
+      {showHeader && <h3 className="mb-4 text-primary">{title}</h3>}
 
       {showHeader && rows.length > 0 && (
         <div className="mb-2 flex items-center gap-2 px-1">

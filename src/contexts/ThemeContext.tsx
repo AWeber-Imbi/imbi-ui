@@ -4,6 +4,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useLayoutEffect,
   useMemo,
   type ReactNode,
 } from 'react'
@@ -38,7 +39,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     () => readStoredTheme() ?? readSystemTheme(),
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const root = document.documentElement
     root.classList.toggle('dark', theme === 'dark')
   }, [theme])

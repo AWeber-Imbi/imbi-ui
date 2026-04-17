@@ -107,7 +107,7 @@ export function WidgetSelector({
                         </div>
                         <div
                           className={`text-sm ${
-                            isSelected ? 'text-info' : 'text-gray-500'
+                            isSelected ? 'text-info' : 'text-tertiary'
                           }`}
                         >
                           {widget.description}

@@ -129,7 +129,8 @@ export function ThirdPartyServiceForm({
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            type="submit"
+            form="third-party-service-form"
             disabled={isLoading}
             className="bg-action text-action-foreground hover:bg-action-hover"
           >
@@ -163,7 +164,11 @@ export function ThirdPartyServiceForm({
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        id="third-party-service-form"
+        onSubmit={handleSubmit}
+        className="space-y-6"
+      >
         {/* Basic Information */}
         <div className={`rounded-lg border p-6 ${'border-border bg-card'}`}>
           <h3 className={'mb-4 text-sm font-medium text-primary'}>
@@ -195,14 +200,14 @@ export function ThirdPartyServiceForm({
             >
               <div>
                 <label className={'mb-1.5 block text-sm text-secondary'}>
-                  Service Name <span className="text-red-500">*</span>
+                  Service Name <span className="text-danger">*</span>
                 </label>
                 <Input
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="e.g., Stripe"
                   disabled={isLoading}
-                  className={` ${errors.name ? 'border-red-500' : ''}`}
+                  className={` ${errors.name ? 'border-danger' : ''}`}
                 />
                 {errors.name && (
                   <div
@@ -219,14 +224,14 @@ export function ThirdPartyServiceForm({
               {!isEditing && (
                 <div>
                   <label className={'mb-1.5 block text-sm text-secondary'}>
-                    Slug <span className="text-red-500">*</span>
+                    Slug <span className="text-danger">*</span>
                   </label>
                   <Input
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
                     placeholder="e.g., stripe"
                     disabled={isLoading}
-                    className={` ${errors.slug ? 'border-red-500' : ''}`}
+                    className={` ${errors.slug ? 'border-danger' : ''}`}
                   />
                   {errors.slug && (
                     <div
@@ -245,14 +250,14 @@ export function ThirdPartyServiceForm({
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className={'mb-1.5 block text-sm text-secondary'}>
-                  Vendor <span className="text-red-500">*</span>
+                  Vendor <span className="text-danger">*</span>
                 </label>
                 <Input
                   value={vendor}
                   onChange={(e) => setVendor(e.target.value)}
                   placeholder="e.g., Stripe, Inc."
                   disabled={isLoading}
-                  className={` ${errors.vendor ? 'border-red-500' : ''}`}
+                  className={` ${errors.vendor ? 'border-danger' : ''}`}
                 />
                 {errors.vendor && (
                   <div
@@ -290,7 +295,7 @@ export function ThirdPartyServiceForm({
                   onChange={(e) => setServiceUrl(e.target.value)}
                   placeholder="https://dashboard.stripe.com"
                   disabled={isLoading}
-                  className={` ${errors.service_url ? 'border-red-500' : ''}`}
+                  className={` ${errors.service_url ? 'border-danger' : ''}`}
                 />
                 {errors.service_url && (
                   <div

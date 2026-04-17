@@ -178,7 +178,7 @@ export function AdminTable<T>({
                 ))
                 const joined = parts.reduce<ReactNode[]>((acc, el, i) => {
                   if (i === 0) return [el]
-                  if (i === parts.length - 1) return [...acc, 'and', el]
+                  if (i === parts.length - 1) return [...acc, ' and ', el]
                   return [...acc, ', ', el]
                 }, [])
                 return (
@@ -200,7 +200,7 @@ export function AdminTable<T>({
                   <span className="font-semibold">{name}</span> cannot be
                   deleted
                   {reason
-                    ? `: ${reason.toLowerCase().replace(/^cannot delete the only /, 'because it is the only')}.`
+                    ? `: ${reason.toLowerCase().replace(/^cannot delete the only /, 'because it is the only ')}.`
                     : '.'}
                 </p>
               )

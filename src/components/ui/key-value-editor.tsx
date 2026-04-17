@@ -55,6 +55,7 @@ export function KeyValueEditor({
             type="button"
             variant="ghost"
             size="sm"
+            aria-label={`Remove ${k}`}
             onClick={() => handleRemove(k)}
             disabled={disabled}
             className={'text-danger hover:bg-danger'}
@@ -85,6 +86,7 @@ export function KeyValueEditor({
           type="button"
           variant="ghost"
           size="sm"
+          aria-label="Add key value pair"
           onClick={handleAdd}
           disabled={disabled || !newKey.trim() || !newValue.trim()}
           className={'hover:text-info/80 text-info'}
