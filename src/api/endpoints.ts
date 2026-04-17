@@ -169,6 +169,23 @@ export const updateProject = (
     project,
   )
 
+export type PatchOperation = {
+  op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test'
+  path: string
+  value?: unknown
+  from?: string
+}
+
+export const patchProject = (
+  orgSlug: string,
+  projectId: string,
+  operations: PatchOperation[],
+) =>
+  apiClient.patch<Project>(
+    `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}`,
+    operations,
+  )
+
 export const deleteProject = (orgSlug: string, projectId: string) =>
   apiClient.delete<void>(
     `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}`,
