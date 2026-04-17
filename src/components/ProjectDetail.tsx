@@ -60,7 +60,6 @@ import {
   type GraphProject,
 } from '@/components/ProjectsGraphCanvas'
 import { EditRelationshipsDialog } from '@/components/EditRelationshipsDialog'
-import { EditProjectForm } from '@/components/EditProjectForm'
 import { EditableKeyValueCard } from '@/components/EditableKeyValueCard'
 import { EditLinksCard } from '@/components/EditLinksCard'
 import { EditEnvironmentsCard } from '@/components/EditEnvironmentsCard'
@@ -1278,8 +1277,6 @@ function SettingsTab({ project }: { project: Project }) {
 
   return (
     <div className="space-y-6">
-      <EditProjectForm project={project} />
-
       {linkDefsLoading && (
         <Card>
           <CardContent>
