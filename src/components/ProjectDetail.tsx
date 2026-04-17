@@ -18,7 +18,6 @@ import {
   CardContent,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { LabelChip } from '@/components/ui/label-chip'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -41,6 +40,8 @@ import {
   getProjectRelationships,
   updateProject,
   deleteProject,
+  listTeams,
+  listProjectTypes,
 } from '@/api/endpoints'
 import { buildRelationshipEdges } from '@/lib/relationship-edges'
 import type { ProjectSchemaSection } from '@/api/endpoints'
@@ -56,6 +57,8 @@ import { EditEnvironmentsCard } from '@/components/EditEnvironmentsCard'
 import type { Project, ProjectRelationship } from '@/types'
 import { InlineText } from '@/components/ui/inline-edit/InlineText'
 import { InlineTextarea } from '@/components/ui/inline-edit/InlineTextarea'
+import { InlineSelect } from '@/components/ui/inline-edit/InlineSelect'
+import { InlineMultiSelect } from '@/components/ui/inline-edit/InlineMultiSelect'
 import { useProjectPatch } from '@/hooks/useProjectPatch'
 
 interface ProjectDetailProps {
@@ -297,6 +300,17 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
     enabled: !!orgSlug,
   })
 
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams', orgSlug],
+    queryFn: () => listTeams(orgSlug),
+    enabled: !!orgSlug,
+  })
+  const { data: projectTypes = [] } = useQuery({
+    queryKey: ['projectTypes', orgSlug],
+    queryFn: () => listProjectTypes(orgSlug),
+    enabled: !!orgSlug,
+  })
+
   const linkDefMap = Object.fromEntries(linkDefs.map((ld) => [ld.slug, ld]))
 
   const externalLinks = Object.entries(project.links || {})
@@ -402,9 +416,6 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                   <span className={`text-[1.75rem] ${value}`}>{v}</span>
                 )}
               />
-              <Badge variant="outline">
-                {(project.project_types || []).map((pt) => pt.name).join(', ')}
-              </Badge>
             </div>
           </div>
 
@@ -515,18 +526,48 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                       className={`flex items-center justify-between border-b py-1.5 ${divider}`}
                     >
                       <span className={`text-sm ${label}`}>Team</span>
-                      <span className={`text-sm ${value}`}>
-                        {project.team.name}
-                      </span>
+                      <InlineSelect
+                        value={project.team.slug}
+                        options={teams.map((t) => ({
+                          value: t.slug,
+                          label: t.name,
+                        }))}
+                        onCommit={(v) => patch('/team_slug', v)}
+                        pending={pendingPath === '/team_slug'}
+                      />
                     </div>
 
                     <div
                       className={`flex items-center justify-between border-b py-1.5 ${divider}`}
                     >
                       <span className={`text-sm ${label}`}>Slug</span>
-                      <span className={`font-mono text-sm ${value}`}>
-                        {project.slug}
-                      </span>
+                      <InlineText
+                        value={project.slug}
+                        onCommit={(v) => patch('/slug', v ?? '')}
+                        pending={pendingPath === '/slug'}
+                        renderValue={(v) => (
+                          <span className={`font-mono text-sm ${value}`}>
+                            {v}
+                          </span>
+                        )}
+                      />
+                    </div>
+
+                    <div
+                      className={`flex items-center justify-between border-b py-1.5 ${divider}`}
+                    >
+                      <span className={`text-sm ${label}`}>Project types</span>
+                      <InlineMultiSelect
+                        values={(project.project_types || []).map(
+                          (pt) => pt.slug,
+                        )}
+                        options={projectTypes.map((pt) => ({
+                          value: pt.slug,
+                          label: pt.name,
+                        }))}
+                        onCommit={(v) => patch('/project_type_slugs', v)}
+                        pending={pendingPath === '/project_type_slugs'}
+                      />
                     </div>
 
                     {project.created_at && (
