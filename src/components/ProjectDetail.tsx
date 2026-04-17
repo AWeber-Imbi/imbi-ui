@@ -44,7 +44,17 @@ import {
   listProjectTypes,
 } from '@/api/endpoints'
 import { buildRelationshipEdges } from '@/lib/relationship-edges'
-import type { ProjectSchemaSection } from '@/api/endpoints'
+import type {
+  ProjectSchemaSection,
+  ProjectSchemaSectionProperty,
+} from '@/api/endpoints'
+import {
+  isFieldEditable,
+  pickInlineComponent,
+} from '@/components/ui/inline-edit/field-policy'
+import { InlineSwitch } from '@/components/ui/inline-edit/InlineSwitch'
+import { InlineNumber } from '@/components/ui/inline-edit/InlineNumber'
+import { InlineDate } from '@/components/ui/inline-edit/InlineDate'
 import {
   ProjectsGraphCanvas,
   type GraphProject,
@@ -346,6 +356,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
       rawValue: unknown
       title?: string
       uiMaps: XUiMaps
+      def: ProjectSchemaSectionProperty
     }[] = []
     for (const section of projectSchema.sections) {
       for (const [key, def] of Object.entries(section.properties)) {
@@ -371,6 +382,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
             colorAge: xUi?.['color-age'] ?? undefined,
             iconAge: xUi?.['icon-age'] ?? undefined,
           },
+          def,
         })
       }
     }
@@ -399,6 +411,66 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
   const value = 'text-primary'
   const muted = 'text-tertiary'
   const divider = 'border-tertiary'
+
+  function renderInlineForField(
+    _key: string,
+    def: ProjectSchemaSectionProperty,
+    raw: unknown,
+    onCommit: (v: unknown) => Promise<void>,
+    pending: boolean,
+  ): React.ReactNode {
+    const kind = pickInlineComponent(def)
+    switch (kind) {
+      case 'select':
+        return (
+          <InlineSelect
+            value={raw == null ? null : String(raw)}
+            options={(def.enum ?? []).map((v) => ({
+              value: String(v),
+              label: String(v),
+            }))}
+            onCommit={(v) => onCommit(v)}
+            pending={pending}
+          />
+        )
+      case 'switch':
+        return (
+          <InlineSwitch
+            value={raw === true || raw === 'true'}
+            onCommit={(v) => onCommit(v)}
+            pending={pending}
+          />
+        )
+      case 'number':
+        return (
+          <InlineNumber
+            value={raw == null || raw === '' ? null : Number(raw)}
+            integer={def.type === 'integer'}
+            min={def.minimum ?? undefined}
+            max={def.maximum ?? undefined}
+            onCommit={(v) => onCommit(v)}
+            pending={pending}
+          />
+        )
+      case 'date':
+        return (
+          <InlineDate
+            value={raw == null ? null : String(raw)}
+            mode={def.format === 'date-time' ? 'date-time' : 'date'}
+            onCommit={(v) => onCommit(v)}
+            pending={pending}
+          />
+        )
+      default:
+        return (
+          <InlineText
+            value={raw == null ? null : String(raw)}
+            onCommit={(v) => onCommit(v)}
+            pending={pending}
+          />
+        )
+    }
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 py-8">
@@ -605,6 +677,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                         rawValue,
                         title: fieldTitle,
                         uiMaps,
+                        def,
                       }) => {
                         const mappedColor = resolveColor(uiMaps, rawValue)
                         const mappedIcon = resolveIcon(uiMaps, rawValue)
@@ -614,6 +687,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                         const textColorClass = mappedColor
                           ? (COLOR_TEXT[mappedColor] ?? value)
                           : value
+                        const editable = isFieldEditable(key, def)
                         return (
                           <div
                             key={key}
@@ -622,7 +696,15 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                             <span className={`text-sm ${label}`}>
                               {fieldLabel}
                             </span>
-                            {fieldValue !== null ? (
+                            {editable ? (
+                              renderInlineForField(
+                                key,
+                                def,
+                                rawValue,
+                                (v) => patch(`/${key}`, v),
+                                pendingPath === `/${key}`,
+                              )
+                            ) : fieldValue !== null ? (
                               <span className="flex items-center gap-1.5">
                                 {FieldIcon && (
                                   <FieldIcon
