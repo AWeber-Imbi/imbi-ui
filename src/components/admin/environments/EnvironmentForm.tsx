@@ -314,7 +314,12 @@ export function EnvironmentForm({
               </div>
             </div>
 
-            <ColorPicker value={labelColor} onChange={setLabelColor} />
+            <ColorPicker
+              value={labelColor}
+              onChange={setLabelColor}
+              objectType="environment"
+              labelValue={name}
+            />
 
             {/* Dynamic Blueprint Fields */}
             {envSchema && (
