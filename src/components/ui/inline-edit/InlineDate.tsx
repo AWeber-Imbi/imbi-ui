@@ -17,6 +17,8 @@ export interface InlineDateProps {
   placeholder?: string
   /** 'date' → YYYY-MM-DD, 'date-time' → ISO 8601 string */
   mode?: 'date' | 'date-time'
+  /** Override the display-mode rendering. */
+  renderDisplay?: React.ReactNode
 }
 
 function toIso(d: Date, mode: 'date' | 'date-time'): string {
@@ -31,6 +33,7 @@ export function InlineDate({
   pending = false,
   placeholder,
   mode = 'date',
+  renderDisplay,
 }: InlineDateProps) {
   const [open, setOpen] = useState(false)
   const current = value ? new Date(value) : undefined
@@ -47,7 +50,7 @@ export function InlineDate({
             onClick={() => setOpen(true)}
             placeholder={placeholder}
           >
-            {hasValid && current!.toLocaleDateString()}
+            {renderDisplay ?? (hasValid && current!.toLocaleDateString())}
           </InlineDisplay>
         </span>
       </PopoverTrigger>

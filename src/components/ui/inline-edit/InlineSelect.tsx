@@ -21,6 +21,8 @@ export interface InlineSelectProps {
   readOnly?: boolean
   pending?: boolean
   placeholder?: string
+  /** Override the display-mode rendering (e.g. include icon/color). */
+  renderDisplay?: React.ReactNode
 }
 
 export function InlineSelect({
@@ -30,6 +32,7 @@ export function InlineSelect({
   readOnly = false,
   pending = false,
   placeholder = 'Select…',
+  renderDisplay,
 }: InlineSelectProps) {
   const [editing, setEditing] = useState(false)
   const current = options.find((o) => o.value === value)
@@ -43,7 +46,7 @@ export function InlineSelect({
         onClick={() => setEditing(true)}
         placeholder={placeholder}
       >
-        {current?.label}
+        {renderDisplay ?? current?.label}
       </InlineDisplay>
     )
   }

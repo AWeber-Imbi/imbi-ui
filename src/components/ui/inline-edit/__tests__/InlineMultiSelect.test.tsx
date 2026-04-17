@@ -31,7 +31,7 @@ describe('InlineMultiSelect', () => {
       />,
     )
     await userEvent.click(screen.getByText('Alpha'))
-    await userEvent.click(await screen.findByRole('option', { name: 'Beta' }))
+    await userEvent.click(await screen.findByLabelText('Beta'))
     await userEvent.keyboard('{Escape}')
     await waitFor(() =>
       expect(onCommit).toHaveBeenCalledWith(expect.arrayContaining(['a', 'b'])),

@@ -418,6 +418,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
     raw: unknown,
     onCommit: (v: unknown) => Promise<void>,
     pending: boolean,
+    display: React.ReactNode,
   ): React.ReactNode {
     const kind = pickInlineComponent(def)
     switch (kind) {
@@ -431,6 +432,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
             }))}
             onCommit={(v) => onCommit(v)}
             pending={pending}
+            renderDisplay={display}
           />
         )
       case 'switch':
@@ -450,6 +452,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
             max={def.maximum ?? undefined}
             onCommit={(v) => onCommit(v)}
             pending={pending}
+            renderDisplay={display}
           />
         )
       case 'date':
@@ -459,6 +462,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
             mode={def.format === 'date-time' ? 'date-time' : 'date'}
             onCommit={(v) => onCommit(v)}
             pending={pending}
+            renderDisplay={display}
           />
         )
       default:
@@ -467,6 +471,7 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
             value={raw == null ? null : String(raw)}
             onCommit={(v) => onCommit(v)}
             pending={pending}
+            renderValue={display !== null ? () => display : undefined}
           />
         )
     }
@@ -688,6 +693,36 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                           ? (COLOR_TEXT[mappedColor] ?? value)
                           : value
                         const editable = isFieldEditable(key, def)
+                        const richDisplay =
+                          fieldValue !== null ? (
+                            <span className="flex items-center gap-1.5">
+                              {FieldIcon && (
+                                <FieldIcon
+                                  className={`h-3.5 w-3.5 flex-shrink-0 ${textColorClass}`}
+                                />
+                              )}
+                              {fieldTitle ? (
+                                <TooltipProvider delayDuration={200}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span
+                                        className={`text-sm ${textColorClass} cursor-help underline decoration-dotted`}
+                                      >
+                                        {fieldValue}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{fieldTitle}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              ) : (
+                                <span className={`text-sm ${textColorClass}`}>
+                                  {fieldValue}
+                                </span>
+                              )}
+                            </span>
+                          ) : null
                         return (
                           <div
                             key={key}
@@ -703,35 +738,10 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                                 rawValue,
                                 (v) => patch(`/${key}`, v),
                                 pendingPath === `/${key}`,
+                                richDisplay,
                               )
-                            ) : fieldValue !== null ? (
-                              <span className="flex items-center gap-1.5">
-                                {FieldIcon && (
-                                  <FieldIcon
-                                    className={`h-3.5 w-3.5 flex-shrink-0 ${textColorClass}`}
-                                  />
-                                )}
-                                {fieldTitle ? (
-                                  <TooltipProvider delayDuration={200}>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span
-                                          className={`text-sm ${textColorClass} cursor-help underline decoration-dotted`}
-                                        >
-                                          {fieldValue}
-                                        </span>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{fieldTitle}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                ) : (
-                                  <span className={`text-sm ${textColorClass}`}>
-                                    {fieldValue}
-                                  </span>
-                                )}
-                              </span>
+                            ) : richDisplay !== null ? (
+                              richDisplay
                             ) : (
                               <span className={`text-sm italic ${muted}`}>
                                 Not set

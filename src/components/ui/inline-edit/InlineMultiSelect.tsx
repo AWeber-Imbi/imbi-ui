@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Command, CommandGroup, CommandInput, CommandItem } from 'cmdk'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { InlineDisplay } from './InlineDisplay'
 import { toast } from 'sonner'
 
@@ -80,34 +80,35 @@ export function InlineMultiSelect({
             onClick={() => setOpen(true)}
             placeholder={placeholder}
           >
-            {currentLabels}
+            <span className="text-sm text-primary">{currentLabels}</span>
           </InlineDisplay>
         </span>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Filter…" />
-          <CommandGroup>
-            {options.map((o) => {
-              const checked = draft.includes(o.value)
-              return (
-                <CommandItem
-                  key={o.value}
-                  role="option"
-                  aria-selected={checked}
-                  onSelect={() => toggle(o.value)}
+      <PopoverContent className="w-56 p-2" align="end">
+        <ul className="space-y-1">
+          {options.map((o) => {
+            const checked = draft.includes(o.value)
+            const id = `multi-${o.value}`
+            return (
+              <li
+                key={o.value}
+                className="hover:bg-secondary/50 flex items-center gap-2 rounded-sm px-2 py-1.5"
+              >
+                <Checkbox
+                  id={id}
+                  checked={checked}
+                  onCheckedChange={() => toggle(o.value)}
+                />
+                <Label
+                  htmlFor={id}
+                  className="flex-1 cursor-pointer text-sm font-normal"
                 >
-                  <Check
-                    className={
-                      'mr-2 h-4 w-4 ' + (checked ? 'opacity-100' : 'opacity-0')
-                    }
-                  />
                   {o.label}
-                </CommandItem>
-              )
-            })}
-          </CommandGroup>
-        </Command>
+                </Label>
+              </li>
+            )
+          })}
+        </ul>
       </PopoverContent>
     </Popover>
   )

@@ -13,6 +13,8 @@ export interface InlineNumberProps {
   step?: number
   placeholder?: string
   integer?: boolean
+  /** Override the display-mode rendering. */
+  renderDisplay?: React.ReactNode
 }
 
 export function InlineNumber({
@@ -25,6 +27,7 @@ export function InlineNumber({
   step,
   placeholder,
   integer = false,
+  renderDisplay,
 }: InlineNumberProps) {
   const ref = useRef<HTMLInputElement>(null)
   const edit = useInlineEdit<string>({
@@ -55,7 +58,8 @@ export function InlineNumber({
         onClick={edit.enter}
         placeholder={placeholder}
       >
-        {value !== null && value !== undefined ? String(value) : null}
+        {renderDisplay ??
+          (value !== null && value !== undefined ? String(value) : null)}
       </InlineDisplay>
     )
   }

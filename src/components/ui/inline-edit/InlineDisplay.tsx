@@ -44,16 +44,16 @@ export function InlineDisplay({
         className,
       )}
     >
-      {hasValue ? (
-        children
-      ) : (
-        <span className="italic text-tertiary">{placeholder}</span>
-      )}
       {pending ? (
         <Loader2 className="h-3 w-3 animate-spin text-tertiary" />
       ) : interactive ? (
         <Pencil className="h-3 w-3 text-tertiary opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
       ) : null}
+      {hasValue ? (
+        children
+      ) : (
+        <span className="italic text-tertiary">{placeholder}</span>
+      )}
     </span>
   )
 }
