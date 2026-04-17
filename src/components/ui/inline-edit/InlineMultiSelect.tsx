@@ -84,7 +84,10 @@ export function InlineMultiSelect({
           </InlineDisplay>
         </span>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="end">
+      <PopoverContent
+        className="max-h-[min(24rem,60vh)] w-56 overflow-y-auto p-2"
+        align="end"
+      >
         <ul className="space-y-1">
           {options.map((o) => {
             const checked = draft.includes(o.value)
