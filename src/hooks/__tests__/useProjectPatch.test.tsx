@@ -1,0 +1,115 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useProjectPatch } from '../useProjectPatch'
+import * as endpoints from '@/api/endpoints'
+import { toast } from 'sonner'
+
+vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
+
+function wrapper(qc: QueryClient) {
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+  )
+}
+
+const baseProject = {
+  id: 'p1',
+  name: 'Alpha',
+  slug: 'alpha',
+  description: 'desc',
+  team: { slug: 't', name: 'T', organization: { slug: 'o' } },
+} as unknown as import('@/types').Project
+
+describe('useProjectPatch', () => {
+  let qc: QueryClient
+
+  beforeEach(() => {
+    qc = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
+    })
+    qc.setQueryData(['project', 'o', 'p1'], baseProject)
+    vi.clearAllMocks()
+  })
+
+  it('applies optimistic update and sets returned project on success', async () => {
+    const updated = { ...baseProject, name: 'Beta' }
+    vi.spyOn(endpoints, 'patchProject').mockResolvedValue(updated as never)
+
+    const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
+      wrapper: wrapper(qc),
+    })
+
+    await act(async () => {
+      await result.current.patch('/name', 'Beta')
+    })
+
+    expect(endpoints.patchProject).toHaveBeenCalledWith('o', 'p1', [
+      { op: 'replace', path: '/name', value: 'Beta' },
+    ])
+    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(updated)
+  })
+
+  it('rolls back on error and toasts', async () => {
+    vi.spyOn(endpoints, 'patchProject').mockRejectedValue(
+      Object.assign(new Error('nope'), {
+        response: { data: { detail: 'nope' } },
+      }),
+    )
+
+    const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
+      wrapper: wrapper(qc),
+    })
+
+    await expect(
+      act(async () => {
+        await result.current.patch('/name', 'Beta')
+      }),
+    ).rejects.toThrow()
+
+    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(baseProject)
+    expect(toast.error).toHaveBeenCalled()
+  })
+
+  it('emits remove op when value is null', async () => {
+    const updated = { ...baseProject }
+    vi.spyOn(endpoints, 'patchProject').mockResolvedValue(updated as never)
+
+    const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
+      wrapper: wrapper(qc),
+    })
+
+    await act(async () => {
+      await result.current.patch('/description', null)
+    })
+
+    expect(endpoints.patchProject).toHaveBeenCalledWith('o', 'p1', [
+      { op: 'remove', path: '/description' },
+    ])
+  })
+
+  it('tracks pendingPath during the mutation', async () => {
+    let resolveIt!: (v: unknown) => void
+    vi.spyOn(endpoints, 'patchProject').mockImplementation(
+      () =>
+        new Promise((r) => {
+          resolveIt = r
+        }),
+    )
+
+    const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
+      wrapper: wrapper(qc),
+    })
+
+    act(() => {
+      result.current.patch('/name', 'Beta')
+    })
+    await waitFor(() => expect(result.current.pendingPath).toBe('/name'))
+
+    act(() => resolveIt({ ...baseProject, name: 'Beta' }))
+    await waitFor(() => expect(result.current.pendingPath).toBeNull())
+  })
+})
