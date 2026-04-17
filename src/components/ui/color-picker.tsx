@@ -14,10 +14,9 @@ const PRESET_COLORS = [
 interface ColorPickerProps {
   value: string
   onChange: (color: string) => void
-  isDarkMode: boolean
 }
 
-export function ColorPicker({ value, onChange, isDarkMode }: ColorPickerProps) {
+export function ColorPicker({ value, onChange }: ColorPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [hexInput, setHexInput] = useState(value)
 
@@ -31,11 +30,7 @@ export function ColorPicker({ value, onChange, isDarkMode }: ColorPickerProps) {
 
   return (
     <div className="space-y-3">
-      <label
-        className={`block text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-      >
-        Label Color
-      </label>
+      <label className={'block text-sm text-secondary'}>Label Color</label>
 
       {/* Preset swatches */}
       <div className="grid max-w-xs grid-cols-4 gap-3">
@@ -62,11 +57,7 @@ export function ColorPicker({ value, onChange, isDarkMode }: ColorPickerProps) {
           onClick={handleSwatchClick}
           aria-label={value ? 'Change label color' : 'Pick label color'}
           className={`h-10 w-10 flex-shrink-0 cursor-pointer rounded-lg border ${
-            !value
-              ? isDarkMode
-                ? 'border-gray-600 bg-gray-700'
-                : 'border-gray-300 bg-gray-100'
-              : ''
+            !value ? 'border-input bg-secondary' : ''
           }`}
           style={value ? { backgroundColor: value } : undefined}
           title={value ? 'Click to change color' : 'Click to pick a color'}
@@ -91,17 +82,11 @@ export function ColorPicker({ value, onChange, isDarkMode }: ColorPickerProps) {
           }}
           placeholder="#3B82F6"
           maxLength={7}
-          className={`flex-1 rounded-lg border px-3 py-2 text-sm ${
-            isDarkMode
-              ? 'border-gray-600 bg-gray-700 text-white placeholder:text-gray-400'
-              : 'border-gray-200 bg-gray-100 text-gray-900 placeholder:text-gray-500'
-          }`}
+          className={`flex-1 rounded-lg border px-3 py-2 text-sm ${'border-input bg-background text-foreground placeholder:text-muted-foreground'}`}
         />
       </div>
 
-      <p
-        className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}
-      >
+      <p className={'text-xs text-tertiary'}>
         This color will be used for labels whenever this environment is
         displayed
       </p>

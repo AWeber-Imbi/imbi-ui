@@ -37,6 +37,14 @@
     --color-border-secondary: rgba(26, 26, 24, 0.3);
     --color-border-primary: rgba(26, 26, 24, 0.4);
     --color-border-info: #185fa5;
+    --color-border-danger: #f5b4b4;
+    --color-border-success: #b4d99a;
+    --color-border-warning: #e6c77a;
+
+    /* Action (primary CTA) — matches header logo color per theme */
+    --color-action-bg: #b8860b;
+    --color-action-bg-hover: #8f6a09;
+    --color-action-fg: #ffffff;
 
     /* shadcn/ui compatibility tokens */
     --background: 0 0% 100%;
@@ -84,6 +92,14 @@
     --color-border-secondary: rgba(232, 231, 227, 0.25);
     --color-border-primary: rgba(232, 231, 227, 0.35);
     --color-border-info: #6db3f2;
+    --color-border-danger: #8a3030;
+    --color-border-success: #4a7a1a;
+    --color-border-warning: #7a5818;
+
+    /* Action (primary CTA) — matches header logo color per theme */
+    --color-action-bg: #fbce39;
+    --color-action-bg-hover: #e0b525;
+    --color-action-fg: #1a1a18;
 
     /* shadcn/ui compatibility tokens */
     --background: 40 5% 11%;

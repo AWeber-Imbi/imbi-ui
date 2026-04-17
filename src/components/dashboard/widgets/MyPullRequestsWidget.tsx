@@ -2,12 +2,10 @@ import { GitPullRequest, Clock, MessageSquare, CheckCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 interface MyPullRequestsWidgetProps {
-  isDarkMode: boolean
   onUserSelect?: (userName: string) => void
 }
 
 export function MyPullRequestsWidget({
-  isDarkMode,
   onUserSelect,
 }: MyPullRequestsWidgetProps) {
   const pullRequests = [
@@ -73,16 +71,10 @@ export function MyPullRequestsWidget({
   }
 
   return (
-    <Card className={`p-6 ${isDarkMode ? 'border-gray-700 bg-gray-800' : ''}`}>
+    <Card className={'p-6'}>
       <div className="mb-4 flex items-center justify-between">
-        <h3
-          className={`text-lg ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-        >
-          My Pull Requests
-        </h3>
-        <span
-          className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-        >
+        <h3 className={'text-lg text-primary'}>My Pull Requests</h3>
+        <span className={'text-sm text-secondary'}>
           {pullRequests.length} open
         </span>
       </div>
@@ -95,27 +87,17 @@ export function MyPullRequestsWidget({
           return (
             <div
               key={pr.id}
-              className={`rounded-lg border p-4 transition-colors ${
-                isDarkMode
-                  ? 'border-gray-600 bg-gray-700 hover:border-gray-500'
-                  : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
+              className={`rounded-lg border p-4 transition-colors ${'border-input bg-background hover:border-secondary'}`}
             >
               <div className="flex items-start gap-3">
                 <GitPullRequest
-                  className={`mt-0.5 h-5 w-5 flex-shrink-0 ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                  }`}
+                  className={`mt-0.5 h-5 w-5 flex-shrink-0 ${'text-tertiary'}`}
                 />
                 <div className="min-w-0 flex-1">
-                  <div
-                    className={`mb-1 font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                  >
+                  <div className={'mb-1 font-medium text-primary'}>
                     {pr.title}
                   </div>
-                  <div
-                    className={`mb-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-                  >
+                  <div className={'mb-2 text-sm text-secondary'}>
                     {pr.repo} • {pr.branch}
                   </div>
 
@@ -123,20 +105,12 @@ export function MyPullRequestsWidget({
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs ${
                         config.color === 'blue'
-                          ? isDarkMode
-                            ? 'bg-blue-900/30 text-blue-400'
-                            : 'bg-blue-100 text-blue-700'
+                          ? 'bg-info text-info'
                           : config.color === 'yellow'
-                            ? isDarkMode
-                              ? 'bg-yellow-900/30 text-yellow-400'
-                              : 'bg-yellow-100 text-yellow-700'
+                            ? 'bg-warning text-warning'
                             : config.color === 'red'
-                              ? isDarkMode
-                                ? 'bg-red-900/30 text-red-400'
-                                : 'bg-red-100 text-red-700'
-                              : isDarkMode
-                                ? 'bg-green-900/30 text-green-400'
-                                : 'bg-green-100 text-green-700'
+                              ? 'bg-danger text-danger'
+                              : 'bg-success text-success'
                       }`}
                     >
                       <StatusIcon className="h-3 w-3" />
@@ -163,7 +137,7 @@ export function MyPullRequestsWidget({
                           type="button"
                           key={idx}
                           onClick={() => onUserSelect?.(reviewer)}
-                          className={`${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-[#2A4DD0] hover:text-blue-700'} ${
+                          className={`hover:text-info/80 text-info ${
                             idx > 0 ? 'ml-1' : ''
                           }`}
                         >

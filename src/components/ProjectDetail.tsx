@@ -56,7 +56,6 @@ import type { Project, ProjectRelationship } from '@/types'
 
 interface ProjectDetailProps {
   project: Project
-  isDarkMode: boolean
   initialTab?: string
 }
 
@@ -188,11 +187,7 @@ function resolveFieldValue(
   return undefined
 }
 
-export function ProjectDetail({
-  project,
-  isDarkMode,
-  initialTab,
-}: ProjectDetailProps) {
+export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
   const navigate = useNavigate()
@@ -381,10 +376,10 @@ export function ProjectDetail({
     { id: 'settings', label: '' },
   ]
 
-  const label = isDarkMode ? 'text-gray-400' : 'text-slate-500'
-  const value = isDarkMode ? 'text-white' : 'text-slate-900'
-  const muted = isDarkMode ? 'text-gray-600' : 'text-slate-400'
-  const divider = isDarkMode ? 'border-gray-700' : 'border-slate-100'
+  const label = 'text-tertiary'
+  const value = 'text-primary'
+  const muted = 'text-tertiary'
+  const divider = 'border-tertiary'
 
   return (
     <div className="mx-auto max-w-[1600px] px-6 py-8">
@@ -441,11 +436,7 @@ export function ProjectDetail({
         </div>
 
         {project.description && (
-          <p
-            className={`mt-3 ${isDarkMode ? 'text-gray-300' : 'text-slate-600'}`}
-          >
-            {project.description}
-          </p>
+          <p className={'mt-3 text-secondary'}>{project.description}</p>
         )}
 
         {/* External Links */}
@@ -455,17 +446,15 @@ export function ProjectDetail({
               ({ key, url, Icon, label: linkLabel }, index) => (
                 <span key={key} className="flex items-center gap-1.5">
                   {index > 0 && (
-                    <span
-                      className={`mr-1.5 ${isDarkMode ? 'text-gray-600' : 'text-slate-300'}`}
-                    >
-                      |
-                    </span>
+                    <span className={'mr-1.5 text-tertiary'}>|</span>
                   )}
                   <a
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`flex items-center gap-1.5 text-sm ${isDarkMode ? 'text-amber-400' : 'text-amber-text'} hover:underline`}
+                    className={
+                      'flex items-center gap-1.5 text-sm text-warning hover:underline'
+                    }
                   >
                     <Icon className="h-4 w-4" />
                     <span>{linkLabel}</span>
@@ -499,7 +488,7 @@ export function ProjectDetail({
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_2fr]">
             {/* Left column: Details */}
             <div className="space-y-6">
-              <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle>Project details</CardTitle>
                 </CardHeader>
@@ -618,9 +607,7 @@ export function ProjectDetail({
 
               {/* Environments */}
               {sortedEnvironments.length > 0 && (
-                <Card
-                  className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}
-                >
+                <Card>
                   <CardHeader>
                     <CardTitle>Environments</CardTitle>
                   </CardHeader>
@@ -656,7 +643,7 @@ export function ProjectDetail({
                             </div>
                             <div className="flex-1 text-center">
                               <span
-                                className={`font-mono text-sm ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`}
+                                className={'font-mono text-sm text-tertiary'}
                               >
                                 {deployment?.version ?? ''}
                               </span>
@@ -667,11 +654,13 @@ export function ProjectDetail({
                                   href={url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className={`inline-flex items-center gap-1.5 text-sm ${isDarkMode ? 'text-amber-400' : 'text-amber-text'} hover:underline`}
+                                  className={
+                                    'inline-flex items-center gap-1.5 text-sm text-warning hover:underline'
+                                  }
                                 >
                                   {url}
                                   <ExternalLink
-                                    className={`h-3 w-3 ${isDarkMode ? 'text-amber-400' : 'text-amber-text'}`}
+                                    className={'h-3 w-3 text-warning'}
                                   />
                                 </a>
                               ) : (
@@ -692,7 +681,7 @@ export function ProjectDetail({
             {/* Right column: Health & Compliance + Recent Activity */}
             <div className="space-y-6">
               {/* Health & Compliance */}
-              <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle>Health &amp; compliance</CardTitle>
                 </CardHeader>
@@ -735,7 +724,7 @@ export function ProjectDetail({
               </Card>
 
               {/* Recent Activity (mocked) */}
-              <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+              <Card>
                 <CardHeader>
                   <CardTitle>Recent activity</CardTitle>
                 </CardHeader>
@@ -763,9 +752,7 @@ export function ProjectDetail({
                               {item.time}
                             </span>
                             <span className={`text-xs ${muted}`}>&bull;</span>
-                            <span
-                              className={`font-mono text-xs ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`}
-                            >
+                            <span className={'font-mono text-xs text-tertiary'}>
                               {item.version}
                             </span>
                           </div>
@@ -780,30 +767,29 @@ export function ProjectDetail({
         </TabsContent>
 
         <TabsContent value="configuration">
-          <PlaceholderTab name="Configuration" isDarkMode={isDarkMode} />
+          <PlaceholderTab name="Configuration" />
         </TabsContent>
         <TabsContent value="relationships">
           <RelationshipsTab
             orgSlug={project.team.organization.slug}
             projectId={project.id}
             project={project}
-            isDarkMode={isDarkMode}
           />
         </TabsContent>
         <TabsContent value="dependencies">
-          <PlaceholderTab name="Dependencies" isDarkMode={isDarkMode} />
+          <PlaceholderTab name="Dependencies" />
         </TabsContent>
         <TabsContent value="logs">
-          <PlaceholderTab name="Logs" isDarkMode={isDarkMode} />
+          <PlaceholderTab name="Logs" />
         </TabsContent>
         <TabsContent value="notes">
-          <PlaceholderTab name="Notes" isDarkMode={isDarkMode} />
+          <PlaceholderTab name="Notes" />
         </TabsContent>
         <TabsContent value="operations-log">
-          <PlaceholderTab name="Operations Log" isDarkMode={isDarkMode} />
+          <PlaceholderTab name="Operations Log" />
         </TabsContent>
         <TabsContent value="settings">
-          <SettingsTab project={project} isDarkMode={isDarkMode} />
+          <SettingsTab project={project} />
         </TabsContent>
       </Tabs>
     </div>
@@ -816,12 +802,10 @@ function RelationshipsTab({
   orgSlug,
   projectId,
   project,
-  isDarkMode,
 }: {
   orgSlug: string
   projectId: string
   project: Project
-  isDarkMode: boolean
 }) {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['project-relationships', orgSlug, projectId],
@@ -830,11 +814,11 @@ function RelationshipsTab({
   const [filter, setFilter] = useState<RelFilter>('all')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
 
-  const sub = isDarkMode ? 'text-gray-400' : 'text-slate-500'
+  const sub = 'text-tertiary'
 
   if (isLoading) {
     return (
-      <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+      <Card>
         <CardContent>
           <p className={sub}>Loading relationships…</p>
         </CardContent>
@@ -843,7 +827,7 @@ function RelationshipsTab({
   }
   if (isError && !data) {
     return (
-      <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+      <Card>
         <CardContent>
           <p className={sub}>Failed to load relationships.</p>
         </CardContent>
@@ -909,12 +893,12 @@ function RelationshipsTab({
   return (
     <>
       {rels.length === 0 ? (
-        <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+        <Card>
           <CardContent className="flex items-center justify-between">
             <p className={sub}>This project has no relationships.</p>
             <Button
               size="sm"
-              className="gap-1 border-amber-border bg-amber-bg text-amber-text hover:bg-amber-bg/80"
+              className="gap-1 bg-action text-action-foreground hover:bg-action-hover"
               onClick={() => setEditDialogOpen(true)}
             >
               Edit
@@ -936,12 +920,10 @@ function RelationshipsTab({
             filter={filter}
             onFilterChange={setFilter}
             onAdd={() => setEditDialogOpen(true)}
-            isDarkMode={isDarkMode}
           />
           <ProjectsGraphCanvas
             projects={projects}
             edges={edges}
-            isDarkMode={isDarkMode}
             centerId={projectId}
           />
         </div>
@@ -969,7 +951,6 @@ interface RelationshipsSidebarProps {
   filter: RelFilter
   onFilterChange: (f: RelFilter) => void
   onAdd: () => void
-  isDarkMode: boolean
 }
 
 function RelationshipsSidebar({
@@ -980,23 +961,19 @@ function RelationshipsSidebar({
   filter,
   onFilterChange,
   onAdd,
-  isDarkMode,
 }: RelationshipsSidebarProps) {
-  const sectionLabel = isDarkMode ? 'text-gray-500' : 'text-slate-400'
-  const sub = isDarkMode ? 'text-gray-400' : 'text-slate-500'
+  const sectionLabel = 'text-tertiary'
+  const sub = 'text-tertiary'
 
   const chipBase =
     'rounded-full px-3 py-1 text-xs font-medium transition-colors'
   const chipSelected = 'bg-amber-500 text-white'
-  const chipUnselected = isDarkMode
-    ? 'border border-gray-600 text-gray-300 hover:border-gray-400'
-    : 'border border-slate-300 text-slate-600 hover:border-slate-400'
+  const chipUnselected =
+    'border border-input text-secondary hover:border-secondary'
 
   return (
     <Card
-      className={`h-full min-h-0 w-full flex-shrink-0 overflow-y-auto ${
-        isDarkMode ? 'border-gray-700 bg-gray-800' : ''
-      }`}
+      className={`h-full min-h-0 w-full flex-shrink-0 overflow-y-auto ${''}`}
     >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-center justify-between">
@@ -1033,11 +1010,7 @@ function RelationshipsSidebar({
             ) : (
               <ul className="space-y-1">
                 {outbound.map((r, i) => (
-                  <SidebarProjectRow
-                    key={`out:${r.project.id}:${i}`}
-                    rel={r}
-                    isDarkMode={isDarkMode}
-                  />
+                  <SidebarProjectRow key={`out:${r.project.id}:${i}`} rel={r} />
                 ))}
               </ul>
             )}
@@ -1057,11 +1030,7 @@ function RelationshipsSidebar({
             ) : (
               <ul className="space-y-1">
                 {inbound.map((r, i) => (
-                  <SidebarProjectRow
-                    key={`in:${r.project.id}:${i}`}
-                    rel={r}
-                    isDarkMode={isDarkMode}
-                  />
+                  <SidebarProjectRow key={`in:${r.project.id}:${i}`} rel={r} />
                 ))}
               </ul>
             )}
@@ -1072,23 +1041,15 @@ function RelationshipsSidebar({
   )
 }
 
-function SidebarProjectRow({
-  rel,
-  isDarkMode,
-}: {
-  rel: ProjectRelationship
-  isDarkMode: boolean
-}) {
+function SidebarProjectRow({ rel }: { rel: ProjectRelationship }) {
   const typeSlug = rel.project.project_type ?? ''
-  const muted = isDarkMode ? 'text-gray-500' : 'text-slate-400'
+  const muted = 'text-tertiary'
 
   return (
     <li className="flex items-center gap-2 py-1">
       <Link
         to={`/projects/${rel.project.id}`}
-        className={`truncate text-sm hover:underline ${
-          isDarkMode ? 'text-amber-400' : 'text-amber-text'
-        }`}
+        className={`truncate text-sm hover:underline ${'text-warning'}`}
       >
         {rel.project.name}
       </Link>
@@ -1099,13 +1060,7 @@ function SidebarProjectRow({
   )
 }
 
-function SettingsTab({
-  project,
-  isDarkMode,
-}: {
-  project: Project
-  isDarkMode: boolean
-}) {
+function SettingsTab({ project }: { project: Project }) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
   const queryClient = useQueryClient()
@@ -1192,21 +1147,19 @@ function SettingsTab({
 
   return (
     <div className="space-y-6">
-      <EditProjectForm project={project} isDarkMode={isDarkMode} />
+      <EditProjectForm project={project} />
 
       {linkDefsLoading && (
-        <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+        <Card>
           <CardContent>
-            <p
-              className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-slate-500'}`}
-            >
+            <p className={'text-sm text-tertiary'}>
               Loading link definitions...
             </p>
           </CardContent>
         </Card>
       )}
       {linkDefsError && (
-        <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+        <Card>
           <CardContent>
             <p className="text-sm text-red-600 dark:text-red-400">
               Failed to load link definitions.
@@ -1218,7 +1171,6 @@ function SettingsTab({
         <EditLinksCard
           linkDefs={linkDefs}
           links={project.links || {}}
-          isDarkMode={isDarkMode}
           isSaving={linksMutation.isPending}
           onSave={(entries) => linksMutation.mutate(entries)}
         />
@@ -1227,7 +1179,6 @@ function SettingsTab({
       {sortedEnvironments.length > 0 && (
         <EditEnvironmentsCard
           environments={sortedEnvironments}
-          isDarkMode={isDarkMode}
           isSaving={envMutation.isPending}
           onSave={(envData) => envMutation.mutate(envData)}
         />
@@ -1236,7 +1187,6 @@ function SettingsTab({
       <EditableKeyValueCard
         title="Identifiers"
         entries={project.identifiers || {}}
-        isDarkMode={isDarkMode}
         isSaving={identifiersMutation.isPending}
         readOnlyKeys
         showHeader={false}
@@ -1244,14 +1194,10 @@ function SettingsTab({
         onSave={(entries) => identifiersMutation.mutate(entries)}
       />
 
-      <Card
-        className={`border-amber-300 ${isDarkMode ? 'border-amber-700 bg-gray-800' : ''}`}
-      >
+      <Card className={'border-amber-300'}>
         <CardHeader>
           <CardTitle>Archive project</CardTitle>
-          <CardDescription
-            className={isDarkMode ? 'text-gray-300' : 'text-slate-700'}
-          >
+          <CardDescription className={'text-secondary'}>
             Archiving the project will make it entirely read only. It will be
             hidden from the dashboard, won&apos;t show up in searches, and will
             be disabled as a dependency for any other projects that are
@@ -1265,17 +1211,15 @@ function SettingsTab({
         </CardContent>
       </Card>
 
-      <Card
-        className={`border-red-300 ${isDarkMode ? 'border-red-800 bg-gray-800' : ''}`}
-      >
+      <Card className={'border-red-300'}>
         <CardHeader>
           <CardTitle>Delete project</CardTitle>
-          <CardDescription
-            className={isDarkMode ? 'text-gray-300' : 'text-slate-700'}
-          >
+          <CardDescription className={'text-secondary'}>
             This action will <strong>permanently delete</strong>{' '}
             <code
-              className={`rounded px-1.5 py-0.5 font-mono text-sm ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-slate-100 text-slate-900'}`}
+              className={
+                'rounded bg-secondary px-1.5 py-0.5 font-mono text-sm text-primary'
+              }
             >
               {project.slug}
             </code>{' '}
@@ -1288,7 +1232,7 @@ function SettingsTab({
             <Button
               variant="outline"
               size="sm"
-              className={`bg-red-700 text-white hover:bg-red-800 ${isDarkMode ? 'border-red-700' : 'border-red-300'}`}
+              className={'border-danger bg-red-700 text-white hover:bg-red-800'}
               onClick={() => setShowDeleteConfirm(true)}
               disabled={!projectTypeSlug}
             >
@@ -1296,12 +1240,12 @@ function SettingsTab({
             </Button>
           ) : (
             <div className="space-y-3">
-              <p
-                className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-slate-700'}`}
-              >
+              <p className={'text-sm text-secondary'}>
                 Type{' '}
                 <code
-                  className={`rounded px-1.5 py-0.5 font-mono text-sm ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-slate-100 text-slate-900'}`}
+                  className={
+                    'rounded bg-secondary px-1.5 py-0.5 font-mono text-sm text-primary'
+                  }
                 >
                   {project.slug}
                 </code>{' '}
@@ -1312,15 +1256,15 @@ function SettingsTab({
                 onChange={(e) => setDeleteConfirmSlug(e.target.value)}
                 placeholder={project.slug}
                 disabled={deleteMutation.isPending}
-                className={
-                  isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : ''
-                }
+                className={''}
               />
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`bg-red-700 text-white hover:bg-red-800 ${isDarkMode ? 'border-red-700' : 'border-red-300'}`}
+                  className={
+                    'border-danger bg-red-700 text-white hover:bg-red-800'
+                  }
                   onClick={() => deleteMutation.mutate()}
                   disabled={
                     deleteConfirmSlug !== project.slug ||
@@ -1350,20 +1294,12 @@ function SettingsTab({
   )
 }
 
-function PlaceholderTab({
-  name,
-  isDarkMode,
-}: {
-  name: string
-  isDarkMode: boolean
-}) {
+function PlaceholderTab({ name }: { name: string }) {
   return (
-    <Card className={isDarkMode ? 'border-gray-700 bg-gray-800' : ''}>
+    <Card>
       <CardContent className="py-12 text-center">
         <CardTitle>{name}</CardTitle>
-        <CardDescription
-          className={isDarkMode ? 'text-gray-400' : 'text-slate-500'}
-        >
+        <CardDescription className={'text-tertiary'}>
           This tab will be implemented in a future update.
         </CardDescription>
       </CardContent>

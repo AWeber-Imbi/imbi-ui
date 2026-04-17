@@ -24,14 +24,10 @@ import {
 } from '@/api/endpoints'
 import type { AdminUser, AdminUserCreate, AdminUserUpdate } from '@/types'
 
-interface UserManagementProps {
-  isDarkMode: boolean
-}
-
 type UserFilter = 'all' | 'users' | 'admins'
 type StatusFilter = 'all' | 'active' | 'inactive'
 
-export function UserManagement({ isDarkMode }: UserManagementProps) {
+export function UserManagement() {
   const queryClient = useQueryClient()
   const {
     viewMode,
@@ -210,11 +206,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
               e.stopPropagation()
               handleEditClick(user)
             }}
-            className={`rounded p-1.5 ${
-              isDarkMode
-                ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-            }`}
+            className={`rounded p-1.5 ${'text-secondary hover:bg-secondary hover:text-primary'}`}
           >
             <Edit2 className="h-4 w-4" />
           </button>
@@ -230,11 +222,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div
-          className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-        >
-          Loading users...
-        </div>
+        <div className={'text-sm text-secondary'}>Loading users...</div>
       </div>
     )
   }
@@ -243,11 +231,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
   if (error) {
     return (
       <div
-        className={`flex items-center gap-3 rounded-lg border p-4 ${
-          isDarkMode
-            ? 'border-red-700 bg-red-900/20 text-red-400'
-            : 'border-red-200 bg-red-50 text-red-700'
-        }`}
+        className={`flex items-center gap-3 rounded-lg border p-4 ${'border-danger bg-danger text-danger'}`}
       >
         <AlertCircle className="h-5 w-5 flex-shrink-0" />
         <div>
@@ -267,9 +251,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
     !selectedUser
   ) {
     return (
-      <div
-        className={`rounded-lg border p-4 ${isDarkMode ? 'border-gray-700 text-gray-300' : 'border-gray-200 text-gray-700'}`}
-      >
+      <div className={'rounded-lg border border-tertiary p-4 text-secondary'}>
         User not found. They may have been removed.
       </div>
     )
@@ -282,7 +264,6 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
         user={selectedUser}
         onSave={handleSave}
         onCancel={handleCancel}
-        isDarkMode={isDarkMode}
         isLoading={createMutation.isPending || updateMutation.isPending}
         error={createMutation.error || updateMutation.error}
       />
@@ -296,7 +277,6 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
         user={selectedUser}
         onEdit={() => handleEditClick(selectedUser)}
         onBack={handleCancel}
-        isDarkMode={isDarkMode}
       />
     )
   }
@@ -309,25 +289,19 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
         <div className="flex flex-1 items-center gap-3">
           <div className="relative max-w-md flex-1">
             <Search
-              className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-500'
-              }`}
+              className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${'text-tertiary'}`}
             />
             <Input
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`pl-10 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : ''}`}
+              className={'pl-10'}
             />
           </div>
           <select
             value={userFilter}
             onChange={(e) => setUserFilter(e.target.value as UserFilter)}
-            className={`rounded-lg border px-3 py-2 text-sm ${
-              isDarkMode
-                ? 'border-gray-600 bg-gray-700 text-white'
-                : 'border-gray-300 bg-white text-gray-900'
-            }`}
+            className={`rounded-lg border px-3 py-2 text-sm ${'border-input bg-background text-foreground'}`}
           >
             <option value="all">All Types</option>
             <option value="users">Regular Users</option>
@@ -336,11 +310,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className={`rounded-lg border px-3 py-2 text-sm ${
-              isDarkMode
-                ? 'border-gray-600 bg-gray-700 text-white'
-                : 'border-gray-300 bg-white text-gray-900'
-            }`}
+            className={`rounded-lg border px-3 py-2 text-sm ${'border-input bg-background text-foreground'}`}
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -349,7 +319,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
         </div>
         <Button
           onClick={handleCreateClick}
-          className="bg-amber-border text-white hover:bg-amber-border-strong"
+          className="bg-action text-action-foreground hover:bg-action-hover"
         >
           <Plus className="mr-2 h-4 w-4" />
           New User
@@ -372,14 +342,10 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
                   className="size-8 rounded-full"
                 />
                 <div>
-                  <div
-                    className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}
-                  >
+                  <div className={'text-sm font-medium text-primary'}>
                     {user.display_name}
                   </div>
-                  <div
-                    className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-                  >
+                  <div className={'text-xs text-secondary'}>
                     {getGroupNames(user)}
                   </div>
                 </div>
@@ -392,11 +358,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
             headerAlign: 'left',
             cellAlign: 'left',
             render: (user) => (
-              <span
-                className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
-              >
-                {user.email}
-              </span>
+              <span className={'text-sm text-secondary'}>{user.email}</span>
             ),
           },
           {
@@ -407,14 +369,18 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
             render: (user) =>
               user.is_admin ? (
                 <span
-                  className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium ${isDarkMode ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700'}`}
+                  className={
+                    'inline-flex items-center gap-1 rounded bg-danger px-2 py-1 text-xs font-medium text-danger'
+                  }
                 >
                   <Crown className="h-3 w-3" />
                   Admin
                 </span>
               ) : (
                 <span
-                  className={`rounded px-2 py-1 text-xs font-medium ${isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-700'}`}
+                  className={
+                    'rounded bg-info px-2 py-1 text-xs font-medium text-info'
+                  }
                 >
                   User
                 </span>
@@ -434,12 +400,8 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
                 disabled={toggleActiveMutation.isPending}
                 className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium ${
                   user.is_active
-                    ? isDarkMode
-                      ? 'bg-green-900/30 text-green-400'
-                      : 'bg-green-100 text-green-700'
-                    : isDarkMode
-                      ? 'bg-gray-700 text-gray-400'
-                      : 'bg-gray-100 text-gray-600'
+                    ? 'bg-success text-success'
+                    : 'bg-secondary text-secondary'
                 }`}
               >
                 <Power className="h-3 w-3" />
@@ -453,9 +415,7 @@ export function UserManagement({ isDarkMode }: UserManagementProps) {
             headerAlign: 'left',
             cellAlign: 'left',
             render: (user) => (
-              <span
-                className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}
-              >
+              <span className={'text-xs text-secondary'}>
                 {formatDate(user.last_login)}
               </span>
             ),

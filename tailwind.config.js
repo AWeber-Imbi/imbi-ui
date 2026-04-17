@@ -59,6 +59,8 @@ export default {
         danger: "var(--color-background-danger)",
         success: "var(--color-background-success)",
         warning: "var(--color-background-warning)",
+        action: "var(--color-action-bg)",
+        "action-hover": "var(--color-action-bg-hover)",
       },
       // text-primary, text-secondary, text-tertiary, etc.
       textColor: {
@@ -69,6 +71,7 @@ export default {
         danger: "var(--color-text-danger)",
         success: "var(--color-text-success)",
         warning: "var(--color-text-warning)",
+        "action-foreground": "var(--color-action-fg)",
       },
       // border-primary, border-secondary, border-tertiary, etc.
       borderColor: {
@@ -76,6 +79,24 @@ export default {
         secondary: "var(--color-border-secondary)",
         tertiary: "var(--color-border-tertiary)",
         info: "var(--color-border-info)",
+        danger: "var(--color-border-danger)",
+        success: "var(--color-border-success)",
+        warning: "var(--color-border-warning)",
+      },
+      // ring-* colors mirror border tokens so status rings flip with theme
+      ringColor: {
+        primary: "var(--color-border-primary)",
+        secondary: "var(--color-border-secondary)",
+        tertiary: "var(--color-border-tertiary)",
+        info: "var(--color-border-info)",
+        danger: "var(--color-border-danger)",
+        success: "var(--color-border-success)",
+        warning: "var(--color-border-warning)",
+      },
+      divideColor: {
+        primary: "var(--color-border-primary)",
+        secondary: "var(--color-border-secondary)",
+        tertiary: "var(--color-border-tertiary)",
       },
       colors: {
         // shadcn/ui compatibility (used by button, badge, dialog, dropdown, popover, etc.)
