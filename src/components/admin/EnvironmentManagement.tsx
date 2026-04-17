@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { EntityIcon } from '@/components/ui/entity-icon'
 import { AdminTable } from '@/components/ui/admin-table'
 import type { CanDeleteResult } from '@/components/ui/admin-table'
+import { LabelChip } from '@/components/ui/label-chip'
 import { EnvironmentForm } from './environments/EnvironmentForm'
 import { EnvironmentDetail } from './environments/EnvironmentDetail'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -255,16 +256,9 @@ export function EnvironmentManagement() {
             cellAlign: 'center',
             render: (env) =>
               env.label_color ? (
-                <span
-                  className="whitespace-nowrap rounded px-2 py-1 text-xs font-medium"
-                  style={{
-                    backgroundColor: env.label_color + '20',
-                    color: env.label_color,
-                    border: `1px solid ${env.label_color}40`,
-                  }}
-                >
+                <LabelChip hex={env.label_color} className="font-mono">
                   {env.slug}
-                </span>
+                </LabelChip>
               ) : (
                 <code
                   className={

@@ -1,16 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
-import { Plus, Search, Edit2, Power, Crown, AlertCircle } from 'lucide-react'
+import { Plus, Search, Power, Crown, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Badge } from '../ui/badge'
 import { Input } from '../ui/input'
 import { Gravatar } from '../ui/gravatar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { AdminTable } from '@/components/ui/admin-table'
 import { UserForm } from './users/UserForm'
 import { UserDetail } from './users/UserDetail'
@@ -197,27 +192,6 @@ export function UserManagement() {
     goToList()
   }
 
-  const userActions = (user: AdminUser) => (
-    <TooltipProvider delayDuration={200}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              handleEditClick(user)
-            }}
-            className={`rounded p-1.5 ${'text-secondary hover:bg-secondary hover:text-primary'}`}
-          >
-            <Edit2 className="h-4 w-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Edit</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-
   // Loading state
   if (isLoading) {
     return (
@@ -368,22 +342,12 @@ export function UserManagement() {
             cellAlign: 'left',
             render: (user) =>
               user.is_admin ? (
-                <span
-                  className={
-                    'inline-flex items-center gap-1 rounded bg-danger px-2 py-1 text-xs font-medium text-danger'
-                  }
-                >
+                <Badge variant="danger" className="gap-1">
                   <Crown className="h-3 w-3" />
                   Admin
-                </span>
+                </Badge>
               ) : (
-                <span
-                  className={
-                    'rounded bg-info px-2 py-1 text-xs font-medium text-info'
-                  }
-                >
-                  User
-                </span>
+                <Badge variant="info">User</Badge>
               ),
           },
           {
@@ -427,7 +391,6 @@ export function UserManagement() {
         onRowClick={(user) => handleViewClick(user)}
         onDelete={handleDelete}
         isDeleting={deleteMutation.isPending}
-        actions={userActions}
         emptyMessage={
           searchQuery || userFilter !== 'all' || statusFilter !== 'all'
             ? 'No users match your filters'

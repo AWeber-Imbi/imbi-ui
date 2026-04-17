@@ -15,6 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AdminTable } from '@/components/ui/admin-table'
+import { LabelChip } from '@/components/ui/label-chip'
+import { LABEL_SWATCHES, swatchForType } from '@/lib/chip-colors'
 import {
   Tooltip,
   TooltipContent,
@@ -39,36 +41,6 @@ interface BlueprintKey {
   slug: string
 }
 
-const TYPE_COLORS = [
-  'purple',
-  'blue',
-  'green',
-  'orange',
-  'pink',
-  'cyan',
-  'amber',
-  'rose',
-]
-
-const TYPE_COLOR_CLASSES: Record<string, string> = {
-  purple:
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  green: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  orange:
-    'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-  pink: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
-  cyan: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
-  amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-  rose: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
-}
-
-export function getTypeColor(type: string, allTypes: string[]): string {
-  if (type === 'relationship') return 'amber'
-  const idx = allTypes.indexOf(type)
-  return TYPE_COLORS[(idx >= 0 ? idx : 0) % TYPE_COLORS.length]
-}
-
 /** Return the path type used in API URLs and compound keys. */
 export function blueprintPathType(bp: Blueprint): string {
   return bp.kind === 'relationship' ? 'relationship' : bp.type || 'unknown'
@@ -82,9 +54,15 @@ export function blueprintTypeLabel(bp: Blueprint): string {
   return bp.type || 'unknown'
 }
 
-export function getTypeBadgeClasses(type: string, allTypes: string[]): string {
-  const color = getTypeColor(type, allTypes)
-  return TYPE_COLOR_CLASSES[color] || TYPE_COLOR_CLASSES.blue
+/** Pick a label palette hex for a blueprint type. Relationship is pinned to Honey. */
+export function getTypeSwatch(type: string, allTypes: string[]): string {
+  if (type === 'relationship') {
+    return (
+      LABEL_SWATCHES.find((s) => s.name === 'Honey')?.hex ??
+      LABEL_SWATCHES[2].hex
+    )
+  }
+  return swatchForType(type, allTypes)
 }
 
 function renderFilterCell(filter: string | null | undefined): React.ReactNode {
@@ -431,11 +409,11 @@ export function BlueprintManagement() {
             headerAlign: 'left',
             cellAlign: 'left',
             render: (bp) => (
-              <span
-                className={`inline-flex items-center whitespace-nowrap rounded-sm px-2 py-0.5 text-xs font-medium ${getTypeBadgeClasses(blueprintPathType(bp), blueprintTypes)}`}
+              <LabelChip
+                hex={getTypeSwatch(blueprintPathType(bp), blueprintTypes)}
               >
                 {blueprintTypeLabel(bp)}
-              </span>
+              </LabelChip>
             ),
           },
           {

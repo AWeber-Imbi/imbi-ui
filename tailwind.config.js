@@ -59,6 +59,7 @@ export default {
         danger: "var(--color-background-danger)",
         success: "var(--color-background-success)",
         warning: "var(--color-background-warning)",
+        accent: "var(--color-background-accent)",
         action: "var(--color-action-bg)",
         "action-hover": "var(--color-action-bg-hover)",
       },
@@ -71,6 +72,7 @@ export default {
         danger: "var(--color-text-danger)",
         success: "var(--color-text-success)",
         warning: "var(--color-text-warning)",
+        accent: "var(--color-text-accent)",
         "action-foreground": "var(--color-action-fg)",
       },
       // border-primary, border-secondary, border-tertiary, etc.
@@ -82,6 +84,8 @@ export default {
         danger: "var(--color-border-danger)",
         success: "var(--color-border-success)",
         warning: "var(--color-border-warning)",
+        accent: "var(--color-border-accent)",
+        action: "var(--color-action-bg)",
       },
       // ring-* colors mirror border tokens so status rings flip with theme
       ringColor: {
@@ -92,6 +96,7 @@ export default {
         danger: "var(--color-border-danger)",
         success: "var(--color-border-success)",
         warning: "var(--color-border-warning)",
+        accent: "var(--color-border-accent)",
       },
       divideColor: {
         primary: "var(--color-border-primary)",

@@ -209,7 +209,7 @@ export function LinkDefinitionManagement() {
         </div>
         <Button
           onClick={goToCreate}
-          className="bg-amber-border-strong text-white hover:brightness-125"
+          className="bg-action text-action-foreground hover:bg-action-hover"
         >
           <Plus className="mr-2 h-4 w-4" />
           New Link Definition

@@ -16,7 +16,8 @@ import {
   createThirdPartyService,
   updateThirdPartyService,
 } from '@/api/endpoints'
-import { statusBadgeClasses } from '@/lib/status-colors'
+import { statusBadgeVariant } from '@/lib/status-colors'
+import { Badge } from '@/components/ui/badge'
 import type { ThirdPartyService, ThirdPartyServiceCreate } from '@/types'
 
 type ViewMode = 'list' | 'create' | 'edit' | 'detail'
@@ -235,11 +236,7 @@ export function ThirdPartyServiceManagement() {
       headerAlign: 'center',
       cellAlign: 'center',
       render: (svc) => (
-        <span
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClasses(svc.status)}`}
-        >
-          {svc.status}
-        </span>
+        <Badge variant={statusBadgeVariant(svc.status)}>{svc.status}</Badge>
       ),
     },
     {

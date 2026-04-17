@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { Check } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
+import { deriveChipColors, hexToRgb } from '@/lib/chip-colors'
 
 interface Swatch {
   name: string
@@ -26,21 +28,6 @@ interface ColorPickerProps {
   labelValue: string
 }
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return null
-  const n = parseInt(hex.slice(1), 16)
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
-}
-
-function darken(hex: string, amt: number): string | null {
-  const rgb = hexToRgb(hex)
-  if (!rgb) return null
-  const r = Math.round(rgb.r * (1 - amt))
-  const g = Math.round(rgb.g * (1 - amt))
-  const b = Math.round(rgb.b * (1 - amt))
-  return `rgb(${r},${g},${b})`
-}
-
 function relativeLuminance(r: number, g: number, b: number): number {
   const a = [r, g, b].map((v) => {
     const s = v / 255
@@ -65,25 +52,13 @@ function contrastRatio(fg: string, bg: string): number | null {
   return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05)
 }
 
-function deriveChipColors(
-  hex: string,
-): { bg: string; fg: string; border: string } | null {
-  const rgb = hexToRgb(hex)
-  const fg = darken(hex, 0.35)
-  if (!rgb || !fg) return null
-  return {
-    bg: `rgba(${rgb.r},${rgb.g},${rgb.b},0.2)`,
-    fg,
-    border: `rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`,
-  }
-}
-
 export function ColorPicker({
   value,
   onChange,
   objectType,
   labelValue,
 }: ColorPickerProps) {
+  const { isDarkMode } = useTheme()
   const [hexInput, setHexInput] = useState(value)
   const swatchRefs = useRef<Array<HTMLButtonElement | null>>([])
   const nativeColorRef = useRef<HTMLInputElement>(null)
@@ -122,25 +97,41 @@ export function ColorPicker({
     swatchRefs.current[nextIdx]?.focus()
   }
 
-  const derived = deriveChipColors(value)
+  const isValidHex = /^#[0-9A-Fa-f]{6}$/.test(hexInput)
+  const derived = isValidHex
+    ? deriveChipColors(hexInput, isDarkMode)
+    : deriveChipColors(value, isDarkMode)
+  const swatchRgb = isValidHex ? hexToRgb(hexInput) : hexToRgb(value)
+  // Chip bg is rgba at 20% alpha composited on the page surface (bg-tertiary).
+  // Contrast must be measured against that effective color, not the saturated hex.
+  const surface = isDarkMode
+    ? { r: 0x14, g: 0x14, b: 0x13 }
+    : { r: 0xf5, g: 0xf4, b: 0xf0 }
+  const effectiveBg = swatchRgb
+    ? {
+        r: Math.round(swatchRgb.r * 0.2 + surface.r * 0.8),
+        g: Math.round(swatchRgb.g * 0.2 + surface.g * 0.8),
+        b: Math.round(swatchRgb.b * 0.2 + surface.b * 0.8),
+      }
+    : null
   const contrast =
-    derived && hexToRgb(value)
+    derived && effectiveBg
       ? contrastRatio(
           derived.fg,
-          `rgb(${hexToRgb(value)!.r},${hexToRgb(value)!.g},${hexToRgb(value)!.b})`,
+          `rgb(${effectiveBg.r},${effectiveBg.g},${effectiveBg.b})`,
         )
       : null
-  const isValidHex = /^#[0-9A-Fa-f]{6}$/.test(value)
-  // Contrast check compares derived fg against the raw hex (the chip's saturated core),
-  // matching the design prototype's contrastRatio(fg, bg) call.
   const hasLowContrast = isValidHex && contrast !== null && contrast < 3.0
 
   const previewText = labelValue.trim() || 'Label'
 
-  const pipBackground = isValidHex ? value : 'transparent'
+  const pipBackground = isValidHex ? hexInput : 'transparent'
 
+  const hasPartialHex = hexInput.trim() !== '' && !isValidHex
   const statusLabel = !isValidHex
-    ? null
+    ? hasPartialHex
+      ? 'Invalid'
+      : null
     : hasLowContrast
       ? 'Low contrast'
       : 'Valid'
@@ -149,10 +140,10 @@ export function ColorPicker({
     <div className="space-y-3">
       <label
         htmlFor="color-picker-swatches"
-        className="block text-sm font-medium text-primary"
+        className="mb-1.5 block text-sm text-secondary"
       >
         Label color
-        <span className="ml-1 text-xs font-normal text-tertiary">
+        <span className="ml-1 text-xs text-tertiary">
           · used on chips wherever this {objectType} appears
         </span>
       </label>
@@ -227,7 +218,7 @@ export function ColorPicker({
             <input
               ref={nativeColorRef}
               type="color"
-              value={isValidHex ? value : '#000000'}
+              value={isValidHex ? hexInput : '#000000'}
               onChange={(e) => commit(e.target.value)}
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             />
@@ -252,9 +243,11 @@ export function ColorPicker({
           {statusLabel && (
             <span
               className={`mr-1 rounded px-2 py-1 text-[11px] font-medium ${
-                hasLowContrast
-                  ? 'bg-warning text-warning'
-                  : 'bg-success text-success'
+                hasPartialHex
+                  ? 'bg-danger text-danger'
+                  : hasLowContrast
+                    ? 'bg-warning text-warning'
+                    : 'bg-success text-success'
               }`}
               role="status"
             >

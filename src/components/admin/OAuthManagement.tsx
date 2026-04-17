@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, Power, AlertCircle, CheckCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getAuthProviders } from '@/api/endpoints'
 import type { AuthProvider } from '@/types'
@@ -104,14 +105,10 @@ export function OAuthManagement() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${'bg-secondary text-secondary'}`}
-                  >
-                    {provider.type}
-                  </span>
+                  <Badge variant="neutral">{provider.type}</Badge>
                   <span
                     className={`text-xs ${
-                      provider.enabled ? 'text-green-500' : 'text-tertiary'
+                      provider.enabled ? 'text-success' : 'text-tertiary'
                     }`}
                   >
                     {provider.enabled ? 'Enabled' : 'Disabled'}

@@ -1,5 +1,6 @@
 import { Package, AlertTriangle, TrendingUp, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 
 interface OutdatedComponentsWidgetProps {
   onProjectSelect?: (projectId: string) => void
@@ -61,27 +62,14 @@ export function OutdatedComponentsWidget({
     },
   ]
 
-  const severityConfig = {
-    critical: {
-      label: 'Critical',
-      bgColor: 'bg-danger',
-      textColor: 'text-danger',
-    },
-    high: {
-      label: 'High',
-      bgColor: 'bg-warning',
-      textColor: 'text-warning',
-    },
-    medium: {
-      label: 'Medium',
-      bgColor: 'bg-warning',
-      textColor: 'text-warning',
-    },
-    low: {
-      label: 'Low',
-      bgColor: 'bg-info',
-      textColor: 'text-info',
-    },
+  const severityConfig: Record<
+    'critical' | 'high' | 'medium' | 'low',
+    { label: string; variant: BadgeProps['variant'] }
+  > = {
+    critical: { label: 'Critical', variant: 'danger' },
+    high: { label: 'High', variant: 'warning' },
+    medium: { label: 'Medium', variant: 'warning' },
+    low: { label: 'Low', variant: 'info' },
   }
 
   return (
@@ -113,13 +101,9 @@ export function OutdatedComponentsWidget({
                       <code className={'text-sm font-medium text-primary'}>
                         {item.component}
                       </code>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
-                          config.bgColor
-                        } ${config.textColor}`}
-                      >
+                      <Badge variant={config.variant} className="rounded-full">
                         {config.label}
-                      </span>
+                      </Badge>
                     </div>
 
                     <button

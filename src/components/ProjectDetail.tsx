@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
+import { LabelChip } from '@/components/ui/label-chip'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   Tooltip,
@@ -405,22 +406,20 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
                 return (
                   <span key={env.slug} className="contents">
                     {idx > 0 && (
-                      <ArrowRight className="h-4 w-4 text-slate-400" />
+                      <ArrowRight className="h-4 w-4 text-tertiary" />
                     )}
-                    <span
-                      className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium"
-                      style={
-                        color
-                          ? {
-                              backgroundColor: color + '20',
-                              color: color,
-                              border: `1px solid ${color}40`,
-                            }
-                          : undefined
-                      }
-                    >
-                      {env.name}: {deployment.version}
-                    </span>
+                    {color ? (
+                      <LabelChip
+                        hex={color}
+                        className="rounded-md px-3 py-1.5 text-sm"
+                      >
+                        {env.name}: {deployment.version}
+                      </LabelChip>
+                    ) : (
+                      <span className="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium">
+                        {env.name}: {deployment.version}
+                      </span>
+                    )}
                   </span>
                 )
               })}

@@ -1,5 +1,6 @@
 import { Rocket, CheckCircle, XCircle, Clock, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 
 interface RecentDeploymentsWidgetProps {
   onProjectSelect?: (projectId: string) => void
@@ -61,40 +62,22 @@ export function RecentDeploymentsWidget({
     },
   ]
 
-  const statusConfig = {
-    success: {
-      label: 'Success',
-      icon: CheckCircle,
-      color: 'text-success',
-      bgColor: 'bg-success',
-    },
-    failed: {
-      label: 'Failed',
-      icon: XCircle,
-      color: 'text-danger',
-      bgColor: 'bg-danger',
-    },
-    'in-progress': {
-      label: 'In Progress',
-      icon: Clock,
-      color: 'text-info',
-      bgColor: 'bg-info',
-    },
+  const statusConfig: Record<
+    'success' | 'failed' | 'in-progress',
+    { label: string; icon: typeof CheckCircle; variant: BadgeProps['variant'] }
+  > = {
+    success: { label: 'Success', icon: CheckCircle, variant: 'success' },
+    failed: { label: 'Failed', icon: XCircle, variant: 'danger' },
+    'in-progress': { label: 'In Progress', icon: Clock, variant: 'info' },
   }
 
-  const envConfig = {
-    Production: {
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-    },
-    Staging: {
-      color: 'text-warning',
-      bgColor: 'bg-warning',
-    },
-    Testing: {
-      color: 'text-info',
-      bgColor: 'bg-info',
-    },
+  const envConfig: Record<
+    'Production' | 'Staging' | 'Testing',
+    { variant: BadgeProps['variant'] }
+  > = {
+    Production: { variant: 'accent' },
+    Staging: { variant: 'warning' },
+    Testing: { variant: 'info' },
   }
 
   return (
@@ -131,21 +114,16 @@ export function RecentDeploymentsWidget({
                       >
                         {deployment.version}
                       </code>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
-                          env.bgColor
-                        } ${env.color}`}
-                      >
+                      <Badge variant={env.variant} className="rounded-full">
                         {deployment.environment}
-                      </span>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
-                          status.bgColor
-                        } ${status.color}`}
+                      </Badge>
+                      <Badge
+                        variant={status.variant}
+                        className="gap-1 rounded-full"
                       >
                         <StatusIcon className="h-3 w-3" />
                         {status.label}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="text-xs text-gray-500">
                       {deployment.deployedBy} • {deployment.deployedAt}

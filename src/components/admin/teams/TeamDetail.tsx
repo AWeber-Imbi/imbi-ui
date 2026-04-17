@@ -11,6 +11,7 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Gravatar } from '@/components/ui/gravatar'
@@ -282,15 +283,9 @@ export function TeamDetail({ team, onEdit, onBack }: TeamDetailProps) {
                       {member.email}
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center rounded px-2 py-1 text-xs font-medium ${
-                          member.is_active
-                            ? 'bg-success text-success'
-                            : 'bg-secondary text-secondary'
-                        }`}
-                      >
+                      <Badge variant={member.is_active ? 'success' : 'neutral'}>
                         {member.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <TooltipProvider delayDuration={200}>

@@ -1,5 +1,6 @@
 import { GitPullRequest, Clock, MessageSquare, CheckCircle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
 
 interface MyPullRequestsWidgetProps {
   onUserSelect?: (userName: string) => void
@@ -102,20 +103,20 @@ export function MyPullRequestsWidget({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs ${
-                        config.color === 'blue'
-                          ? 'bg-info text-info'
-                          : config.color === 'yellow'
-                            ? 'bg-warning text-warning'
-                            : config.color === 'red'
-                              ? 'bg-danger text-danger'
-                              : 'bg-success text-success'
-                      }`}
+                    <Badge
+                      variant={
+                        ({
+                          blue: 'info',
+                          yellow: 'warning',
+                          red: 'danger',
+                        }[config.color as string] ??
+                          'success') as BadgeProps['variant']
+                      }
+                      className="gap-1.5 rounded-full"
                     >
                       <StatusIcon className="h-3 w-3" />
                       {config.label}
-                    </span>
+                    </Badge>
 
                     {pr.comments > 0 && (
                       <span className="flex items-center gap-1 text-xs text-gray-500">

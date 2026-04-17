@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
 import { Plus, Search, Power, Bot, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Badge } from '../ui/badge'
 import { Input } from '../ui/input'
 import { AdminTable } from '@/components/ui/admin-table'
 import { ServiceAccountForm } from './service-accounts/ServiceAccountForm'
@@ -296,16 +297,13 @@ export function ServiceAccountManagement() {
             headerAlign: 'center',
             cellAlign: 'center',
             render: (account) => (
-              <span
-                className={`inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-medium ${
-                  account.is_active
-                    ? 'bg-success text-success'
-                    : 'bg-secondary text-secondary'
-                }`}
+              <Badge
+                variant={account.is_active ? 'success' : 'neutral'}
+                className="gap-1.5"
               >
                 <Power className="h-3 w-3" />
                 {account.is_active ? 'Active' : 'Inactive'}
-              </span>
+              </Badge>
             ),
           },
           {

@@ -15,6 +15,7 @@ import {
   Bot,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Gravatar } from '@/components/ui/gravatar'
 import {
@@ -205,12 +206,10 @@ export function RoleDetail({ slug, onEdit, onBack }: RoleDetailProps) {
               <div className="flex items-center gap-2">
                 <CardTitle>{role.name}</CardTitle>
                 {role.is_system && (
-                  <span
-                    className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${'bg-warning text-warning'}`}
-                  >
+                  <Badge variant="warning" className="gap-1">
                     <Lock className="h-3 w-3" />
                     System
-                  </span>
+                  </Badge>
                 )}
               </div>
               <p className={'mt-1 text-secondary'}>
@@ -506,24 +505,12 @@ export function RoleDetail({ slug, onEdit, onBack }: RoleDetailProps) {
                       </div>
                       <div className="flex items-center gap-2">
                         {user.is_active ? (
-                          <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${'bg-success text-success'}`}
-                          >
-                            Active
-                          </span>
+                          <Badge variant="success">Active</Badge>
                         ) : (
-                          <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${'bg-secondary text-tertiary'}`}
-                          >
-                            Inactive
-                          </span>
+                          <Badge variant="neutral">Inactive</Badge>
                         )}
                         {user.is_service_account && (
-                          <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'}`}
-                          >
-                            Service
-                          </span>
+                          <Badge variant="accent">Service</Badge>
                         )}
                       </div>
                       <div className={'text-sm text-tertiary'}>
@@ -634,17 +621,9 @@ export function RoleDetail({ slug, onEdit, onBack }: RoleDetailProps) {
                       </div>
                       <div>
                         {sa.is_active ? (
-                          <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${'bg-success text-success'}`}
-                          >
-                            Active
-                          </span>
+                          <Badge variant="success">Active</Badge>
                         ) : (
-                          <span
-                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${'bg-secondary text-tertiary'}`}
-                          >
-                            Inactive
-                          </span>
+                          <Badge variant="neutral">Inactive</Badge>
                         )}
                       </div>
                       <div className={'text-sm text-tertiary'}>

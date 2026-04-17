@@ -1,16 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ApiError } from '@/api/client'
-import { Plus, Search, Edit2, Shield, AlertCircle, Lock } from 'lucide-react'
+import { Plus, Search, Shield, AlertCircle, Lock } from 'lucide-react'
 import { formatRelativeDate } from '@/lib/formatDate'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { AdminTable } from '@/components/ui/admin-table'
 import type { CanDeleteResult } from '@/components/ui/admin-table'
 import { RoleForm } from './roles/RoleForm'
@@ -147,43 +142,6 @@ export function RoleManagement() {
     if (isSystem)
       return { allowed: false, reason: 'System roles cannot be deleted' }
     return { allowed: true }
-  }
-
-  const roleActions = (role: Role) => {
-    const isSystem = 'is_system' in role && (role as RoleDetailType).is_system
-    return (
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex">
-              <button
-                type="button"
-                aria-label={
-                  isSystem
-                    ? `System role ${role.name} cannot be edited`
-                    : `Edit role ${role.name}`
-                }
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleEditClick(role.slug)
-                }}
-                disabled={isSystem}
-                className={`rounded p-1.5 ${
-                  isSystem
-                    ? 'cursor-not-allowed opacity-40'
-                    : 'text-secondary hover:bg-secondary hover:text-primary'
-                }`}
-              >
-                <Edit2 className="h-4 w-4" />
-              </button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isSystem ? 'System roles cannot be edited' : 'Edit'}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    )
   }
 
   const handleCreateClick = () => {
@@ -341,22 +299,12 @@ export function RoleManagement() {
               const isSystem =
                 'is_system' in role && (role as RoleDetailType).is_system
               return isSystem ? (
-                <span
-                  className={
-                    'inline-flex items-center gap-1 rounded bg-warning px-2 py-1 text-xs font-medium text-warning'
-                  }
-                >
+                <Badge variant="warning" className="gap-1">
                   <Lock className="h-3 w-3" />
                   System
-                </span>
+                </Badge>
               ) : (
-                <span
-                  className={
-                    'rounded bg-info px-2 py-1 text-xs font-medium text-info'
-                  }
-                >
-                  Custom
-                </span>
+                <Badge variant="info">Custom</Badge>
               )
             },
           },
@@ -378,7 +326,6 @@ export function RoleManagement() {
         onDelete={handleDelete}
         canDelete={canDeleteRole}
         isDeleting={deleteMutation.isPending}
-        actions={roleActions}
         emptyMessage={
           searchQuery ? 'No roles match your search' : 'No roles created yet'
         }

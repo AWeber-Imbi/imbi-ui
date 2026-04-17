@@ -13,7 +13,8 @@ import { OAuth2ApplicationList } from './OAuth2ApplicationList'
 import { ServiceWebhookList } from './ServiceWebhookList'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { EntityIcon } from '@/components/ui/entity-icon'
-import { statusBadgeClasses } from '@/lib/status-colors'
+import { statusBadgeVariant } from '@/lib/status-colors'
+import { Badge } from '@/components/ui/badge'
 import type { ThirdPartyService } from '@/types'
 
 interface ThirdPartyServiceDetailProps {
@@ -33,7 +34,7 @@ export function ThirdPartyServiceDetail({
   const [activeTab, setActiveTab] = useState<DetailTab>('details')
   const [webhookDetailActive, setWebhookDetailActive] = useState(false)
   const [appDetailActive, setAppDetailActive] = useState(false)
-  const statusColor = statusBadgeClasses(service.status)
+  const statusVariant = statusBadgeVariant(service.status)
   const linkEntries = Object.entries(service.links || {})
   const identifierEntries = Object.entries(service.identifiers || {})
 
@@ -63,11 +64,7 @@ export function ThirdPartyServiceDetail({
                     />
                   )}
                   <CardTitle>{service.name}</CardTitle>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}
-                  >
-                    {service.status}
-                  </span>
+                  <Badge variant={statusVariant}>{service.status}</Badge>
                 </div>
                 {service.description && (
                   <p className={'mt-1 text-sm text-secondary'}>

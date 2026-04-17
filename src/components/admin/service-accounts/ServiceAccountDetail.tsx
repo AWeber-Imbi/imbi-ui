@@ -18,6 +18,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Tooltip,
   TooltipContent,
@@ -869,13 +870,7 @@ export function ServiceAccountDetail({
                       >
                         {truncateClientId(cred.client_id)}
                       </code>
-                      {cred.revoked && (
-                        <span
-                          className={`rounded px-2 py-0.5 text-xs ${'bg-danger text-danger'}`}
-                        >
-                          Revoked
-                        </span>
-                      )}
+                      {cred.revoked && <Badge variant="danger">Revoked</Badge>}
                       {cred.scopes.length > 0 && cred.scopes[0] !== '*' && (
                         <span className={'text-xs text-tertiary'}>
                           {cred.scopes.join(', ')}
@@ -1085,13 +1080,7 @@ export function ServiceAccountDetail({
                       >
                         {key.key_id.substring(0, 7)}...
                       </code>
-                      {key.revoked && (
-                        <span
-                          className={`rounded px-2 py-0.5 text-xs ${'bg-danger text-danger'}`}
-                        >
-                          Revoked
-                        </span>
-                      )}
+                      {key.revoked && <Badge variant="danger">Revoked</Badge>}
                     </div>
                     <div className={'mt-1 text-xs text-tertiary'}>
                       Created {formatDate(key.created_at)}

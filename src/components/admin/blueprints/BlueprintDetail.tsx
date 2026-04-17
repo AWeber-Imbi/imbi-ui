@@ -19,9 +19,11 @@ import {
   Braces,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { CardTitle } from '@/components/ui/card'
 import { getBlueprint } from '@/api/endpoints'
-import { getTypeBadgeClasses } from '../BlueprintManagement'
+import { getTypeSwatch } from '../BlueprintManagement'
+import { LabelChip } from '@/components/ui/label-chip'
 import { parseFilterFromBlueprint } from '@/lib/utils'
 import type { SchemaProperty } from '@/types'
 
@@ -213,13 +215,18 @@ export function BlueprintDetail({
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle>{blueprint.name}</CardTitle>
-                <span
-                  className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${getTypeBadgeClasses(blueprint.kind === 'relationship' ? 'relationship' : blueprint.type || '', blueprintTypes)}`}
+                <LabelChip
+                  hex={getTypeSwatch(
+                    blueprint.kind === 'relationship'
+                      ? 'relationship'
+                      : blueprint.type || '',
+                    blueprintTypes,
+                  )}
                 >
                   {blueprint.kind === 'relationship'
                     ? `${blueprint.source ?? '?'} → ${blueprint.target ?? '?'} (${blueprint.edge ?? '?'})`
                     : blueprint.type}
-                </span>
+                </LabelChip>
               </div>
               <p className={'mt-1 text-secondary'}>
                 {blueprint.description || 'No description'}
@@ -328,12 +335,13 @@ export function BlueprintDetail({
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {parsedFilter.project_type.map((pt) => (
-                    <span
+                    <Badge
                       key={pt}
-                      className={`inline-flex items-center rounded-md border px-2.5 py-1 text-sm ${'border-info bg-info text-info'}`}
+                      variant="info"
+                      className="rounded-md border-info px-2.5 py-1 text-sm"
                     >
                       {pt}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -349,12 +357,13 @@ export function BlueprintDetail({
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {parsedFilter.environment.map((env) => (
-                    <span
+                    <Badge
                       key={env}
-                      className={`inline-flex items-center rounded-md border px-2.5 py-1 text-sm ${'border-success bg-success text-success'}`}
+                      variant="success"
+                      className="rounded-md border-success px-2.5 py-1 text-sm"
                     >
                       {env}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -391,19 +400,11 @@ export function BlueprintDetail({
                     >
                       {prop.name}
                     </code>
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs ${'bg-secondary text-primary'}`}
-                    >
+                    <Badge variant="secondary">
                       {prop.type}
                       {prop.format ? ` / ${prop.format}` : ''}
-                    </span>
-                    {prop.required && (
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs font-medium ${'bg-danger text-danger'}`}
-                      >
-                        Required
-                      </span>
-                    )}
+                    </Badge>
+                    {prop.required && <Badge variant="danger">Required</Badge>}
                   </div>
 
                   {prop.description && (
@@ -416,12 +417,13 @@ export function BlueprintDetail({
                   {prop.enumValues && prop.enumValues.length > 0 && (
                     <div className="ml-7 mt-2 flex flex-wrap gap-1.5">
                       {prop.enumValues.map((val) => (
-                        <span
+                        <Badge
                           key={val}
-                          className={`inline-flex items-center rounded border px-2 py-0.5 font-mono text-xs ${'border-input bg-secondary text-secondary'}`}
+                          variant="secondary"
+                          className="border border-input font-mono text-secondary"
                         >
                           {val}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   )}
@@ -445,7 +447,6 @@ export function BlueprintDetail({
                     if (activeMaps.length === 0) return null
                     const isColorType = (name: string) =>
                       name.startsWith('color-')
-                    const chipClass = 'border-input bg-secondary text-secondary'
                     return (
                       <div className="ml-7 mt-2 flex flex-wrap gap-4">
                         {activeMaps.map(([name, map]) => (
@@ -455,9 +456,10 @@ export function BlueprintDetail({
                             </span>
                             <div className="mt-1 flex flex-wrap gap-1.5">
                               {Object.entries(map!).map(([key, val]) => (
-                                <span
+                                <Badge
                                   key={key}
-                                  className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-mono text-xs ${chipClass}`}
+                                  variant="secondary"
+                                  className="gap-1.5 border border-input font-mono text-secondary"
                                 >
                                   {isColorType(name) ? (
                                     <>
@@ -472,7 +474,7 @@ export function BlueprintDetail({
                                       {key} → {val}
                                     </>
                                   )}
-                                </span>
+                                </Badge>
                               ))}
                             </div>
                           </div>

@@ -22,7 +22,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { statusBadgeClasses } from '@/lib/status-colors'
+import { statusBadgeVariant } from '@/lib/status-colors'
+import { Badge } from '@/components/ui/badge'
 
 type ViewMode = 'list' | 'create' | 'edit'
 
@@ -245,7 +246,7 @@ export function OAuth2ApplicationList({
             </thead>
             <tbody className={'divide-y divide-tertiary'}>
               {applications.map((app) => {
-                const statusColor = statusBadgeClasses(app.status)
+                const statusVariant = statusBadgeVariant(app.status)
                 return (
                   <tr
                     key={app.slug}
@@ -274,11 +275,7 @@ export function OAuth2ApplicationList({
                       {app.client_id}
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor}`}
-                      >
-                        {app.status}
-                      </span>
+                      <Badge variant={statusVariant}>{app.status}</Badge>
                     </td>
                     <td
                       className="px-6 py-4 text-right"
