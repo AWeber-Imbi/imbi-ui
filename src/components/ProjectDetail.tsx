@@ -54,6 +54,9 @@ import { EditableKeyValueCard } from '@/components/EditableKeyValueCard'
 import { EditLinksCard } from '@/components/EditLinksCard'
 import { EditEnvironmentsCard } from '@/components/EditEnvironmentsCard'
 import type { Project, ProjectRelationship } from '@/types'
+import { InlineText } from '@/components/ui/inline-edit/InlineText'
+import { InlineTextarea } from '@/components/ui/inline-edit/InlineTextarea'
+import { useProjectPatch } from '@/hooks/useProjectPatch'
 
 interface ProjectDetailProps {
   project: Project
@@ -191,6 +194,7 @@ function resolveFieldValue(
 export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
+  const { patch, pendingPath } = useProjectPatch(orgSlug, project.id)
   const navigate = useNavigate()
 
   const activeTab: TabType =
@@ -389,7 +393,15 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
         <div className="flex items-start justify-between">
           <div>
             <div className="mb-1 flex items-center gap-3">
-              <h1 className={`text-[1.75rem] ${value}`}>{project.name}</h1>
+              <InlineText
+                value={project.name}
+                onCommit={(v) => patch('/name', v ?? '')}
+                pending={pendingPath === '/name'}
+                className="text-[1.75rem]"
+                renderValue={(v) => (
+                  <span className={`text-[1.75rem] ${value}`}>{v}</span>
+                )}
+              />
               <Badge variant="outline">
                 {(project.project_types || []).map((pt) => pt.name).join(', ')}
               </Badge>
@@ -434,9 +446,15 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
           </div>
         </div>
 
-        {project.description && (
-          <p className={'mt-3 text-secondary'}>{project.description}</p>
-        )}
+        <div className="mt-3 text-secondary">
+          <InlineTextarea
+            value={project.description ?? null}
+            onCommit={(v) => patch('/description', v)}
+            pending={pendingPath === '/description'}
+            placeholder="Add a description…"
+            rows={2}
+          />
+        </div>
 
         {/* External Links */}
         {externalLinks.length > 0 && (
