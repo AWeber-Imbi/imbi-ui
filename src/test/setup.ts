@@ -21,21 +21,20 @@ Object.defineProperty(globalThis, 'localStorage', {
   writable: true,
 })
 
-globalThis.ResizeObserver = vi.fn(function (this: unknown) {
-  return {
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }
-}) as any
+class ResizeObserverMock implements ResizeObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
 
-globalThis.MutationObserver = vi.fn(function (this: unknown) {
-  return {
-    observe: vi.fn(),
-    unobserve: vi.fn(),
-    disconnect: vi.fn(),
-  }
-}) as any
+class MutationObserverMock implements MutationObserver {
+  observe = vi.fn()
+  disconnect = vi.fn()
+  takeRecords = vi.fn(() => [] as MutationRecord[])
+}
+
+globalThis.ResizeObserver = ResizeObserverMock
+globalThis.MutationObserver = MutationObserverMock
 
 // Mock scrollIntoView for Radix Select
 Element.prototype.scrollIntoView = vi.fn()
