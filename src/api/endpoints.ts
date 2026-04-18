@@ -57,7 +57,11 @@ import type {
   ProjectService,
   ProjectServiceCreate,
   ProjectRelationshipsResponse,
+  PatchOperation,
 } from '@/types'
+
+// Re-export for backward compatibility with modules that import from here.
+export type { PatchOperation }
 
 // Status/Health
 export const getStatus = () => apiClient.get<ApiStatus>('/status')
@@ -168,13 +172,6 @@ export const updateProject = (
     `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}`,
     project,
   )
-
-export type PatchOperation = {
-  op: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test'
-  path: string
-  value?: unknown
-  from?: string
-}
 
 export const patchProject = (
   orgSlug: string,

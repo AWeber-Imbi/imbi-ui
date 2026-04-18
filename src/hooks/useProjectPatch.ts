@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { patchProject, type PatchOperation } from '@/api/endpoints'
+import { patchProject } from '@/api/endpoints'
 import { applyJsonPatch } from '@/lib/json-patch'
 import { ApiError } from '@/api/client'
-import type { Project } from '@/types'
+import type { PatchOperation, Project } from '@/types'
 
 export interface UseProjectPatchResult {
   patch: (path: string, value: unknown) => Promise<void>

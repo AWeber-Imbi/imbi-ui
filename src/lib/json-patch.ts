@@ -1,4 +1,4 @@
-import type { PatchOperation } from '@/api/endpoints'
+import type { PatchOperation } from '@/types'
 
 export type { PatchOperation }
 
