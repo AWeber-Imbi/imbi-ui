@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useProjectPatch } from '../useProjectPatch'
 import * as endpoints from '@/api/endpoints'
+import { ApiError } from '@/api/client'
 import { toast } from 'sonner'
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
@@ -55,9 +56,7 @@ describe('useProjectPatch', () => {
 
   it('rolls back on error and toasts', async () => {
     vi.spyOn(endpoints, 'patchProject').mockRejectedValue(
-      Object.assign(new Error('nope'), {
-        response: { data: { detail: 'nope' } },
-      }),
+      new ApiError(400, 'Bad Request', { detail: 'nope' }),
     )
 
     const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
@@ -71,7 +70,8 @@ describe('useProjectPatch', () => {
     ).rejects.toThrow()
 
     expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(baseProject)
-    expect(toast.error).toHaveBeenCalled()
+    // Verify the ApiError.response.data.detail branch is used for the toast.
+    expect(toast.error).toHaveBeenCalledWith('Save failed: nope')
   })
 
   it('emits remove op when value is null', async () => {
@@ -117,9 +117,7 @@ describe('useProjectPatch', () => {
     // fail the network PATCH; the cached project should be unchanged (not
     // overwritten with a stale snapshot).
     vi.spyOn(endpoints, 'patchProject').mockRejectedValue(
-      Object.assign(new Error('boom'), {
-        response: { data: { detail: 'boom' } },
-      }),
+      new ApiError(500, 'Internal Server Error', { detail: 'boom' }),
     )
 
     const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
