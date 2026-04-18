@@ -30,25 +30,32 @@ export function useProjectPatch(
       const key = ['project', orgSlug, projectId] as const
       const op = buildOp(path, value)
       const snapshot = qc.getQueryData<Project>(key)
-
-      // Apply optimistic update
-      if (snapshot) {
-        qc.setQueryData<Project>(
-          key,
-          applyJsonPatch(snapshot as unknown as Record<string, unknown>, [
-            op,
-          ]) as unknown as Project,
-        )
-      }
+      let optimisticApplied = false
 
       setPendingPath(path)
 
       try {
+        // Apply optimistic update (best-effort; skip if the patch shape
+        // cannot be applied locally so the network PATCH still runs).
+        if (snapshot) {
+          try {
+            qc.setQueryData<Project>(
+              key,
+              applyJsonPatch(snapshot as unknown as Record<string, unknown>, [
+                op,
+              ]) as unknown as Project,
+            )
+            optimisticApplied = true
+          } catch {
+            // Unsupported local patch shape — let the server be the source of truth.
+          }
+        }
+
         const result = await patchProject(orgSlug, projectId, [op])
         qc.setQueryData(key, result)
       } catch (error) {
         // Rollback optimistic update
-        if (snapshot !== undefined) {
+        if (optimisticApplied && snapshot !== undefined) {
           qc.setQueryData(key, snapshot)
         }
         const detail =

@@ -91,6 +91,51 @@ describe('useProjectPatch', () => {
     ])
   })
 
+  it('still sends the network PATCH when the optimistic apply fails', async () => {
+    // Nested paths are not supported by applyJsonPatch and will throw.
+    const updated = { ...baseProject, name: 'Beta' }
+    const spy = vi
+      .spyOn(endpoints, 'patchProject')
+      .mockResolvedValue(updated as never)
+
+    const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
+      wrapper: wrapper(qc),
+    })
+
+    await act(async () => {
+      await result.current.patch('/team/slug', 'new-team')
+    })
+
+    expect(spy).toHaveBeenCalledWith('o', 'p1', [
+      { op: 'replace', path: '/team/slug', value: 'new-team' },
+    ])
+    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(updated)
+  })
+
+  it('does not roll back to stale snapshot when optimistic apply was skipped', async () => {
+    // Force the optimistic update to be skipped (nested path throws) then
+    // fail the network PATCH; the cached project should be unchanged (not
+    // overwritten with a stale snapshot).
+    vi.spyOn(endpoints, 'patchProject').mockRejectedValue(
+      Object.assign(new Error('boom'), {
+        response: { data: { detail: 'boom' } },
+      }),
+    )
+
+    const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
+      wrapper: wrapper(qc),
+    })
+
+    await expect(
+      act(async () => {
+        await result.current.patch('/team/slug', 'new-team')
+      }),
+    ).rejects.toThrow()
+
+    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(baseProject)
+    expect(toast.error).toHaveBeenCalled()
+  })
+
   it('tracks pendingPath during the mutation', async () => {
     let resolveIt!: (v: unknown) => void
     vi.spyOn(endpoints, 'patchProject').mockImplementation(
