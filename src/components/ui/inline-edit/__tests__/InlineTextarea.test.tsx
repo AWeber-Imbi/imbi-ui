@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { InlineTextarea } from '../InlineTextarea'
 
 describe('InlineTextarea', () => {
-  it('commits on Cmd+Enter (or Ctrl+Enter)', async () => {
+  it('commits on Ctrl+Enter', async () => {
     const onCommit = vi.fn().mockResolvedValue(undefined)
     render(<InlineTextarea value="hi" onCommit={onCommit} />)
     await userEvent.click(screen.getByText('hi'))
@@ -12,6 +12,17 @@ describe('InlineTextarea', () => {
     await userEvent.clear(ta)
     await userEvent.type(ta, 'there')
     await userEvent.keyboard('{Control>}{Enter}{/Control}')
+    await waitFor(() => expect(onCommit).toHaveBeenCalledWith('there'))
+  })
+
+  it('commits on Cmd+Enter (macOS Meta key)', async () => {
+    const onCommit = vi.fn().mockResolvedValue(undefined)
+    render(<InlineTextarea value="hi" onCommit={onCommit} />)
+    await userEvent.click(screen.getByText('hi'))
+    const ta = screen.getByRole('textbox') as HTMLTextAreaElement
+    await userEvent.clear(ta)
+    await userEvent.type(ta, 'there')
+    await userEvent.keyboard('{Meta>}{Enter}{/Meta}')
     await waitFor(() => expect(onCommit).toHaveBeenCalledWith('there'))
   })
 
