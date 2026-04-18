@@ -68,7 +68,7 @@ export function InlineSelect({
         if (!open) setEditing(false)
       }}
     >
-      <SelectTrigger className="h-7 py-1">
+      <SelectTrigger className="h-7 w-auto min-w-[8rem] gap-2 py-1">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
