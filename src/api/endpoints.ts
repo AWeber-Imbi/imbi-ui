@@ -58,6 +58,8 @@ import type {
   ProjectServiceCreate,
   ProjectRelationshipsResponse,
   PatchOperation,
+  OperationsLogRecord,
+  OperationsLogFilters,
 } from '@/types'
 
 // Re-export for backward compatibility with modules that import from here.
@@ -247,6 +249,47 @@ export const getActivityFeed = async (params?: {
     return []
   }
 }
+
+// Operations Log
+export interface OperationsLogPage {
+  entries: OperationsLogRecord[]
+  nextCursor?: string
+}
+
+function parseNextCursor(headers: Headers): string | undefined {
+  const link = headers.get('link')
+  if (!link) return undefined
+  const match = link.match(/<([^>]+)>;\s*rel="next"/)
+  if (!match) return undefined
+  const url = new URL(match[1], window.location.origin)
+  return url.searchParams.get('cursor') || undefined
+}
+
+export const listOperationsLog = async (params: {
+  limit?: number
+  cursor?: string
+  filters?: OperationsLogFilters
+}): Promise<OperationsLogPage> => {
+  const query: Record<string, unknown> = { limit: params.limit ?? 50 }
+  if (params.cursor) query.cursor = params.cursor
+  if (params.filters) {
+    for (const [k, v] of Object.entries(params.filters)) {
+      if (v) query[k] = v
+    }
+  }
+  const { data, headers } = await apiClient.getWithHeaders<
+    OperationsLogRecord[]
+  >('/operations-log/', query)
+  return {
+    entries: Array.isArray(data) ? data : [],
+    nextCursor: parseNextCursor(headers),
+  }
+}
+
+export const getOperationsLogEntry = (entryId: string) =>
+  apiClient.get<OperationsLogRecord>(
+    `/operations-log/${encodeURIComponent(entryId)}`,
+  )
 
 // Metadata
 export const getEnvironments = async (): Promise<Environment[]> => {
