@@ -40,9 +40,14 @@ describe('useProjectPatch', () => {
     // The hook invalidates the project query after a successful PATCH rather
     // than writing the server response into the cache (the PATCH and GET
     // bodies can differ in shape). Until the next GET completes, the cache
-    // holds the locally-applied optimistic value.
-    const updated = { ...baseProject, name: 'Beta' }
-    vi.spyOn(endpoints, 'patchProject').mockResolvedValue(updated as never)
+    // holds the locally-applied optimistic value. Use a server payload that
+    // intentionally differs from the optimistic value so this test would fail
+    // if the hook ever started writing the PATCH response back into cache.
+    const optimistic = { ...baseProject, name: 'Beta' }
+    const serverPayload = { ...baseProject, name: 'Server Beta' }
+    vi.spyOn(endpoints, 'patchProject').mockResolvedValue(
+      serverPayload as never,
+    )
 
     const { result } = renderHook(() => useProjectPatch('o', 'p1'), {
       wrapper: wrapper(qc),
@@ -55,7 +60,7 @@ describe('useProjectPatch', () => {
     expect(endpoints.patchProject).toHaveBeenCalledWith('o', 'p1', [
       { op: 'replace', path: '/name', value: 'Beta' },
     ])
-    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(updated)
+    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(optimistic)
   })
 
   it('rolls back on error and toasts', async () => {
