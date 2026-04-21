@@ -35,10 +35,13 @@ export function useInfiniteOperationsLog(filters: OperationsLogFilters) {
           entries.push(entry)
         }
       }
+      // Metrics are returned only on page 1; hold onto that one.
+      const metrics = data.pages.find((p) => p.metrics)?.metrics
       return {
         pages: data.pages,
         pageParams: data.pageParams,
         entries,
+        metrics,
       }
     },
   })

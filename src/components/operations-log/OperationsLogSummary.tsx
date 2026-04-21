@@ -1,3 +1,4 @@
+import type { OperationsLogMetrics } from '@/api/endpoints'
 import type { Environment, OperationsLogRecord } from '@/types'
 import { useMemo } from 'react'
 import { sortEnvironments } from '@/lib/utils'
@@ -9,6 +10,10 @@ interface SummaryProps {
   rangeLabel: string
   range: TimeRange
   loading?: boolean
+  // When the backend returns aggregate metrics for the full filter
+  // universe, the tiles display those numbers rather than stats derived
+  // only from `entries` (which is just the loaded pages).
+  serverMetrics?: OperationsLogMetrics
 }
 
 function SkeletonBlock({ className }: { className: string }) {
@@ -35,6 +40,7 @@ export function OperationsLogSummary({
   rangeLabel,
   range,
   loading = false,
+  serverMetrics,
 }: SummaryProps) {
   // Terminal promotion target = highest sort_order env, matching the
   // release train. Avoids a hard-coded "production" slug so custom
@@ -103,8 +109,18 @@ export function OperationsLogSummary({
     }
   }, [entries, range, terminalEnvSlug])
 
-  const { deploys, terminalDeploys, projects, envCount, people, buckets, max } =
-    stats
+  const { buckets, max } = stats
+  // Prefer server-computed metrics (which cover the full filter
+  // universe) over numbers derived from just the loaded pages.
+  const events = serverMetrics?.event_count ?? entries.length
+  const deploys = serverMetrics?.deploys ?? stats.deploys
+  const projects = serverMetrics?.projects ?? stats.projects
+  const envCount = serverMetrics?.environments ?? stats.envCount
+  const people = serverMetrics?.team_members ?? stats.people
+  const terminalDeploys = terminalEnvSlug
+    ? (serverMetrics?.deploys_by_environment?.[terminalEnvSlug] ??
+      stats.terminalDeploys)
+    : stats.terminalDeploys
 
   return (
     <div className="mb-4 grid grid-cols-2 overflow-hidden rounded-md border border-tertiary bg-primary md:grid-cols-4">
@@ -116,7 +132,7 @@ export function OperationsLogSummary({
           <SkeletonBlock className="mt-0.5 h-5 w-16" />
         ) : (
           <span className="flex items-baseline gap-1.5 font-medium tabular-nums text-primary">
-            <span className="text-xl leading-none">{entries.length}</span>
+            <span className="text-xl leading-none">{events}</span>
             <span className="text-[11px] uppercase tracking-wide text-tertiary">
               in {rangeLabel}
             </span>

@@ -251,9 +251,24 @@ export const getActivityFeed = async (params?: {
 }
 
 // Operations Log
+export interface OperationsLogMetrics {
+  event_count: number
+  deploys: number
+  projects: number
+  environments: number
+  team_members: number
+  deploys_by_environment: Record<string, number>
+}
+
 export interface OperationsLogPage {
   entries: OperationsLogRecord[]
+  metrics?: OperationsLogMetrics
   nextCursor?: string
+}
+
+interface OperationsLogEnvelope {
+  metrics: OperationsLogMetrics | null
+  data: OperationsLogRecord[]
 }
 
 function parseNextCursor(headers: Headers): string | undefined {
@@ -277,11 +292,14 @@ export const listOperationsLog = async (params: {
       if (v) query[k] = v
     }
   }
-  const { data, headers } = await apiClient.getWithHeaders<
-    OperationsLogRecord[]
-  >('/operations-log/', query)
+  const { data, headers } =
+    await apiClient.getWithHeaders<OperationsLogEnvelope>(
+      '/operations-log/',
+      query,
+    )
   return {
-    entries: Array.isArray(data) ? data : [],
+    entries: Array.isArray(data?.data) ? data.data : [],
+    metrics: data?.metrics ?? undefined,
     nextCursor: parseNextCursor(headers),
   }
 }

@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { Activity, LoaderCircle, SearchX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -175,51 +176,11 @@ export function OperationsLog() {
     () => data?.entries ?? [],
     [data],
   )
+  const serverMetrics = data?.metrics
 
-  // Eagerly walk all pages so the summary strip sees the full universe
-  // for the selected range — not just the first page. Bounded ranges
-  // are naturally capped by the `since` filter; only 'all time' needs a
-  // safety cap to avoid pulling the entire DB.
-  //
-  // The fetch is deferred one frame so the browser can paint between
-  // pages. Firing synchronously starves the compositor and visibly
-  // stutters the loading spinner during long fetches.
-  const autoFetchCap = filters.range === 'all' ? 5000 : Infinity
-  useEffect(() => {
-    if (
-      !hasNextPage ||
-      isFetchingNextPage ||
-      rawEntries.length >= autoFetchCap
-    ) {
-      return
-    }
-    const id = window.setTimeout(() => fetchNextPage(), 16)
-    return () => window.clearTimeout(id)
-  }, [
-    hasNextPage,
-    isFetchingNextPage,
-    rawEntries.length,
-    autoFetchCap,
-    fetchNextPage,
-  ])
-
-  // Also trigger another page load as the user nears the bottom of the list.
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    if (!hasNextPage) return
-    const node = sentinelRef.current
-    if (!node) return
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting) && !isFetchingNextPage) {
-          fetchNextPage()
-        }
-      },
-      { rootMargin: '400px 0px' },
-    )
-    obs.observe(node)
-    return () => obs.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  // Next-page fetch is driven by the virtualizer overscanning past the
+  // end of the list, rather than eagerly paginating every page. See the
+  // effect below the virtualizer setup.
 
   // Also enforce the `since` cutoff client-side. Defense in depth: if the
   // backend ever drifts, a stale cached page reappears, or the clock skews,
@@ -343,6 +304,75 @@ export function OperationsLog() {
 
   const buckets = useMemo(() => bucketByDay(items), [items])
 
+  // Flatten buckets into a single list for the virtualizer: one entry
+  // per day header plus one entry per row. Each virtual item renders
+  // independently so the only DOM nodes on screen at once are those in
+  // (or near) the viewport, regardless of how many rows we have loaded.
+  type VItem =
+    | { kind: 'header'; key: string; label: string; date: Date; count: number }
+    | { kind: 'rel'; key: string; id: string; isOpen: boolean }
+    | { kind: 'evt'; key: string; id: string; isOpen: boolean }
+  const virtualItems: VItem[] = useMemo(() => {
+    const out: VItem[] = []
+    for (const bucket of buckets) {
+      out.push({
+        kind: 'header',
+        key: `h-${bucket.key}`,
+        label: bucket.label,
+        date: bucket.date,
+        count: bucket.items.length,
+      })
+      for (const it of bucket.items) {
+        if (it.kind === 'release') {
+          const id = it.group.latestEntry.id
+          const isOpen =
+            openId === id || it.group.stops.some((s) => s.entry.id === openId)
+          out.push({ kind: 'rel', key: `rel-${id}`, id, isOpen })
+        } else {
+          const id = it.entry.id
+          out.push({ kind: 'evt', key: `evt-${id}`, id, isOpen: openId === id })
+        }
+      }
+    }
+    return out
+  }, [buckets, openId])
+
+  // Reverse index so the virtualizer's absolutely-positioned row can
+  // look up its FeedItem payload by id without scanning `items` each render.
+  const groupsById = useMemo(() => {
+    const m = new Map<string, FeedItem>()
+    for (const it of items) {
+      const id = it.kind === 'release' ? it.group.latestEntry.id : it.entry.id
+      m.set(id, it)
+    }
+    return m
+  }, [items])
+
+  const virtualizer = useWindowVirtualizer({
+    count: virtualItems.length,
+    estimateSize: (index) => (virtualItems[index]?.kind === 'header' ? 34 : 72),
+    overscan: 8,
+    getItemKey: (index) => virtualItems[index]?.key ?? index,
+  })
+
+  // Pull the next page as soon as the virtualizer renders within a few
+  // rows of the end of the current list. Replaces the prior eager loop
+  // that fetched every page back-to-back.
+  const virtualRows = virtualizer.getVirtualItems()
+  const lastVisibleIndex =
+    virtualRows.length > 0 ? virtualRows[virtualRows.length - 1].index : -1
+  useEffect(() => {
+    if (!hasNextPage || isFetchingNextPage) return
+    if (lastVisibleIndex < virtualItems.length - 5) return
+    fetchNextPage()
+  }, [
+    lastVisibleIndex,
+    virtualItems.length,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ])
+
   const activeChips = useMemo(() => {
     const chips: { key: string; label: string; clear: () => void }[] = []
     for (const t of filters.entry_types) {
@@ -398,7 +428,10 @@ export function OperationsLog() {
     performerDisplayNames,
   ])
 
-  const isPageLoading = Boolean(isLoading || isFetchingNextPage || hasNextPage)
+  // With on-demand pagination, hasNextPage stays true until the user
+  // scrolls to the end. Don't let that keep the spinner and inert
+  // overlay on forever — just tie loading to active network activity.
+  const isPageLoading = Boolean(isLoading || isFetchingNextPage)
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-6">
@@ -425,6 +458,7 @@ export function OperationsLog() {
               rangeLabel={RANGE_LABEL[filters.range]}
               range={filters.range}
               loading={isPageLoading}
+              serverMetrics={serverMetrics}
             />
 
             <OperationsLogToolbar
@@ -505,98 +539,95 @@ export function OperationsLog() {
 
             {!isLoading &&
               !isError &&
-              (buckets.length === 0 ? (
+              (virtualItems.length === 0 ? (
                 <div className="rounded-md border border-tertiary bg-primary px-6 py-16 text-center text-sm text-tertiary">
                   <SearchX className="mx-auto mb-2 h-7 w-7 text-tertiary" />
                   No events match these filters.
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {buckets.map((bucket) => (
-                    <section key={bucket.key}>
-                      <div className="mb-1.5 flex items-center gap-2.5 px-0.5">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
-                          {bucket.label}
-                        </span>
-                        <span className="font-mono text-[11px] text-tertiary">
-                          {bucket.date.toLocaleDateString(undefined, {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </span>
-                        <span className="h-px flex-1 bg-tertiary" />
-                        <span className="font-mono text-[11px] text-tertiary">
-                          {bucket.items.length}{' '}
-                          {bucket.items.length === 1 ? 'event' : 'events'}
-                        </span>
-                      </div>
-                      <div className="overflow-hidden rounded-md border border-tertiary bg-primary">
-                        {bucket.items.map((it) => {
-                          if (it.kind === 'release') {
-                            const id = it.group.latestEntry.id
-                            const isOpen =
-                              openId === id ||
-                              it.group.stops.some((s) => s.entry.id === openId)
-                            return (
-                              <OperationsLogReleaseCard
-                                key={`rel-${id}`}
-                                id={id}
-                                group={it.group}
-                                project={projectsBySlug.get(
-                                  it.group.project_slug,
-                                )}
-                                environmentsBySlug={environmentsBySlug}
-                                isOpen={isOpen}
-                                onToggle={toggleOpen}
-                                performerDisplayNames={performerDisplayNames}
-                              />
-                            )
-                          }
-                          const id = it.entry.id
-                          const isOpen = openId === id
-                          return (
-                            <OperationsLogStreamRow
-                              key={`evt-${id}`}
-                              id={id}
-                              entry={it.entry}
-                              project={projectsBySlug.get(
-                                it.entry.project_slug,
-                              )}
-                              environment={environmentsBySlug.get(
-                                it.entry.environment_slug,
-                              )}
-                              isOpen={isOpen}
-                              onToggle={toggleOpen}
-                              performerDisplayNames={performerDisplayNames}
-                            />
-                          )
-                        })}
-                      </div>
-                    </section>
-                  ))}
+                <>
                   <div
-                    ref={sentinelRef}
-                    className="py-3 text-center text-xs text-tertiary"
+                    className="relative w-full overflow-hidden rounded-md border border-tertiary bg-primary"
+                    style={{ height: virtualizer.getTotalSize() }}
                   >
-                    {isFetchingNextPage ? (
-                      'Loading more…'
-                    ) : hasNextPage ? (
-                      rawEntries.length >= autoFetchCap ? (
-                        <button
-                          type="button"
-                          onClick={() => fetchNextPage()}
-                          className="rounded px-3 py-1 text-[12px] hover:bg-secondary hover:text-primary"
+                    {virtualizer.getVirtualItems().map((v) => {
+                      const vi = virtualItems[v.index]
+                      if (!vi) return null
+                      return (
+                        <div
+                          key={v.key}
+                          data-index={v.index}
+                          ref={virtualizer.measureElement}
+                          className="absolute left-0 right-0 top-0"
+                          style={{ transform: `translateY(${v.start}px)` }}
                         >
-                          Load more (showing {rawEntries.length})
-                        </button>
-                      ) : (
-                        'Loading…'
+                          {vi.kind === 'header' ? (
+                            <div className="flex items-center gap-2.5 border-b border-tertiary bg-secondary px-3 py-1.5">
+                              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
+                                {vi.label}
+                              </span>
+                              <span className="font-mono text-[11px] text-tertiary">
+                                {vi.date.toLocaleDateString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </span>
+                              <span className="h-px flex-1 bg-tertiary" />
+                              <span className="font-mono text-[11px] text-tertiary">
+                                {vi.count} {vi.count === 1 ? 'event' : 'events'}
+                              </span>
+                            </div>
+                          ) : vi.kind === 'rel' ? (
+                            (() => {
+                              const feed = groupsById.get(vi.id)
+                              if (!feed || feed.kind !== 'release') return null
+                              return (
+                                <OperationsLogReleaseCard
+                                  id={vi.id}
+                                  group={feed.group}
+                                  project={projectsBySlug.get(
+                                    feed.group.project_slug,
+                                  )}
+                                  environmentsBySlug={environmentsBySlug}
+                                  isOpen={vi.isOpen}
+                                  onToggle={toggleOpen}
+                                  performerDisplayNames={performerDisplayNames}
+                                />
+                              )
+                            })()
+                          ) : (
+                            (() => {
+                              const feed = groupsById.get(vi.id)
+                              if (!feed || feed.kind !== 'single') return null
+                              return (
+                                <OperationsLogStreamRow
+                                  id={vi.id}
+                                  entry={feed.entry}
+                                  project={projectsBySlug.get(
+                                    feed.entry.project_slug,
+                                  )}
+                                  environment={environmentsBySlug.get(
+                                    feed.entry.environment_slug,
+                                  )}
+                                  isOpen={vi.isOpen}
+                                  onToggle={toggleOpen}
+                                  performerDisplayNames={performerDisplayNames}
+                                />
+                              )
+                            })()
+                          )}
+                        </div>
                       )
-                    ) : (
-                      `End of log · ${visibleEntries.length} entries`
-                    )}
+                    })}
                   </div>
-                </div>
+                  <div className="py-3 text-center text-xs text-tertiary">
+                    {isFetchingNextPage
+                      ? 'Loading more…'
+                      : hasNextPage
+                        ? null
+                        : `End of log · ${visibleEntries.length} entries`}
+                  </div>
+                </>
               ))}
           </div>
         </main>
