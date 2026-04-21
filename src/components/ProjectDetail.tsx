@@ -42,7 +42,9 @@ import {
   deleteProject,
   listTeams,
   listProjectTypes,
+  listOperationsLog,
 } from '@/api/endpoints'
+import { OperationsLog } from '@/components/OperationsLog'
 import { buildRelationshipEdges } from '@/lib/relationship-edges'
 import type {
   ProjectSchemaSection,
@@ -388,13 +390,28 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
     return fields.sort((a, b) => a.label.localeCompare(b.label))
   }, [projectSchema, project])
 
+  const { data: opsLogCountPage } = useQuery({
+    queryKey: ['operationsLog', 'count', project.slug],
+    queryFn: () =>
+      listOperationsLog({ limit: 1, filters: { project_slug: project.slug } }),
+    enabled: !!project.slug,
+    staleTime: 30_000,
+  })
+  const opsLogCount = opsLogCountPage?.metrics?.event_count
+
   const tabs: { id: TabType; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'configuration', label: 'Configuration' },
     { id: 'dependencies', label: 'Dependencies' },
     { id: 'logs', label: 'Logs' },
     { id: 'notes', label: 'Notes' },
-    { id: 'operations-log', label: 'Operations Log' },
+    {
+      id: 'operations-log',
+      label:
+        opsLogCount === undefined
+          ? 'Operations Log'
+          : `Operations Log (${opsLogCount})`,
+    },
     {
       id: 'relationships',
       label: (() => {
@@ -935,7 +952,12 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
           <PlaceholderTab name="Notes" />
         </TabsContent>
         <TabsContent value="operations-log">
-          <PlaceholderTab name="Operations Log" />
+          <OperationsLog
+            projectSlug={project.slug}
+            showSummary={false}
+            showHeader={false}
+            embedded
+          />
         </TabsContent>
         <TabsContent value="settings">
           <SettingsTab project={project} />

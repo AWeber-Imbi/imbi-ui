@@ -60,6 +60,7 @@ interface ToolbarProps {
   projectNames: Map<string, string>
   view: OperationsLogView
   onView: (v: OperationsLogView) => void
+  hideProjectFilter?: boolean
 }
 
 function toggle<T>(arr: T[], value: T): T[] {
@@ -203,6 +204,7 @@ export function OperationsLogToolbar({
   projectNames,
   view,
   onView,
+  hideProjectFilter = false,
 }: ToolbarProps) {
   const [projectQuery, setProjectQuery] = useState('')
 
@@ -307,80 +309,85 @@ export function OperationsLogToolbar({
         contentClassName="min-w-[220px]"
       />
 
-      <DropdownMenu
-        onOpenChange={(open) => {
-          if (!open) setProjectQuery('')
-        }}
-      >
-        <DropdownMenuTrigger asChild>
-          <TriggerButton
-            icon={<Box className="h-3.5 w-3.5" />}
-            label="Project"
-            value={projectSlugs.length > 0 ? projectTriggerValue : undefined}
-            count={projectSlugs.length > 0 ? undefined : projectEntries.length}
-          />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[260px] p-0">
-          <div className="relative border-b border-tertiary p-2">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tertiary" />
-            <Input
-              value={projectQuery}
-              onChange={(e) => setProjectQuery(e.target.value)}
-              placeholder="Filter projects…"
-              className="h-8 pl-7 text-sm"
-              autoFocus
+      {hideProjectFilter ? null : (
+        <DropdownMenu
+          onOpenChange={(open) => {
+            if (!open) setProjectQuery('')
+          }}
+        >
+          <DropdownMenuTrigger asChild>
+            <TriggerButton
+              icon={<Box className="h-3.5 w-3.5" />}
+              label="Project"
+              value={projectSlugs.length > 0 ? projectTriggerValue : undefined}
+              count={
+                projectSlugs.length > 0 ? undefined : projectEntries.length
+              }
             />
-          </div>
-          <div className="max-h-72 overflow-y-auto py-1">
-            <button
-              type="button"
-              onClick={() => onProjectSlugs([])}
-              className={cn(
-                'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
-                projectSlugs.length === 0 && 'bg-secondary text-primary',
-                projectSlugs.length > 0 && 'text-secondary hover:bg-secondary',
-              )}
-            >
-              <Check
-                className={cn(
-                  'h-3.5 w-3.5',
-                  projectSlugs.length > 0 && 'invisible',
-                )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[260px] p-0">
+            <div className="relative border-b border-tertiary p-2">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tertiary" />
+              <Input
+                value={projectQuery}
+                onChange={(e) => setProjectQuery(e.target.value)}
+                placeholder="Filter projects…"
+                className="h-8 pl-7 text-sm"
+                autoFocus
               />
-              All projects
-            </button>
-            {projectEntries.map(([slug, c]) => {
-              const checked = projectSlugs.includes(slug)
-              return (
-                <button
-                  key={slug}
-                  type="button"
-                  onClick={() => onProjectSlugs(toggle(projectSlugs, slug))}
+            </div>
+            <div className="max-h-72 overflow-y-auto py-1">
+              <button
+                type="button"
+                onClick={() => onProjectSlugs([])}
+                className={cn(
+                  'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
+                  projectSlugs.length === 0 && 'bg-secondary text-primary',
+                  projectSlugs.length > 0 &&
+                    'text-secondary hover:bg-secondary',
+                )}
+              >
+                <Check
                   className={cn(
-                    'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
-                    checked && 'bg-secondary text-primary',
-                    !checked && 'text-secondary hover:bg-secondary',
+                    'h-3.5 w-3.5',
+                    projectSlugs.length > 0 && 'invisible',
                   )}
-                  title={projectNames.get(slug) ?? slug}
-                >
-                  <Check
-                    className={cn('h-3.5 w-3.5', !checked && 'invisible')}
-                  />
-                  <span className="flex-1 truncate font-mono text-[13px]">
-                    {slug}
-                  </span>
-                  <span className="ml-3 text-xs text-tertiary">{c}</span>
-                </button>
-              )
-            })}
-            {projectEntries.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-tertiary">
-                No projects match.
-              </div>
-            ) : null}
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+                />
+                All projects
+              </button>
+              {projectEntries.map(([slug, c]) => {
+                const checked = projectSlugs.includes(slug)
+                return (
+                  <button
+                    key={slug}
+                    type="button"
+                    onClick={() => onProjectSlugs(toggle(projectSlugs, slug))}
+                    className={cn(
+                      'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
+                      checked && 'bg-secondary text-primary',
+                      !checked && 'text-secondary hover:bg-secondary',
+                    )}
+                    title={projectNames.get(slug) ?? slug}
+                  >
+                    <Check
+                      className={cn('h-3.5 w-3.5', !checked && 'invisible')}
+                    />
+                    <span className="flex-1 truncate font-mono text-[13px]">
+                      {slug}
+                    </span>
+                    <span className="ml-3 text-xs text-tertiary">{c}</span>
+                  </button>
+                )
+              })}
+              {projectEntries.length === 0 ? (
+                <div className="px-3 py-2 text-xs text-tertiary">
+                  No projects match.
+                </div>
+              ) : null}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       <div
         role="group"

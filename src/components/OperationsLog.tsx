@@ -122,7 +122,19 @@ const DEFAULT_FILTERS: ScreenFilters = {
   project_slugs: [],
 }
 
-export function OperationsLog() {
+export interface OperationsLogProps {
+  projectSlug?: string
+  showSummary?: boolean
+  showHeader?: boolean
+  embedded?: boolean
+}
+
+export function OperationsLog({
+  projectSlug,
+  showSummary = true,
+  showHeader = true,
+  embedded = false,
+}: OperationsLogProps = {}) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
 
@@ -187,8 +199,9 @@ export function OperationsLog() {
     () => ({
       performed_by: filters.performed_by,
       since: rangeToSince(filters.range),
+      project_slug: projectSlug,
     }),
-    [filters.performed_by, filters.range],
+    [filters.performed_by, filters.range, projectSlug],
   )
 
   const {
@@ -514,15 +527,17 @@ export function OperationsLog() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 py-6">
+    <div className={cn(embedded ? '' : 'mx-auto max-w-[1400px] px-6 py-6')}>
       <div className="grid items-start gap-7">
         <main className="min-w-0">
-          <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <h1 className="flex items-center gap-2 text-h1 text-primary">
-              <LoadingIndicator loading={isPageLoading} />
-              Operations Log
-            </h1>
-          </header>
+          {showHeader && (
+            <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <h1 className="flex items-center gap-2 text-h1 text-primary">
+                <LoadingIndicator loading={isPageLoading} />
+                Operations Log
+              </h1>
+            </header>
+          )}
 
           <div
             inert={isPageLoading}
@@ -532,14 +547,16 @@ export function OperationsLog() {
               isPageLoading && 'cursor-wait opacity-50',
             )}
           >
-            <OperationsLogSummary
-              entries={visibleEntries}
-              environments={environments}
-              rangeLabel={RANGE_LABEL[filters.range]}
-              range={filters.range}
-              loading={isPageLoading}
-              serverMetrics={serverMetrics}
-            />
+            {showSummary && (
+              <OperationsLogSummary
+                entries={visibleEntries}
+                environments={environments}
+                rangeLabel={RANGE_LABEL[filters.range]}
+                range={filters.range}
+                loading={isPageLoading}
+                serverMetrics={serverMetrics}
+              />
+            )}
 
             <OperationsLogToolbar
               counts={counts}
@@ -561,6 +578,7 @@ export function OperationsLog() {
                 setFilters({ ...filters, project_slugs })
               }
               projectNames={projectNames}
+              hideProjectFilter={!!projectSlug}
             />
 
             {activeChips.length > 0 && (
