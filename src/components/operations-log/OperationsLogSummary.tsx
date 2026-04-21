@@ -1,9 +1,11 @@
-import type { OperationsLogRecord } from '@/types'
+import type { Environment, OperationsLogRecord } from '@/types'
 import { useMemo } from 'react'
+import { sortEnvironments } from '@/lib/utils'
 import { toMs, type TimeRange } from './opsLogHelpers'
 
 interface SummaryProps {
   entries: OperationsLogRecord[]
+  environments: Environment[]
   rangeLabel: string
   range: TimeRange
   loading?: boolean
@@ -29,14 +31,23 @@ const BARS = 12
 
 export function OperationsLogSummary({
   entries,
+  environments,
   rangeLabel,
   range,
   loading = false,
 }: SummaryProps) {
+  // Terminal promotion target = highest sort_order env, matching the
+  // release train. Avoids a hard-coded "production" slug so custom
+  // pipelines with a final stage named e.g. "Live" pick up automatically.
+  const terminalEnv = useMemo<Environment | undefined>(() => {
+    const sorted = sortEnvironments(environments)
+    return sorted[sorted.length - 1]
+  }, [environments])
   // Single-pass aggregation: counts, uniques, sparkline buckets, and the
   // earliest-timestamp scan (for 'all time') all read the entries array
   // exactly once. Previously we did 4 filter/map passes plus 3 Set
   // allocations per render, all running again on every auto-fetch page.
+  const terminalEnvSlug = terminalEnv?.slug
   const stats = useMemo(() => {
     const now = Date.now()
     const windowMs =
@@ -48,9 +59,8 @@ export function OperationsLogSummary({
     const envSlugs = new Set<string>()
     const people = new Set<string>()
     let deploys = 0
-    let prod = 0
-    let occurredMs: number[] = []
-    occurredMs = new Array(entries.length)
+    let terminalDeploys = 0
+    const occurredMs = new Array<number>(entries.length)
     for (let i = 0; i < entries.length; i++) {
       const e = entries[i]
       const t = toMs(e.occurred_at)
@@ -61,7 +71,9 @@ export function OperationsLogSummary({
       if (e.performed_by) people.add(e.performed_by)
       if (e.entry_type === 'Deployed') {
         deploys += 1
-        if (e.environment_slug === 'production') prod += 1
+        if (terminalEnvSlug && e.environment_slug === terminalEnvSlug) {
+          terminalDeploys += 1
+        }
       }
     }
     if (range === 'all') {
@@ -82,22 +94,20 @@ export function OperationsLogSummary({
     for (const v of buckets) if (v > max) max = v
     return {
       deploys,
-      prod,
+      terminalDeploys,
       projects: projectSlugs.size,
       envCount: envSlugs.size,
       people: people.size,
       buckets,
       max,
     }
-  }, [entries, range])
+  }, [entries, range, terminalEnvSlug])
 
-  const { deploys, prod, projects, envCount, people, buckets, max } = stats
-  const bars = BARS
+  const { deploys, terminalDeploys, projects, envCount, people, buckets, max } =
+    stats
 
   return (
-    <div
-      className={`mb-4 grid grid-cols-2 overflow-hidden rounded-md border border-tertiary bg-primary md:grid-cols-4 ${loading ? 'opacity-60' : ''}`}
-    >
+    <div className="mb-4 grid grid-cols-2 overflow-hidden rounded-md border border-tertiary bg-primary md:grid-cols-4">
       <div className="flex flex-col gap-1 border-b border-r border-tertiary p-3 md:border-b-0">
         <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-tertiary">
           Events
@@ -114,7 +124,7 @@ export function OperationsLogSummary({
         )}
         <div className="mt-1 flex h-4 items-end gap-[2px]" aria-hidden="true">
           {loading
-            ? Array.from({ length: bars }).map((_, i) => (
+            ? Array.from({ length: BARS }).map((_, i) => (
                 <span
                   key={i}
                   className="bg-tertiary/30 h-full flex-1 rounded-[1px]"
@@ -144,7 +154,9 @@ export function OperationsLogSummary({
               {deploys}
             </span>
             <span className="text-[11.5px] text-secondary">
-              {prod} to production
+              {terminalEnv
+                ? `${terminalDeploys} to ${terminalEnv.name}`
+                : `${deploys} total`}
             </span>
           </>
         )}

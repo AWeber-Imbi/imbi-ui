@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { memo, useEffect, useRef } from 'react'
+import { memo } from 'react'
 import { Gravatar } from '@/components/ui/gravatar'
 import {
   Tooltip,
@@ -48,32 +48,9 @@ export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
     ? deriveChipColors(environment.label_color, isDarkMode)
     : null
   const railColor = isRestart ? undefined : envColors?.border
-  const hoverTimer = useRef<number | null>(null)
-  useEffect(
-    () => () => {
-      if (hoverTimer.current) window.clearTimeout(hoverTimer.current)
-    },
-    [],
-  )
-  const onMouseEnter = () => {
-    if (isOpen) return
-    if (hoverTimer.current) window.clearTimeout(hoverTimer.current)
-    hoverTimer.current = window.setTimeout(() => {
-      onToggle(id)
-    }, 100)
-  }
-  const onMouseLeave = () => {
-    if (hoverTimer.current) {
-      window.clearTimeout(hoverTimer.current)
-      hoverTimer.current = null
-    }
-    if (isOpen) onToggle(id)
-  }
 
   return (
     <div
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       className={cn(
         'border-b border-tertiary last:border-b-0',
         isOpen && 'bg-secondary',
@@ -83,9 +60,11 @@ export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
         containIntrinsicSize: 'auto 72px',
       }}
     >
-      <div
+      <button
+        type="button"
+        onClick={() => onToggle(id)}
         className={cn(
-          'group grid w-full items-center gap-x-3 gap-y-1 text-left transition-colors',
+          'group grid w-full cursor-pointer items-center gap-x-3 gap-y-1 text-left transition-colors',
           OPS_ROW_PAD,
           !isOpen && 'hover:bg-secondary',
         )}
@@ -203,7 +182,7 @@ export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
             {desc}
           </span>
         ) : null}
-      </div>
+      </button>
       {isOpen ? (
         <div className="border-t border-dashed border-tertiary">
           <OperationsLogEntryDetails entry={entry} />

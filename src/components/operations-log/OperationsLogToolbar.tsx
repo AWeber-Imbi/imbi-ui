@@ -1,5 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Box, Check, ChevronDown, Filter, Layers, Search } from 'lucide-react'
+import {
+  Box,
+  Check,
+  ChevronDown,
+  Filter,
+  GitBranch,
+  Layers,
+  List,
+  Search,
+} from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -15,7 +24,7 @@ import {
   type Environment,
   type OperationsLogEntryType,
 } from '@/types'
-import type { TimeRange } from './opsLogHelpers'
+import type { OperationsLogView, TimeRange } from './opsLogHelpers'
 
 const RANGES: { key: TimeRange; label: string }[] = [
   { key: '24h', label: '24h' },
@@ -35,14 +44,30 @@ interface ToolbarProps {
   counts: ToolbarCounts
   range: TimeRange
   onRange: (r: TimeRange) => void
-  entryType?: OperationsLogEntryType
-  onEntryType: (t: OperationsLogEntryType | undefined) => void
-  environmentSlug?: string
-  onEnvironment: (slug: string | undefined) => void
+  entryTypes: OperationsLogEntryType[]
+  onEntryTypes: (ts: OperationsLogEntryType[]) => void
+  environmentSlugs: string[]
+  onEnvironmentSlugs: (slugs: string[]) => void
   environments: Environment[]
-  projectSlug?: string
-  onProject: (slug: string | undefined) => void
+  projectSlugs: string[]
+  onProjectSlugs: (slugs: string[]) => void
   projectNames: Map<string, string>
+  view: OperationsLogView
+  onView: (v: OperationsLogView) => void
+}
+
+function toggle<T>(arr: T[], value: T): T[] {
+  return arr.includes(value) ? arr.filter((x) => x !== value) : [...arr, value]
+}
+
+function pluralLabel(
+  singular: string,
+  count: number,
+  selectedLabel?: string,
+): string {
+  if (count === 0) return singular
+  if (count === 1 && selectedLabel) return selectedLabel
+  return `${count} selected`
 }
 
 function TriggerButton({
@@ -50,18 +75,15 @@ function TriggerButton({
   label,
   value,
   count,
-  onClick,
 }: {
   icon: React.ReactNode
   label: string
   value?: string
   count?: number
-  onClick?: () => void
 }) {
   return (
     <button
       type="button"
-      onClick={onClick}
       className="inline-flex h-9 items-center gap-2 rounded-md border border-tertiary bg-primary px-3 text-sm text-secondary transition-colors hover:bg-secondary hover:text-primary"
     >
       <span className="flex h-4 w-4 items-center justify-center text-tertiary">
@@ -78,22 +100,98 @@ function TriggerButton({
   )
 }
 
+interface FacetOption {
+  key: string
+  label: string
+  count: number
+}
+
+function FacetDropdown({
+  icon,
+  label,
+  allLabel,
+  selected,
+  onChange,
+  options,
+  contentClassName,
+}: {
+  icon: React.ReactNode
+  label: string
+  allLabel: string
+  selected: string[]
+  onChange: (next: string[]) => void
+  options: FacetOption[]
+  contentClassName?: string
+}) {
+  const single =
+    selected.length === 1
+      ? (options.find((o) => o.key === selected[0])?.label ?? selected[0])
+      : undefined
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div>
+          <TriggerButton
+            icon={icon}
+            label={label}
+            value={
+              selected.length === 0
+                ? undefined
+                : (single ?? `${selected.length} selected`)
+            }
+          />
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className={contentClassName ?? 'min-w-[200px]'}
+      >
+        <DropdownMenuCheckboxItem
+          checked={selected.length === 0}
+          onSelect={(e) => {
+            e.preventDefault()
+            onChange([])
+          }}
+        >
+          {allLabel}
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuSeparator />
+        {options.map((o) => (
+          <DropdownMenuCheckboxItem
+            key={o.key}
+            checked={selected.includes(o.key)}
+            onSelect={(e) => {
+              e.preventDefault()
+              onChange(toggle(selected, o.key))
+            }}
+          >
+            <span className="flex-1">{o.label}</span>
+            <span className="ml-3 text-xs text-tertiary">{o.count}</span>
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export function OperationsLogToolbar({
   counts,
   range,
   onRange,
-  entryType,
-  onEntryType,
-  environmentSlug,
-  onEnvironment,
+  entryTypes,
+  onEntryTypes,
+  environmentSlugs,
+  onEnvironmentSlugs,
   environments,
-  projectSlug,
-  onProject,
+  projectSlugs,
+  onProjectSlugs,
   projectNames,
+  view,
+  onView,
 }: ToolbarProps) {
   const [projectQuery, setProjectQuery] = useState('')
 
-  const entryTypes = useMemo(
+  const availableEntryTypes = useMemo(
     () => OPERATIONS_LOG_ENTRY_TYPES.filter((t) => (counts.type[t] ?? 0) > 0),
     [counts.type],
   )
@@ -101,9 +199,10 @@ export function OperationsLogToolbar({
     () =>
       sortEnvironments(environments).filter(
         (env) =>
-          (counts.env[env.slug] ?? 0) > 0 || environmentSlug === env.slug,
+          (counts.env[env.slug] ?? 0) > 0 ||
+          environmentSlugs.includes(env.slug),
       ),
-    [environments, counts.env, environmentSlug],
+    [environments, counts.env, environmentSlugs],
   )
   const projectEntries = useMemo(() => {
     const all = Object.entries(counts.project).sort(
@@ -121,12 +220,32 @@ export function OperationsLogToolbar({
     })
   }, [counts.project, projectNames, projectQuery])
 
-  const selectedEnv = environmentSlug
-    ? environments.find((e) => e.slug === environmentSlug)
-    : undefined
-  const selectedProjectLabel = projectSlug
-    ? (projectNames.get(projectSlug) ?? projectSlug)
-    : undefined
+  const entryTypeOptions: FacetOption[] = useMemo(
+    () =>
+      availableEntryTypes.map((t) => ({
+        key: t,
+        label: t,
+        count: counts.type[t] ?? 0,
+      })),
+    [availableEntryTypes, counts.type],
+  )
+  const environmentOptions: FacetOption[] = useMemo(
+    () =>
+      orderedEnvs.map((env) => ({
+        key: env.slug,
+        label: env.name,
+        count: counts.env[env.slug] ?? 0,
+      })),
+    [orderedEnvs, counts.env],
+  )
+
+  const projectTriggerValue = pluralLabel(
+    'Project',
+    projectSlugs.length,
+    projectSlugs[0]
+      ? (projectNames.get(projectSlugs[0]) ?? projectSlugs[0])
+      : undefined,
+  )
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -154,85 +273,24 @@ export function OperationsLogToolbar({
 
       <span className="mx-1 h-6 w-px bg-tertiary" aria-hidden />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <div>
-            <TriggerButton
-              icon={<Filter className="h-3.5 w-3.5" />}
-              label="Entry Type"
-              value={entryType}
-            />
-          </div>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[200px]">
-          <DropdownMenuCheckboxItem
-            checked={!entryType}
-            onSelect={(e) => {
-              e.preventDefault()
-              onEntryType(undefined)
-            }}
-          >
-            All entry types
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuSeparator />
-          {entryTypes.map((t) => (
-            <DropdownMenuCheckboxItem
-              key={t}
-              checked={entryType === t}
-              onSelect={(e) => {
-                e.preventDefault()
-                onEntryType(entryType === t ? undefined : t)
-              }}
-            >
-              <span className="flex-1">{t}</span>
-              <span className="ml-3 text-xs text-tertiary">
-                {counts.type[t] ?? 0}
-              </span>
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FacetDropdown
+        icon={<Filter className="h-3.5 w-3.5" />}
+        label="Entry Type"
+        allLabel="All entry types"
+        selected={entryTypes}
+        onChange={(next) => onEntryTypes(next as OperationsLogEntryType[])}
+        options={entryTypeOptions}
+      />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <div>
-            <TriggerButton
-              icon={<Layers className="h-3.5 w-3.5" />}
-              label="Environment"
-              value={selectedEnv?.name}
-            />
-          </div>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[220px]">
-          <DropdownMenuCheckboxItem
-            checked={!environmentSlug}
-            onSelect={(e) => {
-              e.preventDefault()
-              onEnvironment(undefined)
-            }}
-          >
-            All environments
-          </DropdownMenuCheckboxItem>
-          <DropdownMenuSeparator />
-          {orderedEnvs.map((env) => (
-            <DropdownMenuCheckboxItem
-              key={env.slug}
-              checked={environmentSlug === env.slug}
-              onSelect={(e) => {
-                e.preventDefault()
-                onEnvironment(
-                  environmentSlug === env.slug ? undefined : env.slug,
-                )
-              }}
-            >
-              <span className="flex-1">{env.name}</span>
-              <span className="ml-3 text-xs text-tertiary">
-                {counts.env[env.slug] ?? 0}
-              </span>
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FacetDropdown
+        icon={<Layers className="h-3.5 w-3.5" />}
+        label="Environment"
+        allLabel="All environments"
+        selected={environmentSlugs}
+        onChange={onEnvironmentSlugs}
+        options={environmentOptions}
+        contentClassName="min-w-[220px]"
+      />
 
       <DropdownMenu
         onOpenChange={(open) => {
@@ -244,8 +302,10 @@ export function OperationsLogToolbar({
             <TriggerButton
               icon={<Box className="h-3.5 w-3.5" />}
               label="Project"
-              value={selectedProjectLabel}
-              count={selectedProjectLabel ? undefined : projectEntries.length}
+              value={projectSlugs.length > 0 ? projectTriggerValue : undefined}
+              count={
+                projectSlugs.length > 0 ? undefined : projectEntries.length
+              }
             />
           </div>
         </DropdownMenuTrigger>
@@ -263,44 +323,45 @@ export function OperationsLogToolbar({
           <div className="max-h-72 overflow-y-auto py-1">
             <button
               type="button"
-              onClick={() => onProject(undefined)}
+              onClick={() => onProjectSlugs([])}
               className={cn(
                 'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
-                !projectSlug && 'bg-secondary text-primary',
-                projectSlug && 'text-secondary hover:bg-secondary',
+                projectSlugs.length === 0 && 'bg-secondary text-primary',
+                projectSlugs.length > 0 && 'text-secondary hover:bg-secondary',
               )}
             >
               <Check
-                className={cn('h-3.5 w-3.5', projectSlug && 'invisible')}
+                className={cn(
+                  'h-3.5 w-3.5',
+                  projectSlugs.length > 0 && 'invisible',
+                )}
               />
               All projects
             </button>
-            {projectEntries.map(([slug, c]) => (
-              <button
-                key={slug}
-                type="button"
-                onClick={() =>
-                  onProject(projectSlug === slug ? undefined : slug)
-                }
-                className={cn(
-                  'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
-                  projectSlug === slug && 'bg-secondary text-primary',
-                  projectSlug !== slug && 'text-secondary hover:bg-secondary',
-                )}
-                title={projectNames.get(slug) ?? slug}
-              >
-                <Check
+            {projectEntries.map(([slug, c]) => {
+              const checked = projectSlugs.includes(slug)
+              return (
+                <button
+                  key={slug}
+                  type="button"
+                  onClick={() => onProjectSlugs(toggle(projectSlugs, slug))}
                   className={cn(
-                    'h-3.5 w-3.5',
-                    projectSlug !== slug && 'invisible',
+                    'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
+                    checked && 'bg-secondary text-primary',
+                    !checked && 'text-secondary hover:bg-secondary',
                   )}
-                />
-                <span className="flex-1 truncate font-mono text-[13px]">
-                  {slug}
-                </span>
-                <span className="ml-3 text-xs text-tertiary">{c}</span>
-              </button>
-            ))}
+                  title={projectNames.get(slug) ?? slug}
+                >
+                  <Check
+                    className={cn('h-3.5 w-3.5', !checked && 'invisible')}
+                  />
+                  <span className="flex-1 truncate font-mono text-[13px]">
+                    {slug}
+                  </span>
+                  <span className="ml-3 text-xs text-tertiary">{c}</span>
+                </button>
+              )
+            })}
             {projectEntries.length === 0 ? (
               <div className="px-3 py-2 text-xs text-tertiary">
                 No projects match.
@@ -309,6 +370,37 @@ export function OperationsLogToolbar({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <div
+        role="group"
+        aria-label="View"
+        className="ml-auto inline-flex h-9 items-center rounded-md border border-tertiary bg-secondary p-1"
+      >
+        <button
+          type="button"
+          onClick={() => onView('stream')}
+          className={cn(
+            'inline-flex h-full items-center gap-1.5 rounded px-3 text-xs font-medium transition-colors',
+            view === 'stream'
+              ? 'bg-primary text-primary shadow-sm'
+              : 'text-secondary hover:text-primary',
+          )}
+        >
+          <List className="h-3.5 w-3.5" /> Stream
+        </button>
+        <button
+          type="button"
+          onClick={() => onView('grouped')}
+          className={cn(
+            'inline-flex h-full items-center gap-1.5 rounded px-3 text-xs font-medium transition-colors',
+            view === 'grouped'
+              ? 'bg-primary text-primary shadow-sm'
+              : 'text-secondary hover:text-primary',
+          )}
+        >
+          <GitBranch className="h-3.5 w-3.5" /> Releases
+        </button>
+      </div>
     </div>
   )
 }

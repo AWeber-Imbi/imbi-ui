@@ -1,16 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import {
-  Activity,
-  Download,
-  GitBranch,
-  List,
-  LoaderCircle,
-  Search,
-  SearchX,
-  X,
-} from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Activity, LoaderCircle, SearchX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -117,14 +107,19 @@ function rangeToSince(range: TimeRange): string | undefined {
 
 interface ScreenFilters {
   range: TimeRange
-  entry_type?: OperationsLogEntryType
-  environment_slug?: string
-  project_slug?: string
+  entry_types: OperationsLogEntryType[]
+  environment_slugs: string[]
+  project_slugs: string[]
   performed_by?: string
   q?: string
 }
 
-const DEFAULT_FILTERS: ScreenFilters = { range: '30d' }
+const DEFAULT_FILTERS: ScreenFilters = {
+  range: '30d',
+  entry_types: [],
+  environment_slugs: [],
+  project_slugs: [],
+}
 
 export function OperationsLog() {
   const { selectedOrganization } = useOrganization()
@@ -154,23 +149,17 @@ export function OperationsLog() {
     queryFn: () => listAdminUsers({ is_active: true }),
   })
 
-  // API filters exclude env bucket (client-side) and search text so typing
-  // or toggling env bucket doesn't refetch.
+  // Only the time-range boundary is pushed to the server. Facet filters
+  // (entry_types / environment_slugs / project_slugs) are applied
+  // client-side in `visibleEntries` so the toolbar dropdowns always
+  // show the full set of options for the selected range — applying a
+  // filter does not shrink the choices in the other dropdowns.
   const apiFilters: OperationsLogFilters = useMemo(
     () => ({
-      project_slug: filters.project_slug,
-      environment_slug: filters.environment_slug,
-      entry_type: filters.entry_type,
       performed_by: filters.performed_by,
       since: rangeToSince(filters.range),
     }),
-    [
-      filters.project_slug,
-      filters.environment_slug,
-      filters.entry_type,
-      filters.performed_by,
-      filters.range,
-    ],
+    [filters.performed_by, filters.range],
   )
 
   const {
@@ -245,6 +234,28 @@ export function OperationsLog() {
     if (sinceCutoffMs > 0) {
       xs = xs.filter((e) => toMs(e.occurred_at) >= sinceCutoffMs)
     }
+    // Multi-select facets: treat each selected set as an OR within a
+    // facet and AND across facets. An empty set means "no restriction".
+    // Use Sets for O(1) membership; only allocate when we actually need
+    // to filter on that facet.
+    const typeSet =
+      filters.entry_types.length > 0 ? new Set(filters.entry_types) : undefined
+    const envSet =
+      filters.environment_slugs.length > 0
+        ? new Set(filters.environment_slugs)
+        : undefined
+    const projectSet =
+      filters.project_slugs.length > 0
+        ? new Set(filters.project_slugs)
+        : undefined
+    if (typeSet || envSet || projectSet) {
+      xs = xs.filter((e) => {
+        if (typeSet && !typeSet.has(e.entry_type)) return false
+        if (envSet && !envSet.has(e.environment_slug)) return false
+        if (projectSet && !projectSet.has(e.project_slug)) return false
+        return true
+      })
+    }
     const q = filters.q?.toLowerCase().trim()
     if (q) {
       xs = xs.filter((e) => {
@@ -263,7 +274,14 @@ export function OperationsLog() {
       })
     }
     return xs
-  }, [rawEntries, sinceCutoffMs, filters.q])
+  }, [
+    rawEntries,
+    sinceCutoffMs,
+    filters.entry_types,
+    filters.environment_slugs,
+    filters.project_slugs,
+    filters.q,
+  ])
 
   const projectsBySlug = useMemo(
     () => new Map(projects.map((p: Project) => [p.slug, p])),
@@ -325,39 +343,62 @@ export function OperationsLog() {
 
   const buckets = useMemo(() => bucketByDay(items), [items])
 
-  const activeChips: { key: string; label: string; clear: () => void }[] = []
-  if (filters.entry_type) {
-    activeChips.push({
-      key: 'type',
-      label: filters.entry_type,
-      clear: () => setFilters({ ...filters, entry_type: undefined }),
-    })
-  }
-  if (filters.environment_slug) {
-    const env = environmentsBySlug.get(filters.environment_slug)
-    activeChips.push({
-      key: 'env',
-      label: env?.name ?? filters.environment_slug,
-      clear: () => setFilters({ ...filters, environment_slug: undefined }),
-    })
-  }
-  if (filters.project_slug) {
-    activeChips.push({
-      key: 'project',
-      label:
-        projectsBySlug.get(filters.project_slug)?.name ?? filters.project_slug,
-      clear: () => setFilters({ ...filters, project_slug: undefined }),
-    })
-  }
-  if (filters.performed_by) {
-    activeChips.push({
-      key: 'person',
-      label:
-        performerDisplayNames.get(filters.performed_by) ??
-        cleanName(filters.performed_by),
-      clear: () => setFilters({ ...filters, performed_by: undefined }),
-    })
-  }
+  const activeChips = useMemo(() => {
+    const chips: { key: string; label: string; clear: () => void }[] = []
+    for (const t of filters.entry_types) {
+      chips.push({
+        key: `type-${t}`,
+        label: t,
+        clear: () =>
+          setFilters((f) => ({
+            ...f,
+            entry_types: f.entry_types.filter((x) => x !== t),
+          })),
+      })
+    }
+    for (const slug of filters.environment_slugs) {
+      const env = environmentsBySlug.get(slug)
+      chips.push({
+        key: `env-${slug}`,
+        label: env?.name ?? slug,
+        clear: () =>
+          setFilters((f) => ({
+            ...f,
+            environment_slugs: f.environment_slugs.filter((x) => x !== slug),
+          })),
+      })
+    }
+    for (const slug of filters.project_slugs) {
+      chips.push({
+        key: `project-${slug}`,
+        label: projectsBySlug.get(slug)?.name ?? slug,
+        clear: () =>
+          setFilters((f) => ({
+            ...f,
+            project_slugs: f.project_slugs.filter((x) => x !== slug),
+          })),
+      })
+    }
+    if (filters.performed_by) {
+      const pb = filters.performed_by
+      chips.push({
+        key: 'person',
+        label: performerDisplayNames.get(pb) ?? cleanName(pb),
+        clear: () => setFilters((f) => ({ ...f, performed_by: undefined })),
+      })
+    }
+    return chips
+  }, [
+    filters.entry_types,
+    filters.environment_slugs,
+    filters.project_slugs,
+    filters.performed_by,
+    environmentsBySlug,
+    projectsBySlug,
+    performerDisplayNames,
+  ])
+
+  const isPageLoading = Boolean(isLoading || isFetchingNextPage || hasNextPage)
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-6">
@@ -365,234 +406,199 @@ export function OperationsLog() {
         <main className="min-w-0">
           <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <h1 className="flex items-center gap-2 text-h1 text-primary">
-              <LoadingIndicator
-                loading={Boolean(
-                  isLoading || isFetchingNextPage || hasNextPage,
-                )}
-              />
-              Operations log
+              <LoadingIndicator loading={isPageLoading} />
+              Operations Log
             </h1>
-            <div className="flex items-center gap-2">
-              <div className="relative w-[260px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tertiary" />
-                <Input
-                  value={filters.q ?? ''}
-                  onChange={(e) =>
-                    setFilters({ ...filters, q: e.target.value || undefined })
-                  }
-                  placeholder="Search project, version, description…"
-                  className="pl-9"
-                />
-              </div>
-              <div
-                role="group"
-                aria-label="View"
-                className="inline-flex h-10 items-center rounded-md border border-tertiary bg-secondary p-1"
-              >
-                <button
-                  type="button"
-                  onClick={() => setView('stream')}
-                  className={cn(
-                    'inline-flex h-full items-center gap-1.5 rounded px-3 text-xs font-medium transition-colors',
-                    view === 'stream'
-                      ? 'bg-primary text-primary shadow-sm'
-                      : 'text-secondary hover:text-primary',
-                  )}
-                >
-                  <List className="h-3.5 w-3.5" /> Stream
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView('grouped')}
-                  className={cn(
-                    'inline-flex h-full items-center gap-1.5 rounded px-3 text-xs font-medium transition-colors',
-                    view === 'grouped'
-                      ? 'bg-primary text-primary shadow-sm'
-                      : 'text-secondary hover:text-primary',
-                  )}
-                >
-                  <GitBranch className="h-3.5 w-3.5" /> Releases
-                </button>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-10 gap-1.5"
-                disabled
-                title="Export coming soon"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Export
-              </Button>
-            </div>
           </header>
 
-          <OperationsLogSummary
-            entries={visibleEntries}
-            rangeLabel={RANGE_LABEL[filters.range]}
-            range={filters.range}
-            loading={Boolean(isLoading || isFetchingNextPage || hasNextPage)}
-          />
+          <div
+            inert={isPageLoading}
+            aria-busy={isPageLoading}
+            className={cn(
+              'transition-opacity duration-200',
+              isPageLoading && 'cursor-wait opacity-50',
+            )}
+          >
+            <OperationsLogSummary
+              entries={visibleEntries}
+              environments={environments}
+              rangeLabel={RANGE_LABEL[filters.range]}
+              range={filters.range}
+              loading={isPageLoading}
+            />
 
-          <OperationsLogToolbar
-            counts={counts}
-            range={filters.range}
-            onRange={(range) => setFilters({ ...filters, range })}
-            entryType={filters.entry_type}
-            onEntryType={(entry_type) => setFilters({ ...filters, entry_type })}
-            environmentSlug={filters.environment_slug}
-            onEnvironment={(environment_slug) =>
-              setFilters({ ...filters, environment_slug })
-            }
-            environments={environments}
-            projectSlug={filters.project_slug}
-            onProject={(project_slug) =>
-              setFilters({ ...filters, project_slug })
-            }
-            projectNames={projectNames}
-          />
+            <OperationsLogToolbar
+              counts={counts}
+              range={filters.range}
+              onRange={(range) => setFilters({ ...filters, range })}
+              entryTypes={filters.entry_types}
+              onEntryTypes={(entry_types) =>
+                setFilters({ ...filters, entry_types })
+              }
+              view={view}
+              onView={setView}
+              environmentSlugs={filters.environment_slugs}
+              onEnvironmentSlugs={(environment_slugs) =>
+                setFilters({ ...filters, environment_slugs })
+              }
+              environments={environments}
+              projectSlugs={filters.project_slugs}
+              onProjectSlugs={(project_slugs) =>
+                setFilters({ ...filters, project_slugs })
+              }
+              projectNames={projectNames}
+            />
 
-          {activeChips.length > 0 && (
-            <div className="mb-3 flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
-                Filters
-              </span>
-              {activeChips.map((c) => (
+            {activeChips.length > 0 && (
+              <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
+                  Filters
+                </span>
+                {activeChips.map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={c.clear}
+                    className="inline-flex h-6 items-center gap-1 rounded bg-secondary px-2 text-[12px] text-secondary hover:text-primary"
+                  >
+                    <span className="truncate">{c.label}</span>
+                    <X className="h-3 w-3" />
+                  </button>
+                ))}
                 <button
-                  key={c.key}
                   type="button"
-                  onClick={c.clear}
-                  className="inline-flex h-6 items-center gap-1 rounded bg-secondary px-2 text-[12px] text-secondary hover:text-primary"
+                  onClick={() =>
+                    setFilters({
+                      range: filters.range,
+                      q: filters.q,
+                      entry_types: [],
+                      environment_slugs: [],
+                      project_slugs: [],
+                    })
+                  }
+                  className="ml-1 rounded px-2 py-0.5 text-[12px] text-tertiary hover:bg-secondary hover:text-primary"
                 >
-                  <span className="truncate">{c.label}</span>
-                  <X className="h-3 w-3" />
+                  Clear all
                 </button>
-              ))}
-              <button
-                type="button"
-                onClick={() =>
-                  setFilters({ range: filters.range, q: filters.q })
-                }
-                className="ml-1 rounded px-2 py-0.5 text-[12px] text-tertiary hover:bg-secondary hover:text-primary"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
-
-          {isError && (
-            <div className="bg-danger/10 mb-3 rounded-md border border-danger px-3 py-2 text-sm text-danger">
-              Failed to load operations log.{' '}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => fetchNextPage()}
-                className="ml-2"
-              >
-                Retry
-              </Button>
-            </div>
-          )}
-
-          {isLoading && (
-            <div className="rounded-md border border-tertiary bg-primary px-4 py-16 text-center text-secondary">
-              Loading operations log…
-            </div>
-          )}
-
-          {!isLoading &&
-            !isError &&
-            (buckets.length === 0 ? (
-              <div className="rounded-md border border-tertiary bg-primary px-6 py-16 text-center text-sm text-tertiary">
-                <SearchX className="mx-auto mb-2 h-7 w-7 text-tertiary" />
-                No events match these filters.
               </div>
-            ) : (
-              <div className="space-y-4">
-                {buckets.map((bucket) => (
-                  <section key={bucket.key}>
-                    <div className="mb-1.5 flex items-center gap-2.5 px-0.5">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
-                        {bucket.label}
-                      </span>
-                      <span className="font-mono text-[11px] text-tertiary">
-                        {bucket.date.toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </span>
-                      <span className="h-px flex-1 bg-tertiary" />
-                      <span className="font-mono text-[11px] text-tertiary">
-                        {bucket.items.length}{' '}
-                        {bucket.items.length === 1 ? 'event' : 'events'}
-                      </span>
-                    </div>
-                    <div className="overflow-hidden rounded-md border border-tertiary bg-primary">
-                      {bucket.items.map((it) => {
-                        if (it.kind === 'release') {
-                          const id = it.group.latestEntry.id
-                          const isOpen =
-                            openId === id ||
-                            it.group.stops.some((s) => s.entry.id === openId)
+            )}
+
+            {isError && (
+              <div className="bg-danger/10 mb-3 rounded-md border border-danger px-3 py-2 text-sm text-danger">
+                Failed to load operations log.{' '}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fetchNextPage()}
+                  className="ml-2"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+
+            {isLoading && (
+              <div className="rounded-md border border-tertiary bg-primary px-4 py-16 text-center text-secondary">
+                Loading operations log…
+              </div>
+            )}
+
+            {!isLoading &&
+              !isError &&
+              (buckets.length === 0 ? (
+                <div className="rounded-md border border-tertiary bg-primary px-6 py-16 text-center text-sm text-tertiary">
+                  <SearchX className="mx-auto mb-2 h-7 w-7 text-tertiary" />
+                  No events match these filters.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {buckets.map((bucket) => (
+                    <section key={bucket.key}>
+                      <div className="mb-1.5 flex items-center gap-2.5 px-0.5">
+                        <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
+                          {bucket.label}
+                        </span>
+                        <span className="font-mono text-[11px] text-tertiary">
+                          {bucket.date.toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </span>
+                        <span className="h-px flex-1 bg-tertiary" />
+                        <span className="font-mono text-[11px] text-tertiary">
+                          {bucket.items.length}{' '}
+                          {bucket.items.length === 1 ? 'event' : 'events'}
+                        </span>
+                      </div>
+                      <div className="overflow-hidden rounded-md border border-tertiary bg-primary">
+                        {bucket.items.map((it) => {
+                          if (it.kind === 'release') {
+                            const id = it.group.latestEntry.id
+                            const isOpen =
+                              openId === id ||
+                              it.group.stops.some((s) => s.entry.id === openId)
+                            return (
+                              <OperationsLogReleaseCard
+                                key={`rel-${id}`}
+                                id={id}
+                                group={it.group}
+                                project={projectsBySlug.get(
+                                  it.group.project_slug,
+                                )}
+                                environmentsBySlug={environmentsBySlug}
+                                isOpen={isOpen}
+                                onToggle={toggleOpen}
+                                performerDisplayNames={performerDisplayNames}
+                              />
+                            )
+                          }
+                          const id = it.entry.id
+                          const isOpen = openId === id
                           return (
-                            <OperationsLogReleaseCard
-                              key={`rel-${id}`}
+                            <OperationsLogStreamRow
+                              key={`evt-${id}`}
                               id={id}
-                              group={it.group}
+                              entry={it.entry}
                               project={projectsBySlug.get(
-                                it.group.project_slug,
+                                it.entry.project_slug,
                               )}
-                              environmentsBySlug={environmentsBySlug}
+                              environment={environmentsBySlug.get(
+                                it.entry.environment_slug,
+                              )}
                               isOpen={isOpen}
                               onToggle={toggleOpen}
                               performerDisplayNames={performerDisplayNames}
                             />
                           )
-                        }
-                        const id = it.entry.id
-                        const isOpen = openId === id
-                        return (
-                          <OperationsLogStreamRow
-                            key={`evt-${id}`}
-                            id={id}
-                            entry={it.entry}
-                            project={projectsBySlug.get(it.entry.project_slug)}
-                            environment={environmentsBySlug.get(
-                              it.entry.environment_slug,
-                            )}
-                            isOpen={isOpen}
-                            onToggle={toggleOpen}
-                            performerDisplayNames={performerDisplayNames}
-                          />
-                        )
-                      })}
-                    </div>
-                  </section>
-                ))}
-                <div
-                  ref={sentinelRef}
-                  className="py-3 text-center text-xs text-tertiary"
-                >
-                  {isFetchingNextPage ? (
-                    'Loading more…'
-                  ) : hasNextPage ? (
-                    rawEntries.length >= autoFetchCap ? (
-                      <button
-                        type="button"
-                        onClick={() => fetchNextPage()}
-                        className="rounded px-3 py-1 text-[12px] hover:bg-secondary hover:text-primary"
-                      >
-                        Load more (showing {rawEntries.length})
-                      </button>
+                        })}
+                      </div>
+                    </section>
+                  ))}
+                  <div
+                    ref={sentinelRef}
+                    className="py-3 text-center text-xs text-tertiary"
+                  >
+                    {isFetchingNextPage ? (
+                      'Loading more…'
+                    ) : hasNextPage ? (
+                      rawEntries.length >= autoFetchCap ? (
+                        <button
+                          type="button"
+                          onClick={() => fetchNextPage()}
+                          className="rounded px-3 py-1 text-[12px] hover:bg-secondary hover:text-primary"
+                        >
+                          Load more (showing {rawEntries.length})
+                        </button>
+                      ) : (
+                        'Loading…'
+                      )
                     ) : (
-                      'Loading…'
-                    )
-                  ) : (
-                    `End of log · ${visibleEntries.length} entries`
-                  )}
+                      `End of log · ${visibleEntries.length} entries`
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </main>
       </div>
     </div>
