@@ -61,6 +61,7 @@ interface ToolbarProps {
   view: OperationsLogView
   onView: (v: OperationsLogView) => void
   hideProjectFilter?: boolean
+  hideTimeRange?: boolean
 }
 
 function toggle<T>(arr: T[], value: T): T[] {
@@ -205,6 +206,7 @@ export function OperationsLogToolbar({
   view,
   onView,
   hideProjectFilter = false,
+  hideTimeRange = false,
 }: ToolbarProps) {
   const [projectQuery, setProjectQuery] = useState('')
 
@@ -266,29 +268,33 @@ export function OperationsLogToolbar({
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
-      <div
-        role="group"
-        aria-label="Time range"
-        className="inline-flex items-center rounded-md border border-tertiary bg-secondary p-0.5"
-      >
-        {RANGES.map((r) => (
-          <button
-            key={r.key}
-            type="button"
-            onClick={() => onRange(r.key)}
-            className={cn(
-              'rounded px-2.5 py-1 text-xs font-medium transition-colors',
-              range === r.key
-                ? 'bg-primary text-primary shadow-sm'
-                : 'text-secondary hover:text-primary',
-            )}
+      {hideTimeRange ? null : (
+        <>
+          <div
+            role="group"
+            aria-label="Time range"
+            className="inline-flex items-center rounded-md border border-tertiary bg-secondary p-0.5"
           >
-            {r.label}
-          </button>
-        ))}
-      </div>
+            {RANGES.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => onRange(r.key)}
+                className={cn(
+                  'rounded px-2.5 py-1 text-xs font-medium transition-colors',
+                  range === r.key
+                    ? 'bg-primary text-primary shadow-sm'
+                    : 'text-secondary hover:text-primary',
+                )}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
 
-      <span className="mx-1 h-6 w-px bg-tertiary" aria-hidden />
+          <span className="mx-1 h-6 w-px bg-tertiary" aria-hidden />
+        </>
+      )}
 
       <FacetDropdown
         icon={<Filter className="h-3.5 w-3.5" />}

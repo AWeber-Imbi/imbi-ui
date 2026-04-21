@@ -138,7 +138,9 @@ export function OperationsLog({
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
 
-  const [filters, setFilters] = useState<ScreenFilters>(DEFAULT_FILTERS)
+  const [filters, setFilters] = useState<ScreenFilters>(() =>
+    projectSlug ? { ...DEFAULT_FILTERS, range: 'all' } : DEFAULT_FILTERS,
+  )
   const [view, setView] = useState<OperationsLogView>('grouped')
   const [openId, setOpenId] = useState<string | undefined>(undefined)
   // Stable dispatcher — lets memoised row components compare props by
@@ -579,6 +581,7 @@ export function OperationsLog({
               }
               projectNames={projectNames}
               hideProjectFilter={!!projectSlug}
+              hideTimeRange={!!projectSlug}
             />
 
             {activeChips.length > 0 && (
