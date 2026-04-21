@@ -391,10 +391,10 @@ export function ProjectDetail({ project, initialTab }: ProjectDetailProps) {
   }, [projectSchema, project])
 
   const { data: opsLogCountPage } = useQuery({
-    queryKey: ['operationsLog', 'count', project.slug],
+    queryKey: ['operationsLog', 'count', orgSlug, project.slug],
     queryFn: () =>
       listOperationsLog({ limit: 1, filters: { project_slug: project.slug } }),
-    enabled: !!project.slug,
+    enabled: !!orgSlug && !!project.slug,
     staleTime: 30_000,
   })
   const opsLogCount = opsLogCountPage?.metrics?.event_count
