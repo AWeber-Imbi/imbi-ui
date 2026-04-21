@@ -85,7 +85,13 @@ export function EditIdentifiersCard({
       setPendingDelete(key)
       return
     }
-    const payload: Record<string, string> = { ...serverMap, [key]: next }
+    // Merge the latest drafts so a blur that races with an in-flight PATCH
+    // does not revive stale server values for concurrently-edited fields.
+    const payload: Record<string, string> = {
+      ...serverMap,
+      ...drafts,
+      [key]: next,
+    }
     try {
       await onPatch(payload)
       flash(key)
@@ -138,7 +144,13 @@ export function EditIdentifiersCard({
   const handleNewBlur = async () => {
     const value = newValue.trim()
     if (!newKey || !value) return
-    const payload: Record<string, string> = { ...serverMap, [newKey]: value }
+    // Include the latest drafts so concurrent edits to existing identifiers
+    // aren't reverted to stale server values by this add.
+    const payload: Record<string, string> = {
+      ...serverMap,
+      ...drafts,
+      [newKey]: value,
+    }
     try {
       await onPatch(payload)
       flash(newKey)

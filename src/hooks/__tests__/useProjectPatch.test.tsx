@@ -36,7 +36,11 @@ describe('useProjectPatch', () => {
     vi.clearAllMocks()
   })
 
-  it('applies optimistic update and sets returned project on success', async () => {
+  it('applies optimistic update and leaves it in cache on success', async () => {
+    // The hook invalidates the project query after a successful PATCH rather
+    // than writing the server response into the cache (the PATCH and GET
+    // bodies can differ in shape). Until the next GET completes, the cache
+    // holds the locally-applied optimistic value.
     const updated = { ...baseProject, name: 'Beta' }
     vi.spyOn(endpoints, 'patchProject').mockResolvedValue(updated as never)
 
@@ -92,7 +96,10 @@ describe('useProjectPatch', () => {
   })
 
   it('still sends the network PATCH when the optimistic apply fails', async () => {
-    // Nested paths are not supported by applyJsonPatch and will throw.
+    // Nested paths are not supported by applyJsonPatch and will throw, so the
+    // optimistic update is skipped. After the PATCH succeeds the hook
+    // invalidates the query; the cache retains its prior value until the next
+    // GET refetches, so it must NOT have been clobbered with a stale snapshot.
     const updated = { ...baseProject, name: 'Beta' }
     const spy = vi
       .spyOn(endpoints, 'patchProject')
@@ -109,7 +116,7 @@ describe('useProjectPatch', () => {
     expect(spy).toHaveBeenCalledWith('o', 'p1', [
       { op: 'replace', path: '/team/slug', value: 'new-team' },
     ])
-    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(updated)
+    expect(qc.getQueryData(['project', 'o', 'p1'])).toEqual(baseProject)
   })
 
   it('does not roll back to stale snapshot when optimistic apply was skipped', async () => {
