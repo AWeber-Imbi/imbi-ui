@@ -462,6 +462,57 @@ export function OperationsLog() {
   // overlay on forever — just tie loading to active network activity.
   const isPageLoading = Boolean(isLoading || isFetchingNextPage)
 
+  const renderFeedItem = (vi: VItem) => {
+    if (vi.kind === 'header') {
+      return (
+        <div className="flex items-center gap-2.5 border-b border-tertiary bg-secondary px-3 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
+            {vi.label}
+          </span>
+          <span className="font-mono text-[11px] text-tertiary">
+            {vi.date.toLocaleDateString(undefined, {
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+          <span className="h-px flex-1 bg-tertiary" />
+          <span className="font-mono text-[11px] text-tertiary">
+            {vi.count} {vi.count === 1 ? 'event' : 'events'}
+          </span>
+        </div>
+      )
+    }
+    const feed = groupsById.get(vi.id)
+    if (!feed) return null
+    if (vi.kind === 'rel' && feed.kind === 'release') {
+      return (
+        <OperationsLogReleaseCard
+          id={vi.id}
+          group={feed.group}
+          project={projectsBySlug.get(feed.group.project_slug)}
+          environmentsBySlug={environmentsBySlug}
+          isOpen={vi.isOpen}
+          onToggle={toggleOpen}
+          performerDisplayNames={performerDisplayNames}
+        />
+      )
+    }
+    if (vi.kind === 'evt' && feed.kind === 'single') {
+      return (
+        <OperationsLogStreamRow
+          id={vi.id}
+          entry={feed.entry}
+          project={projectsBySlug.get(feed.entry.project_slug)}
+          environment={environmentsBySlug.get(feed.entry.environment_slug)}
+          isOpen={vi.isOpen}
+          onToggle={toggleOpen}
+          performerDisplayNames={performerDisplayNames}
+        />
+      )
+    }
+    return null
+  }
+
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-6">
       <div className="grid items-start gap-7">
@@ -605,61 +656,7 @@ export function OperationsLog() {
                           className="absolute left-0 right-0 top-0"
                           style={{ transform: `translateY(${v.start}px)` }}
                         >
-                          {vi.kind === 'header' ? (
-                            <div className="flex items-center gap-2.5 border-b border-tertiary bg-secondary px-3 py-1.5">
-                              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-tertiary">
-                                {vi.label}
-                              </span>
-                              <span className="font-mono text-[11px] text-tertiary">
-                                {vi.date.toLocaleDateString(undefined, {
-                                  month: 'short',
-                                  day: 'numeric',
-                                })}
-                              </span>
-                              <span className="h-px flex-1 bg-tertiary" />
-                              <span className="font-mono text-[11px] text-tertiary">
-                                {vi.count} {vi.count === 1 ? 'event' : 'events'}
-                              </span>
-                            </div>
-                          ) : vi.kind === 'rel' ? (
-                            (() => {
-                              const feed = groupsById.get(vi.id)
-                              if (!feed || feed.kind !== 'release') return null
-                              return (
-                                <OperationsLogReleaseCard
-                                  id={vi.id}
-                                  group={feed.group}
-                                  project={projectsBySlug.get(
-                                    feed.group.project_slug,
-                                  )}
-                                  environmentsBySlug={environmentsBySlug}
-                                  isOpen={vi.isOpen}
-                                  onToggle={toggleOpen}
-                                  performerDisplayNames={performerDisplayNames}
-                                />
-                              )
-                            })()
-                          ) : (
-                            (() => {
-                              const feed = groupsById.get(vi.id)
-                              if (!feed || feed.kind !== 'single') return null
-                              return (
-                                <OperationsLogStreamRow
-                                  id={vi.id}
-                                  entry={feed.entry}
-                                  project={projectsBySlug.get(
-                                    feed.entry.project_slug,
-                                  )}
-                                  environment={environmentsBySlug.get(
-                                    feed.entry.environment_slug,
-                                  )}
-                                  isOpen={vi.isOpen}
-                                  onToggle={toggleOpen}
-                                  performerDisplayNames={performerDisplayNames}
-                                />
-                              )
-                            })()
-                          )}
+                          {renderFeedItem(vi)}
                         </div>
                       )
                     })}
