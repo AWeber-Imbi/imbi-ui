@@ -1,5 +1,5 @@
 import { ChevronDown, Rocket } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { Gravatar } from '@/components/ui/gravatar'
 import {
   ReleaseTrain,
@@ -26,15 +26,17 @@ import {
 } from './opsLogHelpers'
 
 interface Props {
+  id: string
   group: ReleaseGroup
   project?: Project
   environmentsBySlug: Map<string, Environment>
   isOpen: boolean
-  onToggle: () => void
+  onToggle: (id: string) => void
   performerDisplayNames: Map<string, string>
 }
 
-export function OperationsLogReleaseCard({
+export const OperationsLogReleaseCard = memo(function OperationsLogReleaseCard({
+  id,
   group,
   project,
   environmentsBySlug,
@@ -98,7 +100,7 @@ export function OperationsLogReleaseCard({
     if (isOpen) return
     if (hoverTimer.current) window.clearTimeout(hoverTimer.current)
     hoverTimer.current = window.setTimeout(() => {
-      onToggle()
+      onToggle(id)
     }, 100)
   }
   const onMouseLeave = () => {
@@ -106,7 +108,7 @@ export function OperationsLogReleaseCard({
       window.clearTimeout(hoverTimer.current)
       hoverTimer.current = null
     }
-    if (isOpen) onToggle()
+    if (isOpen) onToggle(id)
   }
 
   return (
@@ -117,6 +119,10 @@ export function OperationsLogReleaseCard({
         'border-b border-tertiary last:border-b-0',
         isOpen && 'bg-secondary',
       )}
+      style={{
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 72px',
+      }}
     >
       <div
         className={cn(
@@ -293,4 +299,4 @@ export function OperationsLogReleaseCard({
       ) : null}
     </div>
   )
-}
+})

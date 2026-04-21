@@ -1,6 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { GitBranch, List, Search, SearchX, X } from 'lucide-react'
+import {
+  Activity,
+  Download,
+  GitBranch,
+  List,
+  LoaderCircle,
+  Search,
+  SearchX,
+  X,
+} from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -15,9 +24,9 @@ import type {
   Project,
 } from '@/types'
 import {
-  OperationsLogSidebar,
-  type SidebarCounts,
-} from './operations-log/OperationsLogSidebar'
+  OperationsLogToolbar,
+  type ToolbarCounts,
+} from './operations-log/OperationsLogToolbar'
 import { OperationsLogSummary } from './operations-log/OperationsLogSummary'
 import { OperationsLogStreamRow } from './operations-log/OperationsLogStreamRow'
 import { OperationsLogReleaseCard } from './operations-log/OperationsLogReleaseCard'
@@ -25,24 +34,79 @@ import {
   bucketByDay,
   cleanName,
   groupReleases,
-  parseUtcIso,
+  toMs,
   type FeedItem,
   type OperationsLogView,
   type TimeRange,
 } from './operations-log/opsLogHelpers'
 
+// Memoised + WAAPI-driven so the spin animation has its own lifetime
+// independent of React's render cycle and runs on the compositor thread.
+// The CSS `animate-spin` class would be re-applied on every render and
+// can visually stutter / appear to reverse when the main thread blocks;
+// `element.animate(...)` is installed once on mount and never restarts.
+const LoadingIndicator = memo(function LoadingIndicator({
+  loading,
+}: {
+  loading: boolean
+}) {
+  const spinnerRef = useRef<SVGSVGElement | null>(null)
+  useEffect(() => {
+    const el = spinnerRef.current
+    if (!el || typeof el.animate !== 'function') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const animation = el.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+      { duration: 1200, iterations: Infinity, easing: 'linear' },
+    )
+    return () => animation.cancel()
+  }, [])
+  return (
+    <span
+      className="relative inline-block h-5 w-5"
+      style={{
+        contain: 'layout paint',
+        transform: 'translateZ(0)',
+        willChange: 'transform',
+      }}
+      aria-label={loading ? 'Loading' : undefined}
+    >
+      <Activity
+        className={cn(
+          'absolute inset-0 h-5 w-5 text-secondary transition-opacity duration-200',
+          loading && 'opacity-0',
+        )}
+        aria-hidden
+      />
+      <LoaderCircle
+        ref={spinnerRef}
+        className={cn(
+          'absolute inset-0 h-5 w-5 text-secondary transition-opacity duration-200',
+          !loading && 'opacity-0',
+        )}
+        style={{
+          transformOrigin: 'center',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+        }}
+        aria-hidden
+      />
+    </span>
+  )
+})
+
 const RANGE_DELTA: Record<Exclude<TimeRange, 'all'>, number> = {
   '24h': 24 * 60 * 60 * 1000,
-  '3d': 3 * 24 * 60 * 60 * 1000,
   '7d': 7 * 24 * 60 * 60 * 1000,
   '30d': 30 * 24 * 60 * 60 * 1000,
+  '90d': 90 * 24 * 60 * 60 * 1000,
 }
 
 const RANGE_LABEL: Record<TimeRange, string> = {
   '24h': 'last 24h',
-  '3d': 'last 3 days',
   '7d': 'last 7 days',
   '30d': 'last 30 days',
+  '90d': 'last 90 days',
   all: 'all time',
 }
 
@@ -60,7 +124,7 @@ interface ScreenFilters {
   q?: string
 }
 
-const DEFAULT_FILTERS: ScreenFilters = { range: '3d' }
+const DEFAULT_FILTERS: ScreenFilters = { range: '30d' }
 
 export function OperationsLog() {
   const { selectedOrganization } = useOrganization()
@@ -69,6 +133,11 @@ export function OperationsLog() {
   const [filters, setFilters] = useState<ScreenFilters>(DEFAULT_FILTERS)
   const [view, setView] = useState<OperationsLogView>('grouped')
   const [openId, setOpenId] = useState<string | undefined>(undefined)
+  // Stable dispatcher — lets memoised row components compare props by
+  // reference without creating a new closure per row per render.
+  const toggleOpen = useCallback((id: string) => {
+    setOpenId((prev) => (prev === id ? undefined : id))
+  }, [])
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects', orgSlug],
@@ -118,19 +187,25 @@ export function OperationsLog() {
     [data],
   )
 
-  // Eagerly walk all pages so the sidebar counts, summary strip, and env
-  // filter see the full universe for the selected range — not just the
-  // first page. Bounded ranges are naturally capped by the `since` filter;
-  // only 'all time' needs a safety cap to avoid pulling the entire DB.
+  // Eagerly walk all pages so the summary strip sees the full universe
+  // for the selected range — not just the first page. Bounded ranges
+  // are naturally capped by the `since` filter; only 'all time' needs a
+  // safety cap to avoid pulling the entire DB.
+  //
+  // The fetch is deferred one frame so the browser can paint between
+  // pages. Firing synchronously starves the compositor and visibly
+  // stutters the loading spinner during long fetches.
   const autoFetchCap = filters.range === 'all' ? 5000 : Infinity
   useEffect(() => {
     if (
-      hasNextPage &&
-      !isFetchingNextPage &&
-      rawEntries.length < autoFetchCap
+      !hasNextPage ||
+      isFetchingNextPage ||
+      rawEntries.length >= autoFetchCap
     ) {
-      fetchNextPage()
+      return
     }
+    const id = window.setTimeout(() => fetchNextPage(), 16)
+    return () => window.clearTimeout(id)
   }, [
     hasNextPage,
     isFetchingNextPage,
@@ -168,26 +243,24 @@ export function OperationsLog() {
   const visibleEntries = useMemo(() => {
     let xs = rawEntries
     if (sinceCutoffMs > 0) {
-      xs = xs.filter(
-        (e) => parseUtcIso(e.occurred_at).getTime() >= sinceCutoffMs,
-      )
+      xs = xs.filter((e) => toMs(e.occurred_at) >= sinceCutoffMs)
     }
     const q = filters.q?.toLowerCase().trim()
     if (q) {
-      xs = xs.filter((e) =>
-        [
-          e.project_slug,
-          e.description,
-          e.version ?? '',
-          e.ticket_slug ?? '',
-          e.notes ?? '',
-          e.performed_by ?? '',
-          e.recorded_by,
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(q),
-      )
+      xs = xs.filter((e) => {
+        // Avoid .join().includes() on every entry — it builds a throwaway
+        // string per row. Short-circuit on first hit instead.
+        if (e.project_slug.toLowerCase().includes(q)) return true
+        if (e.description.toLowerCase().includes(q)) return true
+        if (e.version && e.version.toLowerCase().includes(q)) return true
+        if (e.ticket_slug && e.ticket_slug.toLowerCase().includes(q))
+          return true
+        if (e.notes && e.notes.toLowerCase().includes(q)) return true
+        if (e.performed_by && e.performed_by.toLowerCase().includes(q))
+          return true
+        if (e.recorded_by.toLowerCase().includes(q)) return true
+        return false
+      })
     }
     return xs
   }, [rawEntries, sinceCutoffMs, filters.q])
@@ -208,38 +281,44 @@ export function OperationsLog() {
     return m
   }, [users])
 
-  // Sidebar counts: derived from the date-filtered set (pre type/env/project/person)
-  // so the numbers reflect the universe the other filters select from.
-  const counts: SidebarCounts = useMemo(() => {
-    const type: SidebarCounts['type'] = {}
-    const env: SidebarCounts['env'] = {}
+  // Toolbar counts — one pass over the date-filtered universe, built
+  // independently of the search/env filters so the other facets show
+  // the full set they're picking from.
+  const counts: ToolbarCounts = useMemo(() => {
+    const type: ToolbarCounts['type'] = {}
+    const env: ToolbarCounts['env'] = {}
     const project: Record<string, number> = {}
-    const person: Record<string, number> = {}
     for (const e of rawEntries) {
-      if (
-        sinceCutoffMs > 0 &&
-        parseUtcIso(e.occurred_at).getTime() < sinceCutoffMs
-      ) {
-        continue
-      }
+      if (sinceCutoffMs > 0 && toMs(e.occurred_at) < sinceCutoffMs) continue
       type[e.entry_type] = (type[e.entry_type] ?? 0) + 1
       if (e.environment_slug) {
         env[e.environment_slug] = (env[e.environment_slug] ?? 0) + 1
       }
       project[e.project_slug] = (project[e.project_slug] ?? 0) + 1
-      if (e.performed_by) {
-        person[e.performed_by] = (person[e.performed_by] ?? 0) + 1
-      }
     }
-    return { type, env, project, person }
+    return { type, env, project }
   }, [rawEntries, sinceCutoffMs])
 
+  // Stable Map so the sidebar's project section doesn't see a new ref
+  // on every parent render and the section's own memoised filter runs
+  // on a stable input.
+  const projectNames = useMemo(
+    () =>
+      new Map(
+        Array.from(projectsBySlug.entries()).map(([k, v]) => [k, v.name]),
+      ),
+    [projectsBySlug],
+  )
+
   const items: FeedItem[] = useMemo(() => {
-    const sorted = [...visibleEntries].sort(
-      (a, b) =>
-        parseUtcIso(b.occurred_at).getTime() -
-        parseUtcIso(a.occurred_at).getTime(),
+    // Decorate-sort-undecorate: parse each timestamp exactly once rather
+    // than twice per comparator call. Cuts parse count from 2·N·log N to
+    // N — roughly 20× fewer parses at 5000 entries.
+    const decorated = visibleEntries.map(
+      (entry) => [toMs(entry.occurred_at), entry] as const,
     )
+    decorated.sort((a, b) => b[0] - a[0])
+    const sorted = decorated.map(([, entry]) => entry)
     if (view === 'grouped') return groupReleases(sorted)
     return sorted.map((entry) => ({ kind: 'single', entry }) as FeedItem)
   }, [visibleEntries, view])
@@ -282,35 +361,17 @@ export function OperationsLog() {
 
   return (
     <div className="mx-auto max-w-[1400px] px-6 py-6">
-      <div className="grid items-start gap-7 lg:grid-cols-[232px_1fr]">
-        <OperationsLogSidebar
-          counts={counts}
-          range={filters.range}
-          onRange={(range) => setFilters({ ...filters, range })}
-          entryType={filters.entry_type}
-          onEntryType={(entry_type) => setFilters({ ...filters, entry_type })}
-          environmentSlug={filters.environment_slug}
-          onEnvironment={(environment_slug) =>
-            setFilters({ ...filters, environment_slug })
-          }
-          environments={environments}
-          projectSlug={filters.project_slug}
-          onProject={(project_slug) => setFilters({ ...filters, project_slug })}
-          projectNames={
-            new Map(
-              Array.from(projectsBySlug.entries()).map(([k, v]) => [k, v.name]),
-            )
-          }
-          performer={filters.performed_by}
-          onPerformer={(performed_by) =>
-            setFilters({ ...filters, performed_by })
-          }
-          performerDisplayNames={performerDisplayNames}
-        />
-
+      <div className="grid items-start gap-7">
         <main className="min-w-0">
           <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <h1 className="text-h1 text-primary">Operations log</h1>
+            <h1 className="flex items-center gap-2 text-h1 text-primary">
+              <LoadingIndicator
+                loading={Boolean(
+                  isLoading || isFetchingNextPage || hasNextPage,
+                )}
+              />
+              Operations log
+            </h1>
             <div className="flex items-center gap-2">
               <div className="relative w-[260px]">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tertiary" />
@@ -353,6 +414,16 @@ export function OperationsLog() {
                   <GitBranch className="h-3.5 w-3.5" /> Releases
                 </button>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 gap-1.5"
+                disabled
+                title="Export coming soon"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export
+              </Button>
             </div>
           </header>
 
@@ -360,6 +431,25 @@ export function OperationsLog() {
             entries={visibleEntries}
             rangeLabel={RANGE_LABEL[filters.range]}
             range={filters.range}
+            loading={Boolean(isLoading || isFetchingNextPage || hasNextPage)}
+          />
+
+          <OperationsLogToolbar
+            counts={counts}
+            range={filters.range}
+            onRange={(range) => setFilters({ ...filters, range })}
+            entryType={filters.entry_type}
+            onEntryType={(entry_type) => setFilters({ ...filters, entry_type })}
+            environmentSlug={filters.environment_slug}
+            onEnvironment={(environment_slug) =>
+              setFilters({ ...filters, environment_slug })
+            }
+            environments={environments}
+            projectSlug={filters.project_slug}
+            onProject={(project_slug) =>
+              setFilters({ ...filters, project_slug })
+            }
+            projectNames={projectNames}
           />
 
           {activeChips.length > 0 && (
@@ -447,15 +537,14 @@ export function OperationsLog() {
                           return (
                             <OperationsLogReleaseCard
                               key={`rel-${id}`}
+                              id={id}
                               group={it.group}
                               project={projectsBySlug.get(
                                 it.group.project_slug,
                               )}
                               environmentsBySlug={environmentsBySlug}
                               isOpen={isOpen}
-                              onToggle={() =>
-                                setOpenId(isOpen ? undefined : id)
-                              }
+                              onToggle={toggleOpen}
                               performerDisplayNames={performerDisplayNames}
                             />
                           )
@@ -465,13 +554,14 @@ export function OperationsLog() {
                         return (
                           <OperationsLogStreamRow
                             key={`evt-${id}`}
+                            id={id}
                             entry={it.entry}
                             project={projectsBySlug.get(it.entry.project_slug)}
                             environment={environmentsBySlug.get(
                               it.entry.environment_slug,
                             )}
                             isOpen={isOpen}
-                            onToggle={() => setOpenId(isOpen ? undefined : id)}
+                            onToggle={toggleOpen}
                             performerDisplayNames={performerDisplayNames}
                           />
                         )

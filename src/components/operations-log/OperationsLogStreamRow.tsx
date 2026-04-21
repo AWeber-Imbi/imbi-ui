@@ -1,5 +1,5 @@
 import { ChevronDown } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { Gravatar } from '@/components/ui/gravatar'
 import {
   Tooltip,
@@ -17,15 +17,17 @@ import { OPS_ROW_GRID, OPS_ROW_PAD } from './opsRowLayout'
 import { absTime, cleanDescription, relTime } from './opsLogHelpers'
 
 interface Props {
+  id: string
   entry: OperationsLogRecord
   project?: Project
   environment?: Environment
   isOpen: boolean
-  onToggle: () => void
+  onToggle: (id: string) => void
   performerDisplayNames: Map<string, string>
 }
 
-export function OperationsLogStreamRow({
+export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
+  id,
   entry,
   project,
   environment,
@@ -57,7 +59,7 @@ export function OperationsLogStreamRow({
     if (isOpen) return
     if (hoverTimer.current) window.clearTimeout(hoverTimer.current)
     hoverTimer.current = window.setTimeout(() => {
-      onToggle()
+      onToggle(id)
     }, 100)
   }
   const onMouseLeave = () => {
@@ -65,7 +67,7 @@ export function OperationsLogStreamRow({
       window.clearTimeout(hoverTimer.current)
       hoverTimer.current = null
     }
-    if (isOpen) onToggle()
+    if (isOpen) onToggle(id)
   }
 
   return (
@@ -76,6 +78,10 @@ export function OperationsLogStreamRow({
         'border-b border-tertiary last:border-b-0',
         isOpen && 'bg-secondary',
       )}
+      style={{
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 72px',
+      }}
     >
       <div
         className={cn(
@@ -205,4 +211,4 @@ export function OperationsLogStreamRow({
       ) : null}
     </div>
   )
-}
+})

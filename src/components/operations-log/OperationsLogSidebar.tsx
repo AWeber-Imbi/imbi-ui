@@ -1,4 +1,6 @@
-import { Box, Clock } from 'lucide-react'
+import { Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Input } from '@/components/ui/input'
 import { useTheme } from '@/contexts/ThemeContext'
 import { deriveChipColors } from '@/lib/chip-colors'
 import { cn } from '@/lib/utils'
@@ -38,11 +40,11 @@ interface SidebarProps {
 }
 
 const RANGES: { key: TimeRange; label: string }[] = [
-  { key: '24h', label: 'Last 24 hours' },
-  { key: '3d', label: 'Last 3 days' },
-  { key: '7d', label: 'Last 7 days' },
-  { key: '30d', label: 'Last 30 days' },
-  { key: 'all', label: 'All time' },
+  { key: '24h', label: '24h' },
+  { key: '7d', label: '7d' },
+  { key: '30d', label: '30d' },
+  { key: '90d', label: '90d' },
+  { key: 'all', label: 'All' },
 ]
 
 function SideButton({
@@ -121,9 +123,26 @@ export function OperationsLogSidebar({
   performerDisplayNames,
 }: SidebarProps) {
   const { isDarkMode } = useTheme()
-  const topProjects = Object.entries(counts.project)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+  const [projectFilter, setProjectFilter] = useState('')
+  const projectEntries = useMemo(
+    () =>
+      Object.entries(counts.project).sort(
+        (a, b) =>
+          b[1] - a[1] ||
+          (projectNames.get(a[0]) ?? a[0]).localeCompare(
+            projectNames.get(b[0]) ?? b[0],
+          ),
+      ),
+    [counts.project, projectNames],
+  )
+  const filteredProjects = useMemo(() => {
+    const q = projectFilter.toLowerCase().trim()
+    if (!q) return projectEntries
+    return projectEntries.filter(([slug]) => {
+      const name = (projectNames.get(slug) ?? slug).toLowerCase()
+      return slug.toLowerCase().includes(q) || name.includes(q)
+    })
+  }, [projectEntries, projectFilter, projectNames])
 
   const topPeople = Object.entries(counts.person)
     .sort((a, b) => b[1] - a[1])
@@ -136,16 +155,27 @@ export function OperationsLogSidebar({
   return (
     <aside className="sticky top-20 flex flex-col gap-5 self-start text-sm">
       <Section title="Time range">
-        {RANGES.map((r) => (
-          <SideButton
-            key={r.key}
-            active={range === r.key}
-            onClick={() => onRange(r.key)}
-            icon={<Clock className="h-3.5 w-3.5" />}
-          >
-            {r.label}
-          </SideButton>
-        ))}
+        <div
+          role="group"
+          aria-label="Time range"
+          className="mx-2 flex items-center rounded-md border border-tertiary bg-secondary p-0.5"
+        >
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => onRange(r.key)}
+              className={cn(
+                'flex-1 rounded px-2 py-1 text-xs font-medium transition-colors',
+                range === r.key
+                  ? 'bg-primary text-primary shadow-sm'
+                  : 'text-secondary hover:text-primary',
+              )}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
       </Section>
 
       <Section title="Event type">
@@ -200,25 +230,33 @@ export function OperationsLogSidebar({
         </Section>
       )}
 
-      {topProjects.length > 0 && (
+      {projectEntries.length > 0 && (
         <Section
           title="Projects"
           rightMeta={
             <span className="text-xs font-normal tracking-normal text-tertiary">
-              {Object.keys(counts.project).length}
+              {projectEntries.length}
             </span>
           }
         >
-          {topProjects.map(([slug, c]) => (
+          <div className="relative mx-2 mb-1">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-tertiary" />
+            <Input
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              placeholder="Filter projects…"
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+          {filteredProjects.map(([slug, c]) => (
             <SideButton
               key={slug}
               active={projectSlug === slug}
               onClick={() => onProject(projectSlug === slug ? undefined : slug)}
-              icon={<Box className="h-3.5 w-3.5" />}
               count={c}
               title={projectNames.get(slug) ?? slug}
             >
-              {projectNames.get(slug) ?? slug}
+              <span className="font-mono text-[13px]">{slug}</span>
             </SideButton>
           ))}
         </Section>
