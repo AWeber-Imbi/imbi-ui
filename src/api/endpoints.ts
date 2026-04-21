@@ -276,8 +276,12 @@ function parseNextCursor(headers: Headers): string | undefined {
   if (!link) return undefined
   const match = link.match(/<([^>]+)>;\s*rel="next"/)
   if (!match) return undefined
-  const url = new URL(match[1], window.location.origin)
-  return url.searchParams.get('cursor') || undefined
+  try {
+    const url = new URL(match[1], window.location.origin)
+    return url.searchParams.get('cursor') || undefined
+  } catch {
+    return undefined
+  }
 }
 
 export const listOperationsLog = async (params: {

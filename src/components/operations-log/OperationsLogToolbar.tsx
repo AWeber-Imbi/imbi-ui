@@ -1,4 +1,10 @@
-import { useMemo, useState } from 'react'
+import {
+  forwardRef,
+  useMemo,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+} from 'react'
 import {
   Box,
   Check,
@@ -70,35 +76,46 @@ function pluralLabel(
   return `${count} selected`
 }
 
-function TriggerButton({
-  icon,
-  label,
-  value,
-  count,
-}: {
-  icon: React.ReactNode
+type TriggerButtonProps = ComponentPropsWithoutRef<'button'> & {
+  icon: ReactNode
   label: string
   value?: string
   count?: number
-}) {
-  return (
-    <button
-      type="button"
-      className="inline-flex h-9 items-center gap-2 rounded-md border border-tertiary bg-primary px-3 text-sm text-secondary transition-colors hover:bg-secondary hover:text-primary"
-    >
-      <span className="flex h-4 w-4 items-center justify-center text-tertiary">
-        {icon}
-      </span>
-      <span className={cn(value && 'text-primary')}>{value ?? label}</span>
-      {count !== undefined ? (
-        <span className="ml-0.5 rounded bg-secondary px-1.5 text-[11px] tabular-nums text-tertiary">
-          {count}
-        </span>
-      ) : null}
-      <ChevronDown className="h-3.5 w-3.5 text-tertiary" />
-    </button>
-  )
 }
+
+// Radix's DropdownMenuTrigger (used with `asChild`) composes its ref and
+// event handlers onto the direct child. Using forwardRef and spreading
+// the received props lets Radix wire open/close, focus, and a11y
+// attributes onto the real <button>.
+const TriggerButton = forwardRef<HTMLButtonElement, TriggerButtonProps>(
+  function TriggerButton(
+    { icon, label, value, count, className, ...props },
+    ref,
+  ) {
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={cn(
+          'inline-flex h-9 items-center gap-2 rounded-md border border-tertiary bg-primary px-3 text-sm text-secondary transition-colors hover:bg-secondary hover:text-primary',
+          className,
+        )}
+        {...props}
+      >
+        <span className="flex h-4 w-4 items-center justify-center text-tertiary">
+          {icon}
+        </span>
+        <span className={cn(value && 'text-primary')}>{value ?? label}</span>
+        {count !== undefined ? (
+          <span className="ml-0.5 rounded bg-secondary px-1.5 text-[11px] tabular-nums text-tertiary">
+            {count}
+          </span>
+        ) : null}
+        <ChevronDown className="h-3.5 w-3.5 text-tertiary" />
+      </button>
+    )
+  },
+)
 
 interface FacetOption {
   key: string
@@ -130,17 +147,15 @@ function FacetDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div>
-          <TriggerButton
-            icon={icon}
-            label={label}
-            value={
-              selected.length === 0
-                ? undefined
-                : (single ?? `${selected.length} selected`)
-            }
-          />
-        </div>
+        <TriggerButton
+          icon={icon}
+          label={label}
+          value={
+            selected.length === 0
+              ? undefined
+              : (single ?? `${selected.length} selected`)
+          }
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
@@ -298,16 +313,12 @@ export function OperationsLogToolbar({
         }}
       >
         <DropdownMenuTrigger asChild>
-          <div>
-            <TriggerButton
-              icon={<Box className="h-3.5 w-3.5" />}
-              label="Project"
-              value={projectSlugs.length > 0 ? projectTriggerValue : undefined}
-              count={
-                projectSlugs.length > 0 ? undefined : projectEntries.length
-              }
-            />
-          </div>
+          <TriggerButton
+            icon={<Box className="h-3.5 w-3.5" />}
+            label="Project"
+            value={projectSlugs.length > 0 ? projectTriggerValue : undefined}
+            count={projectSlugs.length > 0 ? undefined : projectEntries.length}
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="min-w-[260px] p-0">
           <div className="relative border-b border-tertiary p-2">

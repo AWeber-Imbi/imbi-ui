@@ -63,6 +63,8 @@ export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
       <button
         type="button"
         onClick={() => onToggle(id)}
+        aria-expanded={isOpen}
+        aria-controls={`ops-log-details-${id}`}
         className={cn(
           'group grid w-full cursor-pointer items-center gap-x-3 gap-y-1 text-left transition-colors',
           OPS_ROW_PAD,
@@ -114,7 +116,7 @@ export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
         </span>
         {desc ? null : (
           <span
-            className="min-w-0 truncate text-sm text-secondary text-tertiary"
+            className="min-w-0 truncate text-sm text-tertiary"
             style={{ gridColumn: 5 }}
           >
             —
@@ -184,7 +186,10 @@ export const OperationsLogStreamRow = memo(function OperationsLogStreamRow({
         ) : null}
       </button>
       {isOpen ? (
-        <div className="border-t border-dashed border-tertiary">
+        <div
+          id={`ops-log-details-${id}`}
+          className="border-t border-dashed border-tertiary"
+        >
           <OperationsLogEntryDetails entry={entry} />
         </div>
       ) : null}

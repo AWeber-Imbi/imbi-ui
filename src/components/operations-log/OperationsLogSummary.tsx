@@ -74,7 +74,10 @@ export function OperationsLogSummary({
       if (range === 'all' && t < earliest) earliest = t
       projectSlugs.add(e.project_slug)
       if (e.environment_slug) envSlugs.add(e.environment_slug)
-      if (e.performed_by) people.add(e.performed_by)
+      // Match the row UI's performer fallback so the "Team members"
+      // count doesn't underreport entries that show recorded_by.
+      const performer = e.performed_by ?? e.recorded_by
+      if (performer) people.add(performer)
       if (e.entry_type === 'Deployed') {
         deploys += 1
         if (terminalEnvSlug && e.environment_slug === terminalEnvSlug) {
@@ -150,7 +153,9 @@ export function OperationsLogSummary({
                 <span
                   key={i}
                   className="flex-1 rounded-[1px] bg-amber-bg"
-                  style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
+                  style={{
+                    height: v === 0 ? '0%' : `${Math.max(8, (v / max) * 100)}%`,
+                  }}
                 />
               ))}
         </div>

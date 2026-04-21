@@ -135,20 +135,48 @@ export function OperationsLog() {
     setOpenId((prev) => (prev === id ? undefined : id))
   }, [])
 
-  const { data: projects = [] } = useQuery({
+  const {
+    data: projects = [],
+    isError: projectsError,
+    refetch: refetchProjects,
+  } = useQuery({
     queryKey: ['projects', orgSlug],
     queryFn: () => getProjects(orgSlug),
     enabled: !!orgSlug,
   })
-  const { data: environments = [] } = useQuery({
+  const {
+    data: environments = [],
+    isError: environmentsError,
+    refetch: refetchEnvironments,
+  } = useQuery({
     queryKey: ['environments', orgSlug],
     queryFn: () => listEnvironments(orgSlug),
     enabled: !!orgSlug,
   })
-  const { data: users = [] } = useQuery({
+  const {
+    data: users = [],
+    isError: usersError,
+    refetch: refetchUsers,
+  } = useQuery({
     queryKey: ['admin-users', 'active'],
     queryFn: () => listAdminUsers({ is_active: true }),
   })
+  // Metadata queries back the filter dropdowns and the slug→name
+  // lookups. When any of them fail we surface a non-blocking banner so
+  // the user can retry rather than silently falling back to raw slugs.
+  const metadataError = projectsError || environmentsError || usersError
+  const retryMetadata = useCallback(() => {
+    if (projectsError) refetchProjects()
+    if (environmentsError) refetchEnvironments()
+    if (usersError) refetchUsers()
+  }, [
+    projectsError,
+    environmentsError,
+    usersError,
+    refetchProjects,
+    refetchEnvironments,
+    refetchUsers,
+  ])
 
   // Only the time-range boundary is pushed to the server. Facet filters
   // (entry_types / environment_slugs / project_slugs) are applied
@@ -170,6 +198,7 @@ export function OperationsLog() {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    refetch,
   } = useInfiniteOperationsLog(apiFilters)
 
   const rawEntries: OperationsLogRecord[] = useMemo(
@@ -523,7 +552,22 @@ export function OperationsLog() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => fetchNextPage()}
+                  onClick={() => refetch()}
+                  className="ml-2"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+
+            {metadataError && (
+              <div className="bg-warning/10 mb-3 rounded-md border border-warning px-3 py-2 text-sm text-warning">
+                Some filter metadata failed to load — projects, environments, or
+                users may show as slugs.{' '}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={retryMetadata}
                   className="ml-2"
                 >
                   Retry
