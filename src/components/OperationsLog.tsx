@@ -141,6 +141,14 @@ export function OperationsLog({
   const [filters, setFilters] = useState<ScreenFilters>(() =>
     projectSlug ? { ...DEFAULT_FILTERS, range: 'all' } : DEFAULT_FILTERS,
   )
+  useEffect(() => {
+    if (!projectSlug) return
+    setFilters((prev) => ({
+      ...prev,
+      range: 'all',
+      project_slugs: [],
+    }))
+  }, [projectSlug])
   const [view, setView] = useState<OperationsLogView>('grouped')
   const [openId, setOpenId] = useState<string | undefined>(undefined)
   // Stable dispatcher — lets memoised row components compare props by
