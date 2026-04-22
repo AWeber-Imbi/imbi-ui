@@ -59,9 +59,9 @@ import { InlineSwitch } from '@/components/ui/inline-edit/InlineSwitch'
 import { InlineNumber } from '@/components/ui/inline-edit/InlineNumber'
 import { InlineDate } from '@/components/ui/inline-edit/InlineDate'
 import {
-  ProjectsGraphCanvas,
+  LazyProjectsGraphCanvas,
   type GraphProject,
-} from '@/components/ProjectsGraphCanvas'
+} from '@/components/LazyProjectsGraphCanvas'
 import { EditRelationshipsDialog } from '@/components/EditRelationshipsDialog'
 import { EditIdentifiersCard } from '@/components/EditIdentifiersCard'
 import { EditLinksCard } from '@/components/EditLinksCard'
@@ -1074,7 +1074,7 @@ function RelationshipsTab({
             onFilterChange={setFilter}
             onAdd={() => setEditDialogOpen(true)}
           />
-          <ProjectsGraphCanvas
+          <LazyProjectsGraphCanvas
             projects={projects}
             edges={edges}
             centerId={projectId}
