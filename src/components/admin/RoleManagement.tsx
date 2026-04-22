@@ -82,6 +82,7 @@ export function RoleManagement() {
     goToList,
     goToCreate,
     goToEdit,
+    goToDetail,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
   const queryClient = useQueryClient()
@@ -290,8 +291,9 @@ export function RoleManagement() {
         rows={filteredRoles}
         getRowKey={(role) => role.slug}
         getDeleteLabel={(role) => role.name}
-        onRowClick={(role) => goToEdit(role.slug)}
-        isRowClickable={(role) => !isSystemRole(role)}
+        onRowClick={(role) =>
+          isSystemRole(role) ? goToDetail(role.slug) : goToEdit(role.slug)
+        }
         onDelete={handleDelete}
         canDelete={canDeleteRole}
         isDeleting={deleteMutation.isPending}
