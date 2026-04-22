@@ -144,7 +144,7 @@ export async function withAuthRetry(
       '[API] Token refresh failed, redirecting to login',
       refreshError,
     )
-    useAuthStore.getState().clearTokens()
+    // refreshAccessToken clears tokens in its catch block before rethrowing.
     redirectToLogin()
     return response
   }
