@@ -23,6 +23,7 @@ vi.mock('@/api/endpoints', () => ({
 
 import * as endpoints from '@/api/endpoints'
 import { ApiError } from '@/api/client'
+import { BootstrapGate } from '@/components/BootstrapGate'
 import { useAuthStore } from '@/stores/authStore'
 import { useAuth } from '../useAuth'
 
@@ -65,11 +66,14 @@ function setupEnv(initialPath: string) {
       mutations: { retry: false },
     },
   })
+  // Match App.tsx: session bootstrap happens inside BootstrapGate, not inside
+  // useAuth. Wrapping the hook under the gate keeps the 16-case suite honest
+  // as an integration test across the gate + hook.
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={qc}>
       <MemoryRouter initialEntries={[initialPath]}>
         <LocationProbe />
-        {children}
+        <BootstrapGate fallback={null}>{children}</BootstrapGate>
       </MemoryRouter>
     </QueryClientProvider>
   )
