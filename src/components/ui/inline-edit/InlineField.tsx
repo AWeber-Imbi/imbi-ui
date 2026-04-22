@@ -73,7 +73,7 @@ export function InlineField({
           value={raw == null ? null : String(raw)}
           onCommit={onCommit}
           pending={pending}
-          renderValue={display !== null ? () => display : undefined}
+          renderValue={display != null ? () => display : undefined}
         />
       )
   }
