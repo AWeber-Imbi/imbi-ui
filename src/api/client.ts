@@ -136,15 +136,6 @@ export async function withAuthRetry(
   if (response.status !== 401) return response
   if (shouldSkipAuth(url)) return response
 
-  if (url.includes('/auth/token/refresh')) {
-    console.error(
-      '[API] Refresh token request failed, clearing tokens and redirecting',
-    )
-    useAuthStore.getState().clearTokens()
-    redirectToLogin()
-    return response
-  }
-
   try {
     const newToken = await refreshAccessToken()
     return await fetcher(newToken)

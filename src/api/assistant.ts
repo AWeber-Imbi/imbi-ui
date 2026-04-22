@@ -1,4 +1,4 @@
-import { withAuthRetry } from '@/api/client'
+import { ApiError, withAuthRetry } from '@/api/client'
 import type {
   Conversation,
   ConversationWithMessages,
@@ -23,7 +23,13 @@ async function assistantFetch<T>(
     }),
   )
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
+    let errorData: unknown
+    try {
+      errorData = await response.json()
+    } catch {
+      /* no body */
+    }
+    throw new ApiError(response.status, response.statusText, errorData)
   }
   if (response.status === 204) return undefined as T
   return response.json()
