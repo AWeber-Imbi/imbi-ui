@@ -36,10 +36,13 @@ function isSystemRole(
 // any partial failures so the UI reflects the true post-mutation state.
 async function syncPermissions(slug: string, desired: string[]) {
   const current = await getRole(slug)
-  const currentPerms = new Set(current.permissions?.map((p) => p.name) || [])
+  const currentPerms = new Set(current.permissions?.map((p) => p.name) ?? [])
   const desiredPerms = new Set(desired)
 
-  const toGrant = desired.filter((p) => !currentPerms.has(p))
+  // Iterate the deduplicated set for grants so a duplicate entry in
+  // `desired` doesn't queue two grant calls for the same permission (the
+  // second would reject as "already granted" and trigger partial-failure).
+  const toGrant = [...desiredPerms].filter((p) => !currentPerms.has(p))
   const toRevoke = [...currentPerms].filter((p) => !desiredPerms.has(p))
 
   const operations: Array<{ kind: 'grant' | 'revoke'; permission: string }> = [
