@@ -30,11 +30,17 @@ export function FormHeader({
         {subtitle && <p className="mt-1 text-secondary">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isLoading}
+        >
           <X className="mr-2 h-4 w-4" />
           Cancel
         </Button>
         <Button
+          type="button"
           onClick={onSave}
           disabled={isLoading}
           className="bg-action text-action-foreground hover:bg-action-hover"
