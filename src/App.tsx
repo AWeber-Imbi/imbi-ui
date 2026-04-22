@@ -50,9 +50,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
-      const currentPath = window.location.pathname
-      if (currentPath !== '/login' && currentPath !== '/auth/callback') {
-        sessionStorage.setItem('imbi_redirect_after_login', currentPath)
+      const { pathname, search } = window.location
+      if (pathname !== '/login' && pathname !== '/auth/callback') {
+        sessionStorage.setItem('imbi_redirect_after_login', pathname + search)
       }
     }
   }, [isAuthenticated, isLoading])
@@ -73,9 +73,9 @@ function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
-      const currentPath = window.location.pathname
-      if (currentPath !== '/login' && currentPath !== '/auth/callback') {
-        sessionStorage.setItem('imbi_redirect_after_login', currentPath)
+      const { pathname, search } = window.location
+      if (pathname !== '/login' && pathname !== '/auth/callback') {
+        sessionStorage.setItem('imbi_redirect_after_login', pathname + search)
       }
     }
   }, [isAuthenticated, isLoading])
