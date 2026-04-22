@@ -46,7 +46,9 @@ export class ErrorBoundary extends Component<
               <AlertCircle className="h-6 w-6 flex-shrink-0 text-danger" />
               <h1 className="text-lg font-semibold">Something went wrong</h1>
             </div>
-            <p className="mt-3 text-sm text-secondary">{error.message}</p>
+            <p className="mt-3 text-sm text-secondary">
+              An unexpected error occurred. Please try again.
+            </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <Button onClick={this.reset}>Try again</Button>
               <Button

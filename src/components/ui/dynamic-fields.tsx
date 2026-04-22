@@ -12,6 +12,11 @@ import {
 } from '@/components/ui/select'
 import type { DynamicFieldSchema, DynamicSchema } from '@/api/endpoints'
 
+// Radix SelectItem rejects empty-string values, so use a sentinel to represent
+// an unset non-required enum field (preserves the clear-via-placeholder
+// behaviour of the native <select> this component replaced).
+const UNSET_VALUE = '__unset__'
+
 const ajv = new Ajv({ allErrors: true })
 addFormats(ajv)
 
@@ -90,8 +95,10 @@ export function DynamicFormFields({
                 {isRequired && <span className="text-red-500"> *</span>}
               </label>
               <Select
-                value={value}
-                onValueChange={(v) => onChange(key, v || undefined)}
+                value={value || (!isRequired ? UNSET_VALUE : '')}
+                onValueChange={(v) =>
+                  onChange(key, v === UNSET_VALUE ? undefined : v)
+                }
                 disabled={isLoading}
               >
                 <SelectTrigger className={fieldError ? 'border-red-500' : ''}>
@@ -100,6 +107,9 @@ export function DynamicFormFields({
                   />
                 </SelectTrigger>
                 <SelectContent>
+                  {!isRequired && (
+                    <SelectItem value={UNSET_VALUE}>None</SelectItem>
+                  )}
                   {field.enum.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                       {opt}
