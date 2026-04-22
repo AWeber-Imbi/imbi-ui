@@ -45,16 +45,17 @@ function PageFallback() {
   )
 }
 
+function savePostLoginRedirect() {
+  const { pathname, search } = window.location
+  if (pathname === '/login' || pathname === '/auth/callback') return
+  sessionStorage.setItem('imbi_redirect_after_login', pathname + search)
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
-      const { pathname, search } = window.location
-      if (pathname !== '/login' && pathname !== '/auth/callback') {
-        sessionStorage.setItem('imbi_redirect_after_login', pathname + search)
-      }
-    }
+    if (!isAuthenticated && !isLoading) savePostLoginRedirect()
   }, [isAuthenticated, isLoading])
 
   if (isLoading) {
@@ -72,12 +73,7 @@ function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth()
 
   useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
-      const { pathname, search } = window.location
-      if (pathname !== '/login' && pathname !== '/auth/callback') {
-        sessionStorage.setItem('imbi_redirect_after_login', pathname + search)
-      }
-    }
+    if (!isAuthenticated && !isLoading) savePostLoginRedirect()
   }, [isAuthenticated, isLoading])
 
   if (isLoading) {
