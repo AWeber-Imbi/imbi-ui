@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
-import { FormField } from '../../ui/form-field'
+import { FormField } from '@/components/ui/form-field'
 import { Gravatar } from '../../ui/gravatar'
 import { Card, CardContent } from '../../ui/card'
 import { getRoles } from '@/api/endpoints'
