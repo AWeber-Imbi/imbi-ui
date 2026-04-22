@@ -89,6 +89,7 @@ export function SecretBanner({
         })}
       </div>
       <button
+        type="button"
         onClick={onDismiss}
         className="hover:text-success/80 mt-2 text-sm text-success"
       >
