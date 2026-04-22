@@ -52,7 +52,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated && !isLoading) {
       const currentPath = window.location.pathname
       if (currentPath !== '/login' && currentPath !== '/auth/callback') {
-        sessionStorage.setItem('returnTo', currentPath)
+        sessionStorage.setItem('imbi_redirect_after_login', currentPath)
       }
     }
   }, [isAuthenticated, isLoading])
@@ -75,7 +75,7 @@ function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated && !isLoading) {
       const currentPath = window.location.pathname
       if (currentPath !== '/login' && currentPath !== '/auth/callback') {
-        sessionStorage.setItem('returnTo', currentPath)
+        sessionStorage.setItem('imbi_redirect_after_login', currentPath)
       }
     }
   }, [isAuthenticated, isLoading])
