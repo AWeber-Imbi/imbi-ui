@@ -298,8 +298,11 @@ export function TeamDetail({ team, onEdit, onBack }: TeamDetailProps) {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
                               onClick={() => handleRemoveMember(member.email)}
                               disabled={removeMemberMutation.isPending}
+                              aria-label={`Remove ${member.display_name} from team`}
+                              title="Remove from team"
                               className={`rounded p-1.5 text-danger hover:bg-danger`}
                             >
                               <X className="h-4 w-4" />

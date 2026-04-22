@@ -184,7 +184,22 @@ export function BlueprintManagement() {
   }
 
   const handleCancel = () => {
+    // Clear any prior create/import error so switching back to the list and
+    // then re-entering either flow starts clean.
+    createMutation.reset()
     goToList()
+  }
+
+  const handleCreate = () => {
+    // Drop any error from a previous failed import before entering the form.
+    createMutation.reset()
+    goToCreate()
+  }
+
+  const handleOpenImport = () => {
+    // Drop any error from a previous failed create before opening the dialog.
+    createMutation.reset()
+    setImportDialogOpen(true)
   }
 
   const handleImport = (data: BlueprintCreate) => {
@@ -243,7 +258,7 @@ export function BlueprintManagement() {
       search={searchQuery}
       onSearchChange={setSearchQuery}
       createLabel="New Blueprint"
-      onCreate={goToCreate}
+      onCreate={handleCreate}
       isLoading={isLoading}
       loadingLabel="Loading blueprints..."
       error={error}
@@ -279,7 +294,7 @@ export function BlueprintManagement() {
       headerActions={
         <Button
           variant="outline"
-          onClick={() => setImportDialogOpen(true)}
+          onClick={handleOpenImport}
           className="border-tertiary text-secondary hover:bg-secondary hover:text-primary"
         >
           <Upload className="mr-2 h-4 w-4" />
