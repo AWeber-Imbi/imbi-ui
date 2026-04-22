@@ -184,21 +184,24 @@ export function BlueprintManagement() {
   }
 
   const handleCancel = () => {
-    // Clear any prior create/import error so switching back to the list and
-    // then re-entering either flow starts clean.
+    // Clear any prior create/import/update error so switching back to the
+    // list and then re-entering any flow starts clean.
     createMutation.reset()
+    updateMutation.reset()
     goToList()
   }
 
   const handleCreate = () => {
-    // Drop any error from a previous failed import before entering the form.
+    // Drop any error from a previous failed import/edit before entering the form.
     createMutation.reset()
+    updateMutation.reset()
     goToCreate()
   }
 
   const handleOpenImport = () => {
-    // Drop any error from a previous failed create before opening the dialog.
+    // Drop any error from a previous failed create/edit before opening the dialog.
     createMutation.reset()
+    updateMutation.reset()
     setImportDialogOpen(true)
   }
 
