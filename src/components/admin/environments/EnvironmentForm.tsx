@@ -162,10 +162,14 @@ export function EnvironmentForm({
         <Card>
           <CardContent className="space-y-4 pt-6">
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                htmlFor="environment-org"
+                className="mb-1.5 block text-sm text-secondary"
+              >
                 Organization <span className="text-red-500">*</span>
               </label>
               <select
+                id="environment-org"
                 value={orgSlug}
                 onChange={(e) => setOrgSlug(e.target.value)}
                 disabled={isEditing || isLoading || organizations.length <= 1}
@@ -194,10 +198,14 @@ export function EnvironmentForm({
               className={`grid grid-cols-1 gap-4 ${!isEditing ? 'md:grid-cols-2' : ''}`}
             >
               <div>
-                <label className="mb-1.5 block text-sm text-secondary">
+                <label
+                  htmlFor="environment-name"
+                  className="mb-1.5 block text-sm text-secondary"
+                >
                   Environment Name <span className="text-red-500">*</span>
                 </label>
                 <Input
+                  id="environment-name"
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="e.g., Production"
@@ -216,10 +224,14 @@ export function EnvironmentForm({
 
               {!isEditing && (
                 <div>
-                  <label className="mb-1.5 block text-sm text-secondary">
+                  <label
+                    htmlFor="environment-slug"
+                    className="mb-1.5 block text-sm text-secondary"
+                  >
                     Slug <span className="text-red-500">*</span>
                   </label>
                   <Input
+                    id="environment-slug"
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
                     placeholder="e.g., production"
@@ -239,10 +251,14 @@ export function EnvironmentForm({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                htmlFor="environment-sort-order"
+                className="mb-1.5 block text-sm text-secondary"
+              >
                 Sort Order
               </label>
               <Input
+                id="environment-sort-order"
                 type="number"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
@@ -256,10 +272,14 @@ export function EnvironmentForm({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                htmlFor="environment-description"
+                className="mb-1.5 block text-sm text-secondary"
+              >
                 Description
               </label>
               <textarea
+                id="environment-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}

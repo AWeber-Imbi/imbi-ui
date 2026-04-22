@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Shield, Lock } from 'lucide-react'
 import { formatRelativeDate } from '@/lib/formatDate'
+import { extractApiErrorDetail } from '@/lib/apiError'
 import { Badge } from '@/components/ui/badge'
 import { AdminTable } from '@/components/ui/admin-table'
 import type { CanDeleteResult } from '@/components/ui/admin-table'
@@ -75,12 +77,19 @@ export function RoleManagement() {
   // When the role write succeeded but a subset of permission grants/revokes
   // failed, the server state is genuinely different from both the pre-mutation
   // and the requested post-mutation state. Invalidate the role caches so the
-  // client refetches the true state before we let the mutation error bubble —
-  // keeping the "some writes failed" signal in the mutation error while still
-  // giving the UI a chance to reflect reality on the next render.
+  // client refetches the true state and surface the sync failure as a
+  // non-blocking toast — the role *did* commit, so we don't strand the user
+  // on the create form (for a role that now exists) or on the old slug after
+  // an edit-time rename.
   const invalidateRoleCaches = (slug: string) => {
     queryClient.invalidateQueries({ queryKey: ['roles'] })
     queryClient.invalidateQueries({ queryKey: ['role', slug] })
+  }
+
+  const reportPermissionSyncFailure = (err: unknown) => {
+    toast.error(
+      `Role saved, but some permission changes failed: ${extractApiErrorDetail(err)}`,
+    )
   }
 
   const {
@@ -104,8 +113,10 @@ export function RoleManagement() {
         try {
           await syncPermissions(created.slug, permissions)
         } catch (err) {
+          // The role itself committed — don't strand the user on a "new role"
+          // form for a role that already exists. Refetch and toast instead.
           invalidateRoleCaches(created.slug)
-          throw err
+          reportPermissionSyncFailure(err)
         }
       }
     },
@@ -114,8 +125,11 @@ export function RoleManagement() {
       try {
         await syncPermissions(updated.slug, permissions)
       } catch (err) {
+        // The role write committed (the slug may even have changed). Let the
+        // success path navigate away and surface the partial sync failure as
+        // a non-blocking toast.
         invalidateRoleCaches(updated.slug)
-        throw err
+        reportPermissionSyncFailure(err)
       }
     },
     deleteFn: deleteRole,
