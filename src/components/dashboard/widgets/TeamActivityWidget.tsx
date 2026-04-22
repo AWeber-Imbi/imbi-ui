@@ -96,11 +96,18 @@ export function TeamActivityWidget({ onViewChange }: TeamActivityWidgetProps) {
           const healthColor = getHealthColor(team.health)
 
           return (
-            <button
-              type="button"
+            <div
               key={team.name}
+              role="button"
+              tabIndex={0}
               onClick={() => handleTeamClick(team.name)}
-              className={`rounded-lg border border-input bg-background p-4 text-left transition-all hover:border-secondary hover:shadow-sm`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleTeamClick(team.name)
+                }
+              }}
+              className={`cursor-pointer rounded-lg border border-input bg-background p-4 text-left transition-all hover:border-secondary hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring`}
             >
               <div className="mb-3 flex items-start justify-between">
                 <div className="flex-1">
@@ -133,7 +140,7 @@ export function TeamActivityWidget({ onViewChange }: TeamActivityWidgetProps) {
                   {team.deployments} deployments
                 </button>
               </div>
-            </button>
+            </div>
           )
         })}
       </div>

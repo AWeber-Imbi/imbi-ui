@@ -251,6 +251,7 @@ export function BlueprintManagement() {
       headerExtras={
         <>
           <select
+            aria-label="Filter blueprints by type"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="h-10 rounded-md border border-tertiary bg-primary px-3 py-2 text-sm text-primary"
@@ -264,6 +265,7 @@ export function BlueprintManagement() {
             <option value="relationship">Relationship</option>
           </select>
           <select
+            aria-label="Filter blueprints by status"
             value={enabledFilter}
             onChange={(e) => setEnabledFilter(e.target.value)}
             className="h-10 rounded-md border border-tertiary bg-primary px-3 py-2 text-sm text-primary"

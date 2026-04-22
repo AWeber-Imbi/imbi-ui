@@ -126,7 +126,11 @@ export function UserManagement() {
   }
 
   // Fetch full user detail (with orgs) when viewing/editing a specific user
-  const { data: selectedUser = null } = useQuery({
+  const {
+    data: selectedUser = null,
+    isLoading: selectedUserLoading,
+    isError: selectedUserError,
+  } = useQuery({
     queryKey: ['adminUser', selectedUserEmail],
     queryFn: () => getAdminUser(selectedUserEmail!),
     enabled:
@@ -155,12 +159,16 @@ export function UserManagement() {
     goToList()
   }
 
-  // Guard for invalid user email in URL
+  // Guard for invalid user email in URL — only render "not found" after the
+  // per-user fetch has settled so deep-linked edit/detail views don't flash
+  // this state while getAdminUser is still in flight.
   if (
     !isLoading &&
     !error &&
     (viewMode === 'edit' || viewMode === 'detail') &&
     !!selectedUserEmail &&
+    !selectedUserLoading &&
+    !selectedUserError &&
     !selectedUser
   ) {
     return (

@@ -237,13 +237,21 @@ export function BlueprintForm({
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug
 
-  const { data: availableProjectTypes = [], isLoading: ptLoading } = useQuery({
+  const {
+    data: availableProjectTypes = [],
+    isLoading: ptLoading,
+    isError: ptIsError,
+  } = useQuery({
     queryKey: ['projectTypes', orgSlug],
     queryFn: () => listProjectTypes(orgSlug!),
     enabled: !!orgSlug,
   })
 
-  const { data: availableEnvironments = [], isLoading: envLoading } = useQuery({
+  const {
+    data: availableEnvironments = [],
+    isLoading: envLoading,
+    isError: envIsError,
+  } = useQuery({
     queryKey: ['environments', orgSlug],
     queryFn: () => listEnvironments(orgSlug!),
     enabled: !!orgSlug,
@@ -1035,6 +1043,10 @@ export function BlueprintForm({
                 <p className="text-xs italic text-tertiary">
                   Loading project types...
                 </p>
+              ) : ptIsError ? (
+                <p className="text-xs italic text-danger">
+                  Failed to load project types
+                </p>
               ) : availableProjectTypes.length === 0 ? (
                 <p className="text-xs italic text-tertiary">
                   No project types available
@@ -1079,6 +1091,10 @@ export function BlueprintForm({
               {envLoading ? (
                 <p className="text-xs italic text-tertiary">
                   Loading environments...
+                </p>
+              ) : envIsError ? (
+                <p className="text-xs italic text-danger">
+                  Failed to load environments
                 </p>
               ) : availableEnvironments.length === 0 ? (
                 <p className="text-xs italic text-tertiary">

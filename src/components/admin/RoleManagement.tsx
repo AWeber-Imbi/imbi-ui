@@ -22,7 +22,9 @@ import type { RoleDetail as RoleDetailType, RoleCreate } from '@/types'
 
 type Role = Awaited<ReturnType<typeof getRoles>>[number]
 
-// Sync permissions: grant new ones, revoke removed ones
+// Sync permissions: grant new ones, revoke removed ones. The API has no
+// atomic replace endpoint, so we run grants/revokes concurrently and report
+// any partial failures so the UI reflects the true post-mutation state.
 async function syncPermissions(slug: string, desired: string[]) {
   const current = await getRole(slug)
   const currentPerms = new Set(current.permissions?.map((p) => p.name) || [])
@@ -31,10 +33,31 @@ async function syncPermissions(slug: string, desired: string[]) {
   const toGrant = desired.filter((p) => !currentPerms.has(p))
   const toRevoke = [...currentPerms].filter((p) => !desiredPerms.has(p))
 
-  await Promise.all([
-    ...toGrant.map((p) => grantPermission(slug, p)),
-    ...toRevoke.map((p) => revokePermission(slug, p)),
-  ])
+  const operations: Array<{ kind: 'grant' | 'revoke'; permission: string }> = [
+    ...toGrant.map((p) => ({ kind: 'grant' as const, permission: p })),
+    ...toRevoke.map((p) => ({ kind: 'revoke' as const, permission: p })),
+  ]
+
+  const results = await Promise.allSettled(
+    operations.map((op) =>
+      op.kind === 'grant'
+        ? grantPermission(slug, op.permission)
+        : revokePermission(slug, op.permission),
+    ),
+  )
+
+  const failures = results
+    .map((r, i) => ({ result: r, op: operations[i] }))
+    .filter(({ result }) => result.status === 'rejected')
+
+  if (failures.length > 0) {
+    const detail = failures
+      .map(({ op }) => `${op.kind} ${op.permission}`)
+      .join(', ')
+    throw new Error(
+      `Permission sync partially failed (${failures.length}/${operations.length}): ${detail}`,
+    )
+  }
 }
 
 export function RoleManagement() {

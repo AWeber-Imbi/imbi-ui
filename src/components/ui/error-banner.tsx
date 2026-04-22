@@ -1,4 +1,5 @@
 import { AlertCircle } from 'lucide-react'
+import { extractApiErrorDetail } from '@/lib/apiError'
 
 interface ErrorBannerProps {
   title: string
@@ -8,9 +9,12 @@ interface ErrorBannerProps {
 
 export function ErrorBanner({ title, message, error }: ErrorBannerProps) {
   const resolvedMessage =
-    message ?? (error instanceof Error ? error.message : 'An error occurred')
+    message ?? extractApiErrorDetail(error, 'An error occurred')
   return (
     <div
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       className={
         'flex items-center gap-3 rounded-lg border border-danger bg-danger p-4 text-danger'
       }

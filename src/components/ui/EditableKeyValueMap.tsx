@@ -43,6 +43,20 @@ export interface EditableKeyValueMapProps {
   valueInputType?: 'text' | 'url'
   /** Hide the whole card when there are no visible and no unassigned keys. */
   hideWhenEmpty?: boolean
+  /**
+   * Accessible name for an existing row's value input. Defaults to
+   * `getValuePlaceholder(key)` so controls always expose a programmatic label.
+   */
+  getValueAriaLabel?: (key: string) => string
+  /**
+   * Accessible name for the add-row key select. Defaults to `newKeyPlaceholder`.
+   */
+  newKeySelectAriaLabel?: string
+  /**
+   * Accessible name for the add-row value input. Defaults to
+   * `getNewValuePlaceholder(newKey)`.
+   */
+  newValueAriaLabel?: string
 }
 
 export function EditableKeyValueMap({
@@ -62,6 +76,9 @@ export function EditableKeyValueMap({
   valueInputClassName,
   valueInputType = 'text',
   hideWhenEmpty = false,
+  getValueAriaLabel,
+  newKeySelectAriaLabel,
+  newValueAriaLabel,
 }: EditableKeyValueMapProps) {
   const {
     drafts,
@@ -103,6 +120,9 @@ export function EditableKeyValueMap({
                     e.currentTarget.blur()
                   }
                 }}
+                aria-label={
+                  getValueAriaLabel?.(key) ?? getValuePlaceholder(key)
+                }
                 placeholder={getValuePlaceholder(key)}
                 type={valueInputType}
                 className={`pr-8 ${valueInputClassName ?? ''}`.trim()}
@@ -129,7 +149,10 @@ export function EditableKeyValueMap({
               value={newKey ?? ''}
               onValueChange={setNewKey}
             >
-              <SelectTrigger className="w-[15%] flex-shrink-0 text-sm">
+              <SelectTrigger
+                aria-label={newKeySelectAriaLabel ?? newKeyPlaceholder}
+                className="w-[15%] flex-shrink-0 text-sm"
+              >
                 {newKey ? (
                   renderSelectTrigger(newKey)
                 ) : (
@@ -155,6 +178,7 @@ export function EditableKeyValueMap({
                   e.currentTarget.blur()
                 }
               }}
+              aria-label={newValueAriaLabel ?? getNewValuePlaceholder(newKey)}
               placeholder={getNewValuePlaceholder(newKey)}
               type={valueInputType}
               disabled={!newKey}

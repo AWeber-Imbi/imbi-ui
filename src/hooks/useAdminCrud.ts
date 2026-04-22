@@ -75,9 +75,8 @@ export function useAdminCrud<
         toast.error(
           `Failed to create ${deleteErrorLabel}: ${extractApiErrorDetail(error)}`,
         )
-      } else {
-        console.error(`Failed to create ${deleteErrorLabel}:`, error)
       }
+      // 'silent' mode: consumer renders error inline via mutation state.
     },
   })
 
@@ -92,9 +91,8 @@ export function useAdminCrud<
         toast.error(
           `Failed to update ${deleteErrorLabel}: ${extractApiErrorDetail(error)}`,
         )
-      } else {
-        console.error(`Failed to update ${deleteErrorLabel}:`, error)
       }
+      // 'silent' mode: consumer renders error inline via mutation state.
     },
   })
 

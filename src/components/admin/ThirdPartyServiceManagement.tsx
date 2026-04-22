@@ -48,9 +48,18 @@ export function ThirdPartyServiceManagement() {
   >({
     queryKey: ['third-party-services', orgSlug],
     listFn: orgSlug ? () => listThirdPartyServices(orgSlug) : null,
-    createFn: (svc) => createThirdPartyService(orgSlug!, svc),
-    updateFn: ({ slug, svc }) => updateThirdPartyService(orgSlug!, slug, svc),
-    deleteFn: (slug) => deleteThirdPartyService(orgSlug!, slug),
+    createFn: (svc) => {
+      if (!orgSlug) throw new Error('No organization selected')
+      return createThirdPartyService(orgSlug, svc)
+    },
+    updateFn: ({ slug, svc }) => {
+      if (!orgSlug) throw new Error('No organization selected')
+      return updateThirdPartyService(orgSlug, slug, svc)
+    },
+    deleteFn: (slug) => {
+      if (!orgSlug) throw new Error('No organization selected')
+      return deleteThirdPartyService(orgSlug, slug)
+    },
     onMutationSuccess: goToList,
     deleteErrorLabel: 'service',
   })

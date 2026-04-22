@@ -105,8 +105,15 @@ class ApiClient {
     if (authStore.isTokenExpired()) {
       try {
         return await refreshAccessToken()
-      } catch {
-        return null
+      } catch (error) {
+        // Proactive refresh failed; tokens already cleared by
+        // refreshAccessToken. Redirect to login and surface the failure
+        // rather than sending an unauthenticated request and triggering a
+        // second refresh via the 401 handler.
+        redirectToLogin()
+        throw error instanceof ApiError
+          ? error
+          : new ApiError(401, 'Token refresh failed')
       }
     }
     return authStore.accessToken

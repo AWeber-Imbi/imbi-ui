@@ -21,6 +21,20 @@ import { slugify } from '@/lib/utils'
 import { ApiError } from '@/api/client'
 import type { Webhook, WebhookCreate, WebhookRule } from '@/types'
 
+// Per-row client id so React preserves correct instances after reorder/remove.
+// crypto.randomUUID is available in modern browsers; fall back for older envs.
+function makeClientId(): string {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    return crypto.randomUUID()
+  }
+  return `r-${Math.random().toString(36).slice(2)}-${Date.now()}`
+}
+
+type RuleDraft = WebhookRule & { _clientId: string }
+
 interface WebhookFormProps {
   webhook: Webhook | null
   onSave: (data: WebhookCreate) => void
@@ -57,7 +71,9 @@ export function WebhookForm({
   const [identifierSelector, setIdentifierSelector] = useState(
     webhook?.identifier_selector || '',
   )
-  const [rules, setRules] = useState<WebhookRule[]>(webhook?.rules || [])
+  const [rules, setRules] = useState<RuleDraft[]>(() =>
+    (webhook?.rules || []).map((r) => ({ ...r, _clientId: makeClientId() })),
+  )
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const { data: services = [] } = useQuery({
@@ -126,7 +142,12 @@ export function WebhookForm({
   const addRule = () => {
     setRules([
       ...rules,
-      { filter_expression: '', handler: '', handler_config: {} },
+      {
+        _clientId: makeClientId(),
+        filter_expression: '',
+        handler: '',
+        handler_config: {},
+      },
     ])
   }
 
@@ -479,7 +500,7 @@ export function WebhookForm({
               <div className="space-y-3">
                 {rules.map((rule, index) => (
                   <div
-                    key={index}
+                    key={rule._clientId}
                     className={`bg-secondary/50 rounded-lg border border-input p-4`}
                   >
                     <div className="flex items-start gap-3">
@@ -627,6 +648,8 @@ export function WebhookForm({
                         type="button"
                         onClick={() => removeRule(index)}
                         disabled={isLoading}
+                        aria-label={`Delete rule ${index + 1}`}
+                        title={`Delete rule ${index + 1}`}
                         className={`rounded p-1.5 text-danger transition-colors hover:bg-danger`}
                       >
                         <Trash2 className="h-4 w-4" />

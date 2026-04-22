@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { listApiKeys, createApiKey, deleteApiKey } from '@/api/endpoints'
+import { extractApiErrorDetail } from '@/lib/apiError'
 import type { ApiKey, ApiKeyCreated } from '@/types'
 import { formatDate } from '@/lib/formatDate'
 
@@ -25,7 +26,11 @@ export function SettingsApiKeys() {
   const [revokingKeyId, setRevokingKeyId] = useState<string | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
 
-  const { data: apiKeys = [], isLoading } = useQuery({
+  const {
+    data: apiKeys = [],
+    isLoading,
+    error: listError,
+  } = useQuery({
     queryKey: ['api-keys'],
     queryFn: () => listApiKeys(),
   })
@@ -76,6 +81,10 @@ export function SettingsApiKeys() {
 
         {isLoading ? (
           <p className="text-[13.5px] text-tertiary">Loading...</p>
+        ) : listError ? (
+          <div className="bg-danger/10 rounded-lg p-4 text-[13.5px] text-danger">
+            {extractApiErrorDetail(listError, 'Failed to load API keys')}
+          </div>
         ) : activeKeys.length === 0 ? (
           <div className="bg-secondary/50 rounded-lg p-8 text-center">
             <p className="text-[13.5px] text-tertiary">

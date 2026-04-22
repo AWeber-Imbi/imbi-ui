@@ -45,7 +45,11 @@ export function TeamDetail({ team, onEdit, onBack }: TeamDetailProps) {
   const [showAddMember, setShowAddMember] = useState(false)
   const [newMemberEmail, setNewMemberEmail] = useState('')
 
-  const { data: members = [], isLoading: membersLoading } = useQuery({
+  const {
+    data: members = [],
+    isLoading: membersLoading,
+    error: membersError,
+  } = useQuery({
     queryKey: ['teamMembers', team.organization.slug, team.slug],
     queryFn: () => getTeamMembers(team.organization.slug, team.slug),
   })
@@ -227,6 +231,13 @@ export function TeamDetail({ team, onEdit, onBack }: TeamDetailProps) {
           {membersLoading ? (
             <div className="p-8 text-center">
               <div className="text-sm text-secondary">Loading members...</div>
+            </div>
+          ) : membersError ? (
+            <div className="p-8 text-center text-sm text-danger">
+              {extractApiErrorDetail(
+                membersError,
+                'Failed to load team members',
+              )}
             </div>
           ) : members.length === 0 ? (
             <div className="py-12 text-center text-tertiary">

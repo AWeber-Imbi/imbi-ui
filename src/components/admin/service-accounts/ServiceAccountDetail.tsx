@@ -89,7 +89,11 @@ export function ServiceAccountDetail({
   const [newOrgSlug, setNewOrgSlug] = useState('')
   const [newRoleSlug, setNewRoleSlug] = useState('')
 
-  const { data: availableRoles = [], isError: rolesError } = useQuery({
+  const {
+    data: availableRoles = [],
+    isError: rolesError,
+    isLoading: rolesLoading,
+  } = useQuery({
     queryKey: ['roles'],
     queryFn: getRoles,
   })
@@ -485,7 +489,9 @@ export function ServiceAccountDetail({
                   <label className="mb-1.5 block text-sm text-secondary">
                     Role
                   </label>
-                  {rolesError ? (
+                  {rolesLoading ? (
+                    <p className="text-sm text-secondary">Loading roles...</p>
+                  ) : rolesError ? (
                     <p className="text-sm text-danger">Failed to load roles</p>
                   ) : (
                     <select
@@ -552,7 +558,11 @@ export function ServiceAccountDetail({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {rolesError ? (
+                      {rolesLoading ? (
+                        <span className="text-xs text-secondary">
+                          Loading roles...
+                        </span>
+                      ) : rolesError ? (
                         <span className="text-xs text-danger">
                           Roles unavailable
                         </span>

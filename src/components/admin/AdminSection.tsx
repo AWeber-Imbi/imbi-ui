@@ -64,6 +64,7 @@ export function AdminSection({
               }
             />
             <Input
+              aria-label={searchPlaceholder}
               placeholder={searchPlaceholder}
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}

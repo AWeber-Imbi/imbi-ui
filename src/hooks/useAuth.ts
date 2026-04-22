@@ -42,7 +42,6 @@ export function useAuth(): UseAuthReturn {
         if (error instanceof ApiError && error.status === 401) {
           const data = error.data as { detail?: string } | undefined
           if (data?.detail?.includes('not found or inactive')) {
-            console.log('[Auth] User not found or inactive, clearing tokens')
             clearTokens()
             throw new Error(
               'Your account is not active. Please contact your administrator.',

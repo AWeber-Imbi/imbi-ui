@@ -44,9 +44,18 @@ export function WebhookManagement() {
   >({
     queryKey: ['webhooks', orgSlug],
     listFn: orgSlug ? () => listWebhooks(orgSlug) : null,
-    createFn: (data) => createWebhook(orgSlug!, data),
-    updateFn: ({ slug, data }) => updateWebhook(orgSlug!, slug, data),
-    deleteFn: (slug) => deleteWebhook(orgSlug!, slug),
+    createFn: (data) => {
+      if (!orgSlug) throw new Error('No organization selected')
+      return createWebhook(orgSlug, data)
+    },
+    updateFn: ({ slug, data }) => {
+      if (!orgSlug) throw new Error('No organization selected')
+      return updateWebhook(orgSlug, slug, data)
+    },
+    deleteFn: (slug) => {
+      if (!orgSlug) throw new Error('No organization selected')
+      return deleteWebhook(orgSlug, slug)
+    },
     onMutationSuccess: goToList,
     deleteErrorLabel: 'webhook',
   })

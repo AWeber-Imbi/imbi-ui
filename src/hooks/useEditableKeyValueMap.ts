@@ -126,7 +126,12 @@ export function useEditableKeyValueMap<V>(
       const next = raw === undefined ? raw : normalizeValue(raw)
       const current = serverMap[key]
       if (next === current) return
-      if (next !== undefined && isEmpty(next) && current && !isEmpty(current)) {
+      if (
+        next !== undefined &&
+        isEmpty(next) &&
+        current !== undefined &&
+        !isEmpty(current)
+      ) {
         setPendingDelete(key)
         return
       }
@@ -183,8 +188,12 @@ export function useEditableKeyValueMap<V>(
   const confirmDelete = useCallback(async () => {
     const key = pendingDelete
     if (!key) return
+    // Merge drafts on top of the server baseline so unsaved edits to *other*
+    // keys aren't clobbered when we patch the delete. Then omit the deleted
+    // key from the payload.
+    const merged: Record<string, V> = { ...serverMap, ...drafts }
     const payload: Record<string, V> = {}
-    for (const [k, v] of Object.entries(serverMap)) {
+    for (const [k, v] of Object.entries(merged)) {
       if (k === key) continue
       payload[k] = v
     }
@@ -199,7 +208,7 @@ export function useEditableKeyValueMap<V>(
     } finally {
       setPendingDelete(null)
     }
-  }, [pendingDelete, serverMap, onPatch, transformPatch])
+  }, [pendingDelete, serverMap, drafts, onPatch, transformPatch])
 
   const setNewKey = useCallback((key: string) => {
     if (!key) return

@@ -16,6 +16,7 @@ import { getEnvironmentSchema } from '@/api/endpoints'
 import { ENVIRONMENT_BASE_FIELDS_SET } from '@/lib/constants'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
 import { extractDynamicFields, slugify } from '@/lib/utils'
+import { extractApiErrorDetail } from '@/lib/apiError'
 import type { Environment, EnvironmentCreate } from '@/types'
 
 interface EnvironmentFormProps {
@@ -23,7 +24,7 @@ interface EnvironmentFormProps {
   onSave: (orgSlug: string, env: EnvironmentCreate) => void
   onCancel: () => void
   isLoading?: boolean
-  error?: { response?: { data?: { detail?: string } }; message?: string } | null
+  error?: unknown
 }
 
 export function EnvironmentForm({
@@ -152,7 +153,7 @@ export function EnvironmentForm({
       </div>
 
       {/* API Error */}
-      {error && (
+      {!!error && (
         <div className={`rounded-lg border border-danger bg-danger p-4`}>
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 flex-shrink-0 text-danger" />
@@ -161,9 +162,7 @@ export function EnvironmentForm({
                 Failed to save environment
               </div>
               <div className="mt-1 text-sm text-danger">
-                {error?.response?.data?.detail ||
-                  error?.message ||
-                  'An error occurred'}
+                {extractApiErrorDetail(error, 'An error occurred')}
               </div>
             </div>
           </div>
