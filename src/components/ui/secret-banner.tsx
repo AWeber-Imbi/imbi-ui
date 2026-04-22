@@ -47,7 +47,7 @@ export function SecretBanner({
       <div className="mb-2 font-medium text-success">{heading}</div>
       <div className="space-y-2">
         {secrets.map((secret, index) => {
-          const fieldId = secret.label ?? `secret-${index}`
+          const fieldId = `${secret.label ?? 'secret'}-${index}`
           const copyLabel =
             secret.copyAriaLabel ??
             (secret.label
