@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ErrorBanner } from '@/components/ui/error-banner'
 import { IconUpload } from '@/components/ui/icon-upload'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -232,25 +233,7 @@ export function WebhookForm({
       </div>
 
       {/* API Error */}
-      {error && (
-        <div className={`rounded-lg border border-danger bg-danger p-4`}>
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 flex-shrink-0 text-danger" />
-            <div>
-              <div className="font-medium text-danger">
-                Failed to save webhook
-              </div>
-              <div className="mt-1 text-sm text-danger">
-                {(error && 'response' in error
-                  ? error.response?.data?.detail
-                  : undefined) ||
-                  error?.message ||
-                  'An error occurred'}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {error && <ErrorBanner title="Failed to save webhook" error={error} />}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -510,6 +493,8 @@ export function WebhookForm({
                           type="button"
                           onClick={() => moveRule(index, 'up')}
                           disabled={index === 0 || isLoading}
+                          aria-label={`Move rule ${index + 1} up`}
+                          title={`Move rule ${index + 1} up`}
                           className={`rounded p-1 transition-colors ${
                             index === 0
                               ? 'cursor-not-allowed opacity-30'
@@ -522,6 +507,8 @@ export function WebhookForm({
                           type="button"
                           onClick={() => moveRule(index, 'down')}
                           disabled={index === rules.length - 1 || isLoading}
+                          aria-label={`Move rule ${index + 1} down`}
+                          title={`Move rule ${index + 1} down`}
                           className={`rounded p-1 transition-colors ${
                             index === rules.length - 1
                               ? 'cursor-not-allowed opacity-30'

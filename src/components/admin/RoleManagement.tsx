@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Shield, Lock } from 'lucide-react'
 import { formatRelativeDate } from '@/lib/formatDate'
 import { Badge } from '@/components/ui/badge'
@@ -69,6 +70,18 @@ export function RoleManagement() {
     goToEdit,
   } = useAdminNav()
   const [searchQuery, setSearchQuery] = useState('')
+  const queryClient = useQueryClient()
+
+  // When the role write succeeded but a subset of permission grants/revokes
+  // failed, the server state is genuinely different from both the pre-mutation
+  // and the requested post-mutation state. Invalidate the role caches so the
+  // client refetches the true state before we let the mutation error bubble —
+  // keeping the "some writes failed" signal in the mutation error while still
+  // giving the UI a chance to reflect reality on the next render.
+  const invalidateRoleCaches = (slug: string) => {
+    queryClient.invalidateQueries({ queryKey: ['roles'] })
+    queryClient.invalidateQueries({ queryKey: ['role', slug] })
+  }
 
   const {
     items: roles,
@@ -88,12 +101,22 @@ export function RoleManagement() {
     createFn: async ({ role, permissions }) => {
       const created = await createRole(role)
       if (permissions.length > 0) {
-        await syncPermissions(created.slug, permissions)
+        try {
+          await syncPermissions(created.slug, permissions)
+        } catch (err) {
+          invalidateRoleCaches(created.slug)
+          throw err
+        }
       }
     },
     updateFn: async ({ slug, role, permissions }) => {
       const updated = await updateRole(slug, role)
-      await syncPermissions(updated.slug, permissions)
+      try {
+        await syncPermissions(updated.slug, permissions)
+      } catch (err) {
+        invalidateRoleCaches(updated.slug)
+        throw err
+      }
     },
     deleteFn: deleteRole,
     onMutationSuccess: goToList,

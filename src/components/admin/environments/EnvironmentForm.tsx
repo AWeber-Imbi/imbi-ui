@@ -4,6 +4,7 @@ import { Save, X, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import { ErrorBanner } from '@/components/ui/error-banner'
 import { IconUpload } from '@/components/ui/icon-upload'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { ColorPicker } from '@/components/ui/color-picker'
@@ -16,7 +17,6 @@ import { getEnvironmentSchema } from '@/api/endpoints'
 import { ENVIRONMENT_BASE_FIELDS_SET } from '@/lib/constants'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
 import { extractDynamicFields, slugify } from '@/lib/utils'
-import { extractApiErrorDetail } from '@/lib/apiError'
 import type { Environment, EnvironmentCreate } from '@/types'
 
 interface EnvironmentFormProps {
@@ -154,19 +154,7 @@ export function EnvironmentForm({
 
       {/* API Error */}
       {!!error && (
-        <div className={`rounded-lg border border-danger bg-danger p-4`}>
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 flex-shrink-0 text-danger" />
-            <div>
-              <div className="font-medium text-danger">
-                Failed to save environment
-              </div>
-              <div className="mt-1 text-sm text-danger">
-                {extractApiErrorDetail(error, 'An error occurred')}
-              </div>
-            </div>
-          </div>
-        </div>
+        <ErrorBanner title="Failed to save environment" error={error} />
       )}
 
       {/* Form */}

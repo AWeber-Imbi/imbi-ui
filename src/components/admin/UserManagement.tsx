@@ -6,6 +6,8 @@ import { Power, Crown } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Gravatar } from '../ui/gravatar'
 import { AdminTable } from '@/components/ui/admin-table'
+import { ErrorBanner } from '@/components/ui/error-banner'
+import { LoadingState } from '@/components/ui/loading-state'
 import { AdminSection } from './AdminSection'
 import { UserForm } from './users/UserForm'
 import { UserDetail } from './users/UserDetail'
@@ -129,7 +131,7 @@ export function UserManagement() {
   const {
     data: selectedUser = null,
     isLoading: selectedUserLoading,
-    isError: selectedUserError,
+    error: selectedUserError,
   } = useQuery({
     queryKey: ['adminUser', selectedUserEmail],
     queryFn: () => getAdminUser(selectedUserEmail!),
@@ -159,23 +161,24 @@ export function UserManagement() {
     goToList()
   }
 
-  // Guard for invalid user email in URL — only render "not found" after the
-  // per-user fetch has settled so deep-linked edit/detail views don't flash
-  // this state while getAdminUser is still in flight.
-  if (
-    !isLoading &&
-    !error &&
-    (viewMode === 'edit' || viewMode === 'detail') &&
-    !!selectedUserEmail &&
-    !selectedUserLoading &&
-    !selectedUserError &&
-    !selectedUser
-  ) {
-    return (
-      <div className="rounded-lg border border-tertiary p-4 text-secondary">
-        User not found. They may have been removed.
-      </div>
-    )
+  // For deep-linked edit/detail: resolve the per-user fetch before rendering
+  // so UserForm never gets user={null} and detail doesn't flash back to list.
+  if ((viewMode === 'edit' || viewMode === 'detail') && !!selectedUserEmail) {
+    if (selectedUserLoading) {
+      return <LoadingState label="Loading user..." />
+    }
+    if (selectedUserError) {
+      return (
+        <ErrorBanner title="Failed to load user" error={selectedUserError} />
+      )
+    }
+    if (!selectedUser) {
+      return (
+        <div className="rounded-lg border border-tertiary p-4 text-secondary">
+          User not found. They may have been removed.
+        </div>
+      )
+    }
   }
 
   if (viewMode === 'create' || viewMode === 'edit') {
@@ -214,6 +217,7 @@ export function UserManagement() {
       headerExtras={
         <>
           <select
+            aria-label="Filter users by type"
             value={userFilter}
             onChange={(e) => setUserFilter(e.target.value as UserFilter)}
             className={`rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground`}
@@ -223,6 +227,7 @@ export function UserManagement() {
             <option value="admins">Administrators</option>
           </select>
           <select
+            aria-label="Filter users by status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
             className={`rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground`}
