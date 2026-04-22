@@ -25,6 +25,12 @@ import type { RoleDetail as RoleDetailType, RoleCreate } from '@/types'
 
 type Role = Awaited<ReturnType<typeof getRoles>>[number]
 
+function isSystemRole(
+  role: Role,
+): role is RoleDetailType & { is_system: true } {
+  return 'is_system' in role && (role as RoleDetailType).is_system === true
+}
+
 // Sync permissions: grant new ones, revoke removed ones. The API has no
 // atomic replace endpoint, so we run grants/revokes concurrently and report
 // any partial failures so the UI reflects the true post-mutation state.
@@ -55,8 +61,14 @@ async function syncPermissions(slug: string, desired: string[]) {
 
   if (failures.length > 0) {
     const detail = failures
-      .map(({ op }) => `${op.kind} ${op.permission}`)
-      .join(', ')
+      .map(({ result, op }) => {
+        const reason =
+          result.status === 'rejected'
+            ? extractApiErrorDetail(result.reason, 'unknown')
+            : 'unknown'
+        return `${op.kind} ${op.permission}: ${reason}`
+      })
+      .join('; ')
     throw new Error(
       `Permission sync partially failed (${failures.length}/${operations.length}): ${detail}`,
     )
@@ -156,8 +168,7 @@ export function RoleManagement() {
   }
 
   const canDeleteRole = (role: Role): CanDeleteResult => {
-    const isSystem = 'is_system' in role && (role as RoleDetailType).is_system
-    if (isSystem)
+    if (isSystemRole(role))
       return { allowed: false, reason: 'System roles cannot be deleted' }
     return { allowed: true }
   }
@@ -258,18 +269,15 @@ export function RoleManagement() {
             header: 'Type',
             headerAlign: 'center',
             cellAlign: 'center',
-            render: (role) => {
-              const isSystem =
-                'is_system' in role && (role as RoleDetailType).is_system
-              return isSystem ? (
+            render: (role) =>
+              isSystemRole(role) ? (
                 <Badge variant="warning" className="gap-1">
                   <Lock className="h-3 w-3" />
                   System
                 </Badge>
               ) : (
                 <Badge variant="info">Custom</Badge>
-              )
-            },
+              ),
           },
           {
             key: 'updated',
@@ -283,9 +291,7 @@ export function RoleManagement() {
         getRowKey={(role) => role.slug}
         getDeleteLabel={(role) => role.name}
         onRowClick={(role) => goToEdit(role.slug)}
-        isRowClickable={(role) =>
-          !('is_system' in role && (role as RoleDetailType).is_system)
-        }
+        isRowClickable={(role) => !isSystemRole(role)}
         onDelete={handleDelete}
         canDelete={canDeleteRole}
         isDeleting={deleteMutation.isPending}
