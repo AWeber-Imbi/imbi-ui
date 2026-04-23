@@ -10,6 +10,7 @@ export function useInfiniteOperationsLog(
 ) {
   return useInfiniteQuery({
     queryKey: ['operationsLog', 'infinite', orgSlug, filters],
+    enabled: Boolean(orgSlug),
     queryFn: ({ pageParam, signal }) =>
       listOperationsLog(
         {
