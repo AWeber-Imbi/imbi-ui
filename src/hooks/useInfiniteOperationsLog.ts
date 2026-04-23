@@ -4,9 +4,12 @@ import type { OperationsLogFilters } from '@/types'
 
 const PAGE_SIZE = 200
 
-export function useInfiniteOperationsLog(filters: OperationsLogFilters) {
+export function useInfiniteOperationsLog(
+  orgSlug: string,
+  filters: OperationsLogFilters,
+) {
   return useInfiniteQuery({
-    queryKey: ['operationsLog', 'infinite', filters],
+    queryKey: ['operationsLog', 'infinite', orgSlug, filters],
     queryFn: ({ pageParam, signal }) =>
       listOperationsLog(
         {
