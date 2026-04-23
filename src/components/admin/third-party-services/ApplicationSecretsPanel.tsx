@@ -16,7 +16,8 @@ import {
   getApplicationSecrets,
   updateApplicationSecrets,
 } from '@/api/endpoints'
-import type { ServiceApplicationSecretsUpdate } from '@/types'
+import { buildReplacePatch } from '@/lib/json-patch'
+import type { PatchOperation } from '@/types'
 import {
   Tooltip,
   TooltipContent,
@@ -72,8 +73,8 @@ export function ApplicationSecretsPanel({
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data: ServiceApplicationSecretsUpdate) =>
-      updateApplicationSecrets(orgSlug, serviceSlug, appSlug, data),
+    mutationFn: (operations: PatchOperation[]) =>
+      updateApplicationSecrets(orgSlug, serviceSlug, appSlug, operations),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['application-secrets', orgSlug, serviceSlug, appSlug],
@@ -111,16 +112,16 @@ export function ApplicationSecretsPanel({
   }
 
   const handleSave = () => {
-    const update: ServiceApplicationSecretsUpdate = {}
+    const update: Record<string, string> = {}
     for (const [field, value] of Object.entries(editValues)) {
       if (value.trim()) {
-        ;(update as Record<string, string>)[field] = value.trim()
+        update[field] = value.trim()
       }
     }
     if (Object.keys(update).length === 0) {
       return
     }
-    updateMutation.mutate(update)
+    updateMutation.mutate(buildReplacePatch(update))
   }
 
   const is403 = error && (error as ApiError)?.response?.status === 403
