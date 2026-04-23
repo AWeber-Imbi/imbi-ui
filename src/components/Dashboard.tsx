@@ -119,7 +119,7 @@ const availableWidgets: WidgetConfig[] = [
   },
 ]
 
-const defaultWidgets = [
+const defaultWidgets: WidgetId[] = [
   'stat-total-projects',
   'stat-active-deployments',
   'stat-teams',
@@ -127,6 +127,20 @@ const defaultWidgets = [
   'recent-activity',
   'my-pull-requests',
 ]
+
+const WIDGET_IDS: ReadonlySet<WidgetId> = new Set<WidgetId>([
+  'stat-total-projects',
+  'stat-active-deployments',
+  'stat-teams',
+  'team-activity',
+  'recent-activity',
+  'recent-deployments',
+  'my-pull-requests',
+  'outdated-components',
+])
+
+const isWidgetId = (value: unknown): value is WidgetId =>
+  typeof value === 'string' && WIDGET_IDS.has(value as WidgetId)
 
 interface SortableWidgetProps {
   id: string
@@ -179,11 +193,15 @@ export function Dashboard({
   const orgSlug = selectedOrganization?.slug || ''
   const [showWidgetSelector, setShowWidgetSelector] = useState(false)
 
-  const [selectedWidgets, setSelectedWidgets] = useState<string[]>(() => {
+  const [selectedWidgets, setSelectedWidgets] = useState<WidgetId[]>(() => {
     const stored = localStorage.getItem(WIDGET_STORAGE_KEY)
     if (stored) {
       try {
-        return JSON.parse(stored)
+        const parsed: unknown = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          return parsed.filter(isWidgetId)
+        }
+        return defaultWidgets
       } catch {
         return defaultWidgets
       }
@@ -220,6 +238,7 @@ export function Dashboard({
   }, [selectedWidgets])
 
   const handleToggleWidget = (widgetId: string) => {
+    if (!isWidgetId(widgetId)) return
     setSelectedWidgets((prev) =>
       prev.includes(widgetId)
         ? prev.filter((id) => id !== widgetId)
@@ -232,8 +251,8 @@ export function Dashboard({
 
     if (over && active.id !== over.id) {
       setSelectedWidgets((items) => {
-        const oldIndex = items.indexOf(active.id as string)
-        const newIndex = items.indexOf(over.id as string)
+        const oldIndex = items.indexOf(active.id as WidgetId)
+        const newIndex = items.indexOf(over.id as WidgetId)
         return arrayMove(items, oldIndex, newIndex)
       })
     }
@@ -271,8 +290,7 @@ export function Dashboard({
     ),
   }
 
-  const renderWidget = (widgetId: string) =>
-    widgetRegistry[widgetId as WidgetId]?.() ?? null
+  const renderWidget = (widgetId: WidgetId) => widgetRegistry[widgetId]()
 
   // Separate stat widgets from other widgets for layout
   const statWidgets = selectedWidgets.filter((id) => id.startsWith('stat-'))
