@@ -12,7 +12,7 @@ function jsonEquals<T>(a: T, b: T): boolean {
  * anyway?" confirm would let a user cancel the redirect and remain on a
  * protected screen with no valid session. Auth redirects always win.
  */
-const DEFAULT_BYPASS_PREFIXES = ['/login', '/logout', '/auth/']
+const DEFAULT_BYPASS_PREFIXES = ['/login', '/auth/']
 
 function pathnameOf(url: string | URL | null | undefined): string | null {
   if (url == null) return null
