@@ -199,7 +199,7 @@ export function Dashboard({
       try {
         const parsed: unknown = JSON.parse(stored)
         if (Array.isArray(parsed)) {
-          return parsed.filter(isWidgetId)
+          return Array.from(new Set(parsed.filter(isWidgetId)))
         }
         return defaultWidgets
       } catch {
@@ -250,9 +250,13 @@ export function Dashboard({
     const { active, over } = event
 
     if (over && active.id !== over.id) {
+      if (!isWidgetId(active.id) || !isWidgetId(over.id)) return
+      const activeId = active.id
+      const overId = over.id
       setSelectedWidgets((items) => {
-        const oldIndex = items.indexOf(active.id as WidgetId)
-        const newIndex = items.indexOf(over.id as WidgetId)
+        const oldIndex = items.indexOf(activeId)
+        const newIndex = items.indexOf(overId)
+        if (oldIndex === -1 || newIndex === -1) return items
         return arrayMove(items, oldIndex, newIndex)
       })
     }
