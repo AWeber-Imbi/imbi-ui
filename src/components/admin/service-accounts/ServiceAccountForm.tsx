@@ -61,16 +61,17 @@ export function ServiceAccountForm({
     handleFieldChange,
   } = useFormScaffold()
 
-  // Warn on unsaved navigation. Snapshot the initial values once (per mount /
-  // per account prop change) and compare against current form state.
-  const initialFormData = {
+  // Warn on unsaved navigation. Snapshot the initial values once at mount so
+  // the baseline doesn't drift when `organizations` loads asynchronously (which
+  // would otherwise flip an untouched form into "dirty").
+  const [initialFormData] = useState(() => ({
     slug: account?.slug ?? '',
     display_name: account?.display_name ?? '',
     description: account?.description ?? '',
     is_active: account?.is_active ?? true,
     organization_slug: organizations.length === 1 ? organizations[0].slug : '',
     role_slug: '',
-  }
+  }))
   const currentFormData = {
     slug,
     display_name: displayName,
