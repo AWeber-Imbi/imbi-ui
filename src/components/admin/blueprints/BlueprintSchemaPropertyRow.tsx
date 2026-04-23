@@ -1,10 +1,4 @@
-import {
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  Trash2,
-  X,
-} from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -139,9 +133,7 @@ export function BlueprintSchemaPropertyRow({
           />
           <label
             htmlFor={`req-${prop.id}`}
-            className={
-              'cursor-pointer select-none text-xs text-secondary'
-            }
+            className={'cursor-pointer select-none text-xs text-secondary'}
           >
             Required
           </label>
@@ -159,9 +151,7 @@ export function BlueprintSchemaPropertyRow({
           />
           <label
             htmlFor={`editable-${prop.id}`}
-            className={
-              'cursor-pointer select-none text-xs text-secondary'
-            }
+            className={'cursor-pointer select-none text-xs text-secondary'}
           >
             Editable
           </label>
@@ -351,11 +341,7 @@ export function BlueprintSchemaPropertyRow({
               Enum Values (comma-separated)
             </label>
             <Input
-              value={
-                enumRawText[prop.id] ??
-                prop.enumValues?.join(', ') ??
-                ''
-              }
+              value={enumRawText[prop.id] ?? prop.enumValues?.join(', ') ?? ''}
               onChange={(e) =>
                 setEnumRawText({
                   ...enumRawText,
@@ -373,9 +359,7 @@ export function BlueprintSchemaPropertyRow({
                     : undefined
                   updateProperty(prop.id, {
                     enumValues:
-                      parsed && parsed.length > 0
-                        ? parsed
-                        : undefined,
+                      parsed && parsed.length > 0 ? parsed : undefined,
                   })
                   const next = { ...enumRawText }
                   delete next[prop.id]
@@ -453,25 +437,19 @@ export function BlueprintSchemaPropertyRow({
                   next.filter(([k]) => k.trim() !== ''),
                 )
                 updateProperty(prop.id, {
-                  [mapType]:
-                    Object.keys(map).length > 0 ? map : undefined,
+                  [mapType]: Object.keys(map).length > 0 ? map : undefined,
                 })
               }
               return (
                 <div key={mapType}>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-secondary">
-                      {mapLabel}
-                    </label>
+                    <label className="text-xs text-secondary">{mapLabel}</label>
                     <button
                       type="button"
                       onClick={() => {
                         setUiMapEntries({
                           ...uiMapEntries,
-                          [stateKey]: [
-                            ...entries,
-                            ['', defaultVal],
-                          ],
+                          [stateKey]: [...entries, ['', defaultVal]],
                         })
                       }}
                       className={
@@ -489,18 +467,13 @@ export function BlueprintSchemaPropertyRow({
                   ) : (
                     <div className="space-y-1.5">
                       {entries.map(([eKey, eVal], idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-1.5"
-                        >
+                        <div key={idx} className="flex items-center gap-1.5">
                           <Input
                             value={eKey}
                             onChange={(e) => {
                               const next = entries.map(
                                 (row, i): [string, string] =>
-                                  i === idx
-                                    ? [e.target.value, row[1]]
-                                    : row,
+                                  i === idx ? [e.target.value, row[1]] : row,
                               )
                               setUiMapEntries({
                                 ...uiMapEntries,
@@ -517,9 +490,7 @@ export function BlueprintSchemaPropertyRow({
                               onChange={(e) => {
                                 const next = entries.map(
                                   (row, i): [string, string] =>
-                                    i === idx
-                                      ? [row[0], e.target.value]
-                                      : row,
+                                    i === idx ? [row[0], e.target.value] : row,
                                 )
                                 setUiMapEntries({
                                   ...uiMapEntries,
@@ -548,9 +519,7 @@ export function BlueprintSchemaPropertyRow({
                               onChange={(e) => {
                                 const next = entries.map(
                                   (row, i): [string, string] =>
-                                    i === idx
-                                      ? [row[0], e.target.value]
-                                      : row,
+                                    i === idx ? [row[0], e.target.value] : row,
                                 )
                                 setUiMapEntries({
                                   ...uiMapEntries,
@@ -565,9 +534,7 @@ export function BlueprintSchemaPropertyRow({
                           <button
                             type="button"
                             onClick={() => {
-                              const next = entries.filter(
-                                (_, i) => i !== idx,
-                              )
+                              const next = entries.filter((_, i) => i !== idx)
                               setUiMapEntries({
                                 ...uiMapEntries,
                                 [stateKey]: next,
