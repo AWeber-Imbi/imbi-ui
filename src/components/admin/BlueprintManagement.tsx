@@ -177,7 +177,9 @@ export function BlueprintManagement() {
       createMutation.mutate(data)
     } else if (selectedKey) {
       const existing = blueprints.find(
-        (bp) => bp.type === selectedKey.type && bp.slug === selectedKey.slug,
+        (bp) =>
+          blueprintPathType(bp) === selectedKey.type &&
+          bp.slug === selectedKey.slug,
       )
       if (!existing) return
       const operations = buildDiffPatch(

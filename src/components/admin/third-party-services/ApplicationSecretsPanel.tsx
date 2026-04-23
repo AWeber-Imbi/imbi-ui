@@ -16,7 +16,7 @@ import {
   getApplicationSecrets,
   updateApplicationSecrets,
 } from '@/api/endpoints'
-import { buildReplacePatch } from '@/lib/json-patch'
+import { buildDiffPatch } from '@/lib/json-patch'
 import type { PatchOperation } from '@/types'
 import {
   Tooltip,
@@ -112,16 +112,32 @@ export function ApplicationSecretsPanel({
   }
 
   const handleSave = () => {
+    // Only submit fields the user actually typed into. Use trim() to detect
+    // blank input, but send the raw value so leading/trailing whitespace that
+    // is significant (PEM blocks, signing secrets with newlines) is preserved.
     const update: Record<string, string> = {}
     for (const [field, value] of Object.entries(editValues)) {
       if (value.trim()) {
-        update[field] = value.trim()
+        update[field] = value
       }
     }
     if (Object.keys(update).length === 0) {
       return
     }
-    updateMutation.mutate(buildReplacePatch(update))
+    // Diff against the currently loaded secrets so first-time sets (where the
+    // path does not yet exist) emit `add` ops instead of `replace`, which a
+    // strict RFC 6902 backend would reject.
+    const operations = buildDiffPatch(
+      (secrets as unknown as Record<string, unknown>) ?? {},
+      update as Record<string, unknown>,
+      { fields: Object.keys(update) },
+    )
+    if (operations.length === 0) {
+      setEditing(false)
+      setEditValues({})
+      return
+    }
+    updateMutation.mutate(operations)
   }
 
   const is403 = error && (error as ApiError)?.response?.status === 403
