@@ -45,8 +45,7 @@ export function useDirtyState<T>(
 ): boolean {
   const enabled = options.enabled ?? true
   const isDirty = enabled && !jsonEquals(initialData, currentData)
-  const message =
-    options.message ?? 'You have unsaved changes. Leave anyway?'
+  const message = options.message ?? 'You have unsaved changes. Leave anyway?'
 
   // Keep the latest message in a ref so effect deps stay stable.
   const messageRef = useRef(message)
@@ -65,8 +64,7 @@ export function useDirtyState<T>(
     const originalPushState = window.history.pushState
     const originalReplaceState = window.history.replaceState
 
-    const confirmNavigation = (): boolean =>
-      window.confirm(messageRef.current)
+    const confirmNavigation = (): boolean => window.confirm(messageRef.current)
 
     const patchedPushState: typeof window.history.pushState = function (
       this: History,
