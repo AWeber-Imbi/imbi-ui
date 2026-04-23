@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactElement } from 'react'
 import { Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -41,6 +41,16 @@ interface DashboardProps {
 }
 
 const WIDGET_STORAGE_KEY = 'imbi-dashboard-widgets-v3'
+
+type WidgetId =
+  | 'stat-total-projects'
+  | 'stat-active-deployments'
+  | 'stat-teams'
+  | 'team-activity'
+  | 'recent-activity'
+  | 'recent-deployments'
+  | 'my-pull-requests'
+  | 'outdated-components'
 
 const availableWidgets: WidgetConfig[] = [
   {
@@ -229,45 +239,40 @@ export function Dashboard({
     }
   }
 
-  const renderWidget = (widgetId: string) => {
-    switch (widgetId) {
-      case 'stat-total-projects':
-        return (
-          <StatWidget
-            title="Total Projects"
-            value={projectCount.toLocaleString()}
-            icon="📁"
-          />
-        )
-      case 'stat-active-deployments':
-        return <StatWidget title="Active Deployments" value="1,429" icon="🚀" />
-      case 'stat-teams':
-        return (
-          <StatWidget
-            title="Teams"
-            value={teamCount.toLocaleString()}
-            icon="👥"
-          />
-        )
-      case 'team-activity':
-        return <TeamActivityWidget onViewChange={onViewChange} />
-      case 'recent-activity':
-        return (
-          <RecentActivityWidget
-            onUserSelect={onUserSelect}
-            onProjectSelect={onProjectSelect}
-          />
-        )
-      case 'recent-deployments':
-        return <RecentDeploymentsWidget onProjectSelect={onProjectSelect} />
-      case 'my-pull-requests':
-        return <MyPullRequestsWidget onUserSelect={onUserSelect} />
-      case 'outdated-components':
-        return <OutdatedComponentsWidget onProjectSelect={onProjectSelect} />
-      default:
-        return null
-    }
+  const widgetRegistry: Record<WidgetId, () => ReactElement> = {
+    'stat-total-projects': () => (
+      <StatWidget
+        title="Total Projects"
+        value={projectCount.toLocaleString()}
+        icon="📁"
+      />
+    ),
+    'stat-active-deployments': () => (
+      <StatWidget title="Active Deployments" value="1,429" icon="🚀" />
+    ),
+    'stat-teams': () => (
+      <StatWidget title="Teams" value={teamCount.toLocaleString()} icon="👥" />
+    ),
+    'team-activity': () => <TeamActivityWidget onViewChange={onViewChange} />,
+    'recent-activity': () => (
+      <RecentActivityWidget
+        onUserSelect={onUserSelect}
+        onProjectSelect={onProjectSelect}
+      />
+    ),
+    'recent-deployments': () => (
+      <RecentDeploymentsWidget onProjectSelect={onProjectSelect} />
+    ),
+    'my-pull-requests': () => (
+      <MyPullRequestsWidget onUserSelect={onUserSelect} />
+    ),
+    'outdated-components': () => (
+      <OutdatedComponentsWidget onProjectSelect={onProjectSelect} />
+    ),
   }
+
+  const renderWidget = (widgetId: string) =>
+    widgetRegistry[widgetId as WidgetId]?.() ?? null
 
   // Separate stat widgets from other widgets for layout
   const statWidgets = selectedWidgets.filter((id) => id.startsWith('stat-'))
