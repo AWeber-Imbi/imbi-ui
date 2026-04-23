@@ -400,18 +400,20 @@ export function BlueprintManagement() {
         rows={filteredBlueprints}
         getRowKey={(bp) => `${blueprintPathType(bp)}/${bp.slug}`}
         getDeleteLabel={(bp) => bp.name}
-        onRowClick={(bp) =>
+        onRowClick={(bp) => {
+          if (!bp.slug) return
           handleViewClick({
             type: blueprintPathType(bp),
-            slug: bp.slug ?? '',
+            slug: bp.slug,
           })
-        }
-        onDelete={(bp) =>
+        }}
+        onDelete={(bp) => {
+          if (!bp.slug) return
           deleteMutation.mutate({
             type: blueprintPathType(bp),
-            slug: bp.slug ?? '',
+            slug: bp.slug,
           })
-        }
+        }}
         isDeleting={deleteMutation.isPending}
         emptyMessage={
           searchQuery || typeFilter || enabledFilter

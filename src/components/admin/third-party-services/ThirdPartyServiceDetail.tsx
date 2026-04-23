@@ -130,7 +130,9 @@ export function ThirdPartyServiceDetail({
                 <div>
                   <div className="text-sm text-secondary">Organization</div>
                   <div className="mt-1 text-primary">
-                    {(service.organization?.name as string | undefined) ?? ''}
+                    {(service.organization?.name as string | undefined) || (
+                      <span className="text-tertiary">Not assigned</span>
+                    )}
                   </div>
                 </div>
                 <div>
