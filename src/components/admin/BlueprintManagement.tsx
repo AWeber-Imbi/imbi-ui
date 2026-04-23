@@ -401,10 +401,16 @@ export function BlueprintManagement() {
         getRowKey={(bp) => `${blueprintPathType(bp)}/${bp.slug}`}
         getDeleteLabel={(bp) => bp.name}
         onRowClick={(bp) =>
-          handleViewClick({ type: blueprintPathType(bp), slug: bp.slug })
+          handleViewClick({
+            type: blueprintPathType(bp),
+            slug: bp.slug ?? '',
+          })
         }
         onDelete={(bp) =>
-          deleteMutation.mutate({ type: blueprintPathType(bp), slug: bp.slug })
+          deleteMutation.mutate({
+            type: blueprintPathType(bp),
+            slug: bp.slug ?? '',
+          })
         }
         isDeleting={deleteMutation.isPending}
         emptyMessage={

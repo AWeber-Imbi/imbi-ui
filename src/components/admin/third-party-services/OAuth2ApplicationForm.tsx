@@ -48,7 +48,9 @@ export function OAuth2ApplicationForm({
   )
   const [clientId, setClientId] = useState(application?.client_id || '')
   const [scopes, setScopes] = useState(application?.scopes?.join(', ') || '')
-  const [status, setStatus] = useState(application?.status || 'active')
+  const [status, setStatus] = useState<'active' | 'inactive' | 'revoked'>(
+    (application?.status as 'active' | 'inactive' | 'revoked') || 'active',
+  )
   const [validationError, setValidationError] = useState<string | null>(null)
 
   // Secret fields (create mode only)
