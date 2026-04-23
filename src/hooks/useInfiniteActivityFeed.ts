@@ -52,6 +52,9 @@ async function fetchActivityFeed({
       nextToken,
     }
   } catch (error) {
+    if (signal?.aborted) {
+      throw error
+    }
     console.error('[API] Activity feed error:', error)
     return { data: [] }
   }
