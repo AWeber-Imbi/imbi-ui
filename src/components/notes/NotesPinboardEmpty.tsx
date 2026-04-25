@@ -95,7 +95,10 @@ export function NotesPinboardEmpty({ onCreate }: Props) {
         New note
       </Button>
 
-      <div className="mt-5 grid w-full max-w-[720px] grid-cols-3 gap-2.5 text-left">
+      <div className="mt-5 w-full max-w-[720px] text-overline uppercase text-tertiary">
+        Or choose a template
+      </div>
+      <div className="grid w-full max-w-[720px] grid-cols-3 gap-2.5 text-left">
         {TEMPLATES.map((t) => {
           const Icon = t.icon
           return (
