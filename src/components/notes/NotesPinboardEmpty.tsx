@@ -83,7 +83,7 @@ export function NotesPinboardEmpty({ onCreate }: Props) {
       <h2 className="m-0 text-h2 font-medium tracking-[-0.015em]">
         No notes yet for this project
       </h2>
-      <p className="m-0 max-w-[520px] text-sm leading-[1.6] text-secondary">
+      <p className="m-0 max-w-[720px] text-sm leading-[1.6] text-secondary">
         Notes capture decisions, reviews, and patterns that outlive any one
         deploy. They render as Markdown, carry tags you can filter, and can be
         pinned to stay at the top of this tab. Notes are also exposed to agents
