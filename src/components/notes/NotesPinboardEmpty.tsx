@@ -85,8 +85,9 @@ export function NotesPinboardEmpty({ onCreate }: Props) {
       </h2>
       <p className="m-0 max-w-[520px] text-sm leading-[1.6] text-secondary">
         Notes capture decisions, reviews, and patterns that outlive any one
-        deploy. They render as Markdown, carry tags you can filter from the
-        rail, and can be pinned so they stay at the top of this tab.
+        deploy. They render as Markdown, carry tags you can filter, and can be
+        pinned to stay at the top of this tab. Notes are also exposed to agents
+        in the graph, providing project-level context across your workflows.
       </p>
 
       <Button className="mt-1 gap-1.5" onClick={() => onCreate()}>
