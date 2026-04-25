@@ -27,10 +27,14 @@ export function NotesPinboardEmpty({
     enabled: !!orgSlug,
   })
 
+  const projectTypeSet =
+    projectTypeSlugs && projectTypeSlugs.length
+      ? new Set(projectTypeSlugs)
+      : undefined
+
   const visibleTemplates = templates.filter((t) => {
     if (!t.project_type_slugs || t.project_type_slugs.length === 0) return true
-    if (!projectTypeSlugs || projectTypeSlugs.length === 0) return false
-    const projectTypeSet = new Set(projectTypeSlugs)
+    if (!projectTypeSet) return false
     return t.project_type_slugs.some((s) => projectTypeSet.has(s))
   })
 
