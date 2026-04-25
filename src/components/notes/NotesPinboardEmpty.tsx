@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NoteTagChip } from './NoteTagChip'
+import type { TagRef } from '@/types'
 
 interface Props {
   onCreate: (templateSlug?: string) => void
@@ -21,7 +22,7 @@ interface Template {
   label: string
   hint: string
   icon: LucideIcon
-  tag: { name: string; slug: string }
+  tag: TagRef
 }
 
 const TEMPLATES: Template[] = [

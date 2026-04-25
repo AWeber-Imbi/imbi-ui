@@ -512,9 +512,7 @@ export interface NoteCreate {
   tags?: string[]
 }
 
-export interface NoteListResponse {
-  data: Note[]
-}
+export type NoteListResponse = CollectionResponse<Note>
 
 export interface Tag {
   id: string

@@ -83,7 +83,6 @@ function extractHeadings(content: string): Heading[] {
  */
 function useActiveHeading(slugs: string[]): string | null {
   const [active, setActive] = useState<string | null>(slugs[0] ?? null)
-  const key = slugs.join('|')
   useEffect(() => {
     if (!slugs.length) {
       setActive(null)
@@ -107,7 +106,7 @@ function useActiveHeading(slugs: string[]): string | null {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
-  }, [key])
+  }, [slugs])
   return active
 }
 

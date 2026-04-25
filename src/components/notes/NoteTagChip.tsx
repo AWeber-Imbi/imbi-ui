@@ -23,8 +23,19 @@ export function NoteTagChip({ tag, size = 'md', className, onClick }: Props) {
     >
       <span
         onClick={onClick}
+        onKeyDown={
+          onClick
+            ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onClick()
+                }
+              }
+            : undefined
+        }
         className="inline-flex items-center gap-1"
         role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
       >
         <span
           aria-hidden
