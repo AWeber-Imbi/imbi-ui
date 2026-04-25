@@ -73,27 +73,23 @@ export function NotesPinboardEmpty({ onCreate }: Props) {
   return (
     <div className="grid grid-cols-[220px_1fr] gap-5">
       {/* Dimmed rail preserved for parity */}
-      <aside className="sticky top-5 self-start opacity-60" aria-hidden>
+      <aside className="sticky top-5 self-start opacity-50" aria-hidden>
         <div className="mb-3 h-8 rounded-md border border-tertiary bg-primary" />
-        <div className="flex flex-col gap-4">
-          {['Kind', 'Tags'].map((title) => (
-            <div key={title}>
-              <div className="mb-1.5 text-overline uppercase text-tertiary">
-                {title}
+        <div>
+          <div className="mb-1.5 text-overline uppercase text-tertiary">
+            Tags
+          </div>
+          <div className="flex flex-col gap-1">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2 px-2 py-1">
+                <span className="h-2.5 w-2.5 flex-shrink-0 rounded-sm bg-secondary" />
+                <span
+                  className="h-2 rounded bg-secondary"
+                  style={{ width: 60 + i * 14 }}
+                />
               </div>
-              <div className="flex flex-col gap-1">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-2 px-2 py-1">
-                    <span className="h-2.5 w-2.5 flex-shrink-0 rounded-sm bg-secondary" />
-                    <span
-                      className="h-2 rounded bg-secondary"
-                      style={{ width: 60 + i * 14 }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </aside>
 
