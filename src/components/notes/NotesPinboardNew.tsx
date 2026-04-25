@@ -1,5 +1,5 @@
 import { ArrowLeft, Check, Columns2, Eye, PencilLine } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Button } from '@/components/ui/button'
@@ -52,11 +52,14 @@ export function NotesPinboardNew({
         : [],
   )
 
-  const isValid = title.trim().length > 0 && content.trim().length > 0
+  const trimmedTitle = title.trim()
+  const isValid = trimmedTitle.length > 0 && content.trim().length > 0
   const dirty = useMemo(() => {
     if (!initialNote)
-      return title.length > 0 || content.length > 0 || tags.length > 0
-    if (title !== initialNote.title) return true
+      return trimmedTitle.length > 0 || content.length > 0 || tags.length > 0
+    // Compare against the trimmed save value so trailing-space-only edits
+    // don't masquerade as dirty.
+    if (trimmedTitle !== initialNote.title.trim()) return true
     if (content !== initialNote.content) return true
     const initialSlugs = initialNote.tags
       .map((t) => t.slug)
@@ -67,7 +70,7 @@ export function NotesPinboardNew({
       .sort()
       .join(',')
     return initialSlugs !== currentSlugs
-  }, [initialNote, title, content, tags])
+  }, [initialNote, trimmedTitle, content, tags])
   const canSave = isValid && dirty
 
   const handleSave = () => {
@@ -215,9 +218,9 @@ function ModeButton({
   children,
 }: {
   active: boolean
-  icon: React.ReactNode
+  icon: ReactNode
   onClick: () => void
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <button
