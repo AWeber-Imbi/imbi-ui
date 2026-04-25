@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { NotesFilterRail } from './NotesFilterRail'
 import { EMPTY_ACTIVE, tagCounts, uniqueTagsFromNotes } from './notesHelpers'
+import { findTemplate } from './notesTemplates'
 import { TagCombobox } from './TagCombobox'
 import type { Note, TagRef } from '@/types'
 
@@ -15,6 +16,11 @@ interface Props {
   orgSlug: string
   allNotes?: Note[]
   initialNote?: Note | null
+  /**
+   * When creating a new note, pre-seed the form from a template (currently
+   * just its tag). Ignored when `initialNote` is provided.
+   */
+  templateSlug?: string
   onDiscard: () => void
   onSave: (draft: { title: string; content: string; tags: string[] }) => void
   saving?: boolean
@@ -26,6 +32,7 @@ export function NotesPinboardNew({
   orgSlug,
   allNotes = [],
   initialNote,
+  templateSlug,
   onDiscard,
   onSave,
   saving = false,
@@ -33,13 +40,16 @@ export function NotesPinboardNew({
   const railTags = useMemo(() => uniqueTagsFromNotes(allNotes), [allNotes])
   const railCounts = useMemo(() => tagCounts(allNotes), [allNotes])
   const isEditing = !!initialNote
+  const template = !initialNote ? findTemplate(templateSlug) : null
   const [mode, setMode] = useState<EditorMode>('split')
   const [title, setTitle] = useState(initialNote?.title ?? '')
   const [content, setContent] = useState(initialNote?.content ?? '')
   const [tags, setTags] = useState<TagRef[]>(
     initialNote
       ? initialNote.tags.map((t) => ({ name: t.name, slug: t.slug }))
-      : [],
+      : template
+        ? [template.tag]
+        : [],
   )
 
   const isValid = title.trim().length > 0 && content.trim().length > 0

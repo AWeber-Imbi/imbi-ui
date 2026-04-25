@@ -1,74 +1,11 @@
-import {
-  AlertTriangle,
-  BookOpen,
-  FileText,
-  Map,
-  Plus,
-  ShieldCheck,
-  Sparkles,
-  StickyNote,
-  type LucideIcon,
-} from 'lucide-react'
+import { Plus, StickyNote } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NoteTagChip } from './NoteTagChip'
-import type { TagRef } from '@/types'
+import { NOTE_TEMPLATES } from './notesTemplates'
 
 interface Props {
   onCreate: (templateSlug?: string) => void
 }
-
-interface Template {
-  slug: string
-  label: string
-  hint: string
-  icon: LucideIcon
-  tag: TagRef
-}
-
-const TEMPLATES: Template[] = [
-  {
-    slug: 'adr',
-    label: 'ADR',
-    hint: 'Context · Decision · Trade-offs',
-    icon: FileText,
-    tag: { name: 'ADR', slug: 'adr' },
-  },
-  {
-    slug: 'security',
-    label: 'Security review',
-    hint: 'Findings · Follow-ups',
-    icon: ShieldCheck,
-    tag: { name: 'Security', slug: 'security' },
-  },
-  {
-    slug: 'incident',
-    label: 'Incident',
-    hint: 'Timeline · Root cause · Actions',
-    icon: AlertTriangle,
-    tag: { name: 'Incident', slug: 'incident' },
-  },
-  {
-    slug: 'roadmap',
-    label: 'Roadmap',
-    hint: 'Proposal · Milestones',
-    icon: Map,
-    tag: { name: 'Roadmap', slug: 'roadmap' },
-  },
-  {
-    slug: 'pattern',
-    label: 'Pattern',
-    hint: 'When to reach for this',
-    icon: Sparkles,
-    tag: { name: 'Pattern', slug: 'pattern' },
-  },
-  {
-    slug: 'runbook',
-    label: 'Runbook',
-    hint: 'Steps · Verification',
-    icon: BookOpen,
-    tag: { name: 'Runbook', slug: 'runbook' },
-  },
-]
 
 export function NotesPinboardEmpty({ onCreate }: Props) {
   return (
@@ -100,7 +37,7 @@ export function NotesPinboardEmpty({ onCreate }: Props) {
         Or choose a template
       </div>
       <div className="grid w-full max-w-[720px] grid-cols-3 gap-2.5 text-left">
-        {TEMPLATES.map((t) => {
+        {NOTE_TEMPLATES.map((t) => {
           const Icon = t.icon
           return (
             <button

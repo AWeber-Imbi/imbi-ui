@@ -28,7 +28,7 @@ interface Props {
 type View =
   | { kind: 'list' }
   | { kind: 'reading'; noteId: string }
-  | { kind: 'creating' }
+  | { kind: 'creating'; templateSlug?: string }
   | { kind: 'editing'; noteId: string }
 
 function viewFromUrl(
@@ -225,9 +225,12 @@ export function ProjectNotesTab({
     [notes, view],
   )
 
-  const handleCreate = useCallback(() => {
-    navigateToView({ kind: 'creating' })
-  }, [navigateToView])
+  const handleCreate = useCallback(
+    (templateSlug?: string) => {
+      navigateToView({ kind: 'creating', templateSlug })
+    },
+    [navigateToView],
+  )
 
   const handleDiscard = useCallback(() => {
     if (view.kind === 'editing') {
@@ -256,6 +259,7 @@ export function ProjectNotesTab({
       <NotesPinboardNew
         orgSlug={orgSlug}
         allNotes={notes}
+        templateSlug={view.templateSlug}
         onDiscard={handleDiscard}
         onSave={handleSave}
         saving={createMutation.isPending}
