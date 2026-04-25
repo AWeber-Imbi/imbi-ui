@@ -174,10 +174,9 @@ export function NotesPinboardNew({
           {/* Editor panes */}
           <div
             className={cn(
-              'mt-5 grid border-t border-tertiary',
+              'mt-5 grid min-h-[560px] border-t border-tertiary',
               mode === 'split' ? 'grid-cols-2' : 'grid-cols-1',
             )}
-            style={{ minHeight: 560 }}
           >
             {showEditor && (
               <textarea

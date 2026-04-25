@@ -104,10 +104,22 @@ export function ProjectNotesTab({
     enabled: !!orgSlug && !!projectId,
   })
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [], error: usersError } = useQuery({
     queryKey: ['admin-users', 'active'],
     queryFn: ({ signal }) => listAdminUsers({ is_active: true }, signal),
   })
+
+  // Display-name enrichment is non-essential — when the admin-users fetch
+  // fails, fall back to raw author IDs (existing UserDisplay behavior) but
+  // log so the failure is diagnosable rather than truly silent.
+  useEffect(() => {
+    if (usersError) {
+      console.warn(
+        'Failed to load admin users for note display names',
+        usersError,
+      )
+    }
+  }, [usersError])
 
   const displayNames = useMemo(() => {
     const m = new Map<string, string>()
@@ -227,14 +239,16 @@ export function ProjectNotesTab({
 
   // If a deep-linked note id doesn't exist (deleted, wrong id), surface a
   // toast and bounce back to the list view rather than silently rendering
-  // the empty list.
+  // the empty list. Skip while the notes query is loading or errored —
+  // the error banner (rendered below) already covers fetch failures and
+  // an empty-on-error notes array shouldn't masquerade as a missing note.
   useEffect(() => {
-    if (isLoading) return
+    if (isLoading || error) return
     if (view.kind !== 'reading' && view.kind !== 'editing') return
     if (notes.some((n) => n.id === view.noteId)) return
     toast.error('Note not found')
     navigateToView({ kind: 'list' })
-  }, [isLoading, navigateToView, notes, view])
+  }, [error, isLoading, navigateToView, notes, view])
 
   const handleCreate = useCallback(
     (templateSlug?: string) => {
