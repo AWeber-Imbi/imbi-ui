@@ -17,7 +17,11 @@ export function NotesPinboardEmpty({
   projectTypeSlugs,
   onCreate,
 }: Props) {
-  const { data: templates = [] } = useQuery<NoteTemplate[]>({
+  const {
+    data: templates = [],
+    isLoading: templatesLoading,
+    error: templatesError,
+  } = useQuery<NoteTemplate[]>({
     queryKey: ['noteTemplates', orgSlug],
     queryFn: ({ signal }) => listNoteTemplates(orgSlug, signal),
     enabled: !!orgSlug,
@@ -25,8 +29,9 @@ export function NotesPinboardEmpty({
 
   const visibleTemplates = templates.filter((t) => {
     if (!t.project_type_slugs || t.project_type_slugs.length === 0) return true
-    if (!projectTypeSlugs || projectTypeSlugs.length === 0) return true
-    return t.project_type_slugs.some((s) => projectTypeSlugs.includes(s))
+    if (!projectTypeSlugs || projectTypeSlugs.length === 0) return false
+    const projectTypeSet = new Set(projectTypeSlugs)
+    return t.project_type_slugs.some((s) => projectTypeSet.has(s))
   })
 
   return (
@@ -54,7 +59,15 @@ export function NotesPinboardEmpty({
         New note
       </Button>
 
-      {visibleTemplates.length > 0 && (
+      {templatesLoading && (
+        <div className="mt-5 text-xs text-tertiary">Loading templates…</div>
+      )}
+      {templatesError && (
+        <div className="mt-5 text-xs text-danger">
+          Failed to load templates.
+        </div>
+      )}
+      {!templatesLoading && !templatesError && visibleTemplates.length > 0 && (
         <>
           <div className="mt-5 w-full max-w-[864px] text-overline uppercase text-tertiary">
             Or choose a template

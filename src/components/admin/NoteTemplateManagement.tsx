@@ -117,9 +117,18 @@ export function NoteTemplateManagement() {
     )
   }
 
+  if (viewMode === 'edit' && !selectedNoteTemplate) {
+    return (
+      <div className="py-12 text-center text-tertiary">
+        {isLoading ? 'Loading note template...' : 'Note template not found.'}
+      </div>
+    )
+  }
+
   if (viewMode === 'create' || viewMode === 'edit') {
     return (
       <NoteTemplateForm
+        key={selectedSlug ?? 'create'}
         noteTemplate={selectedNoteTemplate}
         onSave={handleSave}
         onCancel={handleCancel}
