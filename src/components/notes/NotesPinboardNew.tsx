@@ -225,7 +225,7 @@ function ModeButton({
       type="button"
       onClick={onClick}
       className={cn(
-        'inline-flex h-6 items-center gap-1.5 rounded-[5px] border-0 px-2.5 text-[12.5px] transition-colors',
+        'inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-[5px] border-0 px-2.5 text-[12.5px] transition-colors',
         active
           ? 'bg-secondary text-primary'
           : 'bg-transparent text-secondary hover:text-primary',

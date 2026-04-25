@@ -225,6 +225,17 @@ export function ProjectNotesTab({
     [notes, view],
   )
 
+  // If a deep-linked note id doesn't exist (deleted, wrong id), surface a
+  // toast and bounce back to the list view rather than silently rendering
+  // the empty list.
+  useEffect(() => {
+    if (isLoading) return
+    if (view.kind !== 'reading' && view.kind !== 'editing') return
+    if (notes.some((n) => n.id === view.noteId)) return
+    toast.error('Note not found')
+    navigateToView({ kind: 'list' })
+  }, [isLoading, navigateToView, notes, view])
+
   const handleCreate = useCallback(
     (templateSlug?: string) => {
       navigateToView({ kind: 'creating', templateSlug })
