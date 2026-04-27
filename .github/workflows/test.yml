@@ -22,6 +22,8 @@ jobs:
 
       - name: Install just
         uses: extractions/setup-just@v2
+        with:
+          just-version: '1.47.1'
 
       - name: Run CI checks
         run: just ci
