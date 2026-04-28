@@ -1,13 +1,20 @@
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
+import { InlineText } from '@/components/ui/inline-edit/InlineText'
+import { InlineSwitch } from '@/components/ui/inline-edit/InlineSwitch'
 import { useAuth } from '@/hooks/useAuth'
 
+// NOTE: The backend currently exposes no self-update endpoint for the
+// authenticated user, and `email_notifications` / `deployment_summaries`
+// do not exist on the User schema. Inline commits are local-only until a
+// `/users/me` PATCH endpoint (or equivalent) lands. UI behavior matches
+// the rest of the app's inline-edit cards (commit on blur / on toggle).
 export function SettingsAccount() {
   const { user } = useAuth()
+  const [displayName, setDisplayName] = useState(user?.display_name ?? '')
+  const [emailNotifications, setEmailNotifications] = useState(true)
 
   return (
     <Card className="p-8" style={{ borderWidth: '0.5px' }}>
@@ -18,24 +25,20 @@ export function SettingsAccount() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <Label htmlFor="display-name">Display name</Label>
-            <Input
-              id="display-name"
-              defaultValue={user?.display_name || ''}
-              className="mt-2"
-              style={{ borderWidth: '0.5px' }}
-            />
+            <Label>Display name</Label>
+            <div className="mt-2 text-[13.5px] text-primary">
+              <InlineText
+                value={displayName}
+                onCommit={(next) => setDisplayName(next ?? '')}
+                placeholder="Add display name"
+              />
+            </div>
           </div>
           <div>
-            <Label htmlFor="email">Email address</Label>
-            <Input
-              id="email"
-              type="email"
-              defaultValue={user?.email || ''}
-              disabled
-              className="mt-2"
-              style={{ borderWidth: '0.5px' }}
-            />
+            <Label>Email address</Label>
+            <p className="mt-2 text-[13.5px] text-tertiary">
+              {user?.email || '—'}
+            </p>
           </div>
         </div>
 
@@ -55,33 +58,12 @@ export function SettingsAccount() {
                   Receive email updates about your projects
                 </p>
               </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[13.5px] text-primary">
-                  Deployment summaries
-                </p>
-                <p className="text-[12px] text-tertiary">
-                  Daily digest of deployment activity
-                </p>
-              </div>
-              <Switch defaultChecked />
+              <InlineSwitch
+                value={emailNotifications}
+                onCommit={(next) => setEmailNotifications(next)}
+              />
             </div>
           </div>
-        </div>
-
-        <Separator />
-
-        <div className="flex justify-end gap-3">
-          <Button
-            variant="outline"
-            className=""
-            style={{ borderWidth: '0.5px' }}
-          >
-            Cancel
-          </Button>
-          <Button>Save changes</Button>
         </div>
       </div>
     </Card>

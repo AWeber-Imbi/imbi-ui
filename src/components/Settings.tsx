@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, User, Bell, Key, Shield, Link2, Book } from 'lucide-react'
+import { ArrowLeft, User, Bell, Key, Shield, Link2 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { SettingsAccount } from './settings/SettingsAccount'
@@ -14,7 +14,6 @@ type SettingsTab =
   | 'notifications'
   | 'api-keys'
   | 'security'
-  | 'project-types'
 
 const tabs: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: 'account', label: 'Account', icon: User },
@@ -22,7 +21,6 @@ const tabs: { id: SettingsTab; label: string; icon: typeof User }[] = [
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'api-keys', label: 'API Keys', icon: Key },
   { id: 'security', label: 'Security', icon: Shield },
-  { id: 'project-types', label: 'Project Types', icon: Book },
 ]
 
 export function Settings() {
@@ -87,13 +85,6 @@ export function Settings() {
           {activeTab === 'notifications' && <SettingsNotifications />}
           {activeTab === 'api-keys' && <SettingsApiKeys />}
           {activeTab === 'security' && <SettingsSecurity />}
-          {activeTab === 'project-types' && (
-            <Card className="p-8" style={{ borderWidth: '0.5px' }}>
-              <p className="text-[13.5px] text-tertiary">
-                Project type definitions will be available here.
-              </p>
-            </Card>
-          )}
         </div>
       </div>
     </div>
