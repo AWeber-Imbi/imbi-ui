@@ -1,23 +1,32 @@
 {
   "name": "imbi-ui-v2",
-  "private": true,
   "version": "2.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "oxlint -c oxlint.config.ts .",
-    "lint:fix": "oxlint -c oxlint.config.ts --fix .",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
-    "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
-    "format:check": "prettier --check 'src/**/*.{ts,tsx,css}'",
     "codegen": "openapi-typescript openapi.json -o src/types/api-generated.ts",
     "codegen:fetch": "curl -sf http://localhost:8000/openapi.json -o openapi.json && npm run codegen",
-    "prepare": "husky"
+    "dev": "vite",
+    "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx,css}'",
+    "lint": "oxlint -c oxlint.config.ts .",
+    "lint:fix": "oxlint -c oxlint.config.ts --fix .",
+    "prepare": "husky",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "oxlint -c oxlint.config.ts --fix --no-error-on-unmatched-pattern",
+      "prettier --write"
+    ],
+    "*.css": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -86,15 +95,6 @@
     "vaul": "^1.1.2",
     "zustand": "^5.0.9"
   },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "oxlint -c oxlint.config.ts --fix --no-error-on-unmatched-pattern",
-      "prettier --write"
-    ],
-    "*.css": [
-      "prettier --write"
-    ]
-  },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
@@ -117,6 +117,7 @@
     "oxlint": "^1.62.0",
     "postcss": "^8.4.49",
     "prettier": "^3.8.3",
+    "prettier-plugin-packagejson": "^3.0.2",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",

@@ -5,7 +5,7 @@ const config: Config = {
   singleQuote: true,
   trailingComma: 'all',
   tabWidth: 2,
-  plugins: ['prettier-plugin-tailwindcss'],
+  plugins: ['prettier-plugin-packagejson', 'prettier-plugin-tailwindcss'],
 }
 
 export default config
