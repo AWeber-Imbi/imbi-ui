@@ -21,10 +21,10 @@ vi.mock('@/api/endpoints', () => ({
   getUserByUsername: vi.fn(),
 }))
 
-import * as endpoints from '@/api/endpoints'
-import { ApiError } from '@/api/client'
-import { BootstrapGate } from '@/components/BootstrapGate'
-import { useAuthStore } from '@/stores/authStore'
+import * as endpoints from '../../api/endpoints'
+import { ApiError } from '../../api/client'
+import { BootstrapGate } from '../../components/BootstrapGate'
+import { useAuthStore } from '../../stores/authStore'
 import { useAuth } from '../useAuth'
 
 function makeJwt({
@@ -82,7 +82,9 @@ function setupEnv(initialPath: string) {
 
 function setExpiredAccess({
   refreshToken = 'rt',
-}: { refreshToken?: string | null } = {}) {
+}: {
+  refreshToken?: string | null
+} = {}) {
   const token = makeJwt({ exp: Math.floor(Date.now() / 1000) - 3600 })
   useAuthStore.setState({
     accessToken: token,
