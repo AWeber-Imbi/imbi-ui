@@ -1,32 +1,45 @@
+import { useEffect } from 'react'
+
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, User, Bell, Key, Shield, Link2 } from 'lucide-react'
-import { Button } from './ui/button'
-import { Card } from './ui/card'
+
+import { ArrowLeft, Bell, Key, Link2, Shield, User } from 'lucide-react'
+
 import { SettingsAccount } from './settings/SettingsAccount'
+import { SettingsApiKeys } from './settings/SettingsApiKeys'
 import { SettingsIntegrations } from './settings/SettingsIntegrations'
 import { SettingsNotifications } from './settings/SettingsNotifications'
-import { SettingsApiKeys } from './settings/SettingsApiKeys'
 import { SettingsSecurity } from './settings/SettingsSecurity'
+import { Button } from './ui/button'
+import { Card } from './ui/card'
 
 type SettingsTab =
   | 'account'
+  | 'api-keys'
   | 'integrations'
   | 'notifications'
-  | 'api-keys'
   | 'security'
 
-const tabs: { id: SettingsTab; label: string; icon: typeof User }[] = [
-  { id: 'account', label: 'Account', icon: User },
-  { id: 'integrations', label: 'Integrations', icon: Link2 },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'api-keys', label: 'API Keys', icon: Key },
-  { id: 'security', label: 'Security', icon: Shield },
+const tabs: { icon: typeof User; id: SettingsTab; label: string }[] = [
+  { icon: User, id: 'account', label: 'Account' },
+  { icon: Link2, id: 'integrations', label: 'Integrations' },
+  { icon: Bell, id: 'notifications', label: 'Notifications' },
+  { icon: Key, id: 'api-keys', label: 'API Keys' },
+  { icon: Shield, id: 'security', label: 'Security' },
 ]
+
+const isSettingsTab = (value: string): value is SettingsTab =>
+  tabs.some((t) => t.id === value)
 
 export function Settings() {
   const navigate = useNavigate()
   const { tab } = useParams<{ tab?: string }>()
-  const activeTab: SettingsTab = (tab as SettingsTab) || 'account'
+  const activeTab: SettingsTab = tab && isSettingsTab(tab) ? tab : 'account'
+
+  useEffect(() => {
+    if (tab && !isSettingsTab(tab)) {
+      navigate('/settings/account', { replace: true })
+    }
+  }, [tab, navigate])
 
   const handleTabChange = (tabId: SettingsTab) => {
     navigate(`/settings/${tabId}`, { replace: true })
@@ -36,9 +49,9 @@ export function Settings() {
     <div className="mx-auto max-w-[1400px] px-5 py-7">
       {/* Back button */}
       <Button
-        variant="ghost"
-        onClick={() => navigate(-1)}
         className="mb-6 gap-2 text-secondary hover:bg-secondary"
+        onClick={() => navigate(-1)}
+        variant="ghost"
       >
         <ArrowLeft className="h-4 w-4" />
         Back
@@ -61,13 +74,13 @@ export function Settings() {
                 const Icon = t.icon
                 return (
                   <button
-                    key={t.id}
-                    onClick={() => handleTabChange(t.id)}
                     className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-[13.5px] transition-colors ${
                       activeTab === t.id
                         ? 'bg-warning text-warning'
                         : 'text-secondary hover:bg-secondary'
                     }`}
+                    key={t.id}
+                    onClick={() => handleTabChange(t.id)}
                   >
                     <Icon className="h-[18px] w-[18px]" />
                     <span>{t.label}</span>

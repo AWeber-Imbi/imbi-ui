@@ -1,9 +1,10 @@
 import { useState } from 'react'
+
 import { Card } from '@/components/ui/card'
+import { InlineSwitch } from '@/components/ui/inline-edit/InlineSwitch'
+import { InlineText } from '@/components/ui/inline-edit/InlineText'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { InlineText } from '@/components/ui/inline-edit/InlineText'
-import { InlineSwitch } from '@/components/ui/inline-edit/InlineSwitch'
 import { useAuth } from '@/hooks/useAuth'
 
 // NOTE: The backend currently exposes no self-update endpoint for the
@@ -28,9 +29,9 @@ export function SettingsAccount() {
             <Label>Display name</Label>
             <div className="mt-2 text-[13.5px] text-primary">
               <InlineText
-                value={displayName}
                 onCommit={(next) => setDisplayName(next ?? '')}
                 placeholder="Add display name"
+                value={displayName}
               />
             </div>
           </div>
@@ -59,8 +60,8 @@ export function SettingsAccount() {
                 </p>
               </div>
               <InlineSwitch
-                value={emailNotifications}
                 onCommit={(next) => setEmailNotifications(next)}
+                value={emailNotifications}
               />
             </div>
           </div>
