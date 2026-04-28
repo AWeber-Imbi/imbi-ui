@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
+
 import type { ProjectSchemaSectionProperty } from '@/api/endpoints'
-import { pickInlineComponent } from '@/components/ui/inline-edit/field-policy'
-import { InlineText } from '@/components/ui/inline-edit/InlineText'
+import { InlineDate } from '@/components/ui/inline-edit/InlineDate'
+import { InlineNumber } from '@/components/ui/inline-edit/InlineNumber'
 import { InlineSelect } from '@/components/ui/inline-edit/InlineSelect'
 import { InlineSwitch } from '@/components/ui/inline-edit/InlineSwitch'
-import { InlineNumber } from '@/components/ui/inline-edit/InlineNumber'
-import { InlineDate } from '@/components/ui/inline-edit/InlineDate'
+import { InlineText } from '@/components/ui/inline-edit/InlineText'
+import { pickInlineComponent } from '@/components/ui/inline-edit/field-policy'
 
 interface InlineFieldProps {
   def: ProjectSchemaSectionProperty

@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import { Save, X, AlertCircle } from 'lucide-react'
-import { Button } from '../../ui/button'
-import { Input } from '../../ui/input'
-import { IconUpload } from '../../ui/icon-upload'
-import { Card, CardContent } from '../../ui/card'
+
+import { AlertCircle, Save, X } from 'lucide-react'
+
 import type { Organization, OrganizationCreate } from '@/types'
+
+import { Button } from '../../ui/button'
+import { Card, CardContent } from '../../ui/card'
+import { IconUpload } from '../../ui/icon-upload'
+import { Input } from '../../ui/input'
 
 interface OrganizationFormProps {
   organization: Organization | null

@@ -1,19 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { Save, X, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
+import { AlertCircle, Save, X } from 'lucide-react'
+
 import {
   getBlueprint,
   listEnvironments,
   listProjectTypes,
 } from '@/api/endpoints'
+import { Button } from '@/components/ui/button'
+import { CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { parseFilterFromBlueprint } from '@/lib/utils'
 import type { BlueprintCreate, BlueprintFilter, SchemaProperty } from '@/types'
+
+import { BlueprintFilterEditor } from './BlueprintFilterEditor'
+import { BlueprintSchemaEditor } from './BlueprintSchemaEditor'
 import {
+  type SchemaEditorMode,
   ajv,
   buildJsonSchema,
   generateId,
@@ -21,10 +27,7 @@ import {
   schemaToProperties,
   toSlug,
   toTitleCase,
-  type SchemaEditorMode,
 } from './blueprint-schema-utils'
-import { BlueprintFilterEditor } from './BlueprintFilterEditor'
-import { BlueprintSchemaEditor } from './BlueprintSchemaEditor'
 
 interface BlueprintFormProps {
   blueprintKey: { type: string; slug: string } | null

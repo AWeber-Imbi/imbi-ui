@@ -1,4 +1,5 @@
 import { AlertCircle } from 'lucide-react'
+
 import { extractApiErrorDetail } from '@/lib/apiError'
 
 interface ErrorBannerProps {

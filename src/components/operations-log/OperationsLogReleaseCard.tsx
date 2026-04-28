@@ -1,5 +1,7 @@
-import { ChevronDown, Rocket } from 'lucide-react'
 import { memo } from 'react'
+
+import { ChevronDown, Rocket } from 'lucide-react'
+
 import { Gravatar } from '@/components/ui/gravatar'
 import {
   ReleaseTrain,
@@ -15,15 +17,16 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { deriveChipColors } from '@/lib/chip-colors'
 import { cn } from '@/lib/utils'
 import type { Environment, Project } from '@/types'
+
 import { OperationsLogEntryDetails } from './OperationsLogEntryDetails'
-import { OPS_ROW_GRID, OPS_ROW_PAD } from './opsRowLayout'
 import {
+  type ReleaseGroup,
   absTime,
   cleanDescription,
   cleanName,
   relTime,
-  type ReleaseGroup,
 } from './opsLogHelpers'
+import { OPS_ROW_GRID, OPS_ROW_PAD } from './opsRowLayout'
 
 interface Props {
   id: string

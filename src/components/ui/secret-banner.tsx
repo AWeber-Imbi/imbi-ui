@@ -1,6 +1,8 @@
 import { useState } from 'react'
+
 import { Copy } from 'lucide-react'
 import { toast } from 'sonner'
+
 import {
   Tooltip,
   TooltipContent,

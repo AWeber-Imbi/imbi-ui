@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Save, AlertCircle, X } from 'lucide-react'
+
+import { AlertCircle, Save, X } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { ErrorBanner } from '@/components/ui/error-banner'
 import { IconPicker } from '@/components/ui/icon-picker'
 import { IconUpload } from '@/components/ui/icon-upload'
+import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
 import { slugify } from '@/lib/utils'

@@ -1,19 +1,21 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
+
 import { getProjects, setProjectRelationships } from '@/api/endpoints'
-import { useOrganization } from '@/contexts/OrganizationContext'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import type { ProjectRelationship } from '@/types'
 
 interface EditRelationshipsDialogProps {

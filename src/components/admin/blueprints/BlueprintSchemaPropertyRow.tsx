@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import {
   Tooltip,
   TooltipContent,
@@ -8,8 +9,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { SchemaProperty } from '@/types'
-import { PROPERTY_TYPES, STRING_FORMATS } from './blueprint-schema-utils'
+
 import { BlueprintUiMapEditor } from './BlueprintUiMapEditor'
+import { PROPERTY_TYPES, STRING_FORMATS } from './blueprint-schema-utils'
 
 interface BlueprintSchemaPropertyRowProps {
   prop: SchemaProperty

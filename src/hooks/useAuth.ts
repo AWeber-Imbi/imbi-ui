@@ -1,14 +1,16 @@
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuthStore } from '@/stores/authStore'
+import { useLocation, useNavigate } from 'react-router-dom'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { ApiError } from '@/api/client'
 import {
+  getUserByUsername,
   loginWithPassword,
   logoutAuth,
   refreshToken as refreshTokenApi,
-  getUserByUsername,
 } from '@/api/endpoints'
-import type { UserResponse, LoginRequest, UseAuthReturn } from '@/types'
+import { useAuthStore } from '@/stores/authStore'
+import type { LoginRequest, UseAuthReturn, UserResponse } from '@/types'
 
 // Session bootstrap (refresh-if-expired / redirect-if-no-refresh-token) lives
 // in <BootstrapGate> at the app root, not in this hook. useAuth is purely

@@ -1,53 +1,56 @@
+import { useCallback, useEffect, useMemo } from 'react'
+
+import { useNavigate } from 'react-router-dom'
+
+import { useQuery } from '@tanstack/react-query'
+import { formatDistanceToNow } from 'date-fns'
 import {
-  TrendingUp,
-  TrendingDown,
-  Settings2 as SettingsIcon,
   ArrowRight,
   Rocket,
+  Settings2 as SettingsIcon,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react'
-import { getIcon, useIconRegistryVersion } from '@/lib/icons'
+
+import {
+  getProjectSchema,
+  listCurrentReleases,
+  listLinkDefinitions,
+  listProjectNotes,
+  listProjectTypes,
+  listTeams,
+} from '@/api/endpoints'
+import { OperationsLog } from '@/components/OperationsLog'
+import { ProjectAttributesSection } from '@/components/ProjectAttributesSection'
+import { ProjectEnvironmentsCard } from '@/components/ProjectEnvironmentsCard'
+import { ProjectRelationshipsTab } from '@/components/ProjectRelationshipsTab'
+import { ProjectSettingsTab } from '@/components/ProjectSettingsTab'
+import { ProjectNotesTab } from '@/components/notes/ProjectNotesTab'
 import { Button } from '@/components/ui/button'
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from '@/components/ui/card'
-import { LabelChip } from '@/components/ui/label-chip'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from '@/components/ui/tooltip'
-import { useCallback, useEffect, useMemo } from 'react'
-import { formatDistanceToNow } from 'date-fns'
-import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { sanitizeHttpUrl, sortEnvironments } from '@/lib/utils'
-import {
-  listLinkDefinitions,
-  getProjectSchema,
-  listProjectNotes,
-  listTeams,
-  listProjectTypes,
-  listCurrentReleases,
-} from '@/api/endpoints'
-import { OperationsLog } from '@/components/OperationsLog'
-import type { Project } from '@/types'
+import { InlineMultiSelect } from '@/components/ui/inline-edit/InlineMultiSelect'
+import { InlineSelect } from '@/components/ui/inline-edit/InlineSelect'
 import { InlineText } from '@/components/ui/inline-edit/InlineText'
 import { InlineTextarea } from '@/components/ui/inline-edit/InlineTextarea'
-import { InlineSelect } from '@/components/ui/inline-edit/InlineSelect'
-import { InlineMultiSelect } from '@/components/ui/inline-edit/InlineMultiSelect'
+import { LabelChip } from '@/components/ui/label-chip'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useProjectPatch } from '@/hooks/useProjectPatch'
-import { ProjectRelationshipsTab } from '@/components/ProjectRelationshipsTab'
-import { ProjectEnvironmentsCard } from '@/components/ProjectEnvironmentsCard'
-import { ProjectAttributesSection } from '@/components/ProjectAttributesSection'
-import { ProjectSettingsTab } from '@/components/ProjectSettingsTab'
-import { ProjectNotesTab } from '@/components/notes/ProjectNotesTab'
+import { getIcon, useIconRegistryVersion } from '@/lib/icons'
+import { sanitizeHttpUrl, sortEnvironments } from '@/lib/utils'
+import type { Project } from '@/types'
 
 interface ProjectDetailProps {
   project: Project

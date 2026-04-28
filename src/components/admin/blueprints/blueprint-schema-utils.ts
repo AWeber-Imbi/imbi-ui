@@ -1,4 +1,5 @@
 import Ajv from 'ajv'
+
 import type { SchemaProperty } from '@/types'
 
 export const ajv = new Ajv()

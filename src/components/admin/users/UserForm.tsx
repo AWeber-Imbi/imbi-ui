@@ -1,22 +1,25 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import {
+  AlertCircle,
   AlertTriangle,
+  Check,
   Eye,
   EyeOff,
-  Check,
   X as XIcon,
-  AlertCircle,
 } from 'lucide-react'
-import { Input } from '../../ui/input'
-import { FormField } from '@/components/ui/form-field'
-import { FormHeader } from '@/components/admin/form-header'
-import { Gravatar } from '../../ui/gravatar'
-import { Card, CardContent } from '../../ui/card'
+
 import { getRoles } from '@/api/endpoints'
+import { FormHeader } from '@/components/admin/form-header'
+import { FormField } from '@/components/ui/form-field'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useFormScaffold } from '@/hooks/useFormScaffold'
 import type { AdminUser, AdminUserCreate } from '@/types'
+
+import { Card, CardContent } from '../../ui/card'
+import { Gravatar } from '../../ui/gravatar'
+import { Input } from '../../ui/input'
 
 interface UserFormProps {
   user: AdminUser | null

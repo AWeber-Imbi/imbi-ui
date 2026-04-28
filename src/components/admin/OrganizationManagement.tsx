@@ -1,22 +1,25 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Building2 } from 'lucide-react'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { AdminTable } from '@/components/ui/admin-table'
-import type { CanDeleteResult } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { OrganizationForm } from './organizations/OrganizationForm'
-import { OrganizationDetail } from './organizations/OrganizationDetail'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listOrganizations,
-  deleteOrganization,
   createOrganization,
+  deleteOrganization,
+  listOrganizations,
   updateOrganization,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import type { CanDeleteResult } from '@/components/ui/admin-table'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
 import type { Organization, OrganizationCreate, PatchOperation } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { OrganizationDetail } from './organizations/OrganizationDetail'
+import { OrganizationForm } from './organizations/OrganizationForm'
 
 export function OrganizationManagement() {
   const {

@@ -1,28 +1,32 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
-import {
-  Send,
-  ChevronUp,
-  ChevronDown,
-  X,
-  Terminal,
-  HelpCircle,
-  Sparkles,
-} from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
 import { useNavigate } from 'react-router-dom'
-import { useAssistantStore } from '@/stores/assistantStore'
+
 import {
-  sendMessageSSE,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
+  Send,
+  Sparkles,
+  Terminal,
+  X,
+} from 'lucide-react'
+
+import {
   createConversation,
   getConversation,
+  sendMessageSSE,
 } from '@/api/assistant'
-import { useAuth } from '@/hooks/useAuth'
+import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { queryClient } from '@/main'
+import { useAuth } from '@/hooks/useAuth'
 import { getQueryKeysForResource } from '@/lib/queryKeys'
+import { queryClient } from '@/main'
+import { useAssistantStore } from '@/stores/assistantStore'
+
+import { ConversationHistory } from './assistant/ConversationHistory'
 import { SessionEntry } from './assistant/MessageBubble'
 import { ToolUseIndicator } from './assistant/ToolUseIndicator'
-import { ConversationHistory } from './assistant/ConversationHistory'
-import { Button } from '@/components/ui/button'
 
 function buildUserContext(
   user: {

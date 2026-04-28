@@ -2,6 +2,8 @@
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { AlertCircle } from 'lucide-react'
+
+import type { DynamicFieldSchema, DynamicSchema } from '@/api/endpoints'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -10,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { DynamicFieldSchema, DynamicSchema } from '@/api/endpoints'
 
 // Radix SelectItem rejects empty-string values, so use a sentinel to represent
 // an unset non-required enum field (preserves the clear-via-placeholder

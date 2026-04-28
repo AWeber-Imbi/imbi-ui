@@ -1,11 +1,13 @@
 import { useParams } from 'react-router-dom'
+
 import { useQuery } from '@tanstack/react-query'
+
+import { getProject } from '@/api/endpoints'
+import { CommandBar } from '@/components/CommandBar'
 import { Navigation } from '@/components/Navigation'
 import { ProjectDetail } from '@/components/ProjectDetail'
-import { CommandBar } from '@/components/CommandBar'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { usePageTitle } from '@/hooks/usePageTitle'
-import { getProject } from '@/api/endpoints'
 
 export function ProjectDetailPage() {
   const { projectId, tab, subId, subAction } = useParams<{

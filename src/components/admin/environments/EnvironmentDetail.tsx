@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Edit2 } from 'lucide-react'
+
+import { getEnvironmentSchema } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DynamicDetailFields } from '@/components/ui/dynamic-fields'
-import { getEnvironmentSchema } from '@/api/endpoints'
-import { ENVIRONMENT_BASE_FIELDS_SET } from '@/lib/constants'
 import { EntityIcon } from '@/components/ui/entity-icon'
+import { ENVIRONMENT_BASE_FIELDS_SET } from '@/lib/constants'
 import { extractDynamicFields } from '@/lib/utils'
 import type { Environment } from '@/types'
 

@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Archive, MessageSquare, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { MessageSquare, Plus, Archive, Trash2 } from 'lucide-react'
+
 import {
-  listConversations,
   deleteConversation,
+  listConversations,
   updateConversation,
 } from '@/api/assistant'
+import { Button } from '@/components/ui/button'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import type { Conversation } from '@/types/assistant'
-import { Button } from '@/components/ui/button'
 
 interface ConversationHistoryProps {
   currentConversationId: string | null

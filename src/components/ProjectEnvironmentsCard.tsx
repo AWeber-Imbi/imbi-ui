@@ -1,5 +1,6 @@
 import { ExternalLink } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { sanitizeHttpUrl } from '@/lib/utils'
 import type { Project } from '@/types'

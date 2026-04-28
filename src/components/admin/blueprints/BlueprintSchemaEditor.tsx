@@ -1,9 +1,12 @@
 import { useState } from 'react'
+
 import { AlertCircle, Code, List, Plus } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import type { SchemaProperty } from '@/types'
-import { type SchemaEditorMode } from './blueprint-schema-utils'
+
 import { BlueprintSchemaPropertyRow } from './BlueprintSchemaPropertyRow'
+import { type SchemaEditorMode } from './blueprint-schema-utils'
 
 interface BlueprintSchemaEditorProps {
   editorMode: SchemaEditorMode

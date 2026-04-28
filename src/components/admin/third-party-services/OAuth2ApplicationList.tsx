@@ -1,8 +1,16 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AlertCircle, ExternalLink, Key, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { extractApiErrorDetail } from '@/lib/apiError'
-import { Plus, Trash2, Key, AlertCircle, ExternalLink } from 'lucide-react'
+
+import {
+  createServiceApplication,
+  deleteServiceApplication,
+  listServiceApplications,
+  updateServiceApplication,
+} from '@/api/endpoints'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import {
@@ -14,28 +22,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  listServiceApplications,
-  deleteServiceApplication,
-  createServiceApplication,
-  updateServiceApplication,
-} from '@/api/endpoints'
-import { OAuth2ApplicationForm } from './OAuth2ApplicationForm'
-import { ApplicationSecretsPanel } from './ApplicationSecretsPanel'
-import { buildDiffPatch } from '@/lib/json-patch'
-import type {
-  ServiceApplication,
-  ServiceApplicationCreate,
-  ServiceApplicationUpdate,
-  PatchOperation,
-} from '@/types'
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { extractApiErrorDetail } from '@/lib/apiError'
+import { buildDiffPatch } from '@/lib/json-patch'
 import { statusBadgeVariant } from '@/lib/status-colors'
-import { Badge } from '@/components/ui/badge'
+import type {
+  PatchOperation,
+  ServiceApplication,
+  ServiceApplicationCreate,
+  ServiceApplicationUpdate,
+} from '@/types'
+
+import { ApplicationSecretsPanel } from './ApplicationSecretsPanel'
+import { OAuth2ApplicationForm } from './OAuth2ApplicationForm'
 
 type ViewMode = 'list' | 'create' | 'edit'
 

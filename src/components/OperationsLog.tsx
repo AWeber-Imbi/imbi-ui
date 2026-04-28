@@ -1,13 +1,15 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { Activity, LoaderCircle, SearchX, X } from 'lucide-react'
+
+import { getProjects, listAdminUsers, listEnvironments } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/ui/loading-state'
-import { cn } from '@/lib/utils'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useInfiniteOperationsLog } from '@/hooks/useInfiniteOperationsLog'
-import { listEnvironments, getProjects, listAdminUsers } from '@/api/endpoints'
+import { cn } from '@/lib/utils'
 import type {
   Environment,
   OperationsLogEntryType,
@@ -15,23 +17,24 @@ import type {
   OperationsLogRecord,
   Project,
 } from '@/types'
-import {
-  OperationsLogToolbar,
-  type ToolbarCounts,
-} from './operations-log/OperationsLogToolbar'
-import { OperationsLogSummary } from './operations-log/OperationsLogSummary'
+
 import {
   OperationsLogFeedItem,
   type VItem,
 } from './operations-log/OperationsLogFeedItem'
+import { OperationsLogSummary } from './operations-log/OperationsLogSummary'
 import {
+  OperationsLogToolbar,
+  type ToolbarCounts,
+} from './operations-log/OperationsLogToolbar'
+import {
+  type FeedItem,
+  type OperationsLogView,
+  type TimeRange,
   bucketByDay,
   cleanName,
   groupReleases,
   toMs,
-  type FeedItem,
-  type OperationsLogView,
-  type TimeRange,
 } from './operations-log/opsLogHelpers'
 
 // Memoised + WAAPI-driven so the spin animation has its own lifetime

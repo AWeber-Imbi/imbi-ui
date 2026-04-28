@@ -1,12 +1,14 @@
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
+
 import { useMutation } from '@tanstack/react-query'
-import { Upload, X, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { AlertCircle, Upload, X } from 'lucide-react'
+
 import {
-  uploadFile,
-  getUploadThumbnailUrl,
   deleteUpload,
+  getUploadThumbnailUrl,
+  uploadFile,
 } from '@/api/endpoints'
+import { Button } from '@/components/ui/button'
 
 interface IconUploadProps {
   value?: string

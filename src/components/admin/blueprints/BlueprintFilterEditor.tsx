@@ -1,4 +1,5 @@
 import { Filter } from 'lucide-react'
+
 import { Checkbox } from '@/components/ui/checkbox'
 import type { Environment, ProjectType } from '@/types'
 

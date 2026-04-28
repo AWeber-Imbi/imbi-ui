@@ -1,8 +1,11 @@
 import { useEffect } from 'react'
+
 import { useNavigate } from 'react-router-dom'
+
 import { useQueryClient } from '@tanstack/react-query'
-import { useAuthStore } from '@/stores/authStore'
+
 import { useAuth } from '@/hooks/useAuth'
+import { useAuthStore } from '@/stores/authStore'
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate()

@@ -2,13 +2,14 @@ import { useQuery } from '@tanstack/react-query'
 import { ExternalLink } from 'lucide-react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
+import { getOperationsLogEntry } from '@/api/endpoints'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { getOperationsLogEntry } from '@/api/endpoints'
 import type { OperationsLogRecord } from '@/types'
 
 interface Props {

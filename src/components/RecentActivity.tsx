@@ -1,7 +1,9 @@
 import md5 from 'md5'
-import { Card } from './ui/card'
-import { Button } from './ui/button'
+
 import type { ActivityFeedEntry } from '@/types'
+
+import { Button } from './ui/button'
+import { Card } from './ui/card'
 
 interface RecentActivityProps {
   activities: ActivityFeedEntry[]

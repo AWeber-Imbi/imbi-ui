@@ -1,22 +1,25 @@
-import { ArrowLeft, Clock, Pencil, Pin, PinOff, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+
+import { ArrowLeft, Clock, Pencil, Pin, PinOff, Trash2 } from 'lucide-react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { UserDisplay } from '@/components/ui/user-display'
 import { cn } from '@/lib/utils'
-import { NotesFilterRail } from './NotesFilterRail'
+import type { Note } from '@/types'
+
 import { NoteTagChip } from './NoteTagChip'
+import { NotesFilterRail } from './NotesFilterRail'
 import {
   EMPTY_ACTIVE,
-  noteTitle,
   formatFull,
   formatUpdated,
+  noteTitle,
   tagCounts,
   uniqueTagsFromNotes,
 } from './notesHelpers'
-import type { Note } from '@/types'
 
 interface Props {
   note: Note

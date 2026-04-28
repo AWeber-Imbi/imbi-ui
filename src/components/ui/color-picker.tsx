@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { type KeyboardEvent, useEffect, useRef, useState } from 'react'
+
 import { Check } from 'lucide-react'
+
 import { useTheme } from '@/contexts/ThemeContext'
 import { deriveChipColors, hexToRgb } from '@/lib/chip-colors'
 

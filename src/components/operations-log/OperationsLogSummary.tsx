@@ -1,8 +1,10 @@
-import type { OperationsLogMetrics } from '@/api/endpoints'
-import type { Environment, OperationsLogRecord } from '@/types'
 import { useMemo } from 'react'
+
+import type { OperationsLogMetrics } from '@/api/endpoints'
 import { sortEnvironments } from '@/lib/utils'
-import { toMs, type TimeRange } from './opsLogHelpers'
+import type { Environment, OperationsLogRecord } from '@/types'
+
+import { type TimeRange, toMs } from './opsLogHelpers'
 
 interface SummaryProps {
   entries: OperationsLogRecord[]

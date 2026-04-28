@@ -1,12 +1,14 @@
-import { icons as lucideIcons } from 'lucide-react'
 import { createElement } from 'react'
+
+import { icons as lucideIcons } from 'lucide-react'
 import { renderToStaticMarkup } from 'react-dom/server'
+
 import type {
   IconComponent,
   IconEntry,
   IconSetDefinition,
 } from '@/lib/icon-registry'
-import { toPascalCase, encodeSvgToDataUrl } from '@/lib/icon-sets/utils'
+import { encodeSvgToDataUrl, toPascalCase } from '@/lib/icon-sets/utils'
 
 export const LUCIDE_ICONS: IconEntry[] = Object.keys(lucideIcons)
   .filter((k) => k !== 'default' && k !== 'icons' && k !== 'createLucideIcon')

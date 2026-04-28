@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
+
 import { useNavigate, useSearchParams } from 'react-router-dom'
+
 import { useQuery } from '@tanstack/react-query'
-import { useAuth } from '@/hooks/useAuth'
+
 import { getAuthProviders } from '@/api/endpoints'
-import { extractApiErrorDetail } from '@/lib/apiError'
-import { OAuthButton } from '@/components/auth/OAuthButton'
-import { LocalLoginForm } from '@/components/auth/LocalLoginForm'
-import { AuthDivider } from '@/components/auth/AuthDivider'
-import { useTheme } from '@/contexts/ThemeContext'
-import { usePageTitle } from '@/hooks/usePageTitle'
-import logoLight from '@/assets/logo-light.svg'
 import logoDark from '@/assets/logo-dark.svg'
+import logoLight from '@/assets/logo-light.svg'
+import { AuthDivider } from '@/components/auth/AuthDivider'
+import { LocalLoginForm } from '@/components/auth/LocalLoginForm'
+import { OAuthButton } from '@/components/auth/OAuthButton'
+import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/hooks/useAuth'
+import { usePageTitle } from '@/hooks/usePageTitle'
+import { extractApiErrorDetail } from '@/lib/apiError'
 
 const REMEMBERED_EMAIL_KEY = 'imbi_remembered_email'
 

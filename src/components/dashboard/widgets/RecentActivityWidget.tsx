@@ -1,6 +1,7 @@
-import { RecentActivity } from '../../RecentActivity'
-import { useInfiniteActivityFeed } from '@/hooks/useInfiniteActivityFeed'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useInfiniteActivityFeed } from '@/hooks/useInfiniteActivityFeed'
+
+import { RecentActivity } from '../../RecentActivity'
 
 interface RecentActivityWidgetProps {
   onUserSelect?: (userName: string) => void

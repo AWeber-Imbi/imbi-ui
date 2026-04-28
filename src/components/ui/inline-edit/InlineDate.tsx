@@ -1,13 +1,16 @@
 import { useState } from 'react'
+
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
+import { toast } from 'sonner'
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+
 import { InlineDisplay } from './InlineDisplay'
-import { toast } from 'sonner'
 
 export interface InlineDateProps {
   value: string | null

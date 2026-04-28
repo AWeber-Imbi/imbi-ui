@@ -1,7 +1,8 @@
 import { LabelChip } from '@/components/ui/label-chip'
 import { cn } from '@/lib/utils'
-import { colorForTag } from './notesHelpers'
 import type { TagRef } from '@/types'
+
+import { colorForTag } from './notesHelpers'
 
 interface Props {
   tag: TagRef

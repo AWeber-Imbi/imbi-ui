@@ -1,26 +1,27 @@
 import { memo, useCallback, useMemo } from 'react'
-import { getIcon } from '@/lib/icons'
-import { resolveColor, resolveIcon } from '@/lib/ui-maps'
-import type { XUiMaps } from '@/lib/ui-maps'
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from '@/components/ui/tooltip'
+
 import type {
   ProjectSchemaResponse,
   ProjectSchemaSectionProperty,
 } from '@/api/endpoints'
-import { isFieldEditable } from '@/components/ui/inline-edit/field-policy'
 import { InlineField } from '@/components/ui/inline-edit/InlineField'
-import type { Project } from '@/types'
+import { isFieldEditable } from '@/components/ui/inline-edit/field-policy'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { getIcon } from '@/lib/icons'
 import {
   COLOR_TEXT,
   formatFieldKey,
   formatFieldValue,
   resolveFieldValue,
 } from '@/lib/project-field-formatting'
+import { resolveColor, resolveIcon } from '@/lib/ui-maps'
+import type { XUiMaps } from '@/lib/ui-maps'
+import type { Project } from '@/types'
 
 interface ProjectAttributesSectionProps {
   project: Project

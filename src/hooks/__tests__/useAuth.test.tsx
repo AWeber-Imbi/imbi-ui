@@ -8,11 +8,19 @@
 //   HB-3 — bootstrap fires at most once across multiple useAuth() consumers
 //   HB-4 — currentUser auto-fires once the store flips isTokenExpired → false
 //   HB-5 — 401 with detail "not found or inactive" → translated error
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, render, renderHook, waitFor } from '@testing-library/react'
-import { useEffect, type ReactNode } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { type ReactNode, useEffect } from 'react'
+
 import { MemoryRouter, useLocation } from 'react-router-dom'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { act, render, renderHook, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { ApiError } from '../../api/client'
+import * as endpoints from '../../api/endpoints'
+import { BootstrapGate } from '../../components/BootstrapGate'
+import { useAuthStore } from '../../stores/authStore'
+import { useAuth } from '../useAuth'
 
 vi.mock('@/api/endpoints', () => ({
   loginWithPassword: vi.fn(),
@@ -20,12 +28,6 @@ vi.mock('@/api/endpoints', () => ({
   refreshToken: vi.fn(),
   getUserByUsername: vi.fn(),
 }))
-
-import * as endpoints from '../../api/endpoints'
-import { ApiError } from '../../api/client'
-import { BootstrapGate } from '../../components/BootstrapGate'
-import { useAuthStore } from '../../stores/authStore'
-import { useAuth } from '../useAuth'
 
 function makeJwt({
   sub = 'user@example.com',

@@ -1,17 +1,20 @@
-import { Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
+
+import { Search } from 'lucide-react'
+
+import { Gravatar } from '@/components/ui/gravatar'
 import { Input } from '@/components/ui/input'
 import { useTheme } from '@/contexts/ThemeContext'
 import { deriveChipColors } from '@/lib/chip-colors'
-import { cn } from '@/lib/utils'
-import { Gravatar } from '@/components/ui/gravatar'
 import { ENTRY_TYPE_ICONS } from '@/lib/ops-log-icons'
+import { cn } from '@/lib/utils'
 import { sortEnvironments } from '@/lib/utils'
 import {
-  OPERATIONS_LOG_ENTRY_TYPES,
   type Environment,
+  OPERATIONS_LOG_ENTRY_TYPES,
   type OperationsLogEntryType,
 } from '@/types'
+
 import type { TimeRange } from './opsLogHelpers'
 import { cleanName } from './opsLogHelpers'
 

@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+
 import {
+  READ_ONLY_KEYS,
   isFieldEditable,
   pickInlineComponent,
-  READ_ONLY_KEYS,
 } from '../field-policy'
 
 describe('isFieldEditable', () => {

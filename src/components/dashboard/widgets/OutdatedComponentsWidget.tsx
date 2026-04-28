@@ -1,6 +1,7 @@
-import { Package, AlertTriangle, TrendingUp, ExternalLink } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { AlertTriangle, ExternalLink, Package, TrendingUp } from 'lucide-react'
+
 import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 
 interface OutdatedComponentsWidgetProps {
   onProjectSelect?: (projectId: string) => void

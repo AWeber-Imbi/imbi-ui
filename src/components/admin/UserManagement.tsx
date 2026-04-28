@@ -1,27 +1,30 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Crown, Power } from 'lucide-react'
 import { toast } from 'sonner'
-import { extractApiErrorDetail } from '@/lib/apiError'
-import { Power, Crown } from 'lucide-react'
-import { Badge } from '../ui/badge'
-import { Gravatar } from '../ui/gravatar'
+
+import {
+  createAdminUser,
+  deleteAdminUser,
+  getAdminUser,
+  listAdminUsers,
+  updateAdminUser,
+} from '@/api/endpoints'
 import { AdminTable } from '@/components/ui/admin-table'
 import { ErrorBanner } from '@/components/ui/error-banner'
 import { LoadingState } from '@/components/ui/loading-state'
-import { AdminSection } from './AdminSection'
-import { UserForm } from './users/UserForm'
-import { UserDetail } from './users/UserDetail'
-import { useAdminNav } from '@/hooks/useAdminNav'
 import { useAdminCrud } from '@/hooks/useAdminCrud'
-import {
-  listAdminUsers,
-  getAdminUser,
-  deleteAdminUser,
-  updateAdminUser,
-  createAdminUser,
-} from '@/api/endpoints'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { extractApiErrorDetail } from '@/lib/apiError'
 import { buildDiffPatch, buildReplacePatch } from '@/lib/json-patch'
 import type { AdminUser, AdminUserCreate, PatchOperation } from '@/types'
+
+import { Badge } from '../ui/badge'
+import { Gravatar } from '../ui/gravatar'
+import { AdminSection } from './AdminSection'
+import { UserDetail } from './users/UserDetail'
+import { UserForm } from './users/UserForm'
 
 type UserFilter = 'all' | 'users' | 'admins'
 type StatusFilter = 'all' | 'active' | 'inactive'

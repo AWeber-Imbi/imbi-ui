@@ -1,5 +1,6 @@
-import { apiClient } from './client'
 import { useQuery } from '@tanstack/react-query'
+
+import { apiClient } from './client'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type OpenApiSpec = Record<string, any>

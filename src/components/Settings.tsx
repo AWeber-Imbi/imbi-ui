@@ -1,12 +1,14 @@
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, User, Bell, Key, Shield, Link2, Book } from 'lucide-react'
-import { Button } from './ui/button'
-import { Card } from './ui/card'
+
+import { ArrowLeft, Bell, Book, Key, Link2, Shield, User } from 'lucide-react'
+
 import { SettingsAccount } from './settings/SettingsAccount'
+import { SettingsApiKeys } from './settings/SettingsApiKeys'
 import { SettingsIntegrations } from './settings/SettingsIntegrations'
 import { SettingsNotifications } from './settings/SettingsNotifications'
-import { SettingsApiKeys } from './settings/SettingsApiKeys'
 import { SettingsSecurity } from './settings/SettingsSecurity'
+import { Button } from './ui/button'
+import { Card } from './ui/card'
 
 type SettingsTab =
   | 'account'

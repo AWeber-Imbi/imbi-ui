@@ -1,26 +1,29 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { Power, Bot } from 'lucide-react'
-import { Badge } from '../ui/badge'
-import { AdminTable } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { ServiceAccountForm } from './service-accounts/ServiceAccountForm'
-import { ServiceAccountDetail } from './service-accounts/ServiceAccountDetail'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { Bot, Power } from 'lucide-react'
+
 import {
-  listServiceAccounts,
-  getServiceAccount,
   createServiceAccount,
-  updateServiceAccount,
   deleteServiceAccount,
+  getServiceAccount,
+  listServiceAccounts,
+  updateServiceAccount,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
 import { buildDiffPatch } from '@/lib/json-patch'
 import type {
+  PatchOperation,
   ServiceAccount,
   ServiceAccountCreate,
-  PatchOperation,
 } from '@/types'
+
+import { Badge } from '../ui/badge'
+import { AdminSection } from './AdminSection'
+import { ServiceAccountDetail } from './service-accounts/ServiceAccountDetail'
+import { ServiceAccountForm } from './service-accounts/ServiceAccountForm'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 

@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
+import { AlertCircle, Plus, RotateCw, Shield, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Plus, Trash2, AlertCircle, RotateCw, Shield } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+
+import { listClientCredentials } from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { SecretBanner } from '@/components/ui/secret-banner'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { SecretBanner } from '@/components/ui/secret-banner'
-import { listClientCredentials } from '@/api/endpoints'
 import type {
-  ServiceAccount,
   ClientCredential,
   ClientCredentialCreate,
   ClientCredentialCreated,
+  ServiceAccount,
 } from '@/types'
 
 interface ClientCredentialsSectionProps {

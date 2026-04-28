@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
+
 import { Textarea } from '@/components/ui/textarea'
 import { useInlineEdit } from '@/hooks/useInlineEdit'
-import { InlineDisplay } from './InlineDisplay'
 import { cn } from '@/lib/utils'
+
+import { InlineDisplay } from './InlineDisplay'
 
 export interface InlineTextareaProps {
   value: string | null

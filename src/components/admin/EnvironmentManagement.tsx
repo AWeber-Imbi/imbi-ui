@@ -1,24 +1,27 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Globe } from 'lucide-react'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { AdminTable } from '@/components/ui/admin-table'
-import type { CanDeleteResult } from '@/components/ui/admin-table'
-import { LabelChip } from '@/components/ui/label-chip'
-import { AdminSection } from './AdminSection'
-import { EnvironmentForm } from './environments/EnvironmentForm'
-import { EnvironmentDetail } from './environments/EnvironmentDetail'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listEnvironments,
-  deleteEnvironment,
   createEnvironment,
+  deleteEnvironment,
+  listEnvironments,
   updateEnvironment,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import type { CanDeleteResult } from '@/components/ui/admin-table'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { LabelChip } from '@/components/ui/label-chip'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
 import type { Environment, EnvironmentCreate, PatchOperation } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { EnvironmentDetail } from './environments/EnvironmentDetail'
+import { EnvironmentForm } from './environments/EnvironmentForm'
 
 export function EnvironmentManagement() {
   const { selectedOrganization } = useOrganization()

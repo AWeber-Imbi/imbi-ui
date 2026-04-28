@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { act, renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useProjectPatch } from '../useProjectPatch'
-import * as endpoints from '@/api/endpoints'
-import { ApiError } from '@/api/client'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { toast } from 'sonner'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { ApiError } from '@/api/client'
+import * as endpoints from '@/api/endpoints'
+
+import { useProjectPatch } from '../useProjectPatch'
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }))
 

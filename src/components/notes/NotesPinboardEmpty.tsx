@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Plus, StickyNote } from 'lucide-react'
+
+import { listNoteTemplates } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { EntityIcon } from '@/components/ui/entity-icon'
-import { listNoteTemplates } from '@/api/endpoints'
-import { NoteTagChip } from './NoteTagChip'
 import type { NoteTemplate } from '@/types'
+
+import { NoteTagChip } from './NoteTagChip'
 
 interface Props {
   orgSlug: string

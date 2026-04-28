@@ -1,25 +1,28 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Link2 } from 'lucide-react'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { AdminTable, type CanDeleteResult } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { LinkDefinitionForm } from './link-definitions/LinkDefinitionForm'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listLinkDefinitions,
-  deleteLinkDefinition,
   createLinkDefinition,
+  deleteLinkDefinition,
+  listLinkDefinitions,
   updateLinkDefinition,
 } from '@/api/endpoints'
+import { AdminTable, type CanDeleteResult } from '@/components/ui/admin-table'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
 import type {
   LinkDefinition,
   LinkDefinitionCreate,
   PatchOperation,
 } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { LinkDefinitionForm } from './link-definitions/LinkDefinitionForm'
 
 export function LinkDefinitionManagement() {
   const { selectedOrganization } = useOrganization()

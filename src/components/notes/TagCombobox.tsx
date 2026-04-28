@@ -1,12 +1,15 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CornerDownLeft, Plus, Tag as TagIcon, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+
 import { createTag, listTags } from '@/api/endpoints'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { cn } from '@/lib/utils'
-import { NoteTagChip } from './NoteTagChip'
 import type { Tag, TagRef } from '@/types'
+
+import { NoteTagChip } from './NoteTagChip'
 
 interface Props {
   orgSlug: string

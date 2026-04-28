@@ -1,13 +1,16 @@
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+
 import { ArrowLeft, Check, Columns2, Eye, PencilLine } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { NotesFilterRail } from './NotesFilterRail'
-import { EMPTY_ACTIVE, tagCounts, uniqueTagsFromNotes } from './notesHelpers'
-import { TagCombobox } from './TagCombobox'
 import type { Note, NoteTemplate, TagRef } from '@/types'
+
+import { NotesFilterRail } from './NotesFilterRail'
+import { TagCombobox } from './TagCombobox'
+import { EMPTY_ACTIVE, tagCounts, uniqueTagsFromNotes } from './notesHelpers'
 
 type EditorMode = 'split' | 'write' | 'preview'
 

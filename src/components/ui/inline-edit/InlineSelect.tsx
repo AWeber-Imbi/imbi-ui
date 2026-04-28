@@ -1,4 +1,7 @@
 import { useState } from 'react'
+
+import { toast } from 'sonner'
+
 import {
   Select,
   SelectContent,
@@ -6,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+
 import { InlineDisplay } from './InlineDisplay'
-import { toast } from 'sonner'
 
 export interface InlineSelectOption {
   value: string

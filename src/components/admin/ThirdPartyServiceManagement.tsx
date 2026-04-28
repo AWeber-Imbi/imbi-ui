@@ -1,28 +1,31 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Cloud } from 'lucide-react'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { Card, CardContent, CardDescription } from '@/components/ui/card'
-import { AdminTable, type AdminTableColumn } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { ThirdPartyServiceForm } from './third-party-services/ThirdPartyServiceForm'
-import { ThirdPartyServiceDetail } from './third-party-services/ThirdPartyServiceDetail'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listThirdPartyServices,
-  deleteThirdPartyService,
   createThirdPartyService,
+  deleteThirdPartyService,
+  listThirdPartyServices,
   updateThirdPartyService,
 } from '@/api/endpoints'
-import { statusBadgeVariant } from '@/lib/status-colors'
+import { AdminTable, type AdminTableColumn } from '@/components/ui/admin-table'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
 import { buildDiffPatch } from '@/lib/json-patch'
+import { statusBadgeVariant } from '@/lib/status-colors'
 import type {
+  PatchOperation,
   ThirdPartyService,
   ThirdPartyServiceCreate,
-  PatchOperation,
 } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { ThirdPartyServiceDetail } from './third-party-services/ThirdPartyServiceDetail'
+import { ThirdPartyServiceForm } from './third-party-services/ThirdPartyServiceForm'
 
 export function ThirdPartyServiceManagement() {
   const { selectedOrganization } = useOrganization()

@@ -1,5 +1,7 @@
-import { ArrowUpRight, Pin, Plus } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
+
+import { ArrowUpRight, Pin, Plus } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -10,16 +12,17 @@ import {
 } from '@/components/ui/card'
 import { UserDisplay } from '@/components/ui/user-display'
 import { cn } from '@/lib/utils'
-import { NotesFilterRail } from './NotesFilterRail'
+import type { Note } from '@/types'
+
 import { NoteTagChip } from './NoteTagChip'
+import { NotesFilterRail } from './NotesFilterRail'
 import {
   deriveExcerpt,
-  noteTitle,
   formatUpdated,
+  noteTitle,
   tagCounts,
   uniqueTagsFromNotes,
 } from './notesHelpers'
-import type { Note } from '@/types'
 
 interface Props {
   notes: Note[]

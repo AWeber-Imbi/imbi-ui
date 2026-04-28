@@ -1,32 +1,35 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
-import { useState, useMemo } from 'react'
-import { FileJson, CheckCircle, XCircle, Upload, Filter } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useMemo, useState } from 'react'
+
+import { CheckCircle, FileJson, Filter, Upload, XCircle } from 'lucide-react'
+
+import {
+  createBlueprint,
+  deleteBlueprint,
+  listBlueprints,
+  updateBlueprint,
+} from '@/api/endpoints'
 import { AdminTable } from '@/components/ui/admin-table'
+import { Button } from '@/components/ui/button'
 import { LabelChip } from '@/components/ui/label-chip'
-import { LABEL_SWATCHES, swatchForType } from '@/lib/chip-colors'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { AdminSection } from './AdminSection'
-import { BlueprintForm } from './blueprints/BlueprintForm'
-import { BlueprintDetail } from './blueprints/BlueprintDetail'
-import { ImportBlueprintDialog } from './blueprints/ImportBlueprintDialog'
-import { useAdminNav } from '@/hooks/useAdminNav'
 import { useAdminCrud } from '@/hooks/useAdminCrud'
-import {
-  listBlueprints,
-  deleteBlueprint,
-  createBlueprint,
-  updateBlueprint,
-} from '@/api/endpoints'
-import { parseFilterFromBlueprint } from '@/lib/utils'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { LABEL_SWATCHES, swatchForType } from '@/lib/chip-colors'
 import { buildDiffPatch } from '@/lib/json-patch'
+import { parseFilterFromBlueprint } from '@/lib/utils'
 import type { Blueprint, BlueprintCreate, PatchOperation } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { BlueprintDetail } from './blueprints/BlueprintDetail'
+import { BlueprintForm } from './blueprints/BlueprintForm'
+import { ImportBlueprintDialog } from './blueprints/ImportBlueprintDialog'
 
 interface BlueprintKey {
   type: string

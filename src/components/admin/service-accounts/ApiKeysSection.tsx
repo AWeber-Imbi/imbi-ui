@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import type { UseMutationResult } from '@tanstack/react-query'
-import { Plus, Trash2, AlertCircle, RotateCw, Key } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { AlertCircle, Key, Plus, RotateCw, Trash2 } from 'lucide-react'
+
+import { listServiceAccountApiKeys } from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { SecretBanner } from '@/components/ui/secret-banner'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { SecretBanner } from '@/components/ui/secret-banner'
-import { listServiceAccountApiKeys } from '@/api/endpoints'
-import type { ServiceAccount, ApiKey, ApiKeyCreated } from '@/types'
+import type { ApiKey, ApiKeyCreated, ServiceAccount } from '@/types'
 
 interface ApiKeysSectionProps {
   account: ServiceAccount

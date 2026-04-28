@@ -1,5 +1,6 @@
-import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
+
+import { Switch } from '@/components/ui/switch'
 
 export interface InlineSwitchProps {
   value: boolean | null

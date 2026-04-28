@@ -1,23 +1,26 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Layers } from 'lucide-react'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { AdminTable } from '@/components/ui/admin-table'
-import type { CanDeleteResult } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { ProjectTypeForm } from './project-types/ProjectTypeForm'
-import { ProjectTypeDetail } from './project-types/ProjectTypeDetail'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listProjectTypes,
-  deleteProjectType,
   createProjectType,
+  deleteProjectType,
+  listProjectTypes,
   updateProjectType,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import type { CanDeleteResult } from '@/components/ui/admin-table'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
-import type { ProjectType, ProjectTypeCreate, PatchOperation } from '@/types'
+import type { PatchOperation, ProjectType, ProjectTypeCreate } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { ProjectTypeDetail } from './project-types/ProjectTypeDetail'
+import { ProjectTypeForm } from './project-types/ProjectTypeForm'
 
 export function ProjectTypeManagement() {
   const { selectedOrganization } = useOrganization()

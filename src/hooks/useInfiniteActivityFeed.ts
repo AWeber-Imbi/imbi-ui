@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
+
 import { apiClient } from '@/api/client'
 import type { ActivityFeedEntry } from '@/types'
 

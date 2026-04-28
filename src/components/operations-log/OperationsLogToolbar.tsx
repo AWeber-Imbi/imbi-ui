@@ -1,10 +1,11 @@
 import {
+  type ComponentPropsWithoutRef,
+  type ReactNode,
   forwardRef,
   useMemo,
   useState,
-  type ComponentPropsWithoutRef,
-  type ReactNode,
 } from 'react'
+
 import {
   Box,
   Check,
@@ -15,6 +16,7 @@ import {
   List,
   Search,
 } from 'lucide-react'
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -26,10 +28,11 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { sortEnvironments } from '@/lib/utils'
 import {
-  OPERATIONS_LOG_ENTRY_TYPES,
   type Environment,
+  OPERATIONS_LOG_ENTRY_TYPES,
   type OperationsLogEntryType,
 } from '@/types'
+
 import type { OperationsLogView, TimeRange } from './opsLogHelpers'
 
 const RANGES: { key: TimeRange; label: string }[] = [

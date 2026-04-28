@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
+
 import { Plus, Search } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
+import { ErrorBanner } from '@/components/ui/error-banner'
 import { Input } from '@/components/ui/input'
 import { LoadingState } from '@/components/ui/loading-state'
-import { ErrorBanner } from '@/components/ui/error-banner'
 
 interface AdminSectionProps {
   /** Placeholder for the search input. */

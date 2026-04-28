@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
+
 import { ExternalLink } from 'lucide-react'
+
 import { iconRegistry } from '@/lib/icon-registry'
 import type { IconComponent } from '@/lib/icon-registry'
 import { createImgComponent } from '@/lib/icon-sets/utils'

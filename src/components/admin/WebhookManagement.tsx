@@ -1,21 +1,24 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Webhook as WebhookIcon } from 'lucide-react'
-import { Card, CardContent, CardDescription } from '@/components/ui/card'
-import { AdminTable } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { WebhookForm } from './webhooks/WebhookForm'
-import { WebhookDetail } from './webhooks/WebhookDetail'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listWebhooks,
-  deleteWebhook,
   createWebhook,
+  deleteWebhook,
+  listWebhooks,
   updateWebhook,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
 import { buildDiffPatch } from '@/lib/json-patch'
-import type { Webhook, WebhookCreate, PatchOperation } from '@/types'
+import type { PatchOperation, Webhook, WebhookCreate } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { WebhookDetail } from './webhooks/WebhookDetail'
+import { WebhookForm } from './webhooks/WebhookForm'
 
 export function WebhookManagement() {
   const { selectedOrganization } = useOrganization()

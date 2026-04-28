@@ -1,6 +1,9 @@
-import { lazy, Suspense, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Suspense, lazy, useEffect } from 'react'
+
+import { Navigate, Route, Routes } from 'react-router-dom'
+
 import { Toaster } from 'sonner'
+
 import { BootstrapGate } from './components/BootstrapGate'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { OrganizationProvider } from './contexts/OrganizationContext'

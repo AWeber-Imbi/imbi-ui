@@ -1,39 +1,41 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { extractApiErrorDetail } from '@/lib/apiError'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
-  Edit2,
-  Power,
-  Clock,
-  User,
-  Mail,
-  Calendar,
-  Shield,
-  Plus,
-  Trash2,
   Building2,
+  Calendar,
+  Clock,
+  Edit2,
+  Mail,
+  Plus,
+  Power,
+  Shield,
+  Trash2,
+  User,
 } from 'lucide-react'
+import { toast } from 'sonner'
+
+import {
+  addUserToOrg,
+  getRoles,
+  removeUserFromOrg,
+  updateUserOrgRole,
+} from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Gravatar } from '@/components/ui/gravatar'
-import {
-  getRoles,
-  addUserToOrg,
-  updateUserOrgRole,
-  removeUserFromOrg,
-} from '@/api/endpoints'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { buildReplacePatch } from '@/lib/json-patch'
-import type { AdminUser, OrgMembership } from '@/types'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { extractApiErrorDetail } from '@/lib/apiError'
+import { buildReplacePatch } from '@/lib/json-patch'
+import type { AdminUser, OrgMembership } from '@/types'
 
 interface UserDetailProps {
   user: AdminUser

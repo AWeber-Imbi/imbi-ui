@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import type { FC } from 'react'
+
+import { beforeEach, describe, expect, it } from 'vitest'
+
 import { IconRegistry } from '@/lib/icon-registry'
-import type { IconSetDefinition, IconComponent } from '@/lib/icon-registry'
+import type { IconComponent, IconSetDefinition } from '@/lib/icon-registry'
 
 function makeSet(
   id: string,

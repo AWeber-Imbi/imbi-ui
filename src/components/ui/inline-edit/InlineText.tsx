@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
+
 import { Input } from '@/components/ui/input'
 import { useInlineEdit } from '@/hooks/useInlineEdit'
-import { InlineDisplay } from './InlineDisplay'
 import { cn } from '@/lib/utils'
+
+import { InlineDisplay } from './InlineDisplay'
 
 export interface InlineTextProps {
   value: string | null

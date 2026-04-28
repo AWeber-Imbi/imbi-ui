@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+
+import { useNavigate, useParams } from 'react-router-dom'
 
 export type ViewMode = 'list' | 'create' | 'edit' | 'detail'
 

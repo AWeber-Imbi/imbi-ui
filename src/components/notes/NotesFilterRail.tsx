@@ -1,8 +1,10 @@
 import { Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import { Input } from '@/components/ui/input'
-import { colorForTag } from './notesHelpers'
+import { cn } from '@/lib/utils'
 import type { TagRef } from '@/types'
+
+import { colorForTag } from './notesHelpers'
 
 interface Props {
   tags: TagRef[]

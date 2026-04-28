@@ -1,21 +1,24 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { Save, X, AlertCircle } from 'lucide-react'
-import { Button } from '../../ui/button'
-import { Input } from '../../ui/input'
+import { AlertCircle, Save, X } from 'lucide-react'
+
+import { getTeamSchema } from '@/api/endpoints'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconUpload } from '../../ui/icon-upload'
 import { IconPicker } from '@/components/ui/icon-picker'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
+import { TEAM_BASE_FIELDS_SET } from '@/lib/constants'
+import { extractDynamicFields, slugify } from '@/lib/utils'
+import type { Team, TeamCreate } from '@/types'
+
+import { Button } from '../../ui/button'
 import {
   DynamicFormFields,
   validateDynamicFields,
 } from '../../ui/dynamic-fields'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { getTeamSchema } from '@/api/endpoints'
-import { TEAM_BASE_FIELDS_SET } from '@/lib/constants'
-import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
-import { extractDynamicFields, slugify } from '@/lib/utils'
-import type { Team, TeamCreate } from '@/types'
+import { IconUpload } from '../../ui/icon-upload'
+import { Input } from '../../ui/input'
 
 interface TeamFormProps {
   team: Team | null

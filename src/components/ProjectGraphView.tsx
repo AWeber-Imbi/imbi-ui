@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
+
 import { useQueries } from '@tanstack/react-query'
+
 import { getProjectRelationships } from '@/api/endpoints'
 import { LazyProjectsGraphCanvas } from '@/components/LazyProjectsGraphCanvas'
 import { Card } from '@/components/ui/card'
 import {
-  buildRelationshipEdges,
   type GraphEdge,
+  buildRelationshipEdges,
 } from '@/lib/relationship-edges'
 import type { Project } from '@/types'
 

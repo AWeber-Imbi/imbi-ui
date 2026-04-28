@@ -1,12 +1,14 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
 import { Search, X } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+
 import { Button } from '@/components/ui/button'
 import {
   HoverCard,
-  HoverCardTrigger,
   HoverCardContent,
+  HoverCardTrigger,
 } from '@/components/ui/hover-card'
+import { Input } from '@/components/ui/input'
 import { getIcon, iconRegistry, useIconRegistryVersion } from '@/lib/icons'
 import type { IconComponent } from '@/lib/icons'
 

@@ -1,19 +1,21 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { Save, X, AlertCircle } from 'lucide-react'
+import { AlertCircle, Save, X } from 'lucide-react'
+
+import { getProjectTypeSchema } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { IconUpload } from '@/components/ui/icon-upload'
 import { Card, CardContent } from '@/components/ui/card'
-import { IconPicker } from '@/components/ui/icon-picker'
 import {
   DynamicFormFields,
   validateDynamicFields,
 } from '@/components/ui/dynamic-fields'
+import { IconPicker } from '@/components/ui/icon-picker'
+import { IconUpload } from '@/components/ui/icon-upload'
+import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { getProjectTypeSchema } from '@/api/endpoints'
-import { PROJECT_TYPE_BASE_FIELDS_SET } from '@/lib/constants'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
+import { PROJECT_TYPE_BASE_FIELDS_SET } from '@/lib/constants'
 import { extractDynamicFields, slugify } from '@/lib/utils'
 import type { ProjectType, ProjectTypeCreate } from '@/types'
 

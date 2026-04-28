@@ -1,4 +1,5 @@
 import { formatDistanceToNow } from 'date-fns'
+
 import type { ProjectSchemaSection } from '@/api/endpoints'
 import type { Project } from '@/types'
 

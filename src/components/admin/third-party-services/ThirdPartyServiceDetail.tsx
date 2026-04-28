@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import {
   ArrowLeft,
   Edit2,
@@ -7,15 +8,17 @@ import {
   Key,
   Webhook,
 } from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { statusBadgeVariant } from '@/lib/status-colors'
+import type { ThirdPartyService } from '@/types'
+
 import { OAuth2ApplicationList } from './OAuth2ApplicationList'
 import { ServiceWebhookList } from './ServiceWebhookList'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { statusBadgeVariant } from '@/lib/status-colors'
-import { Badge } from '@/components/ui/badge'
-import type { ThirdPartyService } from '@/types'
 
 interface ThirdPartyServiceDetailProps {
   service: ThirdPartyService

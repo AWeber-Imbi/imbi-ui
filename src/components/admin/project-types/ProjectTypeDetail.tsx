@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Edit2 } from 'lucide-react'
+
+import { getProjectTypeSchema } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DynamicDetailFields } from '@/components/ui/dynamic-fields'
-import { getProjectTypeSchema } from '@/api/endpoints'
 import { PROJECT_TYPE_BASE_FIELDS_SET } from '@/lib/constants'
 import { useIcon } from '@/lib/icons'
 import { extractDynamicFields } from '@/lib/utils'

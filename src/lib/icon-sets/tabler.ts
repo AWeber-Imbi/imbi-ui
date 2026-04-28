@@ -1,15 +1,17 @@
-import * as TablerIcons from '@tabler/icons-react'
 import { createElement } from 'react'
+
+import * as TablerIcons from '@tabler/icons-react'
 import { renderToStaticMarkup } from 'react-dom/server'
+
 import type {
   IconComponent,
   IconEntry,
   IconSetDefinition,
 } from '@/lib/icon-registry'
 import {
-  toPascalCase,
   encodeSvgToDataUrl,
   isForwardRefComponent,
+  toPascalCase,
 } from '@/lib/icon-sets/utils'
 
 const tablerLookup = TablerIcons as Record<string, unknown>

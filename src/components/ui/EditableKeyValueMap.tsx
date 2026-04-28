@@ -6,7 +6,9 @@
 // For form-embedded free-form key/value editing where the whole form is
 // submitted at once, use KeyValueEditor (./key-value-editor) instead.
 import type { ReactNode } from 'react'
+
 import { Trash2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'

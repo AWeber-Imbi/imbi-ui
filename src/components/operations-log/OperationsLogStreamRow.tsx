@@ -1,5 +1,7 @@
-import { ChevronDown } from 'lucide-react'
 import { memo } from 'react'
+
+import { ChevronDown } from 'lucide-react'
+
 import { Gravatar } from '@/components/ui/gravatar'
 import {
   Tooltip,
@@ -12,9 +14,10 @@ import { deriveChipColors } from '@/lib/chip-colors'
 import { ENTRY_TYPE_ICONS } from '@/lib/ops-log-icons'
 import { cn } from '@/lib/utils'
 import type { Environment, OperationsLogRecord, Project } from '@/types'
+
 import { OperationsLogEntryDetails } from './OperationsLogEntryDetails'
-import { OPS_ROW_GRID, OPS_ROW_PAD } from './opsRowLayout'
 import { absTime, cleanDescription, relTime } from './opsLogHelpers'
+import { OPS_ROW_GRID, OPS_ROW_PAD } from './opsRowLayout'
 
 interface Props {
   id: string

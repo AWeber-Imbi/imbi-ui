@@ -1,8 +1,8 @@
-import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
+import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/useAuth'
 
 export function SettingsSecurity() {

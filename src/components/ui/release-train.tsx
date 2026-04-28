@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { ArrowRight } from 'lucide-react'
 import type { CSSProperties } from 'react'
+
+import { ArrowRight } from 'lucide-react'
+
 import { useTheme } from '@/contexts/ThemeContext'
 import { deriveChipColors } from '@/lib/chip-colors'
 import { cn } from '@/lib/utils'

@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { getIcon, useIconRegistryVersion } from '@/lib/icons'
+
 import { EditableKeyValueMap } from '@/components/ui/EditableKeyValueMap'
 import { useEditableKeyValueMap } from '@/hooks/useEditableKeyValueMap'
+import { getIcon, useIconRegistryVersion } from '@/lib/icons'
 import type { LinkDefinition } from '@/types'
 
 interface EditLinksCardProps {

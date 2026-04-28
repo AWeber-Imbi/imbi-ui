@@ -1,4 +1,5 @@
 import { createElement } from 'react'
+
 import type { IconComponent } from '@/lib/icon-registry'
 
 export function toPascalCase(str: string): string {

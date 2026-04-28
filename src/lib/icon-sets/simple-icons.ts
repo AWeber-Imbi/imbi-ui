@@ -1,12 +1,14 @@
-import * as simpleIcons from '@icons-pack/react-simple-icons'
 import { createElement } from 'react'
+
+import * as simpleIcons from '@icons-pack/react-simple-icons'
 import { renderToStaticMarkup } from 'react-dom/server'
+
 import type {
   IconComponent,
   IconEntry,
   IconSetDefinition,
 } from '@/lib/icon-registry'
-import { toPascalCase, encodeSvgToDataUrl } from '@/lib/icon-sets/utils'
+import { encodeSvgToDataUrl, toPascalCase } from '@/lib/icon-sets/utils'
 
 const siLookup = simpleIcons as Record<string, unknown>
 

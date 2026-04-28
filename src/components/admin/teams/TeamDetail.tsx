@@ -1,23 +1,31 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { extractApiErrorDetail } from '@/lib/apiError'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertCircle,
   ArrowLeft,
   Edit2,
-  Users,
-  UserPlus,
-  X,
   Search,
-  AlertCircle,
+  UserPlus,
+  Users,
+  X,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+
+import {
+  addTeamMember,
+  getTeamMembers,
+  getTeamSchema,
+  removeTeamMember,
+} from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { Gravatar } from '@/components/ui/gravatar'
 import { DynamicDetailFields } from '@/components/ui/dynamic-fields'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { Gravatar } from '@/components/ui/gravatar'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -27,21 +35,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  getTeamMembers,
-  addTeamMember,
-  removeTeamMember,
-  getTeamSchema,
-} from '@/api/endpoints'
-import { TEAM_BASE_FIELDS_SET } from '@/lib/constants'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { extractDynamicFields } from '@/lib/utils'
-import type { Team } from '@/types'
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { extractApiErrorDetail } from '@/lib/apiError'
+import { TEAM_BASE_FIELDS_SET } from '@/lib/constants'
+import { extractDynamicFields } from '@/lib/utils'
+import type { Team } from '@/types'
 
 interface TeamDetailProps {
   team: Team

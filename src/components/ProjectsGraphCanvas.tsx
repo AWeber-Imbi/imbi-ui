@@ -1,35 +1,38 @@
-import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { useNavigate } from 'react-router-dom'
+
+import {
+  ChevronDown,
+  Expand,
+  Maximize2,
+  Shrink,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react'
 import {
   GraphCanvas,
   GraphCanvasRef,
   LayoutTypes,
-  lightTheme,
   darkTheme,
+  lightTheme,
   useSelection,
 } from 'reagraph'
 import type { GraphEdge, InternalGraphNode } from 'reagraph'
-import {
-  ZoomIn,
-  ZoomOut,
-  Maximize2,
-  ChevronDown,
-  Expand,
-  Shrink,
-} from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+
 import { Button } from '@/components/ui/button'
-import { useTheme } from '@/contexts/ThemeContext'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useTheme } from '@/contexts/ThemeContext'
 import { getIconUrl, useIconRegistryVersion } from '@/lib/icons'
 import {
-  EDGE_COLOR_DEPENDS_ON,
   EDGE_COLOR_DEPENDED_UPON,
+  EDGE_COLOR_DEPENDS_ON,
 } from '@/lib/relationship-edges'
 
 export interface GraphProject {

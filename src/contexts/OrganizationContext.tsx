@@ -1,14 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
 import {
+  type ReactNode,
   createContext,
-  useContext,
-  useState,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
-  type ReactNode,
+  useState,
 } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
+
 import { listOrganizations } from '@/api/endpoints'
 import { useAuthStore } from '@/stores/authStore'
 import type { Organization } from '@/types'

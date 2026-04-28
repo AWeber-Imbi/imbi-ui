@@ -1,15 +1,18 @@
 import { useState } from 'react'
+
 import { Link } from 'react-router-dom'
+
 import { useQuery } from '@tanstack/react-query'
-import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
+
 import { getProjectRelationships } from '@/api/endpoints'
-import { buildRelationshipEdges } from '@/lib/relationship-edges'
-import {
-  LazyProjectsGraphCanvas,
-  type GraphProject,
-} from '@/components/LazyProjectsGraphCanvas'
 import { EditRelationshipsDialog } from '@/components/EditRelationshipsDialog'
+import {
+  type GraphProject,
+  LazyProjectsGraphCanvas,
+} from '@/components/LazyProjectsGraphCanvas'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { buildRelationshipEdges } from '@/lib/relationship-edges'
 import type { Project, ProjectRelationship } from '@/types'
 
 type RelFilter = 'all' | 'uses' | 'used-by'

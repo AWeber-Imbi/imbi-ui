@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+
 import { useLocation, useNavigate } from 'react-router-dom'
+
 import { refreshToken as refreshTokenApi } from '@/api/endpoints'
-import { useAuthStore } from '@/stores/authStore'
 import { bootstrapAuth } from '@/hooks/authBootstrap'
+import { useAuthStore } from '@/stores/authStore'
 
 interface BootstrapGateProps {
   children: React.ReactNode

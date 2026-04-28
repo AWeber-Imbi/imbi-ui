@@ -1,19 +1,22 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { Users } from 'lucide-react'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { Card, CardContent, CardDescription } from '@/components/ui/card'
+
+import { createTeam, deleteTeam, listTeams, updateTeam } from '@/api/endpoints'
 import { AdminTable } from '@/components/ui/admin-table'
 import type { CanDeleteResult } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { TeamForm } from './teams/TeamForm'
-import { TeamDetail } from './teams/TeamDetail'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
 import { useAdminCrud } from '@/hooks/useAdminCrud'
-import { listTeams, deleteTeam, createTeam, updateTeam } from '@/api/endpoints'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
-import type { Team, TeamCreate, PatchOperation } from '@/types'
+import type { PatchOperation, Team, TeamCreate } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { TeamDetail } from './teams/TeamDetail'
+import { TeamForm } from './teams/TeamForm'
 
 export function TeamManagement() {
   const { selectedOrganization } = useOrganization()

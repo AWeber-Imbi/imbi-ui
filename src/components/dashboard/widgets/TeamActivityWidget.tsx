@@ -1,11 +1,12 @@
 import {
-  TrendingUp,
-  TrendingDown,
-  CheckCircle,
-  XCircle,
   AlertTriangle,
+  CheckCircle,
   ChevronRight,
+  TrendingDown,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react'
+
 import { Card } from '@/components/ui/card'
 
 interface ViewChangeEvent {

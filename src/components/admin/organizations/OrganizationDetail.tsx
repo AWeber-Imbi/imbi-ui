@@ -1,4 +1,5 @@
-import { ArrowLeft, Edit2, Building2 } from 'lucide-react'
+import { ArrowLeft, Building2, Edit2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EntityIcon } from '@/components/ui/entity-icon'

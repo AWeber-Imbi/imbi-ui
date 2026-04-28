@@ -1,28 +1,31 @@
 import { useState } from 'react'
+
 import { useQueryClient } from '@tanstack/react-query'
+import { Lock, Shield } from 'lucide-react'
 import { toast } from 'sonner'
-import { Shield, Lock } from 'lucide-react'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { extractApiErrorDetail } from '@/lib/apiError'
-import { Badge } from '@/components/ui/badge'
-import { AdminTable } from '@/components/ui/admin-table'
-import type { CanDeleteResult } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { RoleForm } from './roles/RoleForm'
-import { RoleDetail } from './roles/RoleDetail'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  getRoles,
-  getRole,
-  deleteRole,
   createRole,
-  updateRole,
+  deleteRole,
+  getRole,
+  getRoles,
   grantPermission,
   revokePermission,
+  updateRole,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import type { CanDeleteResult } from '@/components/ui/admin-table'
+import { Badge } from '@/components/ui/badge'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { extractApiErrorDetail } from '@/lib/apiError'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
-import type { RoleDetail as RoleDetailType, RoleCreate } from '@/types'
+import type { RoleCreate, RoleDetail as RoleDetailType } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { RoleDetail } from './roles/RoleDetail'
+import { RoleForm } from './roles/RoleForm'
 
 type Role = Awaited<ReturnType<typeof getRoles>>[number]
 

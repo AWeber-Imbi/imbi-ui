@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+
 import type { UseMutationResult } from '@tanstack/react-query'
-import { Plus, Trash2, Building2 } from 'lucide-react'
+import { Building2, Plus, Trash2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -10,7 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import type { ServiceAccount, OrgMembership, Role } from '@/types'
+import type { OrgMembership, Role, ServiceAccount } from '@/types'
 
 interface OrgMembershipsCardProps {
   account: ServiceAccount

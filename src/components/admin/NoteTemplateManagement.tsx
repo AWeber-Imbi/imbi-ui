@@ -1,21 +1,24 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
+
 import { StickyNote } from 'lucide-react'
-import { EntityIcon } from '@/components/ui/entity-icon'
-import { formatRelativeDate } from '@/lib/formatDate'
-import { AdminTable } from '@/components/ui/admin-table'
-import { AdminSection } from './AdminSection'
-import { NoteTemplateForm } from './note-templates/NoteTemplateForm'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useAdminNav } from '@/hooks/useAdminNav'
-import { useAdminCrud } from '@/hooks/useAdminCrud'
+
 import {
-  listNoteTemplates,
-  deleteNoteTemplate,
   createNoteTemplate,
+  deleteNoteTemplate,
+  listNoteTemplates,
   updateNoteTemplate,
 } from '@/api/endpoints'
+import { AdminTable } from '@/components/ui/admin-table'
+import { EntityIcon } from '@/components/ui/entity-icon'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useAdminCrud } from '@/hooks/useAdminCrud'
+import { useAdminNav } from '@/hooks/useAdminNav'
+import { formatRelativeDate } from '@/lib/formatDate'
 import { buildDiffPatch } from '@/lib/json-patch'
 import type { NoteTemplate, NoteTemplateCreate, PatchOperation } from '@/types'
+
+import { AdminSection } from './AdminSection'
+import { NoteTemplateForm } from './note-templates/NoteTemplateForm'
 
 export function NoteTemplateManagement() {
   const { selectedOrganization } = useOrganization()

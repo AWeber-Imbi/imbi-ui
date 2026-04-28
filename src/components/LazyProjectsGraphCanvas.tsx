@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import type { ComponentProps } from 'react'
-import { Card } from '@/components/ui/card'
+
 import type { GraphProject } from '@/components/ProjectsGraphCanvas'
+import { Card } from '@/components/ui/card'
 
 export type { GraphProject }
 

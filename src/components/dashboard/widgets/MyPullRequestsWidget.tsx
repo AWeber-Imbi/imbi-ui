@@ -1,6 +1,7 @@
-import { GitPullRequest, Clock, MessageSquare, CheckCircle } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { CheckCircle, Clock, GitPullRequest, MessageSquare } from 'lucide-react'
+
 import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 
 interface MyPullRequestsWidgetProps {
   onUserSelect?: (userName: string) => void

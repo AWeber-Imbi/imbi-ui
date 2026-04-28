@@ -1,9 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
 import { useNavigate } from 'react-router-dom'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { LoadingState } from '@/components/ui/loading-state'
-import { ErrorBanner } from '@/components/ui/error-banner'
+
 import {
   createProjectNote,
   deleteProjectNote,
@@ -11,12 +12,15 @@ import {
   listProjectNotes,
   patchProjectNote,
 } from '@/api/endpoints'
+import { ErrorBanner } from '@/components/ui/error-banner'
+import { LoadingState } from '@/components/ui/loading-state'
 import { extractApiErrorDetail } from '@/lib/apiError'
+import type { Note, NoteTemplate } from '@/types'
+
 import { NotesPinboard } from './NotesPinboard'
 import { NotesPinboardEmpty } from './NotesPinboardEmpty'
 import { NotesPinboardNew } from './NotesPinboardNew'
 import { NotesPinboardReader } from './NotesPinboardReader'
-import type { Note, NoteTemplate } from '@/types'
 
 interface Props {
   orgSlug: string

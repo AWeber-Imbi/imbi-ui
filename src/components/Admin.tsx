@@ -1,38 +1,42 @@
 import { useEffect, useState } from 'react'
+
+import { useNavigate, useParams } from 'react-router-dom'
+
 import {
-  Users,
-  Shield,
-  FileJson,
-  ChevronRight,
-  ChevronLeft,
-  ExternalLink,
+  Bot,
   Building2,
+  ChevronLeft,
+  ChevronRight,
+  Cloud,
+  ExternalLink,
+  FileJson,
+  FolderTree,
   Globe,
   Layers,
-  FolderTree,
-  UsersRound,
-  Bot,
-  Cloud,
   Link2,
+  Shield,
   StickyNote,
+  Users,
+  UsersRound,
   Webhook,
 } from 'lucide-react'
-import { UserManagement } from './admin/UserManagement'
-import { RoleManagement } from './admin/RoleManagement'
+
+import { Button } from '@/components/ui/button'
+import { useOrganization } from '@/contexts/OrganizationContext'
+
 import { BlueprintManagement } from './admin/BlueprintManagement'
-import { OrganizationManagement } from './admin/OrganizationManagement'
-import { TeamManagement } from './admin/TeamManagement'
-import { ServiceAccountManagement } from './admin/ServiceAccountManagement'
-import { OAuthManagement } from './admin/OAuthManagement'
 import { EnvironmentManagement } from './admin/EnvironmentManagement'
-import { ProjectTypeManagement } from './admin/ProjectTypeManagement'
-import { ThirdPartyServiceManagement } from './admin/ThirdPartyServiceManagement'
 import { LinkDefinitionManagement } from './admin/LinkDefinitionManagement'
 import { NoteTemplateManagement } from './admin/NoteTemplateManagement'
+import { OAuthManagement } from './admin/OAuthManagement'
+import { OrganizationManagement } from './admin/OrganizationManagement'
+import { ProjectTypeManagement } from './admin/ProjectTypeManagement'
+import { RoleManagement } from './admin/RoleManagement'
+import { ServiceAccountManagement } from './admin/ServiceAccountManagement'
+import { TeamManagement } from './admin/TeamManagement'
+import { ThirdPartyServiceManagement } from './admin/ThirdPartyServiceManagement'
+import { UserManagement } from './admin/UserManagement'
 import { WebhookManagement } from './admin/WebhookManagement'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useNavigate, useParams } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
 
 type AdminSection =
   | 'teams'

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { bootstrapAuth, type BootstrapDeps } from '../authBootstrap'
+
+import { type BootstrapDeps, bootstrapAuth } from '../authBootstrap'
 
 function makeDeps(overrides: Partial<BootstrapDeps> = {}): {
   deps: BootstrapDeps

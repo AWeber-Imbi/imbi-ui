@@ -1,12 +1,14 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { Search, Power, AlertCircle, CheckCircle } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { AlertCircle, CheckCircle, Power, Search } from 'lucide-react'
+
+import { getAuthProviders } from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LoadingState } from '@/components/ui/loading-state'
 import { ErrorBanner } from '@/components/ui/error-banner'
-import { getAuthProviders } from '@/api/endpoints'
+import { Input } from '@/components/ui/input'
+import { LoadingState } from '@/components/ui/loading-state'
 import type { AuthProvider } from '@/types'
 
 export function OAuthManagement() {

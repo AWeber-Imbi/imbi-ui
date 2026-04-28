@@ -1,11 +1,12 @@
-import { Button } from '@/components/ui/button'
 import {
-  LucideIcon,
-  Mail as GoogleIcon,
   Github as GitHubIcon,
-  Clock as OIDCIcon,
+  Mail as GoogleIcon,
   Key as KeyIcon,
+  LucideIcon,
+  Clock as OIDCIcon,
 } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 
 interface OAuthButtonProps {
   provider: {

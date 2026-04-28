@@ -1,29 +1,31 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { ApiError } from '@/api/client'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertCircle,
+  Check,
+  Copy,
   Eye,
   EyeOff,
-  Copy,
-  Check,
   Save,
   Shield,
-  AlertCircle,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+
+import type { ApiError } from '@/api/client'
 import {
   getApplicationSecrets,
   updateApplicationSecrets,
 } from '@/api/endpoints'
-import { buildDiffPatch } from '@/lib/json-patch'
-import type { PatchOperation } from '@/types'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { buildDiffPatch } from '@/lib/json-patch'
+import type { PatchOperation } from '@/types'
 
 interface ApplicationSecretsPanelProps {
   orgSlug: string

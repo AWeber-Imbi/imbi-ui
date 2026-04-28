@@ -1,11 +1,18 @@
-import { useState, useMemo, useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useMemo, useState } from 'react'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AlertCircle, Plus, Search, Trash2, Webhook } from 'lucide-react'
 import { toast } from 'sonner'
-import { extractApiErrorDetail } from '@/lib/apiError'
-import { Plus, Search, Trash2, Webhook, AlertCircle } from 'lucide-react'
+
+import {
+  createWebhook,
+  deleteWebhook,
+  listServiceWebhooks,
+  updateWebhook,
+} from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -14,17 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { WebhookForm } from '../webhooks/WebhookForm'
-import { WebhookDetail } from '../webhooks/WebhookDetail'
-import {
-  listServiceWebhooks,
-  createWebhook,
-  updateWebhook,
-  deleteWebhook,
-} from '@/api/endpoints'
-import { buildDiffPatch } from '@/lib/json-patch'
-import type { WebhookCreate, PatchOperation } from '@/types'
 import type { ViewMode } from '@/hooks/useAdminNav'
+import { extractApiErrorDetail } from '@/lib/apiError'
+import { buildDiffPatch } from '@/lib/json-patch'
+import type { PatchOperation, WebhookCreate } from '@/types'
+
+import { WebhookDetail } from '../webhooks/WebhookDetail'
+import { WebhookForm } from '../webhooks/WebhookForm'
 
 interface ServiceWebhookListProps {
   orgSlug: string

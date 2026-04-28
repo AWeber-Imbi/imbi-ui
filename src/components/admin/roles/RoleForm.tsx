@@ -1,21 +1,23 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import {
-  Save,
-  X,
   AlertCircle,
   AlertTriangle,
   ChevronDown,
   ChevronRight,
+  Save,
+  X,
 } from 'lucide-react'
+
+import { getAdminSettings, getRole } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { FormField } from '@/components/ui/form-field'
+import { Input } from '@/components/ui/input'
 import { useFormScaffold } from '@/hooks/useFormScaffold'
-import { getRole, getAdminSettings } from '@/api/endpoints'
-import type { RoleCreate, Permission } from '@/types'
+import type { Permission, RoleCreate } from '@/types'
 
 interface RoleFormProps {
   roleSlug: string | null

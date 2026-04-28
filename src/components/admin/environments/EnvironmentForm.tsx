@@ -1,21 +1,23 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { AlertCircle } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { ErrorBanner } from '@/components/ui/error-banner'
-import { IconUpload } from '@/components/ui/icon-upload'
-import { IconPicker } from '@/components/ui/icon-picker'
-import { ColorPicker } from '@/components/ui/color-picker'
+
+import { getEnvironmentSchema } from '@/api/endpoints'
 import { FormHeader } from '@/components/admin/form-header'
+import { Card, CardContent } from '@/components/ui/card'
+import { ColorPicker } from '@/components/ui/color-picker'
 import {
   DynamicFormFields,
   validateDynamicFields,
 } from '@/components/ui/dynamic-fields'
+import { ErrorBanner } from '@/components/ui/error-banner'
+import { IconPicker } from '@/components/ui/icon-picker'
+import { IconUpload } from '@/components/ui/icon-upload'
+import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { getEnvironmentSchema } from '@/api/endpoints'
-import { ENVIRONMENT_BASE_FIELDS_SET } from '@/lib/constants'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
+import { ENVIRONMENT_BASE_FIELDS_SET } from '@/lib/constants'
 import { extractDynamicFields, slugify } from '@/lib/utils'
 import type { Environment, EnvironmentCreate } from '@/types'
 

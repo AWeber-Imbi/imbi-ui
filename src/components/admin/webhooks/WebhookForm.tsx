@@ -1,18 +1,20 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { AlertCircle, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
+import { AlertCircle, ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
+
+import { ApiError } from '@/api/client'
+import { listThirdPartyServices } from '@/api/endpoints'
+import { FormHeader } from '@/components/admin/form-header'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ErrorBanner } from '@/components/ui/error-banner'
-import { IconUpload } from '@/components/ui/icon-upload'
 import { IconPicker } from '@/components/ui/icon-picker'
-import { FormHeader } from '@/components/admin/form-header'
+import { IconUpload } from '@/components/ui/icon-upload'
+import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { listThirdPartyServices } from '@/api/endpoints'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
 import { slugify } from '@/lib/utils'
-import { ApiError } from '@/api/client'
 import type { Webhook, WebhookCreate, WebhookRule } from '@/types'
 
 // Per-row client id so React preserves correct instances after reorder/remove.

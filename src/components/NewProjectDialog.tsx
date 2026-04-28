@@ -1,24 +1,26 @@
-import {
-  Github,
-  Bug,
-  Bell,
-  ExternalLink,
-  icons,
-  type LucideIcon,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useOrganization } from '@/contexts/OrganizationContext'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  listTeams,
-  listProjectTypes,
+  Bell,
+  Bug,
+  ExternalLink,
+  Github,
+  type LucideIcon,
+  icons,
+} from 'lucide-react'
+
+import {
+  createProject,
   listEnvironments,
   listLinkDefinitions,
-  createProject,
+  listProjectTypes,
+  listTeams,
 } from '@/api/endpoints'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { slugify } from '@/lib/utils'
 import type { ProjectCreate } from '@/types'
 

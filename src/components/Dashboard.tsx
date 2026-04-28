@@ -1,33 +1,36 @@
-import { useState, useEffect, type ReactElement } from 'react'
-import { Settings } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { type ReactElement, useEffect, useState } from 'react'
+
 import {
   DndContext,
-  closestCenter,
+  DragEndEvent,
   KeyboardSensor,
   PointerSensor,
+  closestCenter,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core'
 import {
-  arrayMove,
   SortableContext,
+  arrayMove,
+  rectSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
-  rectSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { WidgetSelector, WidgetConfig } from './dashboard/WidgetSelector'
-import { StatWidget } from './dashboard/widgets/StatWidget'
-import { TeamActivityWidget } from './dashboard/widgets/TeamActivityWidget'
-import { RecentActivityWidget } from './dashboard/widgets/RecentActivityWidget'
+import { useQuery } from '@tanstack/react-query'
+import { Settings } from 'lucide-react'
+
+import { getProjects } from '@/api/endpoints'
+import { Button } from '@/components/ui/button'
+import { useOrganization } from '@/contexts/OrganizationContext'
+
+import { WidgetConfig, WidgetSelector } from './dashboard/WidgetSelector'
 import { MyPullRequestsWidget } from './dashboard/widgets/MyPullRequestsWidget'
 import { OutdatedComponentsWidget } from './dashboard/widgets/OutdatedComponentsWidget'
+import { RecentActivityWidget } from './dashboard/widgets/RecentActivityWidget'
 import { RecentDeploymentsWidget } from './dashboard/widgets/RecentDeploymentsWidget'
-import { useQuery } from '@tanstack/react-query'
-import { getProjects } from '@/api/endpoints'
-import { useOrganization } from '@/contexts/OrganizationContext'
+import { StatWidget } from './dashboard/widgets/StatWidget'
+import { TeamActivityWidget } from './dashboard/widgets/TeamActivityWidget'
 
 interface ViewChangeEvent {
   view: string

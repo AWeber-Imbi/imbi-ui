@@ -1,15 +1,17 @@
-import * as PhosphorIcons from '@phosphor-icons/react'
 import { type ComponentType, createElement } from 'react'
+
+import * as PhosphorIcons from '@phosphor-icons/react'
 import { renderToStaticMarkup } from 'react-dom/server'
+
 import type {
   IconComponent,
   IconEntry,
   IconSetDefinition,
 } from '@/lib/icon-registry'
 import {
-  toPascalCase,
   encodeSvgToDataUrl,
   isForwardRefComponent,
+  toPascalCase,
 } from '@/lib/icon-sets/utils'
 
 const phosphorLookup = PhosphorIcons as Record<string, unknown>

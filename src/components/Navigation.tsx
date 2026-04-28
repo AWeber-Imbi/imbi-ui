@@ -1,19 +1,30 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useMemo } from 'react'
+
+import { useLocation, useNavigate } from 'react-router-dom'
+
 import {
-  Settings,
-  User,
-  Rocket,
-  FolderKanban,
   Activity,
   BarChart3,
-  Plus,
+  Building2,
   ChevronDown,
-  UserCircle,
+  FolderKanban,
   LogOut,
   Moon,
+  Plus,
+  Rocket,
+  Settings,
   Sun,
-  Building2,
+  User,
+  UserCircle,
 } from 'lucide-react'
+
+import logoDark from '@/assets/logo-dark.svg'
+import logoLight from '@/assets/logo-light.svg'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/hooks/useAuth'
+import { UserResponse } from '@/types'
+
 import { Button } from './ui/button'
 import {
   DropdownMenu,
@@ -23,13 +34,6 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { Gravatar } from './ui/gravatar'
-import { useAuth } from '@/hooks/useAuth'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { useTheme } from '@/contexts/ThemeContext'
-import { UserResponse } from '@/types'
-import logoLight from '@/assets/logo-light.svg'
-import logoDark from '@/assets/logo-dark.svg'
-import { useMemo } from 'react'
 
 interface NavigationProps {
   currentView?: string

@@ -1,6 +1,6 @@
+import { jwtDecode } from 'jwt-decode'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { jwtDecode } from 'jwt-decode'
 
 interface JwtPayload {
   sub: string

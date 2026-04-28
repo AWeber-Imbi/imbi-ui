@@ -1,32 +1,35 @@
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import {
+  AlertCircle,
   ArrowLeft,
+  Braces,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  Copy,
   Edit2,
   FileJson,
   Filter,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  Copy,
-  Check,
-  ChevronDown,
-  ChevronRight,
   Hash,
+  List,
   ToggleLeft,
   Type,
-  List,
-  Braces,
+  XCircle,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { CardTitle } from '@/components/ui/card'
-import { LoadingState } from '@/components/ui/loading-state'
+
 import { getBlueprint } from '@/api/endpoints'
-import { getTypeSwatch } from '../BlueprintManagement'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { CardTitle } from '@/components/ui/card'
 import { LabelChip } from '@/components/ui/label-chip'
+import { LoadingState } from '@/components/ui/loading-state'
 import { parseFilterFromBlueprint } from '@/lib/utils'
 import type { SchemaProperty } from '@/types'
+
+import { getTypeSwatch } from '../BlueprintManagement'
 
 interface BlueprintDetailProps {
   blueprintKey: { type: string; slug: string }

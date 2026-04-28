@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, Edit2, Power, Clock, Calendar, Tag } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Edit2, Power, Tag } from 'lucide-react'
+
+import { getRoles } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { getRoles } from '@/api/endpoints'
-import { OrgMembershipsCard } from './OrgMembershipsCard'
-import { ClientCredentialsSection } from './ClientCredentialsSection'
-import { ApiKeysSection } from './ApiKeysSection'
-import { useServiceAccountMutations } from './useServiceAccountMutations'
 import type {
-  ServiceAccount,
   ApiKeyCreated,
   ClientCredentialCreated,
+  ServiceAccount,
 } from '@/types'
+
+import { ApiKeysSection } from './ApiKeysSection'
+import { ClientCredentialsSection } from './ClientCredentialsSection'
+import { OrgMembershipsCard } from './OrgMembershipsCard'
+import { useServiceAccountMutations } from './useServiceAccountMutations'
 
 interface ServiceAccountDetailProps {
   account: ServiceAccount

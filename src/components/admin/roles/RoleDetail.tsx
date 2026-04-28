@@ -1,22 +1,32 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { extractApiErrorDetail } from '@/lib/apiError'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertCircle,
   ArrowLeft,
+  Bot,
   Edit2,
-  Shield,
+  Info,
   Lock,
   Plus,
+  Shield,
   Trash2,
-  AlertCircle,
   Users,
   UsersRound,
-  Info,
-  Bot,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+
+import {
+  getAdminSettings,
+  getRole,
+  getRoleGroups,
+  getRoleServiceAccounts,
+  getRoleUsers,
+  grantPermission,
+  revokePermission,
+} from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Gravatar } from '@/components/ui/gravatar'
@@ -29,21 +39,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import {
-  getRole,
-  getAdminSettings,
-  getRoleUsers,
-  getRoleServiceAccounts,
-  getRoleGroups,
-  grantPermission,
-  revokePermission,
-} from '@/api/endpoints'
-import type { Permission, RoleUser, ServiceAccount } from '@/types'
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { extractApiErrorDetail } from '@/lib/apiError'
+import type { Permission, RoleUser, ServiceAccount } from '@/types'
 
 interface RoleDetailProps {
   slug: string

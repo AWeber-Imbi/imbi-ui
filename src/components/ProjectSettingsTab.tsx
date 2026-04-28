@@ -1,30 +1,33 @@
 import { useMemo, useState } from 'react'
+
 import { useNavigate } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+
+import {
+  deleteProject,
+  listEnvironments,
+  listLinkDefinitions,
+  patchProject,
+} from '@/api/endpoints'
+import { EditEnvironmentsCard } from '@/components/EditEnvironmentsCard'
+import { EditIdentifiersCard } from '@/components/EditIdentifiersCard'
+import { EditLinksCard } from '@/components/EditLinksCard'
 import { Button } from '@/components/ui/button'
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useProjectPatch } from '@/hooks/useProjectPatch'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { sortEnvironments } from '@/lib/utils'
-import {
-  listLinkDefinitions,
-  listEnvironments,
-  patchProject,
-  deleteProject,
-} from '@/api/endpoints'
-import { EditIdentifiersCard } from '@/components/EditIdentifiersCard'
-import { EditLinksCard } from '@/components/EditLinksCard'
-import { EditEnvironmentsCard } from '@/components/EditEnvironmentsCard'
 import type { Project } from '@/types'
-import { useProjectPatch } from '@/hooks/useProjectPatch'
 
 export function ProjectSettingsTab({ project }: { project: Project }) {
   const { selectedOrganization } = useOrganization()

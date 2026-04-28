@@ -1,7 +1,20 @@
-import { Search, Plus, Grid3x3, List, Network } from 'lucide-react'
+import { useMemo, useState } from 'react'
+
+import { useNavigate, useSearchParams } from 'react-router-dom'
+
+import { useQuery } from '@tanstack/react-query'
+import { Grid3x3, List, Network, Plus, Search } from 'lucide-react'
+
+import { getProjects } from '@/api/endpoints'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { sortEnvironments } from '@/lib/utils'
+
+import { NewProjectDialog } from './NewProjectDialog'
+import { ProjectGraphView } from './ProjectGraphView'
 import { Button } from './ui/button'
-import { Input } from './ui/input'
 import { Card } from './ui/card'
+import { EnvironmentBadge } from './ui/environment-badge'
+import { Input } from './ui/input'
 import {
   Table,
   TableBody,
@@ -10,15 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table'
-import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getProjects } from '@/api/endpoints'
-import { EnvironmentBadge } from './ui/environment-badge'
-import { sortEnvironments } from '@/lib/utils'
-import { useOrganization } from '@/contexts/OrganizationContext'
-import { NewProjectDialog } from './NewProjectDialog'
-import { ProjectGraphView } from './ProjectGraphView'
 
 export function ProjectsView() {
   const navigate = useNavigate()
