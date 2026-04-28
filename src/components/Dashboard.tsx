@@ -28,6 +28,7 @@ import { RecentDeploymentsWidget } from './dashboard/widgets/RecentDeploymentsWi
 import { useQuery } from '@tanstack/react-query'
 import { getProjects } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useRecentDeployments } from '@/hooks/useRecentDeployments'
 
 interface ViewChangeEvent {
   view: string
@@ -232,6 +233,11 @@ export function Dashboard({
     ? new Set(projects.map((p) => p.team.slug)).size
     : 0
 
+  const { data: recentDeployments } = useRecentDeployments(orgSlug, 50)
+  const activeDeploymentCount = (recentDeployments ?? []).filter(
+    (d) => d.completed_at == null,
+  ).length
+
   // Persist selections
   useEffect(() => {
     localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify(selectedWidgets))
@@ -271,7 +277,11 @@ export function Dashboard({
       />
     ),
     'stat-active-deployments': () => (
-      <StatWidget title="Active Deployments" value="1,429" icon="🚀" />
+      <StatWidget
+        title="Active Deployments"
+        value={activeDeploymentCount.toLocaleString()}
+        icon="🚀"
+      />
     ),
     'stat-teams': () => (
       <StatWidget title="Teams" value={teamCount.toLocaleString()} icon="👥" />

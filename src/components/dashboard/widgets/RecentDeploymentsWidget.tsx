@@ -1,84 +1,46 @@
-import { Rocket, CheckCircle, XCircle, Clock, ChevronRight } from 'lucide-react'
+import { useMemo } from 'react'
+import { Rocket, CheckCircle, Clock, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useQuery } from '@tanstack/react-query'
+import { getProjects } from '@/api/endpoints'
+import { useRecentDeployments } from '@/hooks/useRecentDeployments'
+import { formatRelativeDate } from '@/lib/formatDate'
+import type { Project } from '@/types'
 
 interface RecentDeploymentsWidgetProps {
   onProjectSelect?: (projectId: string) => void
 }
 
+function envVariant(slug: string): BadgeProps['variant'] {
+  const s = slug.toLowerCase()
+  if (s.includes('prod')) return 'accent'
+  if (s.includes('stag')) return 'warning'
+  if (s.includes('test') || s.includes('qa')) return 'info'
+  return 'info'
+}
+
 export function RecentDeploymentsWidget({
   onProjectSelect,
 }: RecentDeploymentsWidgetProps) {
-  const deployments = [
-    {
-      id: 1,
-      projectId: 'proj-123',
-      project: 'frontend-applications/navigation',
-      version: '3.68.0',
-      environment: 'Production' as const,
-      status: 'success' as const,
-      deployedBy: 'Scott Miller',
-      deployedAt: '12 minutes ago',
-    },
-    {
-      id: 2,
-      projectId: 'proj-456',
-      project: 'backend/api-gateway',
-      version: '2.45.1',
-      environment: 'Staging' as const,
-      status: 'in-progress' as const,
-      deployedBy: 'Dave Shawley',
-      deployedAt: '23 minutes ago',
-    },
-    {
-      id: 3,
-      projectId: 'proj-789',
-      project: 'platform/deployment-service',
-      version: '1.12.3',
-      environment: 'Production' as const,
-      status: 'failed' as const,
-      deployedBy: 'Gavin Roy',
-      deployedAt: '1 hour ago',
-    },
-    {
-      id: 4,
-      projectId: 'proj-234',
-      project: 'security/auth-service',
-      version: '4.2.0',
-      environment: 'Production' as const,
-      status: 'success' as const,
-      deployedBy: 'Jim Fitzpatrick',
-      deployedAt: '2 hours ago',
-    },
-    {
-      id: 5,
-      projectId: 'proj-567',
-      project: 'data/analytics-processor',
-      version: '5.8.2',
-      environment: 'Testing' as const,
-      status: 'success' as const,
-      deployedBy: 'Scott Miller',
-      deployedAt: '3 hours ago',
-    },
-  ]
+  const { selectedOrganization } = useOrganization()
+  const orgSlug = selectedOrganization?.slug ?? ''
 
-  const statusConfig: Record<
-    'success' | 'failed' | 'in-progress',
-    { label: string; icon: typeof CheckCircle; variant: BadgeProps['variant'] }
-  > = {
-    success: { label: 'Success', icon: CheckCircle, variant: 'success' },
-    failed: { label: 'Failed', icon: XCircle, variant: 'danger' },
-    'in-progress': { label: 'In Progress', icon: Clock, variant: 'info' },
-  }
+  const { data: deployments, isLoading } = useRecentDeployments(orgSlug, 10)
+  const { data: projects } = useQuery({
+    queryKey: ['projects', orgSlug],
+    queryFn: ({ signal }) => getProjects(orgSlug, signal),
+    enabled: Boolean(orgSlug),
+  })
 
-  const envConfig: Record<
-    'Production' | 'Staging' | 'Testing',
-    { variant: BadgeProps['variant'] }
-  > = {
-    Production: { variant: 'accent' },
-    Staging: { variant: 'warning' },
-    Testing: { variant: 'info' },
-  }
+  const projectsBySlug = useMemo(() => {
+    const map = new Map<string, Project>()
+    for (const p of projects ?? []) map.set(p.slug, p)
+    return map
+  }, [projects])
+
+  const items = (deployments ?? []).slice(0, 5)
 
   return (
     <Card className="p-6">
@@ -86,52 +48,75 @@ export function RecentDeploymentsWidget({
         <h3 className="text-lg text-primary">Recent Deployments</h3>
       </div>
 
-      <div className="space-y-2">
-        {deployments.map((deployment) => {
-          const status = statusConfig[deployment.status]
-          const env = envConfig[deployment.environment]
-          const StatusIcon = status.icon
+      {isLoading ? (
+        <div className="py-8 text-center text-sm text-secondary">
+          Loading deployments…
+        </div>
+      ) : items.length === 0 ? (
+        <div className="py-8 text-center text-sm text-secondary">
+          No recent deployments.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((d) => {
+            const project = projectsBySlug.get(d.project_slug)
+            const projectLabel = project
+              ? `${project.team.slug}/${project.slug}`
+              : d.project_slug
+            const inProgress = d.completed_at == null
+            const StatusIcon = inProgress ? Clock : CheckCircle
+            const statusVariant: BadgeProps['variant'] = inProgress
+              ? 'info'
+              : 'success'
+            const statusLabel = inProgress ? 'In Progress' : 'Success'
 
-          return (
-            <button
-              type="button"
-              key={deployment.id}
-              onClick={() => onProjectSelect?.(deployment.projectId)}
-              className="w-full rounded-lg border border-input bg-background p-3 text-left transition-colors hover:border-secondary"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 flex-1 items-start gap-3">
-                  <Rocket className="mt-0.5 h-5 w-5 flex-shrink-0 text-tertiary" />
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 truncate font-medium text-primary">
-                      {deployment.project}
-                    </div>
-                    <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <code className="rounded bg-secondary px-2 py-0.5 text-xs text-primary">
-                        {deployment.version}
-                      </code>
-                      <Badge variant={env.variant} className="rounded-full">
-                        {deployment.environment}
-                      </Badge>
-                      <Badge
-                        variant={status.variant}
-                        className="gap-1 rounded-full"
-                      >
-                        <StatusIcon className="h-3 w-3" />
-                        {status.label}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {deployment.deployedBy} • {deployment.deployedAt}
+            return (
+              <button
+                type="button"
+                key={d.id}
+                onClick={() => onProjectSelect?.(d.project_id)}
+                className="w-full rounded-lg border border-input bg-background p-3 text-left transition-colors hover:border-secondary"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <Rocket className="mt-0.5 h-5 w-5 flex-shrink-0 text-tertiary" />
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 truncate font-medium text-primary">
+                        {projectLabel}
+                      </div>
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        {d.version && (
+                          <code className="rounded bg-secondary px-2 py-0.5 text-xs text-primary">
+                            {d.version}
+                          </code>
+                        )}
+                        <Badge
+                          variant={envVariant(d.environment_slug)}
+                          className="rounded-full"
+                        >
+                          {d.environment_slug}
+                        </Badge>
+                        <Badge
+                          variant={statusVariant}
+                          className="gap-1 rounded-full"
+                        >
+                          <StatusIcon className="h-3 w-3" />
+                          {statusLabel}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {d.performed_by ?? d.recorded_by} •{' '}
+                        {formatRelativeDate(d.occurred_at)}
+                      </div>
                     </div>
                   </div>
+                  <ChevronRight className="h-4 w-4 flex-shrink-0 text-tertiary" />
                 </div>
-                <ChevronRight className="h-4 w-4 flex-shrink-0 text-tertiary" />
-              </div>
-            </button>
-          )
-        })}
-      </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </Card>
   )
 }
