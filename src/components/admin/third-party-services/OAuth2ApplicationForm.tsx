@@ -102,8 +102,8 @@ export function OAuth2ApplicationForm({
     if (isEdit) {
       const data: ServiceApplicationUpdate = {
         app_type: appType,
-        application_url: applicationUrl || null,
-        callback_url: callbackUrl || null,
+        application_url: applicationUrl.trim() || null,
+        callback_url: callbackUrl.trim() || null,
         client_id: clientId,
         description: description || null,
         name,
@@ -120,8 +120,8 @@ export function OAuth2ApplicationForm({
     } else {
       const data: ServiceApplicationCreate = {
         app_type: appType,
-        application_url: applicationUrl || null,
-        callback_url: callbackUrl || null,
+        application_url: applicationUrl.trim() || null,
+        callback_url: callbackUrl.trim() || null,
         client_id: clientId,
         client_secret: clientSecret,
         description: description || null,
