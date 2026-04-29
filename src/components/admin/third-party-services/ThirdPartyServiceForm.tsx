@@ -106,8 +106,9 @@ export function ThirdPartyServiceForm({
       ['revoke_endpoint', revokeEndpoint],
     ]
     for (const [field, value] of urlFields) {
-      if (value && !/^https?:\/\/.+/.test(value)) {
-        newErrors[field] = 'Must be a valid URL starting with http:// or https://'
+      if (value.trim() && !/^https?:\/\/.+/.test(value.trim())) {
+        newErrors[field] =
+          'Must be a valid URL starting with http:// or https://'
       }
     }
     setErrors(newErrors)

@@ -194,15 +194,21 @@ export function ThirdPartyServiceDetail({
                     <div>
                       <div className="text-sm text-secondary">API Endpoint</div>
                       <div className="mt-1">
-                        <a
-                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
-                          href={service.api_endpoint}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {service.api_endpoint}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                        {isSafeUrl(service.api_endpoint) ? (
+                          <a
+                            className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                            href={service.api_endpoint}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {service.api_endpoint}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-sm">
+                            {service.api_endpoint}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -212,15 +218,21 @@ export function ThirdPartyServiceDetail({
                         Authorization Endpoint
                       </div>
                       <div className="mt-1">
-                        <a
-                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
-                          href={service.authorization_endpoint}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {service.authorization_endpoint}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                        {isSafeUrl(service.authorization_endpoint) ? (
+                          <a
+                            className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                            href={service.authorization_endpoint}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {service.authorization_endpoint}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-sm">
+                            {service.authorization_endpoint}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -230,15 +242,21 @@ export function ThirdPartyServiceDetail({
                         Token Endpoint
                       </div>
                       <div className="mt-1">
-                        <a
-                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
-                          href={service.token_endpoint}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {service.token_endpoint}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                        {isSafeUrl(service.token_endpoint) ? (
+                          <a
+                            className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                            href={service.token_endpoint}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {service.token_endpoint}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-sm">
+                            {service.token_endpoint}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -248,15 +266,21 @@ export function ThirdPartyServiceDetail({
                         Revoke Endpoint
                       </div>
                       <div className="mt-1">
-                        <a
-                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
-                          href={service.revoke_endpoint}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {service.revoke_endpoint}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                        {isSafeUrl(service.revoke_endpoint) ? (
+                          <a
+                            className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                            href={service.revoke_endpoint}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {service.revoke_endpoint}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-sm">
+                            {service.revoke_endpoint}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -350,4 +374,13 @@ export function ThirdPartyServiceDetail({
       )}
     </div>
   )
+}
+
+function isSafeUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
 }
