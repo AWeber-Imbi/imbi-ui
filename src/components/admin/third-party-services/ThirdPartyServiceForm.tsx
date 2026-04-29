@@ -46,6 +46,19 @@ export function ThirdPartyServiceForm({
   const handleIconChange = useIconWithCleanup(icon, setIcon)
   const [vendor, setVendor] = useState(service?.vendor || '')
   const [serviceUrl, setServiceUrl] = useState(service?.service_url || '')
+  const [apiEndpoint, setApiEndpoint] = useState(service?.api_endpoint || '')
+  const [authorizationEndpoint, setAuthorizationEndpoint] = useState(
+    service?.authorization_endpoint || '',
+  )
+  const [tokenEndpoint, setTokenEndpoint] = useState(
+    service?.token_endpoint || '',
+  )
+  const [revokeEndpoint, setRevokeEndpoint] = useState(
+    service?.revoke_endpoint || '',
+  )
+  const [usePkce, setUsePkce] = useState<boolean | null>(
+    service?.use_pkce ?? null,
+  )
   const [category, setCategory] = useState(service?.category || '')
   const [status, setStatus] = useState<
     'active' | 'deprecated' | 'evaluating' | 'inactive'
@@ -86,6 +99,17 @@ export function ThirdPartyServiceForm({
       newErrors.service_url =
         'Must be a valid URL starting with http:// or https://'
     }
+    const urlFields: Array<[string, string]> = [
+      ['api_endpoint', apiEndpoint],
+      ['authorization_endpoint', authorizationEndpoint],
+      ['token_endpoint', tokenEndpoint],
+      ['revoke_endpoint', revokeEndpoint],
+    ]
+    for (const [field, value] of urlFields) {
+      if (value && !/^https?:\/\/.+/.test(value)) {
+        newErrors[field] = 'Must be a valid URL starting with http:// or https://'
+      }
+    }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -94,16 +118,21 @@ export function ThirdPartyServiceForm({
     if (!validate()) return
 
     onSave({
+      api_endpoint: apiEndpoint.trim() || null,
+      authorization_endpoint: authorizationEndpoint.trim() || null,
       category: category.trim() || null,
       description: description.trim() || null,
       icon: icon.trim() || null,
       identifiers,
       links: links as Record<string, string>,
       name: name.trim(),
+      revoke_endpoint: revokeEndpoint.trim() || null,
       service_url: serviceUrl.trim() || null,
       slug: slug.trim(),
       status,
       team_slug: teamSlug || null,
+      token_endpoint: tokenEndpoint.trim() || null,
+      use_pkce: usePkce,
       vendor: vendor.trim(),
     })
   }
@@ -375,6 +404,121 @@ export function ThirdPartyServiceForm({
                         : ''
                     }
                   />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* OAuth 2.0 Configuration */}
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h3 className="mb-4 text-sm font-medium text-primary">
+            OAuth 2.0 Configuration
+          </h3>
+          <p className="mb-4 text-sm text-secondary">
+            Optional OAuth 2.0 endpoints and settings for this service.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm text-secondary">
+                API Endpoint
+              </label>
+              <Input
+                className={errors.api_endpoint ? 'border-danger' : ''}
+                disabled={isLoading}
+                onChange={(e) => setApiEndpoint(e.target.value)}
+                placeholder="https://api.example.com"
+                value={apiEndpoint}
+              />
+              {errors.api_endpoint && (
+                <div className="mt-1 flex items-center gap-1 text-xs text-danger">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.api_endpoint}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm text-secondary">
+                  Authorization Endpoint
+                </label>
+                <Input
+                  className={
+                    errors.authorization_endpoint ? 'border-danger' : ''
+                  }
+                  disabled={isLoading}
+                  onChange={(e) => setAuthorizationEndpoint(e.target.value)}
+                  placeholder="https://auth.example.com/authorize"
+                  value={authorizationEndpoint}
+                />
+                {errors.authorization_endpoint && (
+                  <div className="mt-1 flex items-center gap-1 text-xs text-danger">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.authorization_endpoint}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm text-secondary">
+                  Token Endpoint
+                </label>
+                <Input
+                  className={errors.token_endpoint ? 'border-danger' : ''}
+                  disabled={isLoading}
+                  onChange={(e) => setTokenEndpoint(e.target.value)}
+                  placeholder="https://auth.example.com/token"
+                  value={tokenEndpoint}
+                />
+                {errors.token_endpoint && (
+                  <div className="mt-1 flex items-center gap-1 text-xs text-danger">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.token_endpoint}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm text-secondary">
+                  Revoke Endpoint
+                </label>
+                <Input
+                  className={errors.revoke_endpoint ? 'border-danger' : ''}
+                  disabled={isLoading}
+                  onChange={(e) => setRevokeEndpoint(e.target.value)}
+                  placeholder="https://auth.example.com/revoke"
+                  value={revokeEndpoint}
+                />
+                {errors.revoke_endpoint && (
+                  <div className="mt-1 flex items-center gap-1 text-xs text-danger">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.revoke_endpoint}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col justify-center">
+                <label className="mb-1.5 block text-sm text-secondary">
+                  Use PKCE
+                </label>
+                <div className="flex items-center gap-3">
+                  <select
+                    className={selectClass}
+                    disabled={isLoading}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setUsePkce(v === '' ? null : v === 'true')
+                    }}
+                    value={usePkce === null ? '' : String(usePkce)}
+                  >
+                    <option value="">Not set</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
                 </div>
               </div>
             </div>

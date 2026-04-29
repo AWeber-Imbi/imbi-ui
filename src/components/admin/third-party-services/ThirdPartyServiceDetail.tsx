@@ -40,6 +40,12 @@ export function ThirdPartyServiceDetail({
   const statusVariant = statusBadgeVariant(service.status)
   const linkEntries = Object.entries(service.links || {})
   const identifierEntries = Object.entries(service.identifiers || {})
+  const hasOAuthConfig =
+    service.api_endpoint ||
+    service.authorization_endpoint ||
+    service.token_endpoint ||
+    service.revoke_endpoint ||
+    service.use_pkce != null
 
   const tabs: { icon: typeof Info; id: DetailTab; label: string }[] = [
     { icon: Info, id: 'details', label: 'Details' },
@@ -175,6 +181,97 @@ export function ThirdPartyServiceDetail({
               </div>
             </CardContent>
           </Card>
+
+          {/* OAuth 2.0 Configuration */}
+          {hasOAuthConfig && (
+            <Card>
+              <CardHeader className="px-6 pb-0 pt-5">
+                <CardTitle>OAuth 2.0 Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 gap-6">
+                  {service.api_endpoint && (
+                    <div>
+                      <div className="text-sm text-secondary">API Endpoint</div>
+                      <div className="mt-1">
+                        <a
+                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                          href={service.api_endpoint}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {service.api_endpoint}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {service.authorization_endpoint && (
+                    <div>
+                      <div className="text-sm text-secondary">
+                        Authorization Endpoint
+                      </div>
+                      <div className="mt-1">
+                        <a
+                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                          href={service.authorization_endpoint}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {service.authorization_endpoint}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {service.token_endpoint && (
+                    <div>
+                      <div className="text-sm text-secondary">
+                        Token Endpoint
+                      </div>
+                      <div className="mt-1">
+                        <a
+                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                          href={service.token_endpoint}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {service.token_endpoint}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {service.revoke_endpoint && (
+                    <div>
+                      <div className="text-sm text-secondary">
+                        Revoke Endpoint
+                      </div>
+                      <div className="mt-1">
+                        <a
+                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                          href={service.revoke_endpoint}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {service.revoke_endpoint}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {service.use_pkce != null && (
+                    <div>
+                      <div className="text-sm text-secondary">Use PKCE</div>
+                      <div className="mt-1 text-primary">
+                        {service.use_pkce ? 'Yes' : 'No'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Links */}
           {linkEntries.length > 0 && (

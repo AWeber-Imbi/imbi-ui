@@ -55,6 +55,9 @@ export function OAuth2ApplicationForm({
   const [applicationUrl, setApplicationUrl] = useState(
     application?.application_url || '',
   )
+  const [callbackUrl, setCallbackUrl] = useState(
+    application?.callback_url || '',
+  )
   const [clientId, setClientId] = useState(application?.client_id || '')
   const [scopes, setScopes] = useState(application?.scopes?.join(', ') || '')
   const [status, setStatus] = useState<AppStatus>(
@@ -100,6 +103,7 @@ export function OAuth2ApplicationForm({
       const data: ServiceApplicationUpdate = {
         app_type: appType,
         application_url: applicationUrl || null,
+        callback_url: callbackUrl || null,
         client_id: clientId,
         description: description || null,
         name,
@@ -117,6 +121,7 @@ export function OAuth2ApplicationForm({
       const data: ServiceApplicationCreate = {
         app_type: appType,
         application_url: applicationUrl || null,
+        callback_url: callbackUrl || null,
         client_id: clientId,
         client_secret: clientSecret,
         description: description || null,
@@ -207,14 +212,25 @@ export function OAuth2ApplicationForm({
           />
         </div>
 
-        <div>
-          <label className={labelClass}>Application URL</label>
-          <Input
-            className={inputClass}
-            onChange={(e) => setApplicationUrl(e.target.value)}
-            placeholder="https://github.com/settings/apps/my-app"
-            value={applicationUrl}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Application URL</label>
+            <Input
+              className={inputClass}
+              onChange={(e) => setApplicationUrl(e.target.value)}
+              placeholder="https://github.com/settings/apps/my-app"
+              value={applicationUrl}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Callback URL</label>
+            <Input
+              className={inputClass}
+              onChange={(e) => setCallbackUrl(e.target.value)}
+              placeholder="https://app.example.com/auth/callback"
+              value={callbackUrl}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
