@@ -131,7 +131,11 @@ export function useAuth(): UseAuthReturn {
     if (currentPath !== '/login') {
       sessionStorage.setItem('imbi_redirect_after_login', currentPath)
     }
-    window.location.href = apiUrl(`/auth/oauth/${providerId}`)
+    // Tell the API to redirect back to the SPA's OAuth callback page,
+    // which knows how to parse the token fragment.
+    const callback = `${window.location.origin}/auth/callback`
+    const url = `${apiUrl(`/auth/oauth/${providerId}`)}?redirect_uri=${encodeURIComponent(callback)}`
+    window.location.href = url
   }
 
   return {
