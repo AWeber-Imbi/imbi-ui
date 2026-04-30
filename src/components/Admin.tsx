@@ -8,10 +8,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Cloud,
-  ExternalLink,
   FileJson,
   FolderTree,
   Globe,
+  KeyRound,
   Layers,
   Link2,
   Shield,
@@ -156,9 +156,9 @@ export function Admin() {
   const systemAdminSections: SectionDef[] = [
     {
       description: 'Configure SSO authentication providers',
-      icon: ExternalLink,
+      icon: KeyRound,
       id: 'oauth',
-      label: 'OAuth Providers',
+      label: 'Auth Providers',
       scope: 'system',
     },
     {
