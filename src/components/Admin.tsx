@@ -155,17 +155,17 @@ export function Admin() {
 
   const systemAdminSections: SectionDef[] = [
     {
-      description: 'Configure SSO authentication providers',
-      icon: KeyRound,
-      id: 'oauth',
-      label: 'Auth Providers',
-      scope: 'system',
-    },
-    {
       description: 'Manage organizational units and access',
       icon: Building2,
       id: 'organizations',
       label: 'Organizations',
+      scope: 'system',
+    },
+    {
+      description: 'Configure SSO authentication providers',
+      icon: KeyRound,
+      id: 'oauth',
+      label: 'Auth Providers',
       scope: 'system',
     },
     {
