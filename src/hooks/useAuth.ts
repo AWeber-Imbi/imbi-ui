@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { ApiError } from '@/api/client'
+import { ApiError, apiUrl } from '@/api/client'
 import {
   getUserByUsername,
   loginWithPassword,
@@ -131,7 +131,7 @@ export function useAuth(): UseAuthReturn {
     if (currentPath !== '/login') {
       sessionStorage.setItem('imbi_redirect_after_login', currentPath)
     }
-    window.location.href = `/auth/oauth/${providerId}`
+    window.location.href = apiUrl(`/auth/oauth/${providerId}`)
   }
 
   return {
