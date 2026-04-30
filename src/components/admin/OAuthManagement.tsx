@@ -200,7 +200,7 @@ export function OAuthManagement() {
                 </div>
                 {configured ? (
                   provider.enabled ? (
-                    <CheckCircle className="h-5 w-5 flex-shrink-0 text-success" />
+                    <CheckCircle className="h-5 w-5 flex-shrink-0 text-status-review-dot" />
                   ) : (
                     <AlertCircle className="h-5 w-5 flex-shrink-0 text-tertiary" />
                   )
@@ -212,26 +212,9 @@ export function OAuthManagement() {
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="neutral">{provider.type}</Badge>
-                  {configured ? (
-                    <span
-                      className={`text-xs ${
-                        provider.enabled ? 'text-success' : 'text-tertiary'
-                      }`}
-                    >
-                      {provider.enabled ? 'Enabled' : 'Disabled'}
-                    </span>
-                  ) : (
+                  {!configured && (
                     <span className="text-xs text-tertiary">
                       Not configured
-                    </span>
-                  )}
-                  {configured && (
-                    <span
-                      className={`text-xs ${
-                        provider.has_secret ? 'text-success' : 'text-warning'
-                      }`}
-                    >
-                      {provider.has_secret ? 'Secret set' : 'No secret'}
                     </span>
                   )}
                 </div>
