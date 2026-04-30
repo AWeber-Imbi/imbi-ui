@@ -1,7 +1,10 @@
 import { useAuthStore } from '@/stores/authStore'
 import type { TokenResponse } from '@/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+export const API_BASE_URL = import.meta.env.VITE_API_URL
+
+export const apiUrl = (path: string): string =>
+  path.startsWith('/') ? `${API_BASE_URL}${path}` : `${API_BASE_URL}/${path}`
 
 export class ApiError<T = unknown> extends Error {
   readonly data: T | undefined
