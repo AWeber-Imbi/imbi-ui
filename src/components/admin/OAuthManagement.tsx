@@ -4,8 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertCircle,
   CheckCircle,
-  Github,
-  KeyRound,
   Power,
   Settings,
   Trash2,
@@ -30,6 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import { ErrorBanner } from '@/components/ui/error-banner'
 import { Input } from '@/components/ui/input'
 import { LoadingState } from '@/components/ui/loading-state'
@@ -51,19 +50,19 @@ const PROVIDER_DEFAULTS: Record<
   }
 > = {
   github: {
-    defaultIcon: 'github',
+    defaultIcon: 'si-github',
     defaultName: 'GitHub',
     description:
       'Sign in with a GitHub account. Required: client ID and secret from a GitHub OAuth App.',
   },
   google: {
-    defaultIcon: 'google',
+    defaultIcon: 'si-google',
     defaultName: 'Google',
     description:
       'Sign in with a Google Workspace account. Optionally restrict by email domain.',
   },
   oidc: {
-    defaultIcon: 'key',
+    defaultIcon: 'key-round',
     defaultName: 'OIDC',
     description:
       'Generic OpenID Connect provider. Requires an issuer URL and a registered client.',
@@ -91,17 +90,6 @@ const blankProvider = (type: OAuthProviderType): OAuthProviderConfig => {
     name: defaults.defaultName,
     slug: type,
     type,
-  }
-}
-
-const providerIcon = (type: OAuthProviderType) => {
-  switch (type) {
-    case 'github':
-      return Github
-    case 'google':
-      return Power
-    default:
-      return KeyRound
   }
 }
 
@@ -195,7 +183,6 @@ export function OAuthManagement() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((provider) => {
-          const Icon = providerIcon(provider.type)
           const configured = isConfigured(provider)
           return (
             <Card key={provider.slug}>
@@ -205,7 +192,10 @@ export function OAuthManagement() {
                 }
               >
                 <div className="flex items-center gap-2">
-                  <Icon className="h-5 w-5 text-secondary" />
+                  <EntityIcon
+                    className="h-5 w-5 text-secondary"
+                    icon={provider.icon}
+                  />
                   <CardTitle>{provider.name}</CardTitle>
                 </div>
                 {configured ? (
@@ -312,7 +302,6 @@ function OAuthProviderEditDialog({
   const [enabled, setEnabled] = useState(provider.enabled)
   const [clientId, setClientId] = useState(provider.client_id ?? '')
   const [issuerUrl, setIssuerUrl] = useState(provider.issuer_url ?? '')
-  const [icon, setIcon] = useState(provider.icon)
   const [allowedDomains, setAllowedDomains] = useState<string[]>(
     provider.allowed_domains,
   )
@@ -373,7 +362,7 @@ function OAuthProviderEditDialog({
     if (!validate()) return
     const payload: OAuthProviderWrite = {
       enabled,
-      icon: icon.trim() || PROVIDER_DEFAULTS[provider.type].defaultIcon,
+      icon: provider.icon || PROVIDER_DEFAULTS[provider.type].defaultIcon,
       name: name.trim(),
       type: provider.type,
     }
@@ -438,19 +427,6 @@ function OAuthProviderEditDialog({
                 {errors.name}
               </div>
             )}
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-sm text-secondary">Icon</label>
-            <Input
-              disabled={isSaving}
-              onChange={(e) => setIcon(e.target.value)}
-              placeholder={PROVIDER_DEFAULTS[provider.type].defaultIcon}
-              value={icon}
-            />
-            <p className="mt-1 text-xs text-tertiary">
-              Lucide icon name (e.g. <code>github</code>, <code>key</code>).
-            </p>
           </div>
 
           <div>
