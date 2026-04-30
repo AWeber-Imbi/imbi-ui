@@ -1,22 +1,23 @@
 {
   "name": "imbi-ui-v2",
-  "private": true,
   "version": "2.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
-    "format": "prettier --write 'src/**/*.{ts,tsx,css}'",
-    "format:check": "prettier --check 'src/**/*.{ts,tsx,css}'",
     "codegen": "openapi-typescript openapi.json -o src/types/api-generated.ts",
     "codegen:fetch": "curl -sf http://localhost:8000/openapi.json -o openapi.json && npm run codegen",
-    "prepare": "husky"
+    "dev": "vite",
+    "format": "oxfmt 'src/**/*.{ts,tsx,css}' package.json '*.config.{js,ts}'",
+    "format:check": "oxfmt --check 'src/**/*.{ts,tsx,css}' package.json '*.config.{js,ts}'",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "prepare": "husky",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -85,17 +86,7 @@
     "vaul": "^1.1.2",
     "zustand": "^5.0.9"
   },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.css": [
-      "prettier --write"
-    ]
-  },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
@@ -105,28 +96,38 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/spark-md5": "^3.0.5",
-    "@typescript-eslint/eslint-plugin": "^8.21.0",
-    "@typescript-eslint/parser": "^8.21.0",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/ui": "^4.0.16",
     "autoprefixer": "^10.4.20",
     "baseline-browser-mapping": "^2.10.8",
-    "eslint": "^9.18.0",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.16",
-    "globals": "^17.4.0",
+    "eslint-plugin-perfectionist": "^5.9.0",
+    "eslint-plugin-react-refresh": "^0.5.2",
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
     "lint-staged": "^16.4.0",
     "openapi-typescript": "^7.13.0",
+    "oxfmt": "^0.47.0",
+    "oxlint": "^1.62.0",
     "postcss": "^8.4.49",
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.57.1",
     "vite": "^6.0.7",
     "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "oxlint --fix --no-error-on-unmatched-pattern",
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "*.css": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "*.config.{js,ts}": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "package.json": [
+      "oxfmt --no-error-on-unmatched-pattern"
+    ]
   }
 }

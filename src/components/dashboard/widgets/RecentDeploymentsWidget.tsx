@@ -1,24 +1,18 @@
 import { useMemo } from 'react'
-import { Rocket, CheckCircle, Clock, ChevronRight } from 'lucide-react'
-import { Card } from '@/components/ui/card'
-import { Badge, type BadgeProps } from '@/components/ui/badge'
-import { useOrganization } from '@/contexts/OrganizationContext'
+
 import { useQuery } from '@tanstack/react-query'
+import { CheckCircle, ChevronRight, Clock, Rocket } from 'lucide-react'
+
 import { getProjects } from '@/api/endpoints'
+import { Badge, type BadgeProps } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useRecentDeployments } from '@/hooks/useRecentDeployments'
 import { formatRelativeDate } from '@/lib/formatDate'
 import type { Project } from '@/types'
 
 interface RecentDeploymentsWidgetProps {
   onProjectSelect?: (projectId: string) => void
-}
-
-function envVariant(slug: string): BadgeProps['variant'] {
-  const s = slug.toLowerCase()
-  if (s.includes('prod')) return 'accent'
-  if (s.includes('stag')) return 'warning'
-  if (s.includes('test') || s.includes('qa')) return 'info'
-  return 'info'
 }
 
 export function RecentDeploymentsWidget({
@@ -29,9 +23,9 @@ export function RecentDeploymentsWidget({
 
   const { data: deployments, isLoading } = useRecentDeployments(orgSlug, 10)
   const { data: projects } = useQuery({
-    queryKey: ['projects', orgSlug],
-    queryFn: ({ signal }) => getProjects(orgSlug, signal),
     enabled: Boolean(orgSlug),
+    queryFn: ({ signal }) => getProjects(orgSlug, signal),
+    queryKey: ['projects', orgSlug],
   })
 
   const projectsBySlug = useMemo(() => {
@@ -72,10 +66,10 @@ export function RecentDeploymentsWidget({
 
             return (
               <button
-                type="button"
+                className="w-full rounded-lg border border-input bg-background p-3 text-left transition-colors hover:border-secondary"
                 key={d.id}
                 onClick={() => onProjectSelect?.(d.project_id)}
-                className="w-full rounded-lg border border-input bg-background p-3 text-left transition-colors hover:border-secondary"
+                type="button"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -91,14 +85,14 @@ export function RecentDeploymentsWidget({
                           </code>
                         )}
                         <Badge
-                          variant={envVariant(d.environment_slug)}
                           className="rounded-full"
+                          variant={envVariant(d.environment_slug)}
                         >
                           {d.environment_slug}
                         </Badge>
                         <Badge
-                          variant={statusVariant}
                           className="gap-1 rounded-full"
+                          variant={statusVariant}
                         >
                           <StatusIcon className="h-3 w-3" />
                           {statusLabel}
@@ -119,4 +113,12 @@ export function RecentDeploymentsWidget({
       )}
     </Card>
   )
+}
+
+function envVariant(slug: string): BadgeProps['variant'] {
+  const s = slug.toLowerCase()
+  if (s.includes('prod')) return 'accent'
+  if (s.includes('stag')) return 'warning'
+  if (s.includes('test') || s.includes('qa')) return 'info'
+  return 'info'
 }
