@@ -24,11 +24,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
+import { AuthProvidersManagement } from './admin/AuthProvidersManagement'
 import { BlueprintManagement } from './admin/BlueprintManagement'
 import { EnvironmentManagement } from './admin/EnvironmentManagement'
 import { LinkDefinitionManagement } from './admin/LinkDefinitionManagement'
 import { NoteTemplateManagement } from './admin/NoteTemplateManagement'
-import { OAuthManagement } from './admin/OAuthManagement'
 import { OrganizationManagement } from './admin/OrganizationManagement'
 import { ProjectTypeManagement } from './admin/ProjectTypeManagement'
 import { RoleManagement } from './admin/RoleManagement'
@@ -323,7 +323,7 @@ export function Admin() {
               <ServiceAccountManagement />
             )}
             {currentSection === 'roles' && <RoleManagement />}
-            {currentSection === 'oauth' && <OAuthManagement />}
+            {currentSection === 'oauth' && <AuthProvidersManagement />}
           </div>
         </main>
       </div>

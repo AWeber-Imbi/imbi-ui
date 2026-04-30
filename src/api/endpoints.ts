@@ -24,15 +24,15 @@ import type {
   LinkDefinition,
   LinkDefinitionCreate,
   LocalAuthConfig,
+  LoginProviderCreate,
+  LoginProviderRead,
+  LoginProviderUpdate,
   LoginRequest,
   Note,
   NoteCreate,
   NoteListResponse,
   NoteTemplate,
   NoteTemplateCreate,
-  OAuthProviderConfig,
-  OAuthProviderType,
-  OAuthProviderWrite,
   OperationsLogFilters,
   OperationsLogRecord,
   Organization,
@@ -928,14 +928,18 @@ export const deleteThirdPartyService = (orgSlug: string, slug: string) =>
   )
 
 // Service Applications (nested under Third-Party Services)
+// `usage` defaults to `'integration'` server-side, which yields rows in
+// this org with `usage IN ('integration','both')` plus any global
+// `usage IN ('login','both')` row from any org as `is_global=true`.
 export const listServiceApplications = async (
   orgSlug: string,
   serviceSlug: string,
+  usage?: 'integration' | 'login',
   signal?: AbortSignal,
 ): Promise<ServiceApplication[]> => {
   const response = await apiClient.get<ServiceApplication[]>(
     `/organizations/${encodeURIComponent(orgSlug)}/third-party-services/${encodeURIComponent(serviceSlug)}/applications/`,
-    undefined,
+    usage ? { usage } : undefined,
     signal,
   )
   return Array.isArray(response) ? response : []
@@ -1204,42 +1208,51 @@ export const listServiceWebhooks = async (
   return Array.isArray(response) ? response : []
 }
 
-// Admin - OAuth Providers
-export const listOAuthProviders = async (
+// Admin - Auth Providers (login-eligible service applications)
+export const listAuthProviders = async (
   signal?: AbortSignal,
-): Promise<OAuthProviderConfig[]> => {
+): Promise<LoginProviderRead[]> => {
   const response = await apiClient.get<unknown>(
-    '/admin/oauth-providers',
+    '/admin/auth-providers/',
     undefined,
     signal,
   )
   if (!Array.isArray(response)) {
-    throw new Error('Invalid OAuth providers response')
+    throw new Error('Invalid auth providers response')
   }
-  return response as OAuthProviderConfig[]
+  return response as LoginProviderRead[]
 }
 
-export const getOAuthProvider = (
-  slug: OAuthProviderType,
-  signal?: AbortSignal,
-) =>
-  apiClient.get<OAuthProviderConfig>(
-    `/admin/oauth-providers/${encodeURIComponent(slug)}`,
+export const getAuthProvider = (slug: string, signal?: AbortSignal) =>
+  apiClient.get<LoginProviderRead>(
+    `/admin/auth-providers/${encodeURIComponent(slug)}`,
     undefined,
     signal,
   )
 
-export const upsertOAuthProvider = (
-  slug: OAuthProviderType,
-  data: OAuthProviderWrite,
-) =>
-  apiClient.put<OAuthProviderConfig>(
-    `/admin/oauth-providers/${encodeURIComponent(slug)}`,
+export const createAuthProvider = (data: LoginProviderCreate) =>
+  apiClient.post<LoginProviderRead>('/admin/auth-providers/', data)
+
+export const updateAuthProvider = (slug: string, data: LoginProviderUpdate) =>
+  apiClient.put<LoginProviderRead>(
+    `/admin/auth-providers/${encodeURIComponent(slug)}`,
     data,
   )
 
-export const deleteOAuthProvider = (slug: OAuthProviderType) =>
-  apiClient.delete<void>(`/admin/oauth-providers/${encodeURIComponent(slug)}`)
+export const deleteAuthProvider = (slug: string) =>
+  apiClient.delete<void>(`/admin/auth-providers/${encodeURIComponent(slug)}`)
+
+export const promoteAuthProviderToBoth = (slug: string) =>
+  apiClient.post<LoginProviderRead>(
+    `/admin/auth-providers/${encodeURIComponent(slug)}/promote-to-both`,
+    {},
+  )
+
+export const demoteAuthProviderToLogin = (slug: string) =>
+  apiClient.post<LoginProviderRead>(
+    `/admin/auth-providers/${encodeURIComponent(slug)}/demote-to-login`,
+    {},
+  )
 
 // Admin - Local Authentication
 export const getLocalAuthConfig = (signal?: AbortSignal) =>
