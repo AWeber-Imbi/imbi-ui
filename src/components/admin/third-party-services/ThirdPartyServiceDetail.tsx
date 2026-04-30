@@ -164,15 +164,21 @@ export function ThirdPartyServiceDetail({
                   <div className="text-sm text-secondary">Service URL</div>
                   <div className="mt-1">
                     {service.service_url ? (
-                      <a
-                        className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
-                        href={service.service_url}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        {service.service_url}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
+                      isSafeUrl(service.service_url) ? (
+                        <a
+                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                          href={service.service_url}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          {service.service_url}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-sm">
+                          {service.service_url}
+                        </span>
+                      )
                     ) : (
                       <span className="text-tertiary">Not set</span>
                     )}
@@ -309,15 +315,21 @@ export function ThirdPartyServiceDetail({
                     <div key={label}>
                       <div className="text-sm text-secondary">{label}</div>
                       <div className="mt-1">
-                        <a
-                          className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
-                          href={String(url)}
-                          rel="noopener noreferrer"
-                          target="_blank"
-                        >
-                          {String(url)}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
+                        {isSafeUrl(String(url)) ? (
+                          <a
+                            className="hover:text-info/80 inline-flex items-center gap-1 text-sm text-info"
+                            href={String(url)}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            {String(url)}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-sm">
+                            {String(url)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
