@@ -1208,12 +1208,15 @@ export const listServiceWebhooks = async (
 export const listOAuthProviders = async (
   signal?: AbortSignal,
 ): Promise<OAuthProviderConfig[]> => {
-  const response = await apiClient.get<OAuthProviderConfig[]>(
+  const response = await apiClient.get<unknown>(
     '/admin/oauth-providers',
     undefined,
     signal,
   )
-  return Array.isArray(response) ? response : []
+  if (!Array.isArray(response)) {
+    throw new Error('Invalid OAuth providers response')
+  }
+  return response as OAuthProviderConfig[]
 }
 
 export const getOAuthProvider = (

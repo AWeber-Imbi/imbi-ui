@@ -406,8 +406,8 @@ function OAuthProviderEditDialog({
     if (showIssuerUrl && issuerUrl.trim()) {
       try {
         const u = new URL(issuerUrl.trim())
-        if (u.protocol !== 'https:' && u.protocol !== 'http:') {
-          next.issuer_url = 'Issuer URL must be http(s)://'
+        if (u.protocol !== 'https:') {
+          next.issuer_url = 'Issuer URL must be https://'
         }
       } catch {
         next.issuer_url = 'Issuer URL must be a valid URL'
@@ -618,6 +618,7 @@ function OAuthProviderEditDialog({
                       className="text-tertiary hover:text-primary"
                       disabled={isSaving}
                       onClick={() => removeDomain(d)}
+                      onMouseDown={(e) => e.preventDefault()}
                       type="button"
                     >
                       <X className="h-3 w-3" />
