@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertCircle,
   CheckCircle,
+  Copy,
   Power,
   Settings,
   Trash2,
@@ -41,35 +42,13 @@ import type {
   OAuthProviderWrite,
 } from '@/types'
 
-const PROVIDER_DEFAULTS: Record<
-  OAuthProviderType,
-  {
-    defaultIcon: string
-    defaultName: string
-    description: string
-  }
-> = {
-  github: {
-    defaultIcon: 'si-github',
-    defaultName: 'GitHub',
-    description:
-      'Sign in with a GitHub account. Required: client ID and secret from a GitHub OAuth App.',
-  },
-  google: {
-    defaultIcon: 'si-google',
-    defaultName: 'Google',
-    description:
-      'Sign in with a Google Workspace account. Optionally restrict by email domain.',
-  },
-  oidc: {
-    defaultIcon: 'key-round',
-    defaultName: 'OIDC',
-    description:
-      'Generic OpenID Connect provider. Requires an issuer URL and a registered client.',
-  },
+const PROVIDER_DESCRIPTIONS: Record<OAuthProviderType, string> = {
+  github:
+    'Sign in with a GitHub account. Required: client ID and secret from a GitHub OAuth App.',
+  google:
+    'Sign in with a Google Workspace account. Optionally restrict by email domain.',
+  oidc: 'Generic OpenID Connect provider. Requires an issuer URL and a registered client.',
 }
-
-const PROVIDER_ORDER: OAuthProviderType[] = ['google', 'github', 'oidc']
 
 interface EditDialogProps {
   isSaving: boolean
@@ -78,18 +57,19 @@ interface EditDialogProps {
   provider: OAuthProviderConfig
 }
 
-const blankProvider = (type: OAuthProviderType): OAuthProviderConfig => {
-  const defaults = PROVIDER_DEFAULTS[type]
-  return {
-    allowed_domains: [],
-    client_id: null,
-    enabled: false,
-    has_secret: false,
-    icon: defaults.defaultIcon,
-    issuer_url: null,
-    name: defaults.defaultName,
-    slug: type,
-    type,
+const PROVIDER_ORDER: OAuthProviderType[] = ['google', 'github', 'oidc']
+
+const sortByOrder = (rows: OAuthProviderConfig[]): OAuthProviderConfig[] => {
+  const rank = (slug: OAuthProviderType) => PROVIDER_ORDER.indexOf(slug)
+  return [...rows].sort((a, b) => rank(a.slug) - rank(b.slug))
+}
+
+const copyToClipboard = async (value: string, label: string) => {
+  try {
+    await navigator.clipboard.writeText(value)
+    toast.success(`${label} copied`)
+  } catch {
+    toast.error(`Failed to copy ${label.toLowerCase()}`)
   }
 }
 
@@ -109,17 +89,9 @@ export function OAuthManagement() {
     queryKey: ['admin', 'oauth-providers'],
   })
 
-  // Show every supported provider type, falling back to a blank placeholder
-  // when a row hasn't been configured yet so admins can create it in place.
-  const cards = useMemo<OAuthProviderConfig[]>(() => {
-    const providers = data ?? []
-    const bySlug = new Map<OAuthProviderType, OAuthProviderConfig>()
-    for (const p of providers) bySlug.set(p.slug, p)
-    return PROVIDER_ORDER.map((slug) => bySlug.get(slug) ?? blankProvider(slug))
-  }, [data])
-
-  const isConfigured = (p: OAuthProviderConfig) =>
-    (data ?? []).some((row) => row.slug === p.slug)
+  // The API returns one row per known provider type, with `configured`
+  // flagging whether it's been persisted yet. No client-side synthesis.
+  const cards = sortByOrder(data ?? [])
 
   const upsertMutation = useMutation({
     mutationFn: ({
@@ -182,68 +154,92 @@ export function OAuthManagement() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((provider) => {
-          const configured = isConfigured(provider)
-          return (
-            <Card key={provider.slug}>
-              <CardHeader
-                className={
-                  'flex flex-row items-center justify-between space-y-0 pb-2'
-                }
-              >
-                <div className="flex items-center gap-2">
-                  <EntityIcon
-                    className="h-5 w-5 text-secondary"
-                    icon={provider.icon}
-                  />
-                  <CardTitle>{provider.name}</CardTitle>
+        {cards.map((provider) => (
+          <Card key={provider.slug}>
+            <CardHeader
+              className={
+                'flex flex-row items-center justify-between space-y-0 pb-2'
+              }
+            >
+              <div className="flex items-center gap-2">
+                <EntityIcon
+                  className="h-5 w-5 text-secondary"
+                  icon={provider.icon}
+                />
+                <CardTitle>{provider.name}</CardTitle>
+              </div>
+              {provider.configured ? (
+                provider.enabled ? (
+                  <CheckCircle className="h-5 w-5 flex-shrink-0 text-status-review-dot" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 flex-shrink-0 text-tertiary" />
+                )
+              ) : null}
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-tertiary">
+                {PROVIDER_DESCRIPTIONS[provider.type]}
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="neutral">{provider.type}</Badge>
+                {!provider.configured && (
+                  <span className="text-xs text-tertiary">Not configured</span>
+                )}
+              </div>
+              <div>
+                <div className="mb-1 text-xs text-tertiary">
+                  Authorized redirect URI
                 </div>
-                {configured ? (
-                  provider.enabled ? (
-                    <CheckCircle className="h-5 w-5 flex-shrink-0 text-status-review-dot" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 flex-shrink-0 text-tertiary" />
-                  )
-                ) : null}
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-xs text-tertiary">
-                  {PROVIDER_DEFAULTS[provider.type].description}
-                </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="neutral">{provider.type}</Badge>
-                  {!configured && (
-                    <span className="text-xs text-tertiary">
-                      Not configured
-                    </span>
+                <div
+                  className={
+                    'flex items-center gap-1 rounded-md border border-input bg-secondary px-2 py-1'
+                  }
+                >
+                  <code
+                    className="flex-1 truncate text-xs text-secondary"
+                    title={provider.callback_url}
+                  >
+                    {provider.callback_url}
+                  </code>
+                  <Button
+                    aria-label="Copy redirect URI"
+                    className="h-6 w-6 flex-shrink-0"
+                    onClick={() =>
+                      copyToClipboard(provider.callback_url, 'Redirect URI')
+                    }
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+              {canWrite && (
+                <div className="flex items-center gap-2 pt-1">
+                  <Button
+                    onClick={() => setEditing(provider)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Settings className="mr-1 h-4 w-4" />
+                    {provider.configured ? 'Edit' : 'Configure'}
+                  </Button>
+                  {provider.configured && (
+                    <Button
+                      onClick={() => setPendingDelete(provider)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Delete
+                    </Button>
                   )}
                 </div>
-                {canWrite && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <Button
-                      onClick={() => setEditing(provider)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Settings className="mr-1 h-4 w-4" />
-                      {configured ? 'Edit' : 'Configure'}
-                    </Button>
-                    {configured && (
-                      <Button
-                        onClick={() => setPendingDelete(provider)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <Trash2 className="mr-1 h-4 w-4" />
-                        Delete
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        })}
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {editing && (
@@ -345,7 +341,7 @@ function OAuthProviderEditDialog({
     if (!validate()) return
     const payload: OAuthProviderWrite = {
       enabled,
-      icon: provider.icon || PROVIDER_DEFAULTS[provider.type].defaultIcon,
+      icon: provider.icon,
       name: name.trim(),
       type: provider.type,
     }
@@ -375,7 +371,7 @@ function OAuthProviderEditDialog({
         <DialogHeader>
           <DialogTitle>Configure {provider.name}</DialogTitle>
           <DialogDescription>
-            {PROVIDER_DEFAULTS[provider.type].description}
+            {PROVIDER_DESCRIPTIONS[provider.type]}
           </DialogDescription>
         </DialogHeader>
 

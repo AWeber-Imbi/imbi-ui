@@ -358,7 +358,9 @@ export interface NoteTemplateCreate {
 // imbi_api/endpoints/oauth_providers.py.
 export interface OAuthProviderConfig {
   allowed_domains: string[]
+  callback_url: string
   client_id: null | string
+  configured: boolean
   enabled: boolean
   has_secret: boolean
   icon: string
