@@ -1213,7 +1213,7 @@ export const listAuthProviders = async (
   signal?: AbortSignal,
 ): Promise<LoginProviderRead[]> => {
   const response = await apiClient.get<unknown>(
-    '/admin/auth-providers/',
+    '/admin/auth-providers',
     undefined,
     signal,
   )
@@ -1231,7 +1231,7 @@ export const getAuthProvider = (slug: string, signal?: AbortSignal) =>
   )
 
 export const createAuthProvider = (data: LoginProviderCreate) =>
-  apiClient.post<LoginProviderRead>('/admin/auth-providers/', data)
+  apiClient.post<LoginProviderRead>('/admin/auth-providers', data)
 
 export const updateAuthProvider = (slug: string, data: LoginProviderUpdate) =>
   apiClient.put<LoginProviderRead>(
