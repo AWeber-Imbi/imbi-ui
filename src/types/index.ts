@@ -311,12 +311,15 @@ export interface LoginProviderCreate {
   client_secret: string
   description?: null | string
   issuer_url?: null | string
-  name: string
+  // name/slug/org_slug/third_party_service_slug are derived server-side
+  // from oauth_app_type when omitted; the auth-providers admin UI
+  // doesn't expose them.
+  name?: string
   oauth_app_type: OAuthAppType
-  org_slug: string
+  org_slug?: string
   scopes?: string[]
-  slug: string
-  third_party_service_slug: string
+  slug?: string
+  third_party_service_slug?: string
   usage: 'both' | 'login'
 }
 

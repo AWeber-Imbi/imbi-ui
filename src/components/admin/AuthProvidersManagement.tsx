@@ -13,14 +13,13 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { API_BASE_URL } from '@/api/client'
 import {
   createAuthProvider,
   deleteAuthProvider,
   demoteAuthProviderToLogin,
   getLocalAuthConfig,
   listAuthProviders,
-  listOrganizations,
-  listThirdPartyServices,
   promoteAuthProviderToBoth,
   updateAuthProvider,
   updateLocalAuthConfig,
@@ -43,7 +42,6 @@ import { LoadingState } from '@/components/ui/loading-state'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/useAuth'
 import { extractApiErrorDetail } from '@/lib/apiError'
-import { slugify } from '@/lib/utils'
 import type {
   LocalAuthConfig,
   LoginProviderCreate,
@@ -67,6 +65,9 @@ const APP_TYPE_DESCRIPTIONS: Record<OAuthAppType, string> = {
 }
 
 const APP_TYPE_ORDER: OAuthAppType[] = ['google', 'github', 'oidc']
+
+const callbackUrlForType = (appType: OAuthAppType): string =>
+  `${API_BASE_URL}/auth/oauth/${appType}/callback`
 
 const copyToClipboard = async (value: string, label: string) => {
   try {
@@ -478,33 +479,19 @@ function AuthProviderCreateDialog({
   onCancel,
   onSave,
 }: CreateDialogProps) {
-  const [orgSlug, setOrgSlug] = useState('')
-  const [serviceSlug, setServiceSlug] = useState('')
   const [appType, setAppType] = useState<OAuthAppType>('google')
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
   const [clientId, setClientId] = useState('')
   const [secret, setSecret] = useState('')
   const [issuerUrl, setIssuerUrl] = useState('')
   const [scopes, setScopes] = useState('')
   const [allowedDomains, setAllowedDomains] = useState<string[]>([])
   const [domainDraft, setDomainDraft] = useState('')
-  const [usage, setUsage] = useState<'both' | 'login'>('login')
+  const [enableIntegration, setEnableIntegration] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const orgsQuery = useQuery({
-    queryFn: ({ signal }) => listOrganizations(signal),
-    queryKey: ['organizations'],
-  })
-
-  const servicesQuery = useQuery({
-    enabled: !!orgSlug,
-    queryFn: ({ signal }) => listThirdPartyServices(orgSlug, signal),
-    queryKey: ['third-party-services', orgSlug],
-  })
 
   const showAllowedDomains = appType === 'google'
   const showIssuerUrl = appType === 'oidc'
+  const callbackUrl = callbackUrlForType(appType)
 
   const addDomain = () => {
     const value = domainDraft.trim().toLowerCase()
@@ -519,24 +506,8 @@ function AuthProviderCreateDialog({
     setAllowedDomains(allowedDomains.filter((d) => d !== value))
   }
 
-  const handleNameChange = (value: string) => {
-    setName(value)
-    if (!slug) {
-      // Only auto-fill while user hasn't typed a custom slug.
-      setSlug(slugify(value))
-    }
-  }
-
   const validate = (): boolean => {
     const next: Record<string, string> = {}
-    if (!orgSlug) next.org_slug = 'Organization is required'
-    if (!serviceSlug) next.third_party_service_slug = 'Service is required'
-    if (!name.trim()) next.name = 'Name is required'
-    if (!slug.trim()) next.slug = 'Slug is required'
-    else if (!/^[a-z][a-z0-9-]*$/.test(slug.trim())) {
-      next.slug =
-        'Slug must start with a letter (lowercase letters, digits, hyphens)'
-    }
     if (!clientId.trim()) next.client_id = 'Client ID is required'
     if (!secret) next.client_secret = 'Client secret is required'
     if (showIssuerUrl) {
@@ -563,12 +534,8 @@ function AuthProviderCreateDialog({
     const payload: LoginProviderCreate = {
       client_id: clientId.trim(),
       client_secret: secret,
-      name: name.trim(),
       oauth_app_type: appType,
-      org_slug: orgSlug,
-      slug: slug.trim(),
-      third_party_service_slug: serviceSlug,
-      usage,
+      usage: enableIntegration ? 'both' : 'login',
     }
     if (showIssuerUrl && issuerUrl.trim()) {
       payload.issuer_url = issuerUrl.trim()
@@ -601,124 +568,45 @@ function AuthProviderCreateDialog({
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1.5 block text-sm text-secondary">
-                Organization <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                disabled={isSaving || orgsQuery.isLoading}
-                onChange={(e) => {
-                  setOrgSlug(e.target.value)
-                  setServiceSlug('')
-                }}
-                value={orgSlug}
-              >
-                <option value="">Select organization...</option>
-                {(orgsQuery.data ?? []).map((o) => (
-                  <option key={o.slug} value={o.slug}>
-                    {o.name}
-                  </option>
-                ))}
-              </select>
-              {errors.org_slug && (
-                <div className="mt-1 text-xs text-danger">
-                  {errors.org_slug}
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm text-secondary">
-                Third-Party Service <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                disabled={isSaving || !orgSlug || servicesQuery.isLoading}
-                onChange={(e) => setServiceSlug(e.target.value)}
-                value={serviceSlug}
-              >
-                <option value="">Select service...</option>
-                {(servicesQuery.data ?? []).map((s) => (
-                  <option key={s.slug} value={s.slug}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-              {errors.third_party_service_slug && (
-                <div className="mt-1 text-xs text-danger">
-                  {errors.third_party_service_slug}
-                </div>
-              )}
-            </div>
+          <div>
+            <label className="mb-1.5 block text-sm text-secondary">
+              OAuth Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              disabled={isSaving}
+              onChange={(e) => setAppType(e.target.value as OAuthAppType)}
+              value={appType}
+            >
+              <option value="google">Google</option>
+              <option value="github">GitHub</option>
+              <option value="oidc">OpenID Connect</option>
+            </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1.5 block text-sm text-secondary">
-                OAuth Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-                disabled={isSaving}
-                onChange={(e) => setAppType(e.target.value as OAuthAppType)}
-                value={appType}
+          <div>
+            <label className="mb-1.5 block text-sm text-secondary">
+              Redirect URL
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                className="flex-1 font-mono text-xs"
+                readOnly
+                value={callbackUrl}
+              />
+              <Button
+                aria-label="Copy redirect URL"
+                onClick={() => copyToClipboard(callbackUrl, 'Redirect URL')}
+                size="icon"
+                type="button"
+                variant="outline"
               >
-                <option value="google">Google</option>
-                <option value="github">GitHub</option>
-                <option value="oidc">OpenID Connect</option>
-              </select>
+                <Copy className="h-4 w-4" />
+              </Button>
             </div>
-            <div>
-              <label className="mb-1.5 block text-sm text-secondary">
-                Usage
-              </label>
-              <div className="inline-flex rounded-md border border-input">
-                <button
-                  className={`px-3 py-1.5 text-sm ${usage === 'login' ? 'bg-amber-bg text-amber-text' : 'text-secondary'}`}
-                  onClick={() => setUsage('login')}
-                  type="button"
-                >
-                  Login
-                </button>
-                <button
-                  className={`px-3 py-1.5 text-sm ${usage === 'both' ? 'bg-amber-bg text-amber-text' : 'text-secondary'}`}
-                  onClick={() => setUsage('both')}
-                  type="button"
-                >
-                  Both
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1.5 block text-sm text-secondary">
-                Display Name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                disabled={isSaving}
-                onChange={(e) => handleNameChange(e.target.value)}
-                value={name}
-              />
-              {errors.name && (
-                <div className="mt-1 text-xs text-danger">{errors.name}</div>
-              )}
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm text-secondary">
-                Slug <span className="text-red-500">*</span>
-              </label>
-              <Input
-                disabled={isSaving}
-                onChange={(e) => setSlug(e.target.value)}
-                value={slug}
-              />
-              {errors.slug && (
-                <div className="mt-1 text-xs text-danger">{errors.slug}</div>
-              )}
-            </div>
+            <p className="mt-1 text-xs text-tertiary">
+              Configure this URL in the provider&apos;s OAuth app settings.
+            </p>
           </div>
 
           <div>
@@ -843,6 +731,20 @@ function AuthProviderCreateDialog({
               </div>
             </div>
           )}
+
+          <label className="flex items-center gap-2 text-sm text-secondary">
+            <input
+              checked={enableIntegration}
+              className="h-4 w-4 rounded border-input"
+              disabled={isSaving}
+              onChange={(e) => setEnableIntegration(e.target.checked)}
+              type="checkbox"
+            />
+            Enable Integration
+            <span className="text-xs text-tertiary">
+              (also expose as a Third-Party Service for project use)
+            </span>
+          </label>
 
           <DialogFooter>
             <Button
