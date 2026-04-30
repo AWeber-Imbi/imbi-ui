@@ -29,6 +29,9 @@ import type {
   NoteListResponse,
   NoteTemplate,
   NoteTemplateCreate,
+  OAuthProviderConfig,
+  OAuthProviderType,
+  OAuthProviderWrite,
   OperationsLogFilters,
   OperationsLogRecord,
   Organization,
@@ -1199,6 +1202,40 @@ export const listServiceWebhooks = async (
   )
   return Array.isArray(response) ? response : []
 }
+
+// Admin - OAuth Providers
+export const listOAuthProviders = async (
+  signal?: AbortSignal,
+): Promise<OAuthProviderConfig[]> => {
+  const response = await apiClient.get<OAuthProviderConfig[]>(
+    '/admin/oauth-providers',
+    undefined,
+    signal,
+  )
+  return Array.isArray(response) ? response : []
+}
+
+export const getOAuthProvider = (
+  slug: OAuthProviderType,
+  signal?: AbortSignal,
+) =>
+  apiClient.get<OAuthProviderConfig>(
+    `/admin/oauth-providers/${encodeURIComponent(slug)}`,
+    undefined,
+    signal,
+  )
+
+export const upsertOAuthProvider = (
+  slug: OAuthProviderType,
+  data: OAuthProviderWrite,
+) =>
+  apiClient.put<OAuthProviderConfig>(
+    `/admin/oauth-providers/${encodeURIComponent(slug)}`,
+    data,
+  )
+
+export const deleteOAuthProvider = (slug: OAuthProviderType) =>
+  apiClient.delete<void>(`/admin/oauth-providers/${encodeURIComponent(slug)}`)
 
 // Project Services (EXISTS_IN)
 export const listProjectServices = async (

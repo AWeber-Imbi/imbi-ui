@@ -352,6 +352,35 @@ export interface NoteTemplateCreate {
   title?: null | string
 }
 
+// Admin OAuth provider configuration types.
+// Hand-written: the admin endpoints aren't in the committed openapi.json
+// snapshot yet. Mirrors `OAuthProviderRead` / `OAuthProviderWrite` in
+// imbi_api/endpoints/oauth_providers.py.
+export interface OAuthProviderConfig {
+  allowed_domains: string[]
+  client_id: null | string
+  enabled: boolean
+  has_secret: boolean
+  icon: string
+  issuer_url: null | string
+  name: string
+  slug: OAuthProviderType
+  type: OAuthProviderType
+}
+
+export type OAuthProviderType = 'github' | 'google' | 'oidc'
+
+export interface OAuthProviderWrite {
+  allowed_domains?: string[]
+  client_id?: null | string
+  client_secret?: null | string
+  enabled: boolean
+  icon: string
+  issuer_url?: null | string
+  name: string
+  type: OAuthProviderType
+}
+
 export type OperationsLogEntryType = (typeof OPERATIONS_LOG_ENTRY_TYPES)[number]
 
 export interface OperationsLogFilters {
