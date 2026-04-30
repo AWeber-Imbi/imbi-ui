@@ -5,6 +5,7 @@ import {
   AlertCircle,
   CheckCircle,
   Copy,
+  Lock,
   Power,
   Settings,
   Trash2,
@@ -14,7 +15,9 @@ import { toast } from 'sonner'
 
 import {
   deleteOAuthProvider,
+  getLocalAuthConfig,
   listOAuthProviders,
+  updateLocalAuthConfig,
   upsertOAuthProvider,
 } from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
@@ -37,6 +40,7 @@ import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/hooks/useAuth'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import type {
+  LocalAuthConfig,
   OAuthProviderConfig,
   OAuthProviderType,
   OAuthProviderWrite,
@@ -87,6 +91,42 @@ export function OAuthManagement() {
   const { data, error, isLoading } = useQuery({
     queryFn: ({ signal }) => listOAuthProviders(signal),
     queryKey: ['admin', 'oauth-providers'],
+  })
+
+  const localAuthQuery = useQuery({
+    queryFn: ({ signal }) => getLocalAuthConfig(signal),
+    queryKey: ['admin', 'local-auth'],
+  })
+
+  const localAuthMutation = useMutation({
+    mutationFn: (enabled: boolean) => updateLocalAuthConfig({ enabled }),
+    onError: (err) => {
+      toast.error(
+        `Failed to update local authentication: ${extractApiErrorDetail(err)}`,
+      )
+      // Revert optimistic update by refetching
+      queryClient.invalidateQueries({ queryKey: ['admin', 'local-auth'] })
+    },
+    onMutate: async (enabled: boolean) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ['admin', 'local-auth'] })
+      const previous = queryClient.getQueryData<LocalAuthConfig>([
+        'admin',
+        'local-auth',
+      ])
+      if (previous) {
+        queryClient.setQueryData<LocalAuthConfig>(['admin', 'local-auth'], {
+          ...previous,
+          enabled,
+        })
+      }
+      return { previous }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'local-auth'] })
+      queryClient.invalidateQueries({ queryKey: ['authProviders'] })
+      toast.success('Local authentication updated')
+    },
   })
 
   // The API returns one row per known provider type, with `configured`
@@ -154,6 +194,47 @@ export function OAuthManagement() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader
+            className={
+              'flex flex-row items-center justify-between space-y-0 pb-2'
+            }
+          >
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-secondary" />
+              <CardTitle>Local Authentication</CardTitle>
+            </div>
+            {localAuthQuery.data?.enabled ? (
+              <CheckCircle className="h-5 w-5 flex-shrink-0 text-status-review-dot" />
+            ) : (
+              <AlertCircle className="h-5 w-5 flex-shrink-0 text-tertiary" />
+            )}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-tertiary">
+              Allow users to sign in with an email address and password stored
+              in Imbi.
+            </p>
+            <div className="flex items-center justify-between rounded-lg border border-input p-3">
+              <div>
+                <div className="text-sm text-primary">Enabled</div>
+                <div className="text-xs text-tertiary">
+                  When disabled, the email/password form is hidden on the login
+                  page.
+                </div>
+              </div>
+              <Switch
+                checked={localAuthQuery.data?.enabled ?? false}
+                disabled={
+                  !canWrite ||
+                  localAuthQuery.isLoading ||
+                  localAuthMutation.isPending
+                }
+                onCheckedChange={(checked) => localAuthMutation.mutate(checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
         {cards.map((provider) => (
           <Card key={provider.slug}>
             <CardHeader

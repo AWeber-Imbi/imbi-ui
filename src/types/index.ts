@@ -296,6 +296,15 @@ export type DeploymentStatus =
   | 'rolled_back'
   | 'success'
 
+// Admin local-auth (password login) toggle.
+// Hand-written: the admin endpoints aren't in the committed openapi.json
+// snapshot yet. Mirrors `LocalAuthRead` in
+// imbi_api/endpoints/local_auth.py.
+export interface LocalAuthConfig {
+  enabled: boolean
+  updated_at: string
+}
+
 export interface LoginRequest {
   email: string
   password: string

@@ -23,6 +23,7 @@ import type {
   EnvironmentCreate,
   LinkDefinition,
   LinkDefinitionCreate,
+  LocalAuthConfig,
   LoginRequest,
   Note,
   NoteCreate,
@@ -1236,6 +1237,15 @@ export const upsertOAuthProvider = (
 
 export const deleteOAuthProvider = (slug: OAuthProviderType) =>
   apiClient.delete<void>(`/admin/oauth-providers/${encodeURIComponent(slug)}`)
+
+// Admin - Local Authentication
+export const getLocalAuthConfig = (signal?: AbortSignal) =>
+  apiClient.get<LocalAuthConfig>('/admin/local-auth', undefined, signal)
+
+export const updateLocalAuthConfig = (
+  data: { enabled: boolean },
+  signal?: AbortSignal,
+) => apiClient.put<LocalAuthConfig>('/admin/local-auth', data, signal)
 
 // Project Services (EXISTS_IN)
 export const listProjectServices = async (
