@@ -732,7 +732,7 @@ function AuthProviderCreateDialog({
             </div>
           )}
 
-          <label className="flex items-center gap-2 text-sm text-secondary">
+          <label className="flex w-full items-center gap-2 text-sm text-secondary">
             <input
               checked={enableIntegration}
               className="h-4 w-4 rounded border-input"
@@ -741,9 +741,6 @@ function AuthProviderCreateDialog({
               type="checkbox"
             />
             Enable Integration
-            <span className="text-xs text-tertiary">
-              (also expose as a Third-Party Service for project use)
-            </span>
           </label>
 
           <DialogFooter>
