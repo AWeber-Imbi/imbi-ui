@@ -381,7 +381,7 @@ export function AuthProvidersManagement() {
                         size="sm"
                         variant="ghost"
                       >
-                        Promote to Both
+                        Enable Integration
                       </Button>
                     ) : (
                       <Button
