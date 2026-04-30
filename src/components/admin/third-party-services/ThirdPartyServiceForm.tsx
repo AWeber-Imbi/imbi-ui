@@ -9,6 +9,13 @@ import { IconPicker } from '@/components/ui/icon-picker'
 import { IconUpload } from '@/components/ui/icon-upload'
 import { Input } from '@/components/ui/input'
 import { KeyValueEditor } from '@/components/ui/key-value-editor'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useIconWithCleanup } from '@/hooks/useIconWithCleanup'
 import { slugify } from '@/lib/utils'
@@ -106,7 +113,8 @@ export function ThirdPartyServiceForm({
       ['revoke_endpoint', revokeEndpoint],
     ]
     for (const [field, value] of urlFields) {
-      if (value.trim() && !/^https?:\/\/.+/.test(value.trim())) {
+      const trimmed = value.trim()
+      if (trimmed && !/^https?:\/\/.+/.test(trimmed)) {
         newErrors[field] =
           'Must be a valid URL starting with http:// or https://'
       }
@@ -506,21 +514,22 @@ export function ThirdPartyServiceForm({
                 <label className="mb-1.5 block text-sm text-secondary">
                   Use PKCE
                 </label>
-                <div className="flex items-center gap-3">
-                  <select
-                    className={selectClass}
-                    disabled={isLoading}
-                    onChange={(e) => {
-                      const v = e.target.value
-                      setUsePkce(v === '' ? null : v === 'true')
-                    }}
-                    value={usePkce === null ? '' : String(usePkce)}
-                  >
-                    <option value="">Not set</option>
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
+                <Select
+                  disabled={isLoading}
+                  onValueChange={(v) =>
+                    setUsePkce(v === 'unset' ? null : v === 'true')
+                  }
+                  value={usePkce === null ? 'unset' : String(usePkce)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Not set" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unset">Not set</SelectItem>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

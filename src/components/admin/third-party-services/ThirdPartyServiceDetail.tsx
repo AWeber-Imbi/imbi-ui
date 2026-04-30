@@ -189,7 +189,7 @@ export function ThirdPartyServiceDetail({
                 <CardTitle>OAuth 2.0 Configuration</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   {service.api_endpoint && (
                     <div>
                       <div className="text-sm text-secondary">API Endpoint</div>
