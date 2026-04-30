@@ -17,14 +17,11 @@ import { API_BASE_URL } from '@/api/client'
 import {
   createAuthProvider,
   deleteAuthProvider,
-  demoteAuthProviderToLogin,
   getLocalAuthConfig,
   listAuthProviders,
-  promoteAuthProviderToBoth,
   updateAuthProvider,
   updateLocalAuthConfig,
 } from '@/api/endpoints'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -49,12 +46,6 @@ import type {
   LoginProviderUpdate,
   OAuthAppType,
 } from '@/types'
-
-const APP_TYPE_LABELS: Record<OAuthAppType, string> = {
-  github: 'GitHub',
-  google: 'Google',
-  oidc: 'OpenID Connect',
-}
 
 const APP_TYPE_DESCRIPTIONS: Record<OAuthAppType, string> = {
   github:
@@ -210,28 +201,6 @@ export function AuthProvidersManagement() {
     },
   })
 
-  const promoteMutation = useMutation({
-    mutationFn: (slug: string) => promoteAuthProviderToBoth(slug),
-    onError: (err) => {
-      toast.error(`Failed to promote provider: ${extractApiErrorDetail(err)}`)
-    },
-    onSuccess: () => {
-      invalidateAll()
-      toast.success('Promoted to integration + login')
-    },
-  })
-
-  const demoteMutation = useMutation({
-    mutationFn: (slug: string) => demoteAuthProviderToLogin(slug),
-    onError: (err) => {
-      toast.error(`Failed to demote provider: ${extractApiErrorDetail(err)}`)
-    },
-    onSuccess: () => {
-      invalidateAll()
-      toast.success('Demoted to login-only')
-    },
-  })
-
   if (isLoading) {
     return <LoadingState label="Loading auth providers..." />
   }
@@ -257,7 +226,7 @@ export function AuthProvidersManagement() {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="flex h-full flex-col">
           <CardHeader
             className={
               'flex flex-row items-center justify-between space-y-0 pb-2'
@@ -273,12 +242,12 @@ export function AuthProvidersManagement() {
               <AlertCircle className="h-5 w-5 flex-shrink-0 text-tertiary" />
             )}
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="flex flex-1 flex-col space-y-3">
             <p className="text-xs text-tertiary">
               Allow users to sign in with an email address and password stored
               in Imbi.
             </p>
-            <div className="flex items-center justify-between rounded-lg border border-input p-3">
+            <div className="mt-auto flex items-center justify-between rounded-lg border border-input p-3">
               <div>
                 <div className="text-sm text-primary">Enabled</div>
                 <div className="text-xs text-tertiary">
@@ -301,7 +270,6 @@ export function AuthProvidersManagement() {
 
         {providers.map((provider) => {
           const appType = provider.oauth_app_type
-          const typeLabel = appType ? APP_TYPE_LABELS[appType] : 'Unknown'
           const typeDesc = appType
             ? APP_TYPE_DESCRIPTIONS[appType]
             : 'Login-eligible service application.'
@@ -324,17 +292,6 @@ export function AuthProvidersManagement() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-xs text-tertiary">{typeDesc}</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="neutral">{typeLabel}</Badge>
-                  <Badge
-                    variant={provider.usage === 'both' ? 'info' : 'neutral'}
-                  >
-                    {provider.usage === 'both'
-                      ? 'login + integration'
-                      : 'login'}
-                  </Badge>
-                  <span className="text-xs text-tertiary">{provider.slug}</span>
-                </div>
                 <div>
                   <div className="mb-1 text-xs text-tertiary">
                     Authorized redirect URI
@@ -374,42 +331,14 @@ export function AuthProvidersManagement() {
                       <Settings className="mr-1 h-4 w-4" />
                       Edit
                     </Button>
-                    {provider.usage === 'login' ? (
-                      <Button
-                        disabled={promoteMutation.isPending}
-                        onClick={() => promoteMutation.mutate(provider.slug)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        Enable Integration
-                      </Button>
-                    ) : (
-                      <Button
-                        disabled={demoteMutation.isPending}
-                        onClick={() => demoteMutation.mutate(provider.slug)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        Demote to Login
-                      </Button>
-                    )}
-                    {provider.usage === 'login' ? (
-                      <Button
-                        onClick={() => setPendingDelete(provider)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <Trash2 className="mr-1 h-4 w-4" />
-                        Delete
-                      </Button>
-                    ) : (
-                      <span
-                        className="text-xs text-tertiary"
-                        title="Demote first from Third-Party Services"
-                      >
-                        Delete: demote integration first
-                      </span>
-                    )}
+                    <Button
+                      onClick={() => setPendingDelete(provider)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Delete
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -458,17 +387,15 @@ export function AuthProvidersManagement() {
 
       <ConfirmDialog
         confirmLabel="Delete"
-        description={
-          pendingDelete
-            ? `Remove the ${pendingDelete.name} auth provider? Users currently linked through this provider won't be able to sign in until it's recreated.`
-            : ''
-        }
+        description="Users currently linked through this provider won't be able to sign in until it's recreated."
         onCancel={() => setPendingDelete(null)}
         onConfirm={() => {
           if (pendingDelete) deleteMutation.mutate(pendingDelete.slug)
         }}
         open={!!pendingDelete}
-        title="Delete auth provider"
+        title={
+          pendingDelete ? `Remove the ${pendingDelete.name} Auth Provider?` : ''
+        }
       />
     </div>
   )
@@ -781,6 +708,9 @@ function AuthProviderEditDialog({
   const [domainDraft, setDomainDraft] = useState('')
   const [replaceSecret, setReplaceSecret] = useState(!provider.has_secret)
   const [secret, setSecret] = useState('')
+  const [enableIntegration, setEnableIntegration] = useState(
+    provider.usage === 'both',
+  )
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const showAllowedDomains = appType === 'google'
@@ -831,7 +761,7 @@ function AuthProviderEditDialog({
       client_id: clientId.trim(),
       name: name.trim(),
       oauth_app_type: appType,
-      usage: provider.usage,
+      usage: enableIntegration ? 'both' : 'login',
     }
     // Empty / unchanged secret preserves existing on the server.
     if (replaceSecret && secret) {
@@ -1068,6 +998,17 @@ function AuthProviderEditDialog({
               </div>
             </div>
           )}
+
+          <label className="flex w-full items-center gap-2 text-sm text-secondary">
+            <input
+              checked={enableIntegration}
+              className="h-4 w-4 rounded border-input"
+              disabled={isSaving}
+              onChange={(e) => setEnableIntegration(e.target.checked)}
+              type="checkbox"
+            />
+            Enable Integration
+          </label>
 
           <DialogFooter>
             <Button

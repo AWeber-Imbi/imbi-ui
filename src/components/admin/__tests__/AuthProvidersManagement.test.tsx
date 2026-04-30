@@ -6,12 +6,8 @@ import type { LoginProviderRead } from '@/types'
 vi.mock('@/api/endpoints', () => ({
   createAuthProvider: vi.fn(),
   deleteAuthProvider: vi.fn(),
-  demoteAuthProviderToLogin: vi.fn(),
   getLocalAuthConfig: vi.fn(),
   listAuthProviders: vi.fn(),
-  listOrganizations: vi.fn(),
-  listThirdPartyServices: vi.fn(),
-  promoteAuthProviderToBoth: vi.fn(),
   updateAuthProvider: vi.fn(),
   updateLocalAuthConfig: vi.fn(),
 }))
@@ -54,8 +50,6 @@ describe('AuthProvidersManagement', () => {
       enabled: true,
       updated_at: '2026-04-01T00:00:00Z',
     })
-    vi.mocked(endpoints.listOrganizations).mockResolvedValue([])
-    vi.mocked(endpoints.listThirdPartyServices).mockResolvedValue([])
   })
 
   it('renders the local auth card', async () => {
@@ -69,7 +63,7 @@ describe('AuthProvidersManagement', () => {
     )
   })
 
-  it('renders a login provider card with promote action', async () => {
+  it('renders a login provider card with edit and delete actions', async () => {
     const endpoints = await import('@/api/endpoints')
     vi.mocked(endpoints.listAuthProviders).mockResolvedValue([
       sampleProvider({ usage: 'login' }),
@@ -80,11 +74,13 @@ describe('AuthProvidersManagement', () => {
     await waitFor(() =>
       expect(screen.getByText('Google Prod')).toBeInTheDocument(),
     )
-    expect(screen.getByText(/promote to both/i)).toBeInTheDocument()
-    expect(screen.getByText(/^login$/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
+    expect(screen.queryByText(/enable integration/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/demote to login/i)).not.toBeInTheDocument()
   })
 
-  it('renders a both row with demote action and disables delete', async () => {
+  it('renders a both row with the same action set', async () => {
     const endpoints = await import('@/api/endpoints')
     vi.mocked(endpoints.listAuthProviders).mockResolvedValue([
       sampleProvider({ usage: 'both' }),
@@ -95,9 +91,10 @@ describe('AuthProvidersManagement', () => {
     await waitFor(() =>
       expect(screen.getByText('Google Prod')).toBeInTheDocument(),
     )
-    expect(screen.getByText(/demote to login/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
     expect(
-      screen.getByText(/delete: demote integration first/i),
-    ).toBeInTheDocument()
+      screen.queryByText(/delete: demote integration first/i),
+    ).not.toBeInTheDocument()
   })
 })
