@@ -2,7 +2,15 @@
 import React from 'react'
 import { useMemo, useState } from 'react'
 
-import { CheckCircle, FileJson, Filter, Upload, XCircle } from 'lucide-react'
+import {
+  Check,
+  CheckCircle,
+  Copy,
+  FileJson,
+  Filter,
+  Upload,
+  XCircle,
+} from 'lucide-react'
 
 import {
   createBlueprint,
@@ -48,6 +56,7 @@ export function BlueprintManagement() {
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [enabledFilter, setEnabledFilter] = useState<string>('')
   const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [copiedKey, setCopiedKey] = useState<null | string>(null)
 
   // Parse compound key from URL slug (format: "type:slug")
   const selectedKey = useMemo<BlueprintKey | null>(() => {
@@ -117,6 +126,47 @@ export function BlueprintManagement() {
     if (enabledFilter === 'disabled' && bp.enabled) return false
     return true
   })
+
+  const handleCopyBlueprint = (bp: Blueprint) => {
+    let schemaObj: Record<string, unknown> = {}
+    try {
+      schemaObj =
+        typeof bp.json_schema === 'string'
+          ? JSON.parse(bp.json_schema)
+          : bp.json_schema
+    } catch {
+      // fallback to empty schema
+    }
+    const parsedFilter = parseFilterFromBlueprint(bp.filter)
+    const exportObj: Record<string, unknown> = {
+      kind: bp.kind || 'node',
+      name: bp.name,
+      slug: bp.slug,
+      ...(bp.kind === 'relationship'
+        ? {
+            edge: bp.edge ?? '',
+            source: bp.source ?? '',
+            target: bp.target ?? '',
+          }
+        : { type: bp.type }),
+      ...(bp.description ? { description: bp.description } : {}),
+      enabled: bp.enabled,
+      priority: bp.priority,
+      ...(parsedFilter &&
+      (parsedFilter.project_type?.length > 0 ||
+        parsedFilter.environment?.length > 0)
+        ? { filter: parsedFilter }
+        : {}),
+      json_schema: schemaObj,
+    }
+    const rowKey = `${blueprintPathType(bp)}/${bp.slug}`
+    navigator.clipboard
+      .writeText(JSON.stringify(exportObj, null, 2))
+      .then(() => {
+        setCopiedKey(rowKey)
+        setTimeout(() => setCopiedKey(null), 2000)
+      })
+  }
 
   const handleEditClick = (key: BlueprintKey) => {
     goToEdit(`${key.type}:${key.slug}`)
@@ -276,6 +326,37 @@ export function BlueprintManagement() {
       searchPlaceholder="Search blueprints..."
     >
       <AdminTable<Blueprint>
+        actions={(bp) => {
+          const rowKey = `${blueprintPathType(bp)}/${bp.slug}`
+          const isCopied = copiedKey === rowKey
+          return (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label={`Copy ${bp.name} as JSON`}
+                    className="text-secondary hover:bg-secondary hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCopyBlueprint(bp)
+                    }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    {isCopied ? (
+                      <Check className="h-4 w-4 text-success" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isCopied ? 'Copied!' : 'Copy as JSON'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )
+        }}
         columns={[
           {
             cellAlign: 'left',
