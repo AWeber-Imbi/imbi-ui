@@ -79,7 +79,8 @@ interface SectionDef {
 
 export function Admin() {
   const navigate = useNavigate()
-  const { section } = useParams<{ section?: string }>()
+  const { section, slug } = useParams<{ section?: string; slug?: string }>()
+  const isSubPage = !!slug
   const currentSection: AdminSection = isValidSection(section)
     ? section
     : 'blueprints'
@@ -296,9 +297,19 @@ export function Admin() {
                 {currentSectionData && (
                   <currentSectionData.icon className="h-5 w-5 text-amber-text" />
                 )}
-                <h1 className="text-xl font-semibold text-primary">
-                  {currentSectionData?.label}
-                </h1>
+                {isSubPage ? (
+                  <button
+                    className="text-xl font-semibold text-primary hover:text-amber-text"
+                    onClick={() => navigate(`/admin/${currentSection}`)}
+                    type="button"
+                  >
+                    {currentSectionData?.label}
+                  </button>
+                ) : (
+                  <h1 className="text-xl font-semibold text-primary">
+                    {currentSectionData?.label}
+                  </h1>
+                )}
               </div>
             </div>
           </div>

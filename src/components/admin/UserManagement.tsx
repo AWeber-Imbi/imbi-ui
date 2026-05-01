@@ -201,8 +201,10 @@ export function UserManagement() {
     return (
       <UserForm
         error={createMutation.error || updateMutation.error}
+        isDeleting={deleteMutation.isPending}
         isLoading={createMutation.isPending || updateMutation.isPending}
         onCancel={handleCancel}
+        onDelete={handleDelete}
         onSave={handleSave}
         user={selectedUser}
       />
@@ -340,10 +342,7 @@ export function UserManagement() {
             ? 'No users match your filters'
             : 'No users created yet'
         }
-        getDeleteLabel={(user) => user.display_name}
         getRowKey={(user) => user.email}
-        isDeleting={deleteMutation.isPending}
-        onDelete={handleDelete}
         onRowClick={(user) => handleViewClick(user)}
         rows={filteredUsers}
       />
