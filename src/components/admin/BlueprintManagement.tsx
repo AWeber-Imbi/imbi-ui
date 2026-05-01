@@ -20,6 +20,7 @@ import {
 } from '@/api/endpoints'
 import { AdminTable } from '@/components/ui/admin-table'
 import { Button } from '@/components/ui/button'
+import { ErrorBanner } from '@/components/ui/error-banner'
 import { LabelChip } from '@/components/ui/label-chip'
 import {
   Tooltip,
@@ -57,6 +58,7 @@ export function BlueprintManagement() {
   const [enabledFilter, setEnabledFilter] = useState<string>('')
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [copiedKey, setCopiedKey] = useState<null | string>(null)
+  const [copyError, setCopyError] = useState<null | string>(null)
 
   // Parse compound key from URL slug (format: "type:slug")
   const selectedKey = useMemo<BlueprintKey | null>(() => {
@@ -128,14 +130,15 @@ export function BlueprintManagement() {
   })
 
   const handleCopyBlueprint = (bp: Blueprint) => {
-    let schemaObj: Record<string, unknown> = {}
+    let schemaObj: Record<string, unknown>
     try {
       schemaObj =
         typeof bp.json_schema === 'string'
           ? JSON.parse(bp.json_schema)
           : bp.json_schema
     } catch {
-      // fallback to empty schema
+      setCopyError(`Failed to copy "${bp.name}": invalid JSON schema`)
+      return
     }
     const parsedFilter = parseFilterFromBlueprint(bp.filter)
     const exportObj: Record<string, unknown> = {
@@ -163,8 +166,13 @@ export function BlueprintManagement() {
     navigator.clipboard
       .writeText(JSON.stringify(exportObj, null, 2))
       .then(() => {
+        setCopyError(null)
         setCopiedKey(rowKey)
         setTimeout(() => setCopiedKey(null), 2000)
+      })
+      .catch(() => {
+        setCopyError(`Failed to copy "${bp.name}" to clipboard`)
+        setCopiedKey(null)
       })
   }
 
@@ -325,6 +333,7 @@ export function BlueprintManagement() {
       search={searchQuery}
       searchPlaceholder="Search blueprints..."
     >
+      {copyError && <ErrorBanner message={copyError} title="Copy failed" />}
       <AdminTable<Blueprint>
         actions={(bp) => {
           const rowKey = `${blueprintPathType(bp)}/${bp.slug}`
