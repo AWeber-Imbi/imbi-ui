@@ -72,8 +72,8 @@ export function WebhookForm({
   // service+name pair (mirrors _compute_webhook_slug in the API).
   const computePreviewSlug = (svc: string, n: string) => {
     const namePart = slugify(n)
-    if (svc) return `${svc}-${namePart}`.slice(0, 64)
-    return namePart.slice(0, 64)
+    if (svc) return `${svc}-${namePart}`.slice(0, 64).replace(/-+$/, '')
+    return namePart.slice(0, 64).replace(/-+$/, '')
   }
 
   const validate = () => {
