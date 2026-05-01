@@ -279,7 +279,7 @@ export function Admin() {
                   style={{ paddingTop: '2em' }}
                 >
                   <Globe className="h-3 w-3" />
-                  System Admin
+                  Global Admin
                 </div>
               )}
               {systemAdminSections.map(renderSectionButton)}

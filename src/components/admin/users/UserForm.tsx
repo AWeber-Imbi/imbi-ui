@@ -51,8 +51,8 @@ export function UserForm({
   // Account type
   const [isActive, setIsActive] = useState(user?.is_active ?? true)
   const [isAdmin, setIsAdmin] = useState(user?.is_admin ?? false)
-  const [isServiceAccount, setIsServiceAccount] = useState(
-    user?.is_service_account ?? false,
+  const [emailNotifications, setEmailNotifications] = useState(
+    user?.email_notifications ?? true,
   )
 
   // Organization membership (for creation only)
@@ -61,6 +61,16 @@ export function UserForm({
     organizations.length === 1 ? organizations[0].slug : '',
   )
   const [roleSlug, setRoleSlug] = useState('')
+
+  // Memberships (for edit mode)
+  const [memberships, setMemberships] = useState<
+    { organization_slug: string; role: string }[]
+  >(
+    (user?.organizations ?? []).map((m) => ({
+      organization_slug: m.organization_slug,
+      role: m.role,
+    })),
+  )
 
   // Fetch available roles
   const { data: availableRoles = [], isLoading: rolesLoading } = useQuery({
@@ -171,11 +181,16 @@ export function UserForm({
     const userData: AdminUserCreate = {
       display_name: displayName.trim(),
       email: email.trim(),
+      email_notifications: emailNotifications,
       is_active: isActive,
       is_admin: isAdmin,
-      is_service_account: isServiceAccount,
+      is_service_account: false,
       organization_slug: organizationSlug,
       role_slug: roleSlug,
+    }
+
+    if (isEditing) {
+      userData.organizations = memberships
     }
 
     // Only include password if changing it or creating new user
@@ -225,41 +240,40 @@ export function UserForm({
         <CardContent className="space-y-4 pt-6">
           <div className="grid grid-cols-2 gap-4">
             {/* Email */}
-            {!isEditing && (
-              <div className="col-span-2">
-                <FormField
-                  error={validationErrors.email}
-                  label="Email"
-                  required
-                  touched={touched.email}
-                >
-                  <Input
-                    className=""
-                    disabled={isLoading}
-                    onBlur={() => {
-                      setTouched({ ...touched, email: true })
-                      const error = validateEmail(email)
-                      if (error) {
-                        setValidationErrors({
-                          ...validationErrors,
-                          email: error,
-                        })
-                      }
-                    }}
-                    onChange={(e) => {
-                      setEmail(e.target.value)
-                      handleFieldChange('email')
-                    }}
-                    placeholder="john.doe@company.com"
-                    type="email"
-                    value={email}
-                  />
-                </FormField>
-              </div>
-            )}
+            <div>
+              <FormField
+                error={validationErrors.email}
+                label="Email"
+                required
+                touched={touched.email}
+              >
+                <Input
+                  className=""
+                  disabled={isLoading || isEditing}
+                  onBlur={() => {
+                    setTouched({ ...touched, email: true })
+                    const error = validateEmail(email)
+                    if (error) {
+                      setValidationErrors({
+                        ...validationErrors,
+                        email: error,
+                      })
+                    }
+                  }}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    handleFieldChange('email')
+                  }}
+                  placeholder="john.doe@company.com"
+                  readOnly={isEditing}
+                  type="email"
+                  value={email}
+                />
+              </FormField>
+            </div>
 
             {/* Display Name */}
-            <div className="col-span-2">
+            <div>
               <FormField
                 error={validationErrors.display_name}
                 label="Display Name"
@@ -334,7 +348,7 @@ export function UserForm({
 
             {(changePassword || !isEditing) && (
               <>
-                <div className="col-span-2">
+                <div>
                   <FormField
                     error={validationErrors.password}
                     label="Password"
@@ -462,7 +476,7 @@ export function UserForm({
                   )}
                 </div>
 
-                <div className="col-span-2">
+                <div>
                   <FormField
                     error={validationErrors.confirmPassword}
                     label="Confirm Password"
@@ -495,114 +509,174 @@ export function UserForm({
               </>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Section 2: Account Type */}
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div>
-            <label className="mb-2 block text-sm text-secondary">
-              Account Type
-            </label>
-            <div className="space-y-2">
-              <label
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
-                  !isAdmin && !isServiceAccount
-                    ? 'border-info bg-info'
-                    : 'border-secondary'
-                }`}
-              >
-                <input
-                  checked={!isAdmin && !isServiceAccount}
-                  className="mt-0.5"
-                  disabled={isLoading}
-                  name="accountType"
-                  onChange={() => {
-                    setIsAdmin(false)
-                    setIsServiceAccount(false)
-                  }}
-                  type="radio"
-                />
-                <div className="flex-1">
-                  <div className="text-primary">Regular User</div>
-                  <div className="text-sm text-secondary">
-                    Standard user account with role-based permissions
-                  </div>
-                </div>
+          {/* Section 2: Account Type + Status */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm text-secondary">
+                Account Type
               </label>
+              <div className="space-y-2">
+                <label
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
+                    !isAdmin ? 'border-info bg-info' : 'border-secondary'
+                  }`}
+                >
+                  <input
+                    checked={!isAdmin}
+                    className="mt-0.5"
+                    disabled={isLoading}
+                    name="accountType"
+                    onChange={() => {
+                      setIsAdmin(false)
+                    }}
+                    type="radio"
+                  />
+                  <div className="flex-1">
+                    <div className="text-primary">Regular User</div>
+                    <div className="text-sm text-secondary">
+                      Standard user account with role-based permissions
+                    </div>
+                  </div>
+                </label>
 
-              <label
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
-                  isServiceAccount
-                    ? 'border-purple-300 bg-purple-50 dark:border-purple-700 dark:bg-purple-900/20'
-                    : 'border-secondary'
-                }`}
-              >
-                <input
-                  checked={isServiceAccount}
-                  className="mt-0.5"
-                  disabled={isLoading}
-                  name="accountType"
-                  onChange={() => {
-                    setIsServiceAccount(true)
-                    setIsAdmin(false)
-                  }}
-                  type="radio"
-                />
-                <div className="flex-1">
-                  <div className="text-primary">Service Account</div>
-                  <div className="text-sm text-secondary">
-                    Automated system account for API access
+                <label
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
+                    isAdmin ? 'border-danger bg-danger' : 'border-secondary'
+                  }`}
+                >
+                  <input
+                    checked={isAdmin}
+                    className="mt-0.5"
+                    disabled={isLoading}
+                    name="accountType"
+                    onChange={() => {
+                      setIsAdmin(true)
+                    }}
+                    type="radio"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 text-primary">
+                      Administrator
+                      <AlertTriangle className="h-4 w-4 text-red-500" />
+                    </div>
+                    <div className="text-sm text-secondary">
+                      Super-user with full system access (bypasses all
+                      permission checks)
+                    </div>
                   </div>
-                </div>
-              </label>
+                </label>
+              </div>
+            </div>
 
-              <label
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
-                  isAdmin ? 'border-danger bg-danger' : 'border-secondary'
-                }`}
-              >
-                <input
-                  checked={isAdmin}
-                  className="mt-0.5"
-                  disabled={isLoading}
-                  name="accountType"
-                  onChange={() => {
-                    setIsAdmin(true)
-                    setIsServiceAccount(false)
-                  }}
-                  type="radio"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 text-primary">
-                    Administrator
-                    <AlertTriangle className="h-4 w-4 text-red-500" />
-                  </div>
-                  <div className="text-sm text-secondary">
-                    Super-user with full system access (bypasses all permission
-                    checks)
-                  </div>
-                </div>
-              </label>
+            <div className="space-y-4">
+              <div>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    checked={isActive}
+                    className="rounded"
+                    disabled={isLoading}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    type="checkbox"
+                  />
+                  <span className="text-secondary">Account Active</span>
+                </label>
+                <p className="ml-6 mt-1 text-sm text-secondary">
+                  Inactive accounts cannot authenticate
+                </p>
+              </div>
+              <div>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    checked={emailNotifications}
+                    className="rounded"
+                    disabled={isLoading}
+                    onChange={(e) => setEmailNotifications(e.target.checked)}
+                    type="checkbox"
+                  />
+                  <span className="text-secondary">Email Notifications</span>
+                </label>
+                <p className="ml-6 mt-1 text-sm text-secondary">
+                  Receive system notifications by email
+                </p>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                checked={isActive}
-                className="rounded"
-                disabled={isLoading}
-                onChange={(e) => setIsActive(e.target.checked)}
-                type="checkbox"
-              />
-              <span className="text-secondary">Account Active</span>
-            </label>
-            <p className="ml-6 mt-1 text-sm text-secondary">
-              Inactive accounts cannot authenticate
-            </p>
-          </div>
+          {/* Section 3 (edit): Organization Memberships */}
+          {isEditing && (
+            <div>
+              <label className="mb-2 block text-sm text-secondary">
+                Organization Memberships
+              </label>
+              <div className="space-y-2">
+                {organizations.map((org) => {
+                  const idx = memberships.findIndex(
+                    (m) => m.organization_slug === org.slug,
+                  )
+                  const checked = idx !== -1
+                  const isLastChecked = checked && memberships.length === 1
+                  return (
+                    <div
+                      className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg border border-secondary p-3"
+                      key={org.slug}
+                    >
+                      <input
+                        checked={checked}
+                        className="rounded"
+                        disabled={isLoading || isLastChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            const defaultRole = availableRoles[0]?.slug ?? ''
+                            setMemberships([
+                              ...memberships,
+                              {
+                                organization_slug: org.slug,
+                                role: defaultRole,
+                              },
+                            ])
+                          } else {
+                            setMemberships(
+                              memberships.filter(
+                                (m) => m.organization_slug !== org.slug,
+                              ),
+                            )
+                          }
+                        }}
+                        type="checkbox"
+                      />
+                      <span className="text-primary">{org.name}</span>
+                      {checked ? (
+                        <label className="flex items-center gap-2">
+                          <span className="text-sm text-secondary">Role:</span>
+                          <select
+                            className="rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            disabled={isLoading || rolesLoading}
+                            onChange={(e) => {
+                              const next = [...memberships]
+                              next[idx] = {
+                                ...next[idx],
+                                role: e.target.value,
+                              }
+                              setMemberships(next)
+                            }}
+                            value={memberships[idx].role}
+                          >
+                            {availableRoles.map((r) => (
+                              <option key={r.slug} value={r.slug}>
+                                {r.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : (
+                        <span />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
