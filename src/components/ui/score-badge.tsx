@@ -13,7 +13,7 @@ export function ScoreBadge({
 }: ScoreBadgeProps) {
   const rounded = variant === 'circle' ? 'rounded-full' : 'rounded-lg'
 
-  if (score == null) {
+  if (score == null || !Number.isFinite(score)) {
     const dims =
       size === 'lg'
         ? 'h-16 w-16 text-2xl'
