@@ -38,7 +38,7 @@ export function ProjectSettingsTab({ project }: { project: Project }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const isAdmin = user?.is_admin === true
-  const { patch } = useProjectPatch(orgSlug, project.id)
+  const { patch, scheduleScoreRefresh } = useProjectPatch(orgSlug, project.id)
   const [deleteConfirmSlug, setDeleteConfirmSlug] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
@@ -61,7 +61,10 @@ export function ProjectSettingsTab({ project }: { project: Project }) {
   const rescoreMutation = useMutation({
     mutationFn: () => rescoreProject(project.id),
     onError: mutationErrorHandler('recompute score'),
-    onSuccess: () => toast.success('Score recompute enqueued'),
+    onSuccess: () => {
+      toast.success('Score recompute enqueued')
+      scheduleScoreRefresh()
+    },
   })
 
   const {

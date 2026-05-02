@@ -30,7 +30,7 @@ export function ScoreBadge({
   }
 
   const display = Math.round(score)
-  const { bg, ring, text } = scoreClasses(score)
+  const { bg, ring, text } = scoreClasses(display)
 
   if (size === 'lg') {
     return (
