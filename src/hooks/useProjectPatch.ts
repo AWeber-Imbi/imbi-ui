@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -7,6 +7,8 @@ import { patchProject } from '@/api/endpoints'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { applyJsonPatch } from '@/lib/json-patch'
 import type { PatchOperation, Project } from '@/types'
+
+const SCORE_REFRESH_DELAY = 5_000
 
 export interface UseProjectPatchResult {
   patch: (path: string, value: unknown) => Promise<void>
@@ -19,6 +21,40 @@ export function useProjectPatch(
 ): UseProjectPatchResult {
   const qc = useQueryClient()
   const [pendingPath, setPendingPath] = useState<null | string>(null)
+  const scoreRefreshTimer = useRef<null | ReturnType<typeof setTimeout>>(null)
+
+  useEffect(() => {
+    return () => {
+      if (scoreRefreshTimer.current !== null) {
+        clearTimeout(scoreRefreshTimer.current)
+      }
+    }
+  }, [])
+
+  const scheduleScoreRefresh = useCallback(() => {
+    if (scoreRefreshTimer.current !== null) {
+      clearTimeout(scoreRefreshTimer.current)
+    }
+    scoreRefreshTimer.current = setTimeout(() => {
+      scoreRefreshTimer.current = null
+      qc.invalidateQueries({ queryKey: ['project', orgSlug, projectId] })
+      qc.invalidateQueries({
+        queryKey: ['scoreTrend', orgSlug, projectId],
+      })
+      qc.invalidateQueries({
+        queryKey: ['scoreTrend90', orgSlug, projectId],
+      })
+      qc.invalidateQueries({
+        queryKey: ['projectBreakdown', orgSlug, projectId],
+      })
+      qc.invalidateQueries({
+        queryKey: ['scoreHistory', orgSlug, projectId],
+      })
+      qc.invalidateQueries({
+        queryKey: ['scoreHistoryRaw', orgSlug, projectId],
+      })
+    }, SCORE_REFRESH_DELAY)
+  }, [qc, orgSlug, projectId])
 
   const patch = useCallback(
     async (path: string, value: unknown) => {
@@ -51,6 +87,11 @@ export function useProjectPatch(
         // GET returns (e.g. environments as a map vs. an array). Invalidate
         // so the next read comes from the canonical GET.
         qc.invalidateQueries({ queryKey: key })
+        // Activity events are written synchronously — refresh immediately.
+        qc.invalidateQueries({
+          queryKey: ['events', orgSlug, projectId],
+        })
+        scheduleScoreRefresh()
       } catch (error) {
         // Rollback optimistic update
         if (optimisticApplied && snapshot !== undefined) {
@@ -62,7 +103,7 @@ export function useProjectPatch(
         setPendingPath(null)
       }
     },
-    [qc, orgSlug, projectId],
+    [qc, orgSlug, projectId, scheduleScoreRefresh],
   )
 
   return { patch, pendingPath }
