@@ -252,6 +252,7 @@ function InstalledList({ installed, isLoading }: InstalledListProps) {
       toast.success(`${packageName} uninstalled`)
       setConfirmPkg(null)
       void queryClient.invalidateQueries({ queryKey: ['admin-plugins'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-plugin-catalog'] })
     },
   })
 
@@ -316,6 +317,7 @@ function InstalledList({ installed, isLoading }: InstalledListProps) {
                   </TableCell>
                   <TableCell>
                     <Button
+                      aria-label={`Uninstall ${plugin.name}`}
                       onClick={() => setConfirmPkg(plugin.package_name)}
                       size="icon"
                       variant="ghost"

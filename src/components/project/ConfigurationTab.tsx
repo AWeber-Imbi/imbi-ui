@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
@@ -91,7 +91,13 @@ export function ConfigurationTab({
     id: a.plugin_id,
     label: a.label,
   }))
-  const activeSource = source ?? sources[0]?.id
+  const activeSource = sources.some((s) => s.id === source)
+    ? source
+    : sources[0]?.id
+
+  useEffect(() => {
+    setRevealedValues({})
+  }, [activeSource, environment])
 
   const {
     data: keys,

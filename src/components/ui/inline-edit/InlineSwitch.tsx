@@ -59,6 +59,7 @@ export function InlineSwitch({
       disabled={pending}
       onBlur={edit.cancel}
       onCheckedChange={async (next) => {
+        edit.setDraft(next)
         try {
           await onCommit(next)
         } catch (e) {

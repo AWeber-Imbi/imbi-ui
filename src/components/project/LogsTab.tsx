@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 import { RefreshCw, Search } from 'lucide-react'
@@ -71,7 +71,7 @@ export function LogsTab({ environment, orgSlug, projectId }: LogsTabProps) {
         { environment: environment ?? undefined, source: activeSource },
         signal,
       ),
-    queryKey: ['log-schema', orgSlug, projectId, activeSource],
+    queryKey: ['log-schema', orgSlug, projectId, activeSource, environment],
     staleTime: 10 * 60 * 1000,
   })
 
@@ -103,12 +103,18 @@ export function LogsTab({ environment, orgSlug, projectId }: LogsTabProps) {
       orgSlug,
       projectId,
       activeSource,
+      environment,
       range,
       activeFilters,
       cursor,
     ],
     staleTime: 0,
   })
+
+  useEffect(() => {
+    setAllEntries([])
+    setCursor(null)
+  }, [activeSource, environment, range, activeFilters])
 
   const handleSearch = useCallback(() => {
     setAllEntries([])
@@ -170,10 +176,7 @@ export function LogsTab({ environment, orgSlug, projectId }: LogsTabProps) {
                     : ''
                 }
                 key={s.id}
-                onClick={() => {
-                  setSource(s.id)
-                  handleSearch()
-                }}
+                onClick={() => setSource(s.id)}
                 size="sm"
                 variant="outline"
               >

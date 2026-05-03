@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
@@ -58,6 +58,7 @@ export function ProjectTypePlugins({
   const [selectedTab, setSelectedTab] = useState<PluginTab>('configuration')
   const [isDefault, setIsDefault] = useState(false)
   const [drafts, setDrafts] = useState<AssignmentDraft[]>([])
+  const hasSeeded = useRef(false)
 
   const { data: existing } = useQuery({
     queryFn: ({ signal }) => listProjectTypePlugins(orgSlug, ptSlug, signal),
@@ -80,7 +81,8 @@ export function ProjectTypePlugins({
   })
 
   useEffect(() => {
-    if (existing) {
+    if (existing && !hasSeeded.current) {
+      hasSeeded.current = true
       setDrafts(
         existing.map((a) => ({
           default: a.default,
@@ -110,6 +112,7 @@ export function ProjectTypePlugins({
     },
     onSuccess: () => {
       toast.success('Plugin assignments saved')
+      hasSeeded.current = false
       void queryClient.invalidateQueries({
         queryKey: ['project-type-plugins', orgSlug, ptSlug],
       })

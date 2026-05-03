@@ -122,6 +122,9 @@ export function ServicePluginList({
       void queryClient.invalidateQueries({
         queryKey: ['service-plugins', orgSlug, serviceSlug],
       })
+      void queryClient.invalidateQueries({
+        queryKey: ['project-plugins', orgSlug],
+      })
     },
   })
 
@@ -136,6 +139,9 @@ export function ServicePluginList({
       setConfirmDeleteId(null)
       void queryClient.invalidateQueries({
         queryKey: ['service-plugins', orgSlug, serviceSlug],
+      })
+      void queryClient.invalidateQueries({
+        queryKey: ['project-plugins', orgSlug],
       })
     },
   })
@@ -161,7 +167,16 @@ export function ServicePluginList({
   const handleSubmit = () => {
     let options: Record<string, unknown>
     try {
-      options = JSON.parse(form.options) as Record<string, unknown>
+      const parsed: unknown = JSON.parse(form.options)
+      if (
+        parsed === null ||
+        typeof parsed !== 'object' ||
+        Array.isArray(parsed)
+      ) {
+        setOptionsError('Options must be a JSON object')
+        return
+      }
+      options = parsed as Record<string, unknown>
       setOptionsError('')
     } catch {
       setOptionsError('Invalid JSON')
