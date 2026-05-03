@@ -71,13 +71,22 @@ export function ServicePluginList({
   })
   const [optionsError, setOptionsError] = useState('')
 
-  const { data: plugins, isLoading } = useQuery({
+  const {
+    data: plugins,
+    error: pluginsError,
+    isError: isPluginsError,
+    isLoading,
+  } = useQuery({
     queryFn: ({ signal }) => listServicePlugins(orgSlug, serviceSlug, signal),
     queryKey: ['service-plugins', orgSlug, serviceSlug],
     staleTime: 60 * 1000,
   })
 
-  const { data: adminPlugins } = useQuery({
+  const {
+    data: adminPlugins,
+    error: adminPluginsError,
+    isError: isAdminPluginsError,
+  } = useQuery({
     queryFn: ({ signal }) => getAdminPlugins(signal),
     queryKey: ['admin-plugins'],
     staleTime: 5 * 60 * 1000,
@@ -99,6 +108,9 @@ export function ServicePluginList({
       setShowDialog(false)
       void queryClient.invalidateQueries({
         queryKey: ['service-plugins', orgSlug, serviceSlug],
+      })
+      void queryClient.invalidateQueries({
+        queryKey: ['project-plugins', orgSlug],
       })
     },
   })
@@ -216,6 +228,10 @@ export function ServicePluginList({
         <CardContent className="p-0">
           {isLoading ? (
             <LoadingState label="Loading..." />
+          ) : isPluginsError ? (
+            <div className="py-8 text-center text-sm text-destructive">
+              {extractApiErrorDetail(pluginsError) ?? 'Failed to load plugins'}
+            </div>
           ) : (plugins ?? []).length === 0 ? (
             <div className="py-8 text-center text-sm text-secondary">
               No plugins configured. Add a plugin to enable configuration or log
@@ -269,6 +285,7 @@ export function ServicePluginList({
                           Edit
                         </Button>
                         <Button
+                          aria-label={`Remove ${plugin.label}`}
                           onClick={() => setConfirmDeleteId(plugin.id)}
                           size="icon"
                           variant="ghost"
@@ -295,6 +312,12 @@ export function ServicePluginList({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {!editingPlugin && isAdminPluginsError && (
+              <div className="text-sm text-destructive">
+                {extractApiErrorDetail(adminPluginsError) ??
+                  'Failed to load installed plugins'}
+              </div>
+            )}
             {!editingPlugin && (
               <div className="space-y-2">
                 <Label htmlFor="plugin-slug">Plugin</Label>

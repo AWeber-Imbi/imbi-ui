@@ -40,13 +40,17 @@ import { extractApiErrorDetail } from '@/lib/apiError'
 import type { AdminPluginsResponse, InstalledPlugin } from '@/types'
 
 interface InstalledListProps {
+  error: unknown
   installed: InstalledPlugin[]
+  isError: boolean
   isLoading: boolean
 }
 
 type PluginTab = 'catalog' | 'installed' | 'unavailable'
 
 interface UnavailableListProps {
+  error: unknown
+  isError: boolean
   isLoading: boolean
   unavailable: string[]
 }
@@ -60,7 +64,7 @@ export function PluginsManagement() {
     { id: 'unavailable', label: 'Unavailable' },
   ]
 
-  const { data, isLoading } = useQuery<AdminPluginsResponse>({
+  const { data, error, isError, isLoading } = useQuery<AdminPluginsResponse>({
     queryFn: ({ signal }) => getAdminPlugins(signal),
     queryKey: ['admin-plugins'],
     staleTime: 60 * 1000,
@@ -92,13 +96,17 @@ export function PluginsManagement() {
 
       {activeTab === 'installed' && (
         <InstalledList
+          error={error}
           installed={data?.installed ?? []}
+          isError={isError}
           isLoading={isLoading}
         />
       )}
       {activeTab === 'catalog' && <CatalogList />}
       {activeTab === 'unavailable' && (
         <UnavailableList
+          error={error}
+          isError={isError}
           isLoading={isLoading}
           unavailable={data?.unavailable ?? []}
         />
@@ -110,7 +118,7 @@ export function PluginsManagement() {
 function CatalogList() {
   const queryClient = useQueryClient()
 
-  const { data, isLoading } = useQuery({
+  const { data, error, isError, isLoading } = useQuery({
     queryFn: ({ signal }) => getAdminPluginCatalog(signal),
     queryKey: ['admin-plugin-catalog'],
     staleTime: 5 * 60 * 1000,
@@ -139,6 +147,16 @@ function CatalogList() {
 
   if (isLoading) {
     return <LoadingState label="Loading..." />
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-destructive">
+          {extractApiErrorDetail(error) ?? 'Failed to load plugin catalog'}
+        </CardContent>
+      </Card>
+    )
   }
 
   const entries = data ?? []
@@ -239,7 +257,12 @@ function CatalogList() {
   )
 }
 
-function InstalledList({ installed, isLoading }: InstalledListProps) {
+function InstalledList({
+  error,
+  installed,
+  isError,
+  isLoading,
+}: InstalledListProps) {
   const queryClient = useQueryClient()
   const [confirmPkg, setConfirmPkg] = useState<null | string>(null)
 
@@ -258,6 +281,16 @@ function InstalledList({ installed, isLoading }: InstalledListProps) {
 
   if (isLoading) {
     return <LoadingState label="Loading..." />
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-destructive">
+          {extractApiErrorDetail(error) ?? 'Failed to load plugins'}
+        </CardContent>
+      </Card>
+    )
   }
 
   if (installed.length === 0) {
@@ -344,9 +377,24 @@ function InstalledList({ installed, isLoading }: InstalledListProps) {
   )
 }
 
-function UnavailableList({ isLoading, unavailable }: UnavailableListProps) {
+function UnavailableList({
+  error,
+  isError,
+  isLoading,
+  unavailable,
+}: UnavailableListProps) {
   if (isLoading) {
     return <LoadingState label="Loading..." />
+  }
+
+  if (isError) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-destructive">
+          {extractApiErrorDetail(error) ?? 'Failed to load plugins'}
+        </CardContent>
+      </Card>
+    )
   }
 
   if (unavailable.length === 0) {
