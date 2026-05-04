@@ -19,6 +19,12 @@ import {
 } from '@/api/endpoints'
 import { AdminTable } from '@/components/ui/admin-table'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAdminCrud } from '@/hooks/useAdminCrud'
 import { useAdminNav } from '@/hooks/useAdminNav'
 import { buildDiffPatch } from '@/lib/json-patch'
@@ -214,21 +220,30 @@ export function ScoringPolicyManagement() {
       >
         <AdminTable<ScoringPolicy>
           actions={(p) => (
-            <Button
-              aria-label={`Copy ${p.name}`}
-              onClick={(e) => {
-                e.stopPropagation()
-                handleCopy(p)
-              }}
-              size="sm"
-              variant="ghost"
-            >
-              {copiedSlug === p.slug ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4 text-secondary" />
-              )}
-            </Button>
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    aria-label={`Copy ${p.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleCopy(p)
+                    }}
+                    size="sm"
+                    variant="ghost"
+                  >
+                    {copiedSlug === p.slug ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-secondary" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy Definition</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           columns={[
             {
