@@ -22,16 +22,21 @@ export function TeamKPIReport() {
 
   const {
     data: rollup,
+    error: rollupError,
     isLoading: rollupLoading,
     refetch,
   } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => getScoreRollup('team', signal),
-    queryKey: ['scoreRollup', 'team'],
+    queryKey: ['scoreRollup', 'team', orgSlug],
     staleTime: 60_000,
   })
 
-  const { data: teams, isLoading: teamsLoading } = useQuery({
+  const {
+    data: teams,
+    error: teamsError,
+    isLoading: teamsLoading,
+  } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => listTeams(orgSlug, signal),
     queryKey: ['teams', orgSlug],
@@ -39,6 +44,7 @@ export function TeamKPIReport() {
   })
 
   const isLoading = rollupLoading || teamsLoading
+  const hasError = !!(rollupError || teamsError)
 
   const rows: TeamRow[] = (() => {
     if (!rollup) return []
@@ -108,6 +114,10 @@ export function TeamKPIReport() {
           <div className="flex h-40 items-center justify-center text-sm text-tertiary">
             Loading…
           </div>
+        ) : hasError ? (
+          <div className="flex h-40 items-center justify-center text-sm text-danger">
+            Failed to load report data. Please try again.
+          </div>
         ) : rows.length === 0 ? (
           <div className="flex h-40 items-center justify-center text-sm text-tertiary">
             No score data yet. Projects need to be scored first.
@@ -128,6 +138,13 @@ export function TeamKPIReport() {
         {isLoading ? (
           <div className="py-10 text-center text-sm text-tertiary">
             Loading…
+          </div>
+        ) : hasError ? (
+          <div className="py-10 text-center text-sm text-danger">
+            Failed to load report data.{' '}
+            <button className="underline" onClick={() => refetch()}>
+              Retry
+            </button>
           </div>
         ) : sorted.length === 0 ? (
           <div className="py-10 text-center text-sm text-tertiary">

@@ -57,18 +57,26 @@ export function MonthlyImprovementReport() {
 
   const [selected, setSelected] = useState<MonthOption>(monthOptions[0])
 
-  const { data: rawRows, isLoading: rowsLoading } = useQuery({
+  const {
+    data: rawRows,
+    error: rowsError,
+    isLoading: rowsLoading,
+  } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) =>
       getMonthlyImprovement(
         { month: selected.month, year: selected.year },
         signal,
       ),
-    queryKey: ['monthlyImprovement', selected.year, selected.month],
+    queryKey: ['monthlyImprovement', orgSlug, selected.year, selected.month],
     staleTime: 120_000,
   })
 
-  const { data: teams, isLoading: teamsLoading } = useQuery({
+  const {
+    data: teams,
+    error: teamsError,
+    isLoading: teamsLoading,
+  } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => listTeams(orgSlug, signal),
     queryKey: ['teams', orgSlug],
@@ -76,6 +84,7 @@ export function MonthlyImprovementReport() {
   })
 
   const isLoading = rowsLoading || teamsLoading
+  const hasError = !!(rowsError || teamsError)
 
   const rows: TeamRow[] = useMemo(() => {
     if (!rawRows) return []
@@ -100,19 +109,28 @@ export function MonthlyImprovementReport() {
     [rows],
   )
 
-  // Org-wide aggregates
+  // Org-wide aggregates (project_count-weighted)
   const orgWide = useMemo(() => {
-    const withCur = rows.filter((r) => r.current_avg_score != null)
-    const withImp = rows.filter((r) => r.improvement != null)
+    const withCur = rows.filter(
+      (r) => r.current_avg_score != null && r.project_count > 0,
+    )
+    const withImp = rows.filter(
+      (r) => r.improvement != null && r.project_count > 0,
+    )
+    const totalCurWeight = withCur.reduce((s, r) => s + r.project_count, 0)
+    const totalImpWeight = withImp.reduce((s, r) => s + r.project_count, 0)
     return {
       avg_score:
-        withCur.length > 0
-          ? withCur.reduce((s, r) => s + r.current_avg_score!, 0) /
-            withCur.length
+        totalCurWeight > 0
+          ? withCur.reduce(
+              (s, r) => s + r.current_avg_score! * r.project_count,
+              0,
+            ) / totalCurWeight
           : null,
       improvement:
-        withImp.length > 0
-          ? withImp.reduce((s, r) => s + r.improvement!, 0) / withImp.length
+        totalImpWeight > 0
+          ? withImp.reduce((s, r) => s + r.improvement! * r.project_count, 0) /
+            totalImpWeight
           : null,
     }
   }, [rows])
@@ -162,6 +180,10 @@ export function MonthlyImprovementReport() {
         {isLoading ? (
           <div className="py-16 text-center text-sm text-tertiary">
             Loading…
+          </div>
+        ) : hasError ? (
+          <div className="py-16 text-center text-sm text-danger">
+            Failed to load report data. Please try again.
           </div>
         ) : sorted.length === 0 ? (
           <div className="py-16 text-center text-sm text-tertiary">
