@@ -17,16 +17,16 @@ interface Report {
 
 const REPORTS: Report[] = [
   {
-    description: 'Avg quality score per team',
-    id: 'team-kpi',
-    label: 'Team KPI',
-    subtitle: 'Quality score rollup by team',
-  },
-  {
     description: 'Month-over-month score delta',
     id: 'monthly-improvement',
     label: 'Monthly improvement',
     subtitle: 'Score improvement by team for a selected month',
+  },
+  {
+    description: 'Avg quality score per team',
+    id: 'team-kpi',
+    label: 'Team KPI',
+    subtitle: 'Quality score rollup by team',
   },
 ]
 
