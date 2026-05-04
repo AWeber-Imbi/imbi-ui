@@ -40,12 +40,14 @@ export function ImportScoringPolicyDialog({
     useState<null | ScoringPolicyCreate>(null)
   const [detectedFormat, setDetectedFormat] =
     useState<DetectedFormat>('unknown')
+  const [showApiError, setShowApiError] = useState(false)
 
   const reset = useCallback(() => {
     setRawInput('')
     setError(null)
     setParsedPreview(null)
     setDetectedFormat('unknown')
+    setShowApiError(false)
   }, [])
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export function ImportScoringPolicyDialog({
   const handleInputChange = useCallback((value: string) => {
     setRawInput(value)
     setError(null)
+    setShowApiError(false)
     setParsedPreview(null)
 
     if (!value.trim()) {
@@ -72,19 +75,20 @@ export function ImportScoringPolicyDialog({
 
     try {
       let parsed: unknown
+      let jsonFailed = false
       if (fmt === 'json' || fmt === 'unknown') {
         try {
           parsed = JSON.parse(value)
         } catch {
-          if (fmt === 'json') return
-          try {
-            parsed = yaml.load(value)
-          } catch {
-            return
-          }
+          jsonFailed = true
         }
-      } else {
-        parsed = yaml.load(value)
+      }
+      if (jsonFailed || fmt === 'yaml') {
+        try {
+          parsed = yaml.load(value)
+        } catch {
+          return
+        }
       }
 
       const result = validatePolicyShape(parsed)
@@ -106,33 +110,29 @@ export function ImportScoringPolicyDialog({
 
     let parsed: unknown
     const fmt = detectFormat(trimmed)
+    let jsonParseError: Error | null = null
 
     if (fmt === 'json' || fmt === 'unknown') {
       try {
         parsed = JSON.parse(trimmed)
       } catch (e) {
-        if (fmt === 'json') {
-          setError(
-            `Invalid JSON: ${e instanceof Error ? e.message : 'parse error'}`,
-          )
-          return
-        }
-        try {
-          parsed = yaml.load(trimmed)
-        } catch (yamlErr) {
+        jsonParseError = e instanceof Error ? e : new Error('parse error')
+      }
+    }
+
+    if (jsonParseError !== null || fmt === 'yaml') {
+      try {
+        parsed = yaml.load(trimmed)
+      } catch (yamlErr) {
+        if (jsonParseError !== null) {
           setError(
             `Could not parse as JSON or YAML: ${yamlErr instanceof Error ? yamlErr.message : 'parse error'}`,
           )
-          return
+        } else {
+          setError(
+            `Invalid YAML: ${yamlErr instanceof Error ? yamlErr.message : 'parse error'}`,
+          )
         }
-      }
-    } else {
-      try {
-        parsed = yaml.load(trimmed)
-      } catch (e) {
-        setError(
-          `Invalid YAML: ${e instanceof Error ? e.message : 'parse error'}`,
-        )
         return
       }
     }
@@ -143,6 +143,7 @@ export function ImportScoringPolicyDialog({
       return
     }
 
+    setShowApiError(true)
     onImport(result.policy)
   }, [rawInput, onImport])
 
@@ -227,7 +228,7 @@ export function ImportScoringPolicyDialog({
             </div>
           )}
 
-          {apiError && !error && (
+          {apiError && showApiError && !error && (
             <div className="flex items-start gap-2.5 rounded-lg border border-danger bg-danger px-3 py-2.5 text-danger">
               <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
               <div className="text-sm">
