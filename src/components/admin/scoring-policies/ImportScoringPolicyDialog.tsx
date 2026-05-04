@@ -353,13 +353,18 @@ function validatePolicyShape(
     }
   }
 
-  const weight = Number(obj.weight)
-  if (isNaN(weight) || weight < 0 || weight > 100) {
+  if (
+    typeof obj.weight !== 'number' ||
+    !Number.isFinite(obj.weight) ||
+    obj.weight < 0 ||
+    obj.weight > 100
+  ) {
     return {
       error: '"weight" must be a number between 0 and 100.',
       valid: false,
     }
   }
+  const weight = obj.weight
 
   const hasValueMap =
     obj.value_score_map !== null &&
@@ -395,7 +400,10 @@ function validatePolicyShape(
     return { error: '"enabled" must be a boolean.', valid: false }
   }
 
-  if (obj.priority !== undefined && typeof obj.priority !== 'number') {
+  if (
+    obj.priority !== undefined &&
+    (typeof obj.priority !== 'number' || !Number.isFinite(obj.priority))
+  ) {
     return { error: '"priority" must be a number.', valid: false }
   }
 
