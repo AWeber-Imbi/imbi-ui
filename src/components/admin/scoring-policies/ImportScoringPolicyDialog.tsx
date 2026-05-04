@@ -391,15 +391,45 @@ function validatePolicyShape(
     return { error: '"targets" must be an array of strings.', valid: false }
   }
 
+  if (obj.enabled !== undefined && typeof obj.enabled !== 'boolean') {
+    return { error: '"enabled" must be a boolean.', valid: false }
+  }
+
+  if (obj.priority !== undefined && typeof obj.priority !== 'number') {
+    return { error: '"priority" must be a number.', valid: false }
+  }
+
+  const hasOnlyNumericValues = (map: unknown): map is Record<string, number> =>
+    !!map &&
+    typeof map === 'object' &&
+    !Array.isArray(map) &&
+    Object.values(map as Record<string, unknown>).every(
+      (v) => typeof v === 'number' && Number.isFinite(v),
+    )
+
+  if (hasValueMap && !hasOnlyNumericValues(obj.value_score_map)) {
+    return {
+      error: '"value_score_map" values must be numbers.',
+      valid: false,
+    }
+  }
+
+  if (hasRangeMap && !hasOnlyNumericValues(obj.range_score_map)) {
+    return {
+      error: '"range_score_map" values must be numbers.',
+      valid: false,
+    }
+  }
+
   const policy: ScoringPolicyCreate = {
     attribute_name: (obj.attribute_name as string).trim(),
     description:
       typeof obj.description === 'string'
         ? obj.description.trim() || null
         : null,
-    enabled: typeof obj.enabled === 'boolean' ? obj.enabled : true,
+    enabled: obj.enabled === undefined ? true : obj.enabled,
     name: (obj.name as string).trim(),
-    priority: typeof obj.priority === 'number' ? obj.priority : 0,
+    priority: obj.priority === undefined ? 0 : obj.priority,
     range_score_map: hasRangeMap
       ? (obj.range_score_map as Record<string, number>)
       : null,

@@ -120,11 +120,15 @@ export function ScoringPolicyManagement() {
         : {}),
       weight: policy.weight,
     }
+    if (!navigator.clipboard?.writeText) return
     navigator.clipboard
       .writeText(JSON.stringify(exportObj, null, 2))
       .then(() => {
         setCopiedSlug(policy.slug)
         setTimeout(() => setCopiedSlug(null), 2000)
+      })
+      .catch(() => {
+        setCopiedSlug(null)
       })
   }
 
