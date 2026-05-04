@@ -24,7 +24,7 @@ export function TeamKPIReport() {
     data: rollup,
     error: rollupError,
     isLoading: rollupLoading,
-    refetch,
+    refetch: refetchRollup,
   } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => getScoreRollup('team', signal),
@@ -36,6 +36,7 @@ export function TeamKPIReport() {
     data: teams,
     error: teamsError,
     isLoading: teamsLoading,
+    refetch: refetchTeams,
   } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => listTeams(orgSlug, signal),
@@ -45,6 +46,11 @@ export function TeamKPIReport() {
 
   const isLoading = rollupLoading || teamsLoading
   const hasError = !!(rollupError || teamsError)
+
+  function refetchAll() {
+    void refetchRollup()
+    void refetchTeams()
+  }
 
   const rows: TeamRow[] = (() => {
     if (!rollup) return []
@@ -70,17 +76,21 @@ export function TeamKPIReport() {
       <div className="grid grid-cols-3 gap-4">
         <StatCard
           label="Teams tracked"
-          value={isLoading ? '—' : String(rows.length)}
+          value={isLoading || hasError ? '—' : String(rows.length)}
         />
         <StatCard
           label="Org avg score"
-          value={isLoading || avgOfAvgs == null ? '—' : fmtScore(avgOfAvgs)}
+          value={
+            isLoading || hasError || avgOfAvgs == null
+              ? '—'
+              : fmtScore(avgOfAvgs)
+          }
           valueColor={avgOfAvgs != null ? scoreColor(avgOfAvgs) : undefined}
         />
         <StatCard
           label="Top team score"
           value={
-            isLoading || sorted.length === 0
+            isLoading || hasError || sorted.length === 0
               ? '—'
               : fmtScore(sorted[0].avg_score)
           }
@@ -103,7 +113,7 @@ export function TeamKPIReport() {
           </div>
           <button
             className="inline-flex h-7 items-center gap-1.5 rounded border border-tertiary px-2.5 text-xs text-primary transition-colors hover:bg-secondary"
-            onClick={() => refetch()}
+            onClick={refetchAll}
           >
             <RefreshCw size={11} />
             Refresh
@@ -142,7 +152,7 @@ export function TeamKPIReport() {
         ) : hasError ? (
           <div className="py-10 text-center text-sm text-danger">
             Failed to load report data.{' '}
-            <button className="underline" onClick={() => refetch()}>
+            <button className="underline" onClick={refetchAll}>
               Retry
             </button>
           </div>
