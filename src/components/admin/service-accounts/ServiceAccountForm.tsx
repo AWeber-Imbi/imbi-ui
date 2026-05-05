@@ -78,6 +78,7 @@ export function ServiceAccountForm({
   const isEditing = !!account
 
   const [slug, setSlug] = useState(account?.slug || '')
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEditing)
   const [displayName, setDisplayName] = useState(account?.display_name || '')
   const [description, setDescription] = useState(account?.description || '')
   const [isActive, setIsActive] = useState(account?.is_active ?? true)
@@ -174,9 +175,17 @@ export function ServiceAccountForm({
     })
   }
 
+  const handleDisplayNameChange = (value: string) => {
+    setDisplayName(value)
+    if (!slugManuallyEdited) {
+      setSlug(toSlug(value))
+    }
+    handleFieldChange('display_name')
+  }
+
   const handleSlugChange = (value: string) => {
-    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
-    setSlug(sanitized)
+    setSlug(toSlug(value))
+    setSlugManuallyEdited(true)
     handleFieldChange('slug')
   }
 
@@ -189,7 +198,7 @@ export function ServiceAccountForm({
       onSave={handleSave}
       subtitle={
         isEditing
-          ? `Editing ${account?.display_name}`
+          ? undefined
           : 'Create an automated service account for API access'
       }
       title={isEditing ? 'Edit Service Account' : 'Create Service Account'}
@@ -297,10 +306,7 @@ export function ServiceAccountForm({
                       display_name: err,
                     })
                 }}
-                onChange={(e) => {
-                  setDisplayName(e.target.value)
-                  handleFieldChange('display_name')
-                }}
+                onChange={(e) => handleDisplayNameChange(e.target.value)}
                 placeholder="CI/CD Pipeline"
                 value={displayName}
               />
@@ -380,14 +386,16 @@ export function ServiceAccountForm({
               </label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
+                disabled={isLoading || organizations.length === 1}
                 onChange={(e) => {
                   setOrganizationSlug(e.target.value)
                   handleFieldChange('organization_slug')
                 }}
                 value={organizationSlug}
               >
-                <option value="">Select an organization...</option>
+                {organizations.length !== 1 && (
+                  <option value="">Select an organization...</option>
+                )}
                 {organizations.map((org) => (
                   <option key={org.slug} value={org.slug}>
                     {org.name}
@@ -726,4 +734,13 @@ function IdentityCardEdit({
       </CardContent>
     </Card>
   )
+}
+
+function toSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
 }
