@@ -131,6 +131,9 @@ export function ServiceAccountManagement() {
         error={createMutation.error || updateMutation.error}
         isLoading={createMutation.isPending || updateMutation.isPending}
         onCancel={handleCancel}
+        onDelete={
+          selectedAccount ? () => handleDelete(selectedAccount) : undefined
+        }
         onSave={handleSave}
       />
     )
