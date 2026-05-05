@@ -133,6 +133,13 @@ export function Admin() {
       scope: 'org',
     },
     {
+      description: 'Manage installed plugins',
+      icon: Puzzle,
+      id: 'plugins',
+      label: 'Plugins',
+      scope: 'org',
+    },
+    {
       description: 'Manage project types',
       icon: FolderTree,
       id: 'project-types',
