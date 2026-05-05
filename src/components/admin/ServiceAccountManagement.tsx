@@ -22,7 +22,6 @@ import type {
 
 import { Badge } from '../ui/badge'
 import { AdminSection } from './AdminSection'
-import { ServiceAccountDetail } from './service-accounts/ServiceAccountDetail'
 import { ServiceAccountForm } from './service-accounts/ServiceAccountForm'
 
 type StatusFilter = 'active' | 'all' | 'inactive'
@@ -78,8 +77,7 @@ export function ServiceAccountManagement() {
 
   // Fetch full SA detail (with orgs) when viewing/editing a specific account
   const { data: selectedAccount = null } = useQuery({
-    enabled:
-      !!selectedAccountSlug && (viewMode === 'detail' || viewMode === 'edit'),
+    enabled: !!selectedAccountSlug && viewMode === 'edit',
     queryFn: ({ signal }) => getServiceAccount(selectedAccountSlug!, signal),
     queryKey: ['serviceAccount', selectedAccountSlug],
   })
@@ -89,10 +87,6 @@ export function ServiceAccountManagement() {
   }
 
   const handleViewClick = (account: ServiceAccount) => {
-    goToEdit(account.slug)
-  }
-
-  const handleEditClick = (account: ServiceAccount) => {
     goToEdit(account.slug)
   }
 
@@ -138,16 +132,6 @@ export function ServiceAccountManagement() {
         isLoading={createMutation.isPending || updateMutation.isPending}
         onCancel={handleCancel}
         onSave={handleSave}
-      />
-    )
-  }
-
-  if (viewMode === 'detail' && selectedAccount) {
-    return (
-      <ServiceAccountDetail
-        account={selectedAccount}
-        onBack={handleCancel}
-        onEdit={() => handleEditClick(selectedAccount)}
       />
     )
   }

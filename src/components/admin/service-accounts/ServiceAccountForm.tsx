@@ -10,7 +10,18 @@ import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useDirtyState } from '@/hooks/useDirtyState'
 import { useFormScaffold } from '@/hooks/useFormScaffold'
-import type { ServiceAccount, ServiceAccountCreate } from '@/types'
+import type {
+  ApiKeyCreated,
+  ClientCredentialCreated,
+  ServiceAccount,
+  ServiceAccountCreate,
+} from '@/types'
+
+import { ApiKeysSection } from './ApiKeysSection'
+import { AvatarUpload } from './AvatarUpload'
+import { ClientCredentialsSection } from './ClientCredentialsSection'
+import { OrgMembershipsCard } from './OrgMembershipsCard'
+import { useServiceAccountMutations } from './useServiceAccountMutations'
 
 interface ServiceAccountFormProps {
   account: null | ServiceAccount
@@ -29,22 +40,17 @@ export function ServiceAccountForm({
 }: ServiceAccountFormProps) {
   const isEditing = !!account
 
-  // Basic info
   const [slug, setSlug] = useState(account?.slug || '')
   const [displayName, setDisplayName] = useState(account?.display_name || '')
   const [description, setDescription] = useState(account?.description || '')
-
-  // Account status
   const [isActive, setIsActive] = useState(account?.is_active ?? true)
 
-  // Organization membership (for creation only)
   const { organizations } = useOrganization()
   const [organizationSlug, setOrganizationSlug] = useState(
     organizations.length === 1 ? organizations[0].slug : '',
   )
   const [roleSlug, setRoleSlug] = useState('')
 
-  // Fetch available roles
   const {
     data: availableRoles = [],
     isError: rolesError,
@@ -54,7 +60,6 @@ export function ServiceAccountForm({
     queryKey: ['roles'],
   })
 
-  // Validation state
   const {
     handleFieldChange,
     setTouched,
@@ -63,9 +68,6 @@ export function ServiceAccountForm({
     validationErrors,
   } = useFormScaffold()
 
-  // Warn on unsaved navigation. Snapshot the initial values once at mount so
-  // the baseline doesn't drift when `organizations` loads asynchronously (which
-  // would otherwise flip an untouched form into "dirty").
   const [initialFormData] = useState(() => ({
     description: account?.description ?? '',
     display_name: account?.display_name ?? '',
@@ -84,7 +86,6 @@ export function ServiceAccountForm({
   }
   useDirtyState(initialFormData, currentFormData, { enabled: !isLoading })
 
-  // Validation functions
   const validateSlug = (value: string): string => {
     if (!value.trim()) return 'Slug is required'
     if (!/^[a-z][a-z0-9-]*$/.test(value)) {
@@ -98,7 +99,6 @@ export function ServiceAccountForm({
     return ''
   }
 
-  // Validate all fields
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {}
 
@@ -127,21 +127,17 @@ export function ServiceAccountForm({
 
   const handleSave = () => {
     if (!validateForm()) return
-
-    const data: ServiceAccountCreate = {
+    onSave({
       description: description.trim() || null,
       display_name: displayName.trim(),
       is_active: isActive,
       organization_slug: organizationSlug,
       role_slug: roleSlug,
       slug: slug.trim(),
-    }
-
-    onSave(data)
+    })
   }
 
   const handleSlugChange = (value: string) => {
-    // Only allow valid slug characters
     const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
     setSlug(sanitized)
     handleFieldChange('slug')
@@ -149,7 +145,6 @@ export function ServiceAccountForm({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <FormHeader
         createLabel="Create Service Account"
         isEditing={isEditing}
@@ -164,7 +159,6 @@ export function ServiceAccountForm({
         title={isEditing ? 'Edit Service Account' : 'Create Service Account'}
       />
 
-      {/* API Error Display */}
       {error && (
         <div className="rounded-lg border border-danger bg-danger p-4">
           <div className="flex items-start gap-3">
@@ -183,96 +177,121 @@ export function ServiceAccountForm({
         </div>
       )}
 
-      {/* Section 1: Basic Information */}
+      {/* Main info card — merged basic info + status */}
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <div className="grid grid-cols-2 gap-4">
-            {/* Slug */}
-            {!isEditing && (
-              <div className="col-span-2">
-                <label className="mb-1.5 block text-sm text-secondary">
-                  Slug <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  className=""
-                  disabled={isLoading}
-                  onBlur={() => {
-                    setTouched({ ...touched, slug: true })
-                    const error = validateSlug(slug)
-                    if (error) {
-                      setValidationErrors({
-                        ...validationErrors,
-                        slug: error,
-                      })
-                    }
-                  }}
-                  onChange={(e) => handleSlugChange(e.target.value)}
-                  placeholder="my-service-account"
-                  value={slug}
-                />
-                <p className="mt-1 text-xs text-tertiary">
-                  Lowercase letters, numbers, and hyphens only. Must start with
-                  a letter.
-                </p>
-                {touched.slug && validationErrors.slug && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {validationErrors.slug}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Display Name */}
-            <div className="col-span-2">
+          {/* Slug */}
+          {isEditing ? (
+            <div>
               <label className="mb-1.5 block text-sm text-secondary">
-                Display Name <span className="text-red-500">*</span>
+                Slug
+              </label>
+              <Input disabled value={account.slug} />
+            </div>
+          ) : (
+            <div>
+              <label className="mb-1.5 block text-sm text-secondary">
+                Slug <span className="text-red-500">*</span>
               </label>
               <Input
-                className=""
                 disabled={isLoading}
                 onBlur={() => {
-                  setTouched({ ...touched, display_name: true })
-                  const error = validateDisplayName(displayName)
-                  if (error) {
-                    setValidationErrors({
-                      ...validationErrors,
-                      display_name: error,
-                    })
-                  }
+                  setTouched({ ...touched, slug: true })
+                  const err = validateSlug(slug)
+                  if (err)
+                    setValidationErrors({ ...validationErrors, slug: err })
                 }}
-                onChange={(e) => {
-                  setDisplayName(e.target.value)
-                  handleFieldChange('display_name')
-                }}
-                placeholder="CI/CD Pipeline"
-                value={displayName}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="my-service-account"
+                value={slug}
               />
-              {touched.display_name && validationErrors.display_name && (
+              <p className="mt-1 text-xs text-tertiary">
+                Lowercase letters, numbers, and hyphens only. Must start with a
+                letter.
+              </p>
+              {touched.slug && validationErrors.slug && (
                 <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.display_name}
+                  {validationErrors.slug}
                 </p>
               )}
             </div>
+          )}
 
-            {/* Description */}
-            <div className="col-span-2">
+          {/* Display Name */}
+          <div>
+            <label className="mb-1.5 block text-sm text-secondary">
+              Display Name <span className="text-red-500">*</span>
+            </label>
+            <Input
+              disabled={isLoading}
+              onBlur={() => {
+                setTouched({ ...touched, display_name: true })
+                const err = validateDisplayName(displayName)
+                if (err)
+                  setValidationErrors({
+                    ...validationErrors,
+                    display_name: err,
+                  })
+              }}
+              onChange={(e) => {
+                setDisplayName(e.target.value)
+                handleFieldChange('display_name')
+              }}
+              placeholder="CI/CD Pipeline"
+              value={displayName}
+            />
+            {touched.display_name && validationErrors.display_name && (
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.display_name}
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="mb-1.5 block text-sm text-secondary">
+              Description
+            </label>
+            <textarea
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What does this service account do?"
+              rows={3}
+              value={description}
+            />
+          </div>
+
+          {/* Avatar (edit only) */}
+          {isEditing && account && (
+            <div>
               <label className="mb-1.5 block text-sm text-secondary">
-                Description
+                Avatar
               </label>
-              <textarea
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="What does this service account do?"
-                rows={3}
-                value={description}
-              />
+              <AvatarSection account={account} />
             </div>
+          )}
+
+          {/* Account Active */}
+          <div>
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                checked={isActive}
+                className="rounded"
+                disabled={isLoading}
+                onChange={(e) => setIsActive(e.target.checked)}
+                type="checkbox"
+              />
+              <span className="text-secondary">Account Active</span>
+            </label>
+            <p className="ml-6 mt-1 text-sm text-secondary">
+              Inactive service accounts cannot authenticate via API
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Section 2: Organization Membership (creation only) */}
+      {/* Organization Membership (creation only) */}
       {!isEditing && (
         <Card>
           <CardContent className="space-y-4 pt-6">
@@ -282,7 +301,6 @@ export function ServiceAccountForm({
             </p>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Organization */}
               <div>
                 <label className="mb-1.5 block text-sm text-secondary">
                   Organization <span className="text-red-500">*</span>
@@ -311,7 +329,6 @@ export function ServiceAccountForm({
                   )}
               </div>
 
-              {/* Role */}
               <div>
                 <label className="mb-1.5 block text-sm text-secondary">
                   Role <span className="text-red-500">*</span>
@@ -351,26 +368,122 @@ export function ServiceAccountForm({
         </Card>
       )}
 
-      {/* Section 3: Account Status */}
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <div>
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                checked={isActive}
-                className="rounded"
-                disabled={isLoading}
-                onChange={(e) => setIsActive(e.target.checked)}
-                type="checkbox"
-              />
-              <span className="text-secondary">Account Active</span>
-            </label>
-            <p className="ml-6 mt-1 text-sm text-secondary">
-              Inactive service accounts cannot authenticate via API
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {isEditing && account && <EditSections account={account} />}
     </div>
+  )
+}
+
+function AvatarSection({ account }: { account: ServiceAccount }) {
+  const { removeAvatarMutation, uploadAvatarMutation } =
+    useServiceAccountMutations(account)
+  return (
+    <AvatarUpload
+      avatarUrl={account.avatar_url}
+      displayName={account.display_name}
+      isRemoving={removeAvatarMutation.isPending}
+      isUploading={uploadAvatarMutation.isPending}
+      onRemove={() => removeAvatarMutation.mutate()}
+      onUpload={(file) => uploadAvatarMutation.mutate(file)}
+    />
+  )
+}
+
+function EditSections({ account }: { account: ServiceAccount }) {
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState<ApiKeyCreated | null>(
+    null,
+  )
+  const [newlyCreatedCredential, setNewlyCreatedCredential] =
+    useState<ClientCredentialCreated | null>(null)
+
+  const {
+    data: availableRoles = [],
+    isError: rolesError,
+    isLoading: rolesLoading,
+  } = useQuery({
+    queryFn: ({ signal }) => getRoles(signal),
+    queryKey: ['roles'],
+  })
+
+  const {
+    addOrgMutation,
+    createApiKeyMutation,
+    createCredentialMutation,
+    removeOrgMutation,
+    revokeApiKeyMutation,
+    revokeCredentialMutation,
+    rotateApiKeyMutation,
+    rotateCredentialMutation,
+    updateOrgRoleMutation,
+  } = useServiceAccountMutations(account)
+
+  return (
+    <>
+      <OrgMembershipsCard
+        account={account}
+        addOrgMutation={addOrgMutation}
+        availableRoles={availableRoles}
+        onConfirmRemove={(orgSlug, orgName) => {
+          if (confirm(`Remove ${account.display_name} from ${orgName}?`)) {
+            removeOrgMutation.mutate(orgSlug)
+          }
+        }}
+        removeOrgMutation={removeOrgMutation}
+        rolesError={rolesError}
+        rolesLoading={rolesLoading}
+        updateOrgRoleMutation={updateOrgRoleMutation}
+      />
+
+      <ClientCredentialsSection
+        account={account}
+        createCredentialMutation={createCredentialMutation}
+        newlyCreatedCredential={newlyCreatedCredential}
+        onConfirmRevoke={(clientId) => {
+          if (
+            confirm('Revoke this credential? This action cannot be undone.')
+          ) {
+            revokeCredentialMutation.mutate(clientId)
+          }
+        }}
+        onConfirmRotate={(clientId) => {
+          if (
+            confirm(
+              'Rotate this credential? The old secret will stop working immediately.',
+            )
+          ) {
+            rotateCredentialMutation.mutate(clientId, {
+              onSuccess: (data) => setNewlyCreatedCredential(data),
+            })
+          }
+        }}
+        onNewlyCreatedCredentialChange={setNewlyCreatedCredential}
+        revokeCredentialMutation={revokeCredentialMutation}
+        rotateCredentialMutation={rotateCredentialMutation}
+      />
+
+      <ApiKeysSection
+        account={account}
+        createApiKeyMutation={createApiKeyMutation}
+        newlyCreatedKey={newlyCreatedKey}
+        onConfirmRevoke={(keyId) => {
+          if (confirm('Revoke this API key? This action cannot be undone.')) {
+            revokeApiKeyMutation.mutate(keyId)
+          }
+        }}
+        onConfirmRotate={(keyId) => {
+          if (
+            confirm(
+              'Rotate this API key? The old key will stop working immediately.',
+            )
+          ) {
+            rotateApiKeyMutation.mutate(keyId, {
+              onSuccess: (data) => setNewlyCreatedKey(data),
+            })
+          }
+        }}
+        onNewlyCreatedKeyChange={setNewlyCreatedKey}
+        revokeApiKeyMutation={revokeApiKeyMutation}
+        rotateApiKeyMutation={rotateApiKeyMutation}
+      />
+    </>
   )
 }
