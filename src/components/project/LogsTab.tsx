@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -1387,17 +1388,15 @@ function LogRow({
                   typeof v === 'object' ? JSON.stringify(v) : String(v ?? ''),
                 ]),
               ].map(([k, v], rowIdx) => (
-                <>
+                <Fragment key={`row-${rowIdx}`}>
                   <div
                     className="pr-4 font-mono text-[11px] text-tertiary"
-                    key={`k-${rowIdx}`}
                     style={{ paddingBottom: '3px', paddingTop: '3px' }}
                   >
                     {k}
                   </div>
                   <div
                     className="group flex min-w-0 items-center gap-1.5 font-mono text-[11px] text-primary"
-                    key={`v-${rowIdx}`}
                     style={{ paddingBottom: '3px', paddingTop: '3px' }}
                   >
                     <span className="min-w-0 break-all">{v}</span>
@@ -1429,7 +1428,7 @@ function LogRow({
                       </button>
                     </span>
                   </div>
-                </>
+                </Fragment>
               ))}
             </div>
           )}

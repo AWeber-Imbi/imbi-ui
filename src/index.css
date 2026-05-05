@@ -246,7 +246,7 @@
   }
 }
 
-@keyframes slideInRight {
+@keyframes slide-in-right {
   from {
     opacity: 0;
     transform: translateX(20px);
