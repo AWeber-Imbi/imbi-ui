@@ -299,45 +299,61 @@ export function ClientCredentialsSection({
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                className="mb-1.5 block text-sm text-secondary"
+                htmlFor="credential-name"
+              >
                 Name <span className="text-red-500">*</span>
               </label>
               <Input
                 autoFocus
+                id="credential-name"
                 onChange={(e) => setCredentialName(e.target.value)}
                 placeholder="e.g., production-api"
                 value={credentialName}
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                className="mb-1.5 block text-sm text-secondary"
+                htmlFor="credential-description"
+              >
                 Description
               </label>
               <Input
+                id="credential-description"
                 onChange={(e) => setCredentialDescription(e.target.value)}
                 placeholder="What is this credential used for?"
                 value={credentialDescription}
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                className="mb-1.5 block text-sm text-secondary"
+                htmlFor="credential-scopes"
+              >
                 Scopes{' '}
                 <span className="text-xs text-tertiary">(comma-separated)</span>
               </label>
               <Input
+                id="credential-scopes"
                 onChange={(e) => setCredentialScopes(e.target.value)}
                 placeholder="e.g., read:projects, write:projects"
                 value={credentialScopes}
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm text-secondary">
+              <label
+                className="mb-1.5 block text-sm text-secondary"
+                htmlFor="credential-expires-days"
+              >
                 Expires in (days){' '}
                 <span className="text-xs text-tertiary">
                   (leave empty for no expiration)
                 </span>
               </label>
               <Input
+                id="credential-expires-days"
                 min="1"
                 onChange={(e) => setCredentialExpiresDays(e.target.value)}
                 placeholder="e.g., 90"

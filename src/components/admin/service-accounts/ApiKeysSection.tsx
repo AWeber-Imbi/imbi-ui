@@ -75,6 +75,7 @@ export function ApiKeysSection({
   })
 
   const handleCreateKey = () => {
+    if (createApiKeyMutation.isPending) return
     const name = newKeyName.trim() || 'default'
     createApiKeyMutation.mutate(name, {
       onSuccess: (created) => {
@@ -244,7 +245,10 @@ export function ApiKeysSection({
                 className="focus:ring-action w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2"
                 onChange={(e) => setNewKeyName(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateKey()
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleCreateKey()
+                  }
                 }}
                 placeholder="e.g., production, staging"
                 type="text"
