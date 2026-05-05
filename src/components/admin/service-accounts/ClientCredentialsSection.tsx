@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { SecretBanner } from '@/components/ui/secret-banner'
 import {
   Tooltip,
   TooltipContent,
@@ -30,6 +29,8 @@ import type {
   ClientCredentialCreated,
   ServiceAccount,
 } from '@/types'
+
+import { RevealSecretRow } from './RevealSecret'
 
 interface ClientCredentialsSectionProps {
   account: ServiceAccount
@@ -265,23 +266,19 @@ export function ClientCredentialsSection({
             <DialogTitle>Client Credential Created</DialogTitle>
           </DialogHeader>
           {newlyCreatedCredential && (
-            <SecretBanner
-              description="Copy the secret now, it will not be shown again!"
-              onDismiss={() => onNewlyCreatedCredentialChange(null)}
-              secrets={[
-                {
-                  copyAriaLabel: 'Copy client ID',
-                  label: 'Client ID',
-                  value: newlyCreatedCredential.client_id,
-                },
-                {
-                  copyAriaLabel: 'Copy client secret',
-                  label: 'Client Secret',
-                  value: newlyCreatedCredential.client_secret,
-                },
-              ]}
-              title="Client Credential Created"
-            />
+            <div className="space-y-3 py-1">
+              <p className="text-sm text-secondary">
+                Copy the secret now — it will not be shown again.
+              </p>
+              <RevealSecretRow
+                fieldLabel="Client ID"
+                value={newlyCreatedCredential.client_id}
+              />
+              <RevealSecretRow
+                fieldLabel="Client Secret"
+                value={newlyCreatedCredential.client_secret}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>

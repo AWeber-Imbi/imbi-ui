@@ -15,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SecretBanner } from '@/components/ui/secret-banner'
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +22,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { ApiKey, ApiKeyCreated, ServiceAccount } from '@/types'
+
+import { RevealSecret } from './RevealSecret'
 
 interface ApiKeysSectionProps {
   account: ServiceAccount
@@ -208,16 +209,12 @@ export function ApiKeysSection({
             <DialogTitle>API Key Created</DialogTitle>
           </DialogHeader>
           {newlyCreatedKey && (
-            <SecretBanner
-              description="Copy it now, it will not be shown again!"
-              onDismiss={() => onNewlyCreatedKeyChange(null)}
-              secrets={[
-                {
-                  copyAriaLabel: 'Copy API key',
-                  value: newlyCreatedKey.key_secret,
-                },
-              ]}
-              title="API Key Created"
+            <RevealSecret
+              label="Copy it now — it will not be shown again."
+              onCopy={() =>
+                navigator.clipboard?.writeText(newlyCreatedKey.key_secret)
+              }
+              value={newlyCreatedKey.key_secret}
             />
           )}
         </DialogContent>
