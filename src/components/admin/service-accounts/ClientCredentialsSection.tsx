@@ -154,27 +154,6 @@ export function ClientCredentialsSection({
           </Button>
         </CardHeader>
         <CardContent>
-          {/* Newly Created Credential Banner */}
-          {newlyCreatedCredential && (
-            <SecretBanner
-              description="Copy the secret now, it will not be shown again!"
-              onDismiss={() => onNewlyCreatedCredentialChange(null)}
-              secrets={[
-                {
-                  copyAriaLabel: 'Copy client ID',
-                  label: 'Client ID',
-                  value: newlyCreatedCredential.client_id,
-                },
-                {
-                  copyAriaLabel: 'Copy client secret',
-                  label: 'Client Secret',
-                  value: newlyCreatedCredential.client_secret,
-                },
-              ]}
-              title="Client Credential Created"
-            />
-          )}
-
           {/* Credentials List */}
           {credentialsLoading ? (
             <div className="py-4 text-sm text-secondary">
@@ -273,6 +252,39 @@ export function ClientCredentialsSection({
           )}
         </CardContent>
       </Card>
+
+      {/* Newly created credential reveal modal */}
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) onNewlyCreatedCredentialChange(null)
+        }}
+        open={!!newlyCreatedCredential}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Client Credential Created</DialogTitle>
+          </DialogHeader>
+          {newlyCreatedCredential && (
+            <SecretBanner
+              description="Copy the secret now, it will not be shown again!"
+              onDismiss={() => onNewlyCreatedCredentialChange(null)}
+              secrets={[
+                {
+                  copyAriaLabel: 'Copy client ID',
+                  label: 'Client ID',
+                  value: newlyCreatedCredential.client_id,
+                },
+                {
+                  copyAriaLabel: 'Copy client secret',
+                  label: 'Client Secret',
+                  value: newlyCreatedCredential.client_secret,
+                },
+              ]}
+              title="Client Credential Created"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Create Credential modal */}
       <Dialog

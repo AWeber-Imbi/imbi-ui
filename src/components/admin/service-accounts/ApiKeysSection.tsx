@@ -102,21 +102,6 @@ export function ApiKeysSection({
           </Button>
         </CardHeader>
         <CardContent>
-          {/* Newly Created Key Banner */}
-          {newlyCreatedKey && (
-            <SecretBanner
-              description="Copy it now, it will not be shown again!"
-              onDismiss={() => onNewlyCreatedKeyChange(null)}
-              secrets={[
-                {
-                  copyAriaLabel: 'Copy API key',
-                  value: newlyCreatedKey.key_secret,
-                },
-              ]}
-              title="API Key Created"
-            />
-          )}
-
           {/* Keys List */}
           {keysLoading ? (
             <div className="py-4 text-sm text-secondary">
@@ -210,6 +195,33 @@ export function ApiKeysSection({
           )}
         </CardContent>
       </Card>
+
+      {/* Newly created key reveal modal */}
+      <Dialog
+        onOpenChange={(open) => {
+          if (!open) onNewlyCreatedKeyChange(null)
+        }}
+        open={!!newlyCreatedKey}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>API Key Created</DialogTitle>
+          </DialogHeader>
+          {newlyCreatedKey && (
+            <SecretBanner
+              description="Copy it now, it will not be shown again!"
+              onDismiss={() => onNewlyCreatedKeyChange(null)}
+              secrets={[
+                {
+                  copyAriaLabel: 'Copy API key',
+                  value: newlyCreatedKey.key_secret,
+                },
+              ]}
+              title="API Key Created"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Create API Key modal */}
       <Dialog
