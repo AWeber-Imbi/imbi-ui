@@ -145,6 +145,17 @@ export function SettingsConnections() {
     )
   }
 
+  if (connectionsQuery.isError) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-destructive">
+          {extractApiErrorDetail(connectionsQuery.error) ??
+            'Failed to load connections'}
+        </CardContent>
+      </Card>
+    )
+  }
+
   const identityPlugins = (pluginsQuery.data?.installed ?? []).filter(
     (p) => p.enabled && p.plugin_type === 'identity',
   )
@@ -166,18 +177,18 @@ export function SettingsConnections() {
     )
   }
 
-  const connectionsByPluginId = new Map<string, IdentityConnectionResponse>()
+  // Phase 1: a Plugin row's id isn't surfaced on the admin/plugins
+  // catalog (which is keyed on slug), so we join connections to plugins
+  // by slug.  The host's start endpoint accepts either the node id or
+  // the slug; the latter is unambiguous when only one Plugin exists per
+  // slug, which matches the Phase-1 catalog.
+  const connectionsByPluginSlug = new Map<string, IdentityConnectionResponse>()
   for (const c of connectionsQuery.data ?? []) {
-    connectionsByPluginId.set(c.plugin_id, c)
+    connectionsByPluginSlug.set(c.plugin_slug, c)
   }
 
-  // Phase 1: a Plugin row's id isn't surfaced on the admin/plugins
-  // catalog (which is keyed on slug), so the table dispatches connect by
-  // *slug* as a stand-in.  The host's start endpoint accepts either the
-  // node id or the slug; the latter is unambiguous when only one Plugin
-  // exists per slug, which matches the Phase-1 catalog.
   const rows: ConnectionRow[] = identityPlugins.map((plugin) => ({
-    connection: connectionsByPluginId.get(plugin.slug) ?? null,
+    connection: connectionsByPluginSlug.get(plugin.slug) ?? null,
     plugin,
   }))
 
