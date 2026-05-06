@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, Loader2, RefreshCw, Unplug } from 'lucide-react'
@@ -65,6 +65,10 @@ const STATUS_VARIANT: Record<
 
 export function SettingsConnections() {
   const queryClient = useQueryClient()
+  // Pre-opened during the click handler so the popup-blocker accepts it as
+  // a user-gesture window; the URL is assigned once the start mutation
+  // resolves.  See the comment on `onConnect` below.
+  const pendingAuthWindowRef = useRef<null | Window>(null)
   const [pendingDisconnectId, setPendingDisconnectId] = useState<null | string>(
     null,
   )
@@ -87,6 +91,8 @@ export function SettingsConnections() {
         return_to: '/settings/connections',
       }),
     onError: (err) => {
+      pendingAuthWindowRef.current?.close()
+      pendingAuthWindowRef.current = null
       toast.error(
         extractApiErrorDetail(err) ?? 'Failed to start the connect flow',
       )
@@ -99,7 +105,13 @@ export function SettingsConnections() {
       if (data.polling) {
         toast.info(`Enter code ${data.polling.user_code} on the AWS page`)
       }
-      window.open(data.authorization_url, '_blank', 'noopener,noreferrer')
+      const authWindow = pendingAuthWindowRef.current
+      pendingAuthWindowRef.current = null
+      if (authWindow) {
+        authWindow.location.assign(data.authorization_url)
+      } else {
+        toast.error('Popup blocked. Please allow popups and try again.')
+      }
     },
   })
 
@@ -247,7 +259,18 @@ export function SettingsConnections() {
                     <TableCell className="text-right">
                       <ConnectionActions
                         connection={connection}
-                        onConnect={() => startMutation.mutate(plugin.slug)}
+                        onConnect={() => {
+                          // Open the auth tab synchronously inside the
+                          // click handler so the browser treats it as a
+                          // user-initiated popup; the URL is filled in
+                          // once startMutation.onSuccess fires.
+                          pendingAuthWindowRef.current = window.open(
+                            '',
+                            '_blank',
+                            'noopener,noreferrer',
+                          )
+                          startMutation.mutate(plugin.slug)
+                        }}
                         onDisconnect={() => setPendingDisconnectId(plugin.slug)}
                         onRefresh={() => refreshMutation.mutate(plugin.slug)}
                         pending={
