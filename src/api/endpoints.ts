@@ -1936,9 +1936,7 @@ export const setAdminPluginEnabled = (slug: string, enabled: boolean) =>
 // override for that label, ``null`` for the whole field clears every
 // override entirely.
 export interface AdminPluginPatch {
-  vertex_label_overrides?:
-    | null
-    | Record<string, Record<string, null | string>>
+  vertex_label_overrides?: null | Record<string, Record<string, null | string>>
   widget_text?: null | string
 }
 

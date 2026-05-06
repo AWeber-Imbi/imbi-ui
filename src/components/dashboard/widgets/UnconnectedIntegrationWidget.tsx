@@ -56,7 +56,7 @@ export function UnconnectedIntegrationWidget({
             {plugin.name} · Not connected
           </span>
 
-          <h3 className="mt-3.5 mb-1 text-[17px] font-semibold tracking-tight text-primary">
+          <h3 className="mb-1 mt-3.5 text-[17px] font-semibold tracking-tight text-primary">
             {plugin.name} isn&apos;t linked to your account
           </h3>
 
@@ -111,7 +111,7 @@ export function UnconnectedIntegrationWidget({
 
       <div
         aria-hidden="true"
-        className="relative hidden overflow-hidden border-l border-border bg-gradient-to-b from-tertiary to-secondary md:block"
+        className="from-tertiary relative hidden overflow-hidden border-l border-border bg-gradient-to-b to-secondary md:block"
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex items-center gap-1.5">
@@ -124,9 +124,9 @@ export function UnconnectedIntegrationWidget({
             </div>
             <div className="flex gap-[5px]">
               <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite]" />
-              <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite] [animation-delay:0.15s]" />
-              <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite] [animation-delay:0.3s]" />
-              <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite] [animation-delay:0.45s]" />
+              <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation-delay:0.15s] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite]" />
+              <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation-delay:0.3s] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite]" />
+              <i className="block h-[5px] w-[5px] rounded-full bg-[var(--color-text-tertiary)] [animation-delay:0.45s] [animation:imbi-bridge-travel_1.6s_ease-in-out_infinite]" />
             </div>
             <div className="grid h-[46px] w-[46px] place-items-center rounded-xl border border-border bg-card text-primary opacity-50 shadow-sm grayscale-[0.4]">
               {ResolvedIcon ? (

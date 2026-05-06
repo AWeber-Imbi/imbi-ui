@@ -215,9 +215,8 @@ export function PluginPackageDetail({
           <CardHeader>
             <CardTitle>Dashboard widget text</CardTitle>
             <CardDescription>
-              Body copy shown on the dashboard's "Connect your{' '}
-              {plugin.name}" widget. Leave empty to use the plugin
-              author's default.
+              Body copy shown on the dashboard's "Connect your {plugin.name}"
+              widget. Leave empty to use the plugin author's default.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -262,9 +261,9 @@ export function PluginPackageDetail({
           <CardHeader>
             <CardTitle>Entity labels</CardTitle>
             <CardDescription>
-              Override the navigation, page, and help text shown for each
-              entity type this plugin declares. Empty fields fall back to
-              the plugin author's manifest values.
+              Override the navigation, page, and help text shown for each entity
+              type this plugin declares. Empty fields fall back to the plugin
+              author's manifest values.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -327,9 +326,7 @@ export function PluginPackageDetail({
                             },
                           }))
                         }
-                        placeholder={
-                          draft.display_name || vlabel.name
-                        }
+                        placeholder={draft.display_name || vlabel.name}
                         value={draft.nav_label}
                       />
                       <p className="mt-1 text-xs text-tertiary">

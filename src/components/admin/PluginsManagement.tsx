@@ -243,7 +243,7 @@ function EnabledList({ error, isError, isLoading, plugins }: EnabledListProps) {
           <TableBody>
             {plugins.map((plugin) => (
               <TableRow
-                className="cursor-pointer hover:bg-secondary/40"
+                className="hover:bg-secondary/40 cursor-pointer"
                 key={plugin.slug}
                 onClick={() => navigate(`/admin/plugins/${plugin.slug}`)}
               >

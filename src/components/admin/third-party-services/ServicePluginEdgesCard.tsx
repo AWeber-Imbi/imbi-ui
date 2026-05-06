@@ -160,10 +160,7 @@ function EnvironmentEdgeTable({
           target = await createPluginEntity(entityPluginSlug, targetLabel, body)
         } catch (err) {
           // Race with a concurrent create; resolve via a fresh list.
-          const fresh = await listPluginEntities(
-            entityPluginSlug,
-            targetLabel,
-          )
+          const fresh = await listPluginEntities(entityPluginSlug, targetLabel)
           target = fresh.find((t) => t[naturalKey] === pasted)
           if (!target) throw err
         }
@@ -234,9 +231,7 @@ function EnvironmentEdgeTable({
                 return (
                   <TableRow key={env.slug}>
                     <TableCell>
-                      <div className="font-medium text-primary">
-                        {env.name}
-                      </div>
+                      <div className="font-medium text-primary">{env.name}</div>
                       <code className="text-xs text-tertiary">{env.slug}</code>
                     </TableCell>
                     <TableCell>
@@ -258,9 +253,7 @@ function EnvironmentEdgeTable({
                     <TableCell>
                       <div className="flex justify-end">
                         <Button
-                          disabled={
-                            submitting || !dirty || draft.trim() === ''
-                          }
+                          disabled={submitting || !dirty || draft.trim() === ''}
                           onClick={() =>
                             mapMutation.mutate({
                               envSlug: env.slug,

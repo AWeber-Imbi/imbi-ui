@@ -81,7 +81,6 @@ const STATUS_VARIANT: Record<
   revoked: 'secondary',
 }
 
-
 export function SettingsConnections() {
   const queryClient = useQueryClient()
   // Pre-opened during the click handler so the popup-blocker accepts it as

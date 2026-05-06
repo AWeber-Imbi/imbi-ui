@@ -22,18 +22,11 @@ import { CSS } from '@dnd-kit/utilities'
 import { useQuery } from '@tanstack/react-query'
 import { Settings } from 'lucide-react'
 
-import {
-  getAdminPlugins,
-  getMyIdentities,
-  getProjects,
-} from '@/api/endpoints'
+import { getAdminPlugins, getMyIdentities, getProjects } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useRecentDeployments } from '@/hooks/useRecentDeployments'
-import type {
-  AdminPluginsResponse,
-  IdentityConnectionResponse,
-} from '@/types'
+import type { AdminPluginsResponse, IdentityConnectionResponse } from '@/types'
 
 import { MyPullRequestsWidget } from './dashboard/widgets/MyPullRequestsWidget'
 import { OutdatedComponentsWidget } from './dashboard/widgets/OutdatedComponentsWidget'
@@ -196,9 +189,7 @@ export function Dashboard({
     pluginsQuery.data?.installed ?? []
   ).filter(
     (p) =>
-      p.enabled &&
-      p.plugin_type === 'identity' &&
-      !connectedSlugs.has(p.slug),
+      p.enabled && p.plugin_type === 'identity' && !connectedSlugs.has(p.slug),
   )
 
   const [selectedWidgets, setSelectedWidgets] = useState<WidgetId[]>(() => {

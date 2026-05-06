@@ -221,8 +221,7 @@ export function DeviceCodePollingDialog({
             )}
             {status === 'expired' && (
               <span className="text-destructive">
-                The verification code expired. Close this dialog and try
-                again.
+                The verification code expired. Close this dialog and try again.
               </span>
             )}
             {status === 'failed' && (
@@ -234,16 +233,8 @@ export function DeviceCodePollingDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button
-            asChild
-            disabled={status === 'success'}
-            variant="outline"
-          >
-            <a
-              href={verificationHref}
-              rel="noreferrer"
-              target="_blank"
-            >
+          <Button asChild disabled={status === 'success'} variant="outline">
+            <a href={verificationHref} rel="noreferrer" target="_blank">
               <ExternalLink className="mr-2 h-3.5 w-3.5" />
               Open {pluginLabel}
             </a>
