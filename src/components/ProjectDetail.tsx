@@ -20,6 +20,7 @@ import {
   listCurrentReleases,
   listLinkDefinitions,
   listProjectNotes,
+  listProjectPlugins,
   listProjectTypes,
   listTeams,
   type ScoreTrend,
@@ -198,6 +199,47 @@ export function ProjectDetail({
       listProjectNotes(orgSlug, project.id, undefined, signal),
     queryKey: ['projectNotes', orgSlug, project.id],
   })
+  // Drives whether the Configuration / Logs tabs are surfaced. We treat
+  // an unresolved query (loading / errored) as "no plugin" so a stale or
+  // failed lookup hides the tab rather than rendering a dead one.
+  const {
+    data: projectPlugins = [],
+    isFetched: projectPluginsFetched,
+    isSuccess: projectPluginsSuccess,
+  } = useQuery({
+    enabled: !!orgSlug && !!project.id,
+    queryFn: ({ signal }) => listProjectPlugins(orgSlug, project.id, signal),
+    queryKey: ['project-plugins', orgSlug, project.id],
+    staleTime: 5 * 60 * 1000,
+  })
+  const hasConfigurationPlugin = projectPlugins.some(
+    (a) => a.tab === 'configuration',
+  )
+  const hasLogsPlugin = projectPlugins.some((a) => a.tab === 'logs')
+
+  // Redirect to overview when a deep-link points at a tab that no
+  // longer surfaces (e.g. /configuration on a project type with no
+  // configuration plugin assigned). Wait for the assignments query to
+  // resolve successfully before deciding — otherwise the empty default
+  // during the initial fetch redirects every direct navigation to
+  // /logs or /configuration.
+  useEffect(() => {
+    if (!projectPluginsFetched || !projectPluginsSuccess) return
+    if (
+      (activeTab === 'configuration' && !hasConfigurationPlugin) ||
+      (activeTab === 'logs' && !hasLogsPlugin)
+    ) {
+      navigate(`/projects/${project.id}`, { replace: true })
+    }
+  }, [
+    activeTab,
+    hasConfigurationPlugin,
+    hasLogsPlugin,
+    navigate,
+    project.id,
+    projectPluginsFetched,
+    projectPluginsSuccess,
+  ])
 
   // Bumps when an icon-set chunk finishes loading; include in useMemo deps
   // where icons are resolved so they refresh once available.
@@ -274,9 +316,11 @@ export function ProjectDetail({
 
   const tabs: { id: TabType; label: string }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'configuration', label: 'Configuration' },
+    ...(hasConfigurationPlugin
+      ? [{ id: 'configuration' as const, label: 'Configuration' }]
+      : []),
     { id: 'dependencies', label: 'Dependencies' },
-    { id: 'logs', label: 'Logs' },
+    ...(hasLogsPlugin ? [{ id: 'logs' as const, label: 'Logs' }] : []),
     {
       id: 'notes',
       label:
@@ -577,9 +621,17 @@ export function ProjectDetail({
           </div>
         </TabsContent>
 
-        <TabsContent value="configuration">
-          <ConfigurationTab orgSlug={orgSlug} projectId={project.id} />
-        </TabsContent>
+        {hasConfigurationPlugin && (
+          <TabsContent value="configuration">
+            <ConfigurationTab
+              environments={sortedEnvironments}
+              orgSlug={orgSlug}
+              projectId={project.id}
+              projectSlug={project.slug}
+              teamSlug={project.team.slug}
+            />
+          </TabsContent>
+        )}
         <TabsContent value="relationships">
           <ProjectRelationshipsTab
             orgSlug={project.team.organization.slug}
@@ -590,9 +642,15 @@ export function ProjectDetail({
         <TabsContent value="dependencies">
           <PlaceholderTab name="Dependencies" />
         </TabsContent>
-        <TabsContent value="logs">
-          <LogsTab orgSlug={orgSlug} projectId={project.id} />
-        </TabsContent>
+        {hasLogsPlugin && (
+          <TabsContent value="logs">
+            <LogsTab
+              environments={sortedEnvironments}
+              orgSlug={orgSlug}
+              projectId={project.id}
+            />
+          </TabsContent>
+        )}
         <TabsContent value="notes">
           <ProjectNotesTab
             initialAction={activeTab === 'notes' ? initialSubAction : undefined}
