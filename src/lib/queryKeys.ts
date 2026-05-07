@@ -17,6 +17,8 @@ export const queryKeys = {
     ['plugin-edges-by-org', pluginSlug, relType, orgSlug] as const,
   pluginEntities: (slug: string, label: string) =>
     ['plugin-entities', slug, label] as const,
+  pluginEntitySchema: (slug: string, label: string) =>
+    ['plugin-entity-schema', slug, label] as const,
 } as const
 
 /**

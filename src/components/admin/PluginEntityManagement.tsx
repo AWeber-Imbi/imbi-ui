@@ -94,7 +94,7 @@ export function PluginEntityManagement({
     [pluginSlug, label],
   )
   const schemaKey = useMemo(
-    () => ['plugin-entity-schema', pluginSlug, label],
+    () => queryKeys.pluginEntitySchema(pluginSlug, label),
     [pluginSlug, label],
   )
 
