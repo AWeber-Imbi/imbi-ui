@@ -1765,7 +1765,7 @@ export const getProjectLogsHistogram = (
   }
   return apiClient.get<LogHistogramBucket[]>(
     `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}/logs/histogram`,
-    query as Record<string, string>,
+    query,
     signal,
   )
 }
@@ -1788,7 +1788,7 @@ export const searchProjectLogs = (
   }
   return apiClient.get<LogResultResponse>(
     `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}/logs/`,
-    query as Record<string, string>,
+    query,
     signal,
   )
 }
