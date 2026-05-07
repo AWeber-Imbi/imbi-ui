@@ -1589,10 +1589,7 @@ export interface IdentityPluginRef {
   plugin_slug: string
 }
 
-export const listIdentityPlugins = (
-  orgSlug: string,
-  signal?: AbortSignal,
-) =>
+export const listIdentityPlugins = (orgSlug: string, signal?: AbortSignal) =>
   apiClient.get<IdentityPluginRef[]>(
     `/organizations/${encodeURIComponent(orgSlug)}/identity-plugins/`,
     undefined,

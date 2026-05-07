@@ -864,9 +864,7 @@ function IdentityPluginSelect({
     value && identityPlugins.find((ip) => ip.plugin_id === value)?.label
   return (
     <Select
-      onValueChange={(v) =>
-        onChange(v === IDENTITY_NONE_VALUE ? null : v)
-      }
+      onValueChange={(v) => onChange(v === IDENTITY_NONE_VALUE ? null : v)}
       value={value ?? IDENTITY_NONE_VALUE}
     >
       <SelectTrigger>
