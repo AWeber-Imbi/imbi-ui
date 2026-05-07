@@ -1589,12 +1589,17 @@ export interface IdentityPluginRef {
   plugin_slug: string
 }
 
-export const listIdentityPlugins = (orgSlug: string, signal?: AbortSignal) =>
-  apiClient.get<IdentityPluginRef[]>(
+export const listIdentityPlugins = async (
+  orgSlug: string,
+  signal?: AbortSignal,
+): Promise<IdentityPluginRef[]> => {
+  const response = await apiClient.get<IdentityPluginRef[]>(
     `/organizations/${encodeURIComponent(orgSlug)}/identity-plugins/`,
     undefined,
     signal,
   )
+  return Array.isArray(response) ? response : []
+}
 
 // Service Plugins
 export const listServicePlugins = (
