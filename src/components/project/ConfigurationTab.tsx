@@ -86,6 +86,7 @@ interface DetailPaneProps {
   savedFlash: boolean
   selected?: AggregatedKey
   typeOverride?: DataType | null
+  valueLoadingByEnv?: Record<string, boolean>
   valuesByEnv?: Record<string, Record<string, unknown>>
 }
 
@@ -93,6 +94,7 @@ interface EnvRowProps {
   dataType: DataType
   env: Environment
   isCreate: boolean
+  isLoadingValue?: boolean
   isSecret: boolean
   isSet: boolean
   onCommit: (value: string) => void
@@ -280,6 +282,26 @@ export function ConfigurationTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedEnvironments, ...valueQueries.map((q) => q.data)])
 
+  // Per-env load state for the values query. The keys list can resolve
+  // before its matching value fetch, so we surface this to EnvRow to
+  // gate edit/reveal until each env's values are actually present —
+  // otherwise an existing key briefly looks empty and a stray keystroke
+  // could overwrite a value the user never saw.
+  // ``q.fetchStatus === 'idle'`` is the disabled-query state (no keys
+  // for this env yet) — treat that as "not loading" so empty envs
+  // don't render a permanent skeleton.
+  const valueLoadingFlags = valueQueries.map(
+    (q) => q.fetchStatus !== 'idle' && (q.isLoading || q.data === undefined),
+  )
+  const valueLoadingByEnv = useMemo(() => {
+    const out: Record<string, boolean> = {}
+    sortedEnvironments.forEach((env, idx) => {
+      out[env.slug] = Boolean(valueLoadingFlags[idx])
+    })
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortedEnvironments, ...valueLoadingFlags])
+
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase()
     if (!q) return aggregated
@@ -351,15 +373,29 @@ export function ConfigurationTab({
     },
     onSuccess: (_, vars) => {
       flashSaved()
-      void queryClient.invalidateQueries({
-        queryKey: [
-          'config-keys',
-          orgSlug,
-          projectId,
-          activeSource,
-          vars.environment,
-        ],
-      })
+      // Invalidate both the keys list (in case data_type/secret flipped)
+      // *and* the per-env values so EnvRow rehydrates from fresh data on
+      // blur instead of snapping back to a stale cached value.
+      void Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: [
+            'config-keys',
+            orgSlug,
+            projectId,
+            activeSource,
+            vars.environment,
+          ],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [
+            'config-values',
+            orgSlug,
+            projectId,
+            activeSource,
+            vars.environment,
+          ],
+        }),
+      ])
     },
   })
 
@@ -607,6 +643,7 @@ export function ConfigurationTab({
                   ? typeOverride.type
                   : null
               }
+              valueLoadingByEnv={valueLoadingByEnv}
               valuesByEnv={valuesByEnv}
             />
           ) : (
@@ -774,6 +811,7 @@ function DetailPane({
   savedFlash,
   selected,
   typeOverride,
+  valueLoadingByEnv,
   valuesByEnv,
 }: DetailPaneProps) {
   // Defensively force `secret` to win over `data_type` so the picker
@@ -872,11 +910,18 @@ function DetailPane({
                   | string
                   | undefined) ?? undefined)
             const isSet = !isCreate && Boolean(selected?.envs[env.slug])
+            // Treat the row as loading when the env claims this key is
+            // set but its value query hasn't landed yet — that's the
+            // window where an editable input could overwrite a value
+            // the user never saw.
+            const isLoadingValue =
+              !isCreate && isSet && Boolean(valueLoadingByEnv?.[env.slug])
             return (
               <EnvRow
                 dataType={currentType}
                 env={env}
                 isCreate={Boolean(isCreate)}
+                isLoadingValue={isLoadingValue}
                 isSecret={
                   isCreate
                     ? currentType === 'secret'
@@ -961,6 +1006,7 @@ function EnvRow({
   dataType,
   env,
   isCreate,
+  isLoadingValue,
   isSecret,
   isSet,
   onCommit,
@@ -1003,15 +1049,26 @@ function EnvRow({
     !revealed &&
     !focused &&
     (isSet || Boolean(local))
-  const placeholder = isCreate ? 'Optional' : isSet ? '' : 'Not set'
-  const display = shouldMask
-    ? maskSecret(local)
-    : focused || revealed || isCreate
-      ? local
-      : (local ?? '')
+  const placeholder = isLoadingValue
+    ? 'Loading…'
+    : isCreate
+      ? 'Optional'
+      : isSet
+        ? ''
+        : 'Not set'
+  const display = isLoadingValue
+    ? ''
+    : shouldMask
+      ? maskSecret(local)
+      : focused || revealed || isCreate
+        ? local
+        : (local ?? '')
 
   const showRevealButton =
-    !isCreate && (isSecret || looksSensitive) && (isSet || Boolean(local))
+    !isCreate &&
+    !isLoadingValue &&
+    (isSecret || looksSensitive) &&
+    (isSet || Boolean(local))
 
   return (
     <>
@@ -1038,10 +1095,12 @@ function EnvRow({
               focused
                 ? 'border-amber-border bg-primary ring-2 ring-amber-border/30'
                 : 'border-transparent hover:bg-tertiary',
+              isLoadingValue && 'animate-pulse cursor-wait',
             )}
+            disabled={isLoadingValue}
             onBlur={handleBlur}
             onChange={(e) => {
-              if (!shouldMask) setLocal(e.target.value)
+              if (!shouldMask && !isLoadingValue) setLocal(e.target.value)
             }}
             onFocus={() => setFocused(true)}
             placeholder={placeholder}
@@ -1055,10 +1114,12 @@ function EnvRow({
               focused
                 ? 'border-amber-border bg-primary ring-2 ring-amber-border/30'
                 : 'border-transparent hover:bg-tertiary',
+              isLoadingValue && 'animate-pulse cursor-wait',
             )}
+            disabled={isLoadingValue}
             onBlur={handleBlur}
             onChange={(e) => {
-              if (!shouldMask) setLocal(e.target.value)
+              if (!shouldMask && !isLoadingValue) setLocal(e.target.value)
             }}
             onFocus={() => setFocused(true)}
             placeholder={placeholder}

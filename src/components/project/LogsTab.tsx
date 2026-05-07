@@ -1110,16 +1110,14 @@ function Histogram({
   const n = buckets.length
   // ``activeSum`` is the height-driving total for each bucket. Prefer the
   // sum of the level toggles the user has on; fall back to ``b.count``
-  // when the source plugin can't break down by level (e.g. Postgres
-  // logs in CloudWatch have no structured ``level`` field, so the
-  // per-level Insights query returns nothing — but the totals query
-  // still populates ``b.count``). Without this fallback the bars would
-  // all be zero-height.
-  const hasAnyLevelData = buckets.some((b) =>
-    (['ERROR', 'WARN', 'INFO', 'DEBUG'] as const).some((lv) => b[lv] > 0),
-  )
+  // when this bucket has no per-level breakdown (e.g. Postgres logs in
+  // CloudWatch have no structured ``level`` field, so the per-level
+  // Insights query returns nothing — but the totals query still
+  // populates ``b.count``). The fallback is evaluated per bucket so a
+  // mixed response (some buckets with level data, others count-only)
+  // still renders every bar at the right height.
   const activeSum = (b: HistogramBucket) =>
-    hasAnyLevelData
+    (['ERROR', 'WARN', 'INFO', 'DEBUG'] as const).some((lv) => b[lv] > 0)
       ? (['ERROR', 'WARN', 'INFO', 'DEBUG'] as const).reduce(
           (s, lv) => s + (levels[lv] ? b[lv] : 0),
           0,
