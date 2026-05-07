@@ -102,7 +102,10 @@ function bucketIndex(count: number): number {
 }
 
 function fmtDate(d: Date): string {
-  return d.toISOString().slice(0, 10)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 function Legend() {
@@ -111,7 +114,7 @@ function Legend() {
       <span>Less</span>
       {BUCKET_COLORS.map((cls, i) => (
         <span
-          className={`inline-block h-2.5 w-2.5 rounded-sm ${cls.replace('fill-', 'bg-')}`}
+          className={`inline-block h-2.5 w-2.5 rounded-sm ${cls.replace(/fill-/g, 'bg-')}`}
           key={i}
         />
       ))}

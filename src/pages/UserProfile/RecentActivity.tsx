@@ -43,7 +43,7 @@ export function RecentActivity({ email }: RecentActivityProps) {
       {error && (
         <p className="text-xs text-danger">Failed to load activity feed.</p>
       )}
-      {!isLoading && records.length === 0 && (
+      {!isLoading && !error && records.length === 0 && (
         <p className="text-xs text-tertiary">No recent activity.</p>
       )}
       <ul className="divide-y divide-tertiary">
