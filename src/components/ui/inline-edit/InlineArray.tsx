@@ -25,6 +25,9 @@ export interface InlineArrayProps {
 const sameList = (a: unknown[], b: unknown[]) =>
   a.length === b.length && a.every((v, i) => v === b[i])
 
+const INTEGER_RE = /^-?\d+$/
+const NUMBER_RE = /^-?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/
+
 const coerce = (
   raw: string,
   type: 'integer' | 'number' | 'string',
@@ -32,12 +35,14 @@ const coerce = (
   const trimmed = raw.trim()
   if (trimmed === '') return null
   if (type === 'integer') {
-    const n = parseInt(trimmed, 10)
-    return Number.isNaN(n) ? null : n
+    if (!INTEGER_RE.test(trimmed)) return null
+    const n = Number(trimmed)
+    return Number.isSafeInteger(n) ? n : null
   }
   if (type === 'number') {
+    if (!NUMBER_RE.test(trimmed)) return null
     const n = Number(trimmed)
-    return Number.isNaN(n) ? null : n
+    return Number.isFinite(n) ? n : null
   }
   return trimmed
 }
@@ -50,6 +55,7 @@ export function InlineArray({
   readOnly = false,
   values,
 }: InlineArrayProps) {
+  const interactive = !pending && !readOnly
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<unknown[]>(values)
   const [entry, setEntry] = useState('')
@@ -95,6 +101,7 @@ export function InlineArray({
   return (
     <Popover
       onOpenChange={(next) => {
+        if (!interactive) return
         if (next) setOpen(true)
         else void close()
       }}
@@ -104,7 +111,9 @@ export function InlineArray({
         <span>
           <InlineDisplay
             hasValue={values.length > 0}
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              if (interactive) setOpen(true)
+            }}
             pending={pending}
             placeholder={placeholder}
             readOnly={readOnly}
@@ -129,6 +138,7 @@ export function InlineArray({
                   <button
                     aria-label={`Remove ${String(v)}`}
                     className="rounded p-0.5 text-tertiary hover:bg-secondary hover:text-primary"
+                    disabled={!interactive}
                     onClick={() => removeAt(i)}
                     type="button"
                   >
@@ -140,6 +150,7 @@ export function InlineArray({
           )}
           <Input
             className="h-7 py-1 text-sm"
+            disabled={!interactive}
             inputMode={itemType === 'string' ? 'text' : 'numeric'}
             onChange={(e) => setEntry(e.target.value)}
             onKeyDown={(e) => {

@@ -117,11 +117,12 @@ const ProjectAttributeRow = memo(function ProjectAttributeRow({
   const labelNode = fieldDescription ? (
     <HoverCard openDelay={200}>
       <HoverCardTrigger asChild>
-        <span
-          className={`text-sm ${LABEL_CLASS} cursor-help underline decoration-dotted`}
+        <button
+          className={`text-sm ${LABEL_CLASS} cursor-help bg-transparent p-0 text-left underline decoration-dotted`}
+          type="button"
         >
           {fieldLabel}
-        </span>
+        </button>
       </HoverCardTrigger>
       <HoverCardContent className="text-sm" side="top">
         {fieldDescription}

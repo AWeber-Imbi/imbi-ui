@@ -99,10 +99,15 @@ export function buildJsonSchema(
     if (prop.maxLength !== undefined) propSchema.maxLength = prop.maxLength
 
     if (prop.type === 'array') {
+      const itemType = prop.itemsType ?? 'string'
       const itemsSchema: Record<string, unknown> = {
-        type: prop.itemsType ?? 'string',
+        type: itemType,
       }
-      if (prop.itemsEnumValues && prop.itemsEnumValues.length > 0) {
+      if (
+        itemType === 'string' &&
+        prop.itemsEnumValues &&
+        prop.itemsEnumValues.length > 0
+      ) {
         itemsSchema.enum = prop.itemsEnumValues
       }
       propSchema.items = itemsSchema
