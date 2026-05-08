@@ -330,6 +330,65 @@ export interface DashboardStats {
   total_projects: number
 }
 
+export type DeploymentAction = 'deploy' | 'redeploy'
+
+export interface DeploymentCommit {
+  author?: null | string
+  authored_at?: null | string
+  ci_status: DeploymentCommitCiStatus
+  is_head: boolean
+  message: string
+  pr_number?: null | number
+  sha: string
+  short_sha: string
+  url?: null | string
+}
+
+export type DeploymentCommitCiStatus = 'fail' | 'pass' | 'unknown' | 'warn'
+
+export interface DeploymentCompareResult {
+  additions: number
+  ahead: number
+  base_sha: string
+  behind: number
+  commits: DeploymentCommit[]
+  deletions: number
+  files_changed: number
+  head_sha: string
+  pr_numbers: number[]
+}
+
+export interface DeploymentRef {
+  ahead?: null | number
+  behind?: null | number
+  is_default: boolean
+  kind: DeploymentRefKind
+  name: string
+  pr_number?: null | number
+  pr_state?: 'closed' | 'merged' | 'open' | null
+  pr_title?: null | string
+  sha: string
+}
+
+// Deployment plugin shapes (mirrors imbi_common.plugins.base).
+export type DeploymentRefKind = 'branch' | 'default' | 'tag'
+
+export interface DeploymentRun {
+  completed_at?: null | string
+  run_id: string
+  run_url?: null | string
+  started_at?: null | string
+  status: DeploymentRunStatus
+}
+
+export type DeploymentRunStatus =
+  | 'cancelled'
+  | 'failure'
+  | 'in_progress'
+  | 'queued'
+  | 'success'
+  | 'unknown'
+
 // Releases
 export type DeploymentStatus =
   | 'failed'
@@ -337,6 +396,21 @@ export type DeploymentStatus =
   | 'pending'
   | 'rolled_back'
   | 'success'
+
+export interface DeploymentTriggerRequest {
+  action: DeploymentAction
+  committish: string
+  environment: string
+  inputs?: null | Record<string, string>
+  ref_label?: null | string
+}
+
+export interface DeploymentTriggerResponse {
+  plugin_id: string
+  plugin_slug: string
+  recorded: boolean
+  run: DeploymentRun
+}
 
 export interface Document {
   content: string
