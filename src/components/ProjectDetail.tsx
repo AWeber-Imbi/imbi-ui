@@ -9,6 +9,7 @@ import {
   Check,
   ChevronDown,
   Filter,
+  GitMerge,
   Rocket,
   Settings2 as SettingsIcon,
   TrendingDown,
@@ -28,7 +29,11 @@ import {
   listTeams,
   type ScoreTrend,
 } from '@/api/endpoints'
-import { DeploymentModal } from '@/components/deploy/DeploymentModal'
+import {
+  DeploymentModal,
+  type DeployModalTab,
+} from '@/components/deploy/DeploymentModal'
+import { PromoteDialog } from '@/components/deploy/PromoteDialog'
 import { ProjectDocumentsTab } from '@/components/documents/ProjectDocumentsTab'
 import { OperationsLog } from '@/components/OperationsLog'
 import { ConfigurationTab } from '@/components/project/ConfigurationTab'
@@ -189,11 +194,28 @@ export function ProjectDetail({
   const [deployModal, setDeployModal] = useState<{
     envSlug?: string
     open: boolean
-  }>({ open: false })
+    promoteFrom?: string
+    promoteFromCommittish?: string
+    promoteTo?: string
+    tab: DeployModalTab
+  }>({ open: false, tab: 'deploy' })
   const openDeploy = useCallback(
-    (envSlug?: string) => setDeployModal({ envSlug, open: true }),
+    (envSlug?: string) =>
+      setDeployModal({ envSlug, open: true, tab: 'deploy' }),
     [],
   )
+  const openPromote = useCallback(
+    (promoteFrom: string, promoteTo: string, promoteFromCommittish?: string) =>
+      setDeployModal({
+        open: true,
+        promoteFrom,
+        promoteFromCommittish,
+        promoteTo,
+        tab: 'promote',
+      }),
+    [],
+  )
+  const [promotePopoverOpen, setPromotePopoverOpen] = useState(false)
 
   const { data: projectSchema } = useQuery({
     enabled: !!orgSlug,
@@ -426,6 +448,25 @@ export function ProjectDetail({
                 <Rocket className="mr-1 h-4 w-4" />
                 Deploy
               </Button>
+              <PromoteDialog
+                onOpenChange={setPromotePopoverOpen}
+                onPromote={(opt) => {
+                  setPromotePopoverOpen(false)
+                  openPromote(
+                    opt.from_environment,
+                    opt.to_environment,
+                    opt.from_sha ?? opt.from_version ?? undefined,
+                  )
+                }}
+                open={promotePopoverOpen}
+                orgSlug={orgSlug}
+                projectId={project.id}
+              >
+                <Button size="sm" variant="outline">
+                  <GitMerge className="mr-1 h-4 w-4" />
+                  Promote
+                </Button>
+              </PromoteDialog>
             </div>
           )}
         </div>
@@ -721,11 +762,15 @@ export function ProjectDetail({
       <DeploymentModal
         environments={sortedEnvironments}
         initialEnvSlug={deployModal.envSlug}
+        initialTab={deployModal.tab}
         onOpenChange={(open) => setDeployModal((prev) => ({ ...prev, open }))}
         open={deployModal.open}
         orgSlug={orgSlug}
         projectId={project.id}
         projectName={project.name}
+        promoteFrom={deployModal.promoteFrom}
+        promoteFromCommittish={deployModal.promoteFromCommittish}
+        promoteTo={deployModal.promoteTo}
       />
     </div>
   )

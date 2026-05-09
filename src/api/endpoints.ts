@@ -21,6 +21,7 @@ import type {
   CurrentReleaseEnvironment,
   DeploymentCommit,
   DeploymentCompareResult,
+  DeploymentPromoteRequest,
   DeploymentRef,
   DeploymentTriggerRequest,
   DeploymentTriggerResponse,
@@ -29,6 +30,8 @@ import type {
   DocumentListResponse,
   DocumentTemplate,
   DocumentTemplateCreate,
+  DraftReleaseNotesRequest,
+  DraftReleaseNotesResponse,
   Environment,
   EnvironmentCreate,
   IdentityConnectionPollResponse,
@@ -68,6 +71,7 @@ import type {
   ProjectRelationshipsResponse,
   ProjectType,
   ProjectTypeCreate,
+  PromotionOption,
   Role,
   RoleCreate,
   RoleDetail,
@@ -1445,6 +1449,47 @@ export const triggerDeployment = (
     `${deploymentsBase(orgSlug, projectId)}${search}`,
     body,
   )
+}
+
+export const promoteDeployment = (
+  orgSlug: string,
+  projectId: string,
+  body: DeploymentPromoteRequest,
+  source?: string,
+): Promise<DeploymentTriggerResponse> => {
+  const search = source ? `?source=${encodeURIComponent(source)}` : ''
+  return apiClient.post<DeploymentTriggerResponse>(
+    `${deploymentsBase(orgSlug, projectId)}${search}`,
+    body,
+  )
+}
+
+export const draftReleaseNotes = (
+  orgSlug: string,
+  projectId: string,
+  body: DraftReleaseNotesRequest,
+  source?: string,
+): Promise<DraftReleaseNotesResponse> => {
+  const search = source ? `?source=${encodeURIComponent(source)}` : ''
+  return apiClient.post<DraftReleaseNotesResponse>(
+    `${deploymentsBase(orgSlug, projectId)}/draft-release-notes${search}`,
+    body,
+  )
+}
+
+export const listPromotionOptions = async (
+  orgSlug: string,
+  projectId: string,
+  source?: string,
+  signal?: AbortSignal,
+): Promise<PromotionOption[]> => {
+  const search = source ? `?source=${encodeURIComponent(source)}` : ''
+  const response = await apiClient.get<PromotionOption[]>(
+    `${deploymentsBase(orgSlug, projectId)}/promotion-options${search}`,
+    undefined,
+    signal,
+  )
+  return Array.isArray(response) ? response : []
 }
 
 // Identity Plugins (org-scoped)

@@ -358,6 +358,17 @@ export interface DeploymentCompareResult {
   pr_numbers: number[]
 }
 
+export interface DeploymentPromoteRequest {
+  action: 'promote'
+  from_committish: string
+  from_environment: string
+  prerelease?: boolean
+  release_name?: null | string
+  release_notes_markdown?: string
+  tag: string
+  to_environment: string
+}
+
 export interface DeploymentRef {
   ahead?: null | number
   behind?: null | number
@@ -409,7 +420,9 @@ export interface DeploymentTriggerResponse {
   plugin_id: string
   plugin_slug: string
   recorded: boolean
+  release_url?: null | string
   run: DeploymentRun
+  tag?: null | string
 }
 
 export interface Document {
@@ -462,6 +475,21 @@ export interface DocumentTemplateCreate {
   sort_order?: number
   tags?: string[]
   title?: null | string
+}
+
+export interface DraftReleaseNotesRequest {
+  base_sha: string
+  head_sha: string
+  last_tag?: null | string
+}
+
+export interface DraftReleaseNotesResponse {
+  bump: SemverBump
+  commits_considered: number
+  degraded: boolean
+  notes_markdown: string
+  reasoning: string
+  version: string
 }
 
 export interface IdentityConnectionPollResponse {
@@ -674,6 +702,7 @@ export interface PluginAssignmentCreate {
   plugin_id: string
   tab: PluginTab
 }
+
 export interface PluginAssignmentInput {
   default: boolean
   identity_plugin_id?: null | string
@@ -681,6 +710,7 @@ export interface PluginAssignmentInput {
   project_type_slug: string
   tab: PluginTab
 }
+
 export interface PluginAssignmentResponse {
   default: boolean
   identity_plugin_id?: null | string
@@ -692,7 +722,6 @@ export interface PluginAssignmentResponse {
   supports_histogram?: boolean
   tab: PluginTab
 }
-
 export interface PluginAssignmentRow {
   default: boolean
   identity_plugin_id?: null | string
@@ -701,26 +730,26 @@ export interface PluginAssignmentRow {
   project_type_slug: string
   tab: PluginTab
 }
-
 export interface PluginConfigurationResponse {
   auth_type: 'api_token' | 'oauth2'
   fields: PluginCredentialField[]
   plugin_slug: string
   populated: string[]
 }
+
 export interface PluginCreate {
   label: string
   options?: Record<string, unknown>
   plugin_slug: string
   service_application_slug?: null | string
 }
+
 export interface PluginCredentialField {
   description: null | string
   label: string
   name: string
   required: boolean
 }
-
 // A materialized edge from /edges/{rel_type}.
 export interface PluginEdge {
   properties: Record<string, unknown>
@@ -740,7 +769,6 @@ export interface PluginEdgePut {
   target_id: string
   target_label: string
 }
-
 // Generic plugin entity (a graph node declared by a plugin's
 // vertex_labels manifest entry).  Shape varies per plugin model_ref;
 // the host returns whatever Pydantic.model_dump() produced.
@@ -757,6 +785,7 @@ export interface PluginEntitySchema {
   title?: string
   type: 'object'
 }
+
 export interface PluginOptionDef {
   choices?: null | string[]
   default?: boolean | null | number | string
@@ -784,6 +813,7 @@ export interface PluginResponse {
   used_as_login?: boolean
 }
 export type PluginTab = 'configuration' | 'logs'
+
 export interface PluginUpdate {
   // Pass an explicit empty string to clear; omitting the field leaves
   // the existing value untouched on the backend.
@@ -811,15 +841,24 @@ export interface PluginVertexLabel {
   }
 }
 export type ProjectRelationship = Schemas['ProjectRelationship']
-
 export type ProjectRelationshipsResponse =
   Schemas['ProjectRelationshipsResponse']
 // Project Relationships (DEPENDS_ON edges)
 export type ProjectRelationshipSummary = Schemas['ProjectRelationshipSummary']
+
 // Project EXISTS_IN types
 export type ProjectService = Schemas['ExistsInResponse']
-
 export type ProjectServiceCreate = Schemas['ExistsInCreate']
+export interface PromotionOption {
+  commits_pending: null | number
+  from_environment: string
+  from_sha?: null | string
+  from_version?: null | string
+  to_environment: string
+  to_sha?: null | string
+  to_version?: null | string
+}
+
 export interface Release {
   created_at: string
   created_by: string
@@ -831,7 +870,6 @@ export interface Release {
   updated_at?: null | string
   version: string
 }
-
 export interface ReleaseLink {
   label?: null | string
   type: string
@@ -847,6 +885,7 @@ export interface Role {
   slug: string
   updated_at?: null | string
 }
+
 export interface RoleCreate {
   description?: null | string
   name: string
@@ -859,7 +898,6 @@ export interface RoleDetail extends Role {
   permissions: Permission[]
   priority: number
 }
-
 // `RoleUser` stays hand-written: no generated counterpart (the
 // /roles/{slug}/users endpoint returns a flattened user projection).
 export interface RoleUser {
@@ -898,6 +936,8 @@ export interface SchemaProperty {
   required: boolean
   type: 'array' | 'boolean' | 'integer' | 'number' | 'object' | 'string'
 }
+
+export type SemverBump = 'major' | 'minor' | 'patch'
 
 // Service Account types
 export type ServiceAccount = Schemas['ServiceAccountResponse']
