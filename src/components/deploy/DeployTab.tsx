@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LoadingState } from '@/components/ui/loading-state'
 import { extractApiErrorDetail } from '@/lib/apiError'
+import { ciStatusDotClass } from '@/lib/status-colors'
 import { cn, sortEnvironments } from '@/lib/utils'
 import type {
   CurrentReleaseEnvironment,
@@ -29,21 +30,23 @@ interface DeployTabProps {
   environments: Environment[]
   initialEnvSlug?: string
   onClose: () => void
+  // Modal-open gate: queries only fire while the modal is open so the
+  // hidden DeployTab doesn't issue GitHub round-trips on every page load.
+  open: boolean
   orgSlug: string
   projectId: string
 }
 
-const CI_DOT: Record<string, string> = {
-  fail: 'bg-danger',
-  pass: 'bg-success',
-  unknown: 'bg-tertiary',
-  warn: 'bg-warning',
+interface SelectedVersion {
+  label: null | string
+  sha: string
 }
 
 export function DeployTab({
   environments,
   initialEnvSlug,
   onClose,
+  open,
   orgSlug,
   projectId,
 }: DeployTabProps) {
@@ -52,6 +55,10 @@ export function DeployTab({
     initialEnvSlug ?? sorted[sorted.length - 1]?.slug ?? '',
   )
   useEffect(() => {
+    // Reset to the requested env whenever the modal is reopened with
+    // a different chip.  ``envSlug`` is intentionally excluded — listing
+    // it would re-snap to ``initialEnvSlug`` after the user picks
+    // another env card.
     if (initialEnvSlug && initialEnvSlug !== envSlug) setEnvSlug(initialEnvSlug)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialEnvSlug])
@@ -59,7 +66,7 @@ export function DeployTab({
   const env = sorted.find((e) => e.slug === envSlug) ?? sorted[0]
 
   const { data: currentReleases = [] } = useQuery<CurrentReleaseEnvironment[]>({
-    enabled: !!orgSlug && !!projectId,
+    enabled: open && !!orgSlug && !!projectId,
     queryFn: ({ signal }) => listCurrentReleases(orgSlug, projectId, signal),
     queryKey: ['currentReleases', orgSlug, projectId],
   })
@@ -70,13 +77,12 @@ export function DeployTab({
   }, [currentReleases])
   const current = env ? currentByEnv.get(env.slug) : undefined
 
-  // For testing-like envs (the leftmost in sort order) we list commits on
-  // the default branch.  For staging/production we list tags.
+  // For the first env (e.g. Testing) we list commits on the default
+  // branch.  For staging / production we list tags.
   const isFirstEnv = env?.slug === sorted[0]?.slug
-  const refKind: 'branch' | 'tag' = isFirstEnv ? 'branch' : 'tag'
 
   const { data: refs = [] } = useQuery<DeploymentRef[]>({
-    enabled: !!env,
+    enabled: open && !!env,
     queryFn: ({ signal }) =>
       listDeploymentRefs(
         orgSlug,
@@ -84,7 +90,12 @@ export function DeployTab({
         { kind: isFirstEnv ? 'default' : 'tag' },
         signal,
       ),
-    queryKey: ['deploymentRefs', orgSlug, projectId, refKind],
+    queryKey: [
+      'deploymentRefs',
+      orgSlug,
+      projectId,
+      isFirstEnv ? 'branch' : 'tag',
+    ],
   })
 
   const defaultBranchName = useMemo(() => {
@@ -95,7 +106,7 @@ export function DeployTab({
   const { data: branchCommits = [], isLoading: commitsLoading } = useQuery<
     DeploymentCommit[]
   >({
-    enabled: !!env && isFirstEnv,
+    enabled: open && !!env && isFirstEnv,
     queryFn: ({ signal }) =>
       listRefCommits(
         orgSlug,
@@ -112,27 +123,22 @@ export function DeployTab({
     [isFirstEnv, refs],
   )
 
-  const [selectedSha, setSelectedSha] = useState<null | string>(null)
-  const [selectedLabel, setSelectedLabel] = useState<null | string>(null)
+  const [selected, setSelected] = useState<null | SelectedVersion>(null)
   useEffect(() => {
-    setSelectedSha(null)
-    setSelectedLabel(null)
+    setSelected(null)
   }, [envSlug])
+
+  const isRedeploy =
+    !!current?.release && current.release.version === selected?.label
 
   const queryClient = useQueryClient()
   const mutation = useMutation({
-    mutationFn: ({
-      committish,
-      ref_label,
-    }: {
-      committish: string
-      ref_label: null | string
-    }) =>
+    mutationFn: (payload: SelectedVersion) =>
       triggerDeployment(orgSlug, projectId, {
-        action: current ? 'redeploy' : 'deploy',
-        committish,
+        action: isRedeploy ? 'redeploy' : 'deploy',
+        committish: payload.sha,
         environment: envSlug,
-        ref_label,
+        ref_label: payload.label,
       }),
     onError: (err) => {
       toast.error(
@@ -162,11 +168,8 @@ export function DeployTab({
   })
 
   const onDeploy = () => {
-    if (!selectedSha) return
-    mutation.mutate({
-      committish: selectedSha,
-      ref_label: selectedLabel,
-    })
+    if (!selected) return
+    mutation.mutate(selected)
   }
 
   return (
@@ -219,37 +222,33 @@ export function DeployTab({
       {/* Step 2 — version picker */}
       <section className="min-h-[180px]">
         <p className="mb-2 text-xs uppercase tracking-wider text-tertiary">
-          Step 2 — {isFirstEnv ? 'Commit on ' + defaultBranchName : 'Tag'}
+          {`Step 2 — ${isFirstEnv ? `Commit on ${defaultBranchName}` : 'Tag'}`}
         </p>
         {isFirstEnv ? (
           <CommitList
             commits={branchCommits}
             current={current?.release?.version ?? null}
             isLoading={commitsLoading}
-            onSelect={(c) => {
-              setSelectedSha(c.sha)
-              setSelectedLabel(defaultBranchName)
-            }}
-            selectedSha={selectedSha}
+            onSelect={(c) =>
+              setSelected({ label: defaultBranchName, sha: c.sha })
+            }
+            selectedSha={selected?.sha ?? null}
           />
         ) : (
           <TagList
             current={current?.release?.version ?? null}
-            onSelect={(r) => {
-              setSelectedSha(r.sha)
-              setSelectedLabel(r.name)
-            }}
-            selectedSha={selectedSha}
+            onSelect={(r) => setSelected({ label: r.name, sha: r.sha })}
+            selectedSha={selected?.sha ?? null}
             tags={tagOptions}
           />
         )}
       </section>
 
       {/* Diff summary */}
-      {selectedSha && current?.release ? (
+      {selected && current?.release ? (
         <DiffSummary
           base={current.release.version}
-          head={selectedLabel ?? selectedSha}
+          head={selected.label ?? selected.sha}
           orgSlug={orgSlug}
           projectId={projectId}
         />
@@ -261,7 +260,7 @@ export function DeployTab({
           Cancel
         </Button>
         <Button
-          disabled={!selectedSha || mutation.isPending}
+          disabled={!selected || mutation.isPending}
           onClick={onDeploy}
           type="button"
         >
@@ -270,9 +269,9 @@ export function DeployTab({
           ) : (
             <Rocket className="mr-1 h-4 w-4" />
           )}
-          {current ? 'Redeploy' : 'Deploy'}{' '}
-          {selectedLabel ?? selectedSha?.slice(0, 7) ?? ''} to{' '}
-          {env?.name ?? envSlug}
+          {`${isRedeploy ? 'Redeploy' : 'Deploy'} ${
+            selected?.label ?? selected?.sha.slice(0, 7) ?? ''
+          } to ${env?.name ?? envSlug}`}
         </Button>
       </div>
     </div>
@@ -321,7 +320,7 @@ function CommitList({
                 aria-label={`CI ${c.ci_status}`}
                 className={cn(
                   'inline-block h-2 w-2 rounded-full',
-                  CI_DOT[c.ci_status] ?? CI_DOT.unknown,
+                  ciStatusDotClass(c.ci_status),
                 )}
               />
               <span className="font-mono text-xs">{c.short_sha}</span>

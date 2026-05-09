@@ -28,10 +28,7 @@ import {
   listTeams,
   type ScoreTrend,
 } from '@/api/endpoints'
-import {
-  DeploymentModal,
-  type DeployModalTab,
-} from '@/components/deploy/DeploymentModal'
+import { DeploymentModal } from '@/components/deploy/DeploymentModal'
 import { ProjectDocumentsTab } from '@/components/documents/ProjectDocumentsTab'
 import { OperationsLog } from '@/components/OperationsLog'
 import { ConfigurationTab } from '@/components/project/ConfigurationTab'
@@ -192,11 +189,9 @@ export function ProjectDetail({
   const [deployModal, setDeployModal] = useState<{
     envSlug?: string
     open: boolean
-    tab: DeployModalTab
-  }>({ open: false, tab: 'deploy' })
+  }>({ open: false })
   const openDeploy = useCallback(
-    (envSlug?: string, tab: DeployModalTab = 'deploy') =>
-      setDeployModal({ envSlug, open: true, tab }),
+    (envSlug?: string) => setDeployModal({ envSlug, open: true }),
     [],
   )
 
@@ -726,7 +721,6 @@ export function ProjectDetail({
       <DeploymentModal
         environments={sortedEnvironments}
         initialEnvSlug={deployModal.envSlug}
-        initialTab={deployModal.tab}
         onOpenChange={(open) => setDeployModal((prev) => ({ ...prev, open }))}
         open={deployModal.open}
         orgSlug={orgSlug}
