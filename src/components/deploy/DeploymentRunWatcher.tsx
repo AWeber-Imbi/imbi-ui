@@ -73,6 +73,10 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
       getDeploymentRunStatus(orgSlug, projectId, runId, undefined, signal),
     queryKey: ['deployment-run', orgSlug, projectId, runId],
     refetchInterval: (q) => {
+      // Stop polling immediately once the terminal-status effect has
+      // marked this watcher settled — protects against an extra tick
+      // landing while the parent unmounts us.
+      if (settledRef.current) return false
       const status = q.state.data?.status
       if (status && TERMINAL_STATUSES.has(status)) return false
       return 4000
@@ -84,6 +88,10 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
   })
 
   useEffect(() => {
+    // The parent removes us on terminal status, but a stale query.data
+    // tick can fire before the unmount lands — bail so we don't
+    // re-toast or re-call onTerminal.
+    if (settledRef.current) return
     const data = query.data
     if (!data) return
     statusRef.current = data.status
