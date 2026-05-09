@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useNavigate } from 'react-router-dom'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import {
   ArrowRight,
@@ -31,8 +31,10 @@ import {
 } from '@/api/endpoints'
 import {
   DeploymentModal,
+  type DeploymentRunStarted,
   type DeployModalTab,
 } from '@/components/deploy/DeploymentModal'
+import { DeploymentRunWatcher } from '@/components/deploy/DeploymentRunWatcher'
 import { PromoteDialog } from '@/components/deploy/PromoteDialog'
 import { ProjectDocumentsTab } from '@/components/documents/ProjectDocumentsTab'
 import { OperationsLog } from '@/components/OperationsLog'
@@ -216,6 +218,28 @@ export function ProjectDetail({
     [],
   )
   const [promotePopoverOpen, setPromotePopoverOpen] = useState(false)
+
+  // Active deployment runs (one watcher per entry).  Pushed by the
+  // DeployTab/PromoteTab onRunStarted callback; the watcher itself
+  // calls back to remove its entry once the run reaches a terminal
+  // state.  Refreshes the release-train view too so the freshly
+  // recorded ``DeploymentEvent.status`` flips out of ``in_progress``.
+  const [activeRuns, setActiveRuns] = useState<DeploymentRunStarted[]>([])
+  const queryClient = useQueryClient()
+  const handleRunStarted = useCallback((run: DeploymentRunStarted) => {
+    setActiveRuns((prev) =>
+      prev.some((r) => r.runId === run.runId) ? prev : [...prev, run],
+    )
+  }, [])
+  const handleRunTerminal = useCallback(
+    (runId: string) => {
+      setActiveRuns((prev) => prev.filter((r) => r.runId !== runId))
+      void queryClient.invalidateQueries({
+        queryKey: ['currentReleases', orgSlug, project.id],
+      })
+    },
+    [queryClient, orgSlug, project.id],
+  )
 
   const { data: projectSchema } = useQuery({
     enabled: !!orgSlug,
@@ -765,6 +789,7 @@ export function ProjectDetail({
         initialEnvSlug={deployModal.envSlug}
         initialTab={deployModal.tab}
         onOpenChange={(open) => setDeployModal((prev) => ({ ...prev, open }))}
+        onRunStarted={handleRunStarted}
         open={deployModal.open}
         orgSlug={orgSlug}
         projectId={project.id}
@@ -773,6 +798,19 @@ export function ProjectDetail({
         promoteFromCommittish={deployModal.promoteFromCommittish}
         promoteTo={deployModal.promoteTo}
       />
+      {activeRuns.map((run) => (
+        <DeploymentRunWatcher
+          envName={run.envName}
+          initialStatus={run.initialStatus}
+          key={run.runId}
+          onTerminal={handleRunTerminal}
+          orgSlug={orgSlug}
+          projectId={project.id}
+          runId={run.runId}
+          runUrl={run.runUrl}
+          toastId={run.toastId}
+        />
+      ))}
     </div>
   )
 }

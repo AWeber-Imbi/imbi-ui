@@ -2,10 +2,18 @@ import { GitMerge, Rocket } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import type { Environment } from '@/types'
+import type { DeploymentRunStatus, Environment } from '@/types'
 
 import { DeployTab } from './DeployTab'
 import { PromoteTab } from './PromoteTab'
+
+export interface DeploymentRunStarted {
+  envName: string
+  initialStatus?: DeploymentRunStatus
+  runId: string
+  runUrl?: null | string
+  toastId: number | string
+}
 
 export type DeployModalTab = 'deploy' | 'promote'
 
@@ -14,6 +22,12 @@ interface DeploymentModalProps {
   initialEnvSlug?: string
   initialTab?: DeployModalTab
   onOpenChange: (open: boolean) => void
+  /**
+   * Called after a successful trigger so the parent can mount a
+   * ``<DeploymentRunWatcher>`` for the run.  Without this prop the
+   * tabs fall back to a one-shot success toast (Phase 1 behavior).
+   */
+  onRunStarted?: (run: DeploymentRunStarted) => void
   open: boolean
   orgSlug: string
   projectId: string
@@ -32,6 +46,7 @@ export function DeploymentModal({
   initialEnvSlug,
   initialTab = 'deploy',
   onOpenChange,
+  onRunStarted,
   open,
   orgSlug,
   projectId,
@@ -64,9 +79,11 @@ export function DeploymentModal({
         <div className="px-6 py-4">
           {isPromote ? (
             <PromoteTab
+              environments={environments}
               fromCommittish={promoteFromCommittish}
               fromEnvironment={promoteFrom}
               onClose={() => onOpenChange(false)}
+              onRunStarted={onRunStarted}
               open={open}
               orgSlug={orgSlug}
               projectId={projectId}
@@ -77,6 +94,7 @@ export function DeploymentModal({
               environments={environments}
               initialEnvSlug={initialEnvSlug}
               onClose={() => onOpenChange(false)}
+              onRunStarted={onRunStarted}
               open={open}
               orgSlug={orgSlug}
               projectId={projectId}
