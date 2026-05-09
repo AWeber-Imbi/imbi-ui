@@ -14,6 +14,16 @@ const TERMINAL_STATUSES: ReadonlySet<DeploymentRun['status']> = new Set([
 ])
 
 interface DeploymentRunWatcherProps {
+  /**
+   * Label for the toast action button. Defaults to ``'View run'`` when
+   * ``actionUrl`` (or the legacy ``runUrl`` fallback) is set.
+   */
+  actionLabel?: string
+  /**
+   * URL the toast action should open. Falls back to ``runUrl`` so
+   * existing callers that only know the workflow run keep working.
+   */
+  actionUrl?: null | string
   envName: string
   /** Initial status reported by `trigger_deployment`. */
   initialStatus?: DeploymentRun['status']
@@ -35,6 +45,8 @@ interface DeploymentRunWatcherProps {
  */
 export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
   const {
+    actionLabel,
+    actionUrl,
     envName,
     initialStatus,
     onTerminal,
@@ -44,6 +56,11 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
     runUrl,
     toastId,
   } = props
+  // Prefer the explicit action URL; fall back to the workflow run URL
+  // so the toast still surfaces a deep-link for callers that only know
+  // the run (legacy pre-Phase-3 behavior).
+  const toastActionUrl = actionUrl ?? runUrl
+  const toastActionLabel = actionLabel ?? (toastActionUrl ? 'View run' : null)
 
   // Snapshot the latest known status so refetchInterval can short-circuit
   // once we hit a terminal state.
@@ -70,15 +87,17 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
     const data = query.data
     if (!data) return
     statusRef.current = data.status
+    const action =
+      toastActionUrl && toastActionLabel
+        ? {
+            label: toastActionLabel,
+            onClick: () => window.open(toastActionUrl, '_blank', 'noopener'),
+          }
+        : undefined
     if (data.status === 'success') {
       settledRef.current = true
       toast.success(`Deployed to ${envName}`, {
-        action: runUrl
-          ? {
-              label: 'View run',
-              onClick: () => window.open(runUrl, '_blank', 'noopener'),
-            }
-          : undefined,
+        action,
         icon: <CheckCircle2 className="h-4 w-4 text-emerald-500" />,
         id: toastId,
       })
@@ -87,12 +106,7 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
       settledRef.current = true
       const verb = data.status === 'cancelled' ? 'cancelled' : 'failed'
       toast.error(`Deployment to ${envName} ${verb}`, {
-        action: runUrl
-          ? {
-              label: 'View run',
-              onClick: () => window.open(runUrl, '_blank', 'noopener'),
-            }
-          : undefined,
+        action,
         icon: <XCircle className="h-4 w-4 text-rose-500" />,
         id: toastId,
       })
@@ -100,18 +114,21 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
     } else {
       // queued / in_progress — keep the loading toast fresh.
       toast.loading(`Deploying to ${envName}…`, {
-        action: runUrl
-          ? {
-              label: 'View run',
-              onClick: () => window.open(runUrl, '_blank', 'noopener'),
-            }
-          : undefined,
+        action,
         description: data.status ? `status: ${data.status}` : undefined,
         icon: <Loader2 className="h-4 w-4 animate-spin" />,
         id: toastId,
       })
     }
-  }, [query.data, envName, onTerminal, runId, runUrl, toastId])
+  }, [
+    query.data,
+    envName,
+    onTerminal,
+    runId,
+    toastActionLabel,
+    toastActionUrl,
+    toastId,
+  ])
 
   // If the status endpoint itself errors out persistently, bail so the
   // toast doesn't sit on "deploying…" forever.
@@ -119,18 +136,27 @@ export function DeploymentRunWatcher(props: DeploymentRunWatcherProps): null {
     if (!query.isError || settledRef.current) return
     settledRef.current = true
     toast.message(`Lost track of deployment to ${envName}`, {
-      action: runUrl
-        ? {
-            label: 'View run',
-            onClick: () => window.open(runUrl, '_blank', 'noopener'),
-          }
-        : undefined,
+      action:
+        toastActionUrl && toastActionLabel
+          ? {
+              label: toastActionLabel,
+              onClick: () => window.open(toastActionUrl, '_blank', 'noopener'),
+            }
+          : undefined,
       description: 'Status polling failed; check the workflow run directly.',
       icon: <ExternalLink className="h-4 w-4" />,
       id: toastId,
     })
     onTerminal(runId)
-  }, [query.isError, envName, onTerminal, runId, runUrl, toastId])
+  }, [
+    query.isError,
+    envName,
+    onTerminal,
+    runId,
+    toastActionLabel,
+    toastActionUrl,
+    toastId,
+  ])
 
   return null
 }

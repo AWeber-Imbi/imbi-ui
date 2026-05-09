@@ -233,12 +233,25 @@ export function ProjectDetail({
   }, [])
   const handleRunTerminal = useCallback(
     (runId: string) => {
-      setActiveRuns((prev) => prev.filter((r) => r.runId !== runId))
-      void queryClient.invalidateQueries({
-        queryKey: ['currentReleases', orgSlug, project.id],
+      // Invalidate the originating project's release cache rather than
+      // the currently-mounted project, so promotions trigger from one
+      // project but settle while viewing another still refresh
+      // correctly.
+      setActiveRuns((prev) => {
+        const settled = prev.find((r) => r.runId === runId)
+        if (settled) {
+          void queryClient.invalidateQueries({
+            queryKey: [
+              'currentReleases',
+              settled.originOrgSlug,
+              settled.originProjectId,
+            ],
+          })
+        }
+        return prev.filter((r) => r.runId !== runId)
       })
     },
-    [queryClient, orgSlug, project.id],
+    [queryClient],
   )
 
   const { data: projectSchema } = useQuery({
@@ -799,13 +812,18 @@ export function ProjectDetail({
         promoteTo={deployModal.promoteTo}
       />
       {activeRuns.map((run) => (
+        // Bind each watcher to the org/project that triggered the run
+        // so polling stays correct if the user navigates to another
+        // project before the workflow settles.
         <DeploymentRunWatcher
+          actionLabel={run.actionLabel}
+          actionUrl={run.actionUrl}
           envName={run.envName}
           initialStatus={run.initialStatus}
           key={run.runId}
           onTerminal={handleRunTerminal}
-          orgSlug={orgSlug}
-          projectId={project.id}
+          orgSlug={run.originOrgSlug}
+          projectId={run.originProjectId}
           runId={run.runId}
           runUrl={run.runUrl}
           toastId={run.toastId}

@@ -8,8 +8,28 @@ import { DeployTab } from './DeployTab'
 import { PromoteTab } from './PromoteTab'
 
 export interface DeploymentRunStarted {
+  /**
+   * Optional label for the toast action button rendered by the
+   * watcher. Lets the originating tab pick between "View run" and
+   * "View release" so promotions that only carry a release URL still
+   * surface a useful deep-link.
+   */
+  actionLabel?: string
+  /**
+   * Optional URL the watcher's toast action should open. Falls back to
+   * ``runUrl`` when omitted so existing callers stay correct.
+   */
+  actionUrl?: null | string
   envName: string
   initialStatus?: DeploymentRunStatus
+  /**
+   * Org slug the run was triggered from. The watcher uses this rather
+   * than the currently-mounted project so polling stays bound to the
+   * originating project even if the user navigates away.
+   */
+  originOrgSlug: string
+  /** Project id the run was triggered from. */
+  originProjectId: string
   runId: string
   runUrl?: null | string
   toastId: number | string

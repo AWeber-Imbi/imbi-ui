@@ -179,8 +179,12 @@ export function DeployTab({
           icon: <Loader2 className="h-4 w-4 animate-spin" />,
         })
         onRunStarted({
+          actionLabel: url ? 'View run' : undefined,
+          actionUrl: url,
           envName,
           initialStatus: data.run.status,
+          originOrgSlug: orgSlug,
+          originProjectId: projectId,
           runId: data.run.run_id,
           runUrl: url,
           toastId,

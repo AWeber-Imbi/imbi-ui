@@ -159,20 +159,23 @@ export function PromoteTab({
       const releaseUrl = data.release_url
       const runUrl = data.run.run_url
       const tagLabel = data.tag ?? tag
+      // Prefer the run URL when present; fall back to the release URL
+      // so the watcher's recreated toast still has a useful action.
+      const actionUrl = runUrl ?? releaseUrl
+      const actionLabel = runUrl
+        ? 'View run'
+        : releaseUrl
+          ? 'View release'
+          : undefined
       if (onRunStarted && data.run.run_id) {
         const toastId = toast.loading(
           `Promoting ${tagLabel} to ${toEnvName}…`,
           {
-            action: runUrl
-              ? {
-                  label: 'View run',
-                  onClick: () => window.open(runUrl, '_blank', 'noopener'),
-                }
-              : releaseUrl
+            action:
+              actionUrl && actionLabel
                 ? {
-                    label: 'View release',
-                    onClick: () =>
-                      window.open(releaseUrl, '_blank', 'noopener'),
+                    label: actionLabel,
+                    onClick: () => window.open(actionUrl, '_blank', 'noopener'),
                   }
                 : undefined,
             description: data.run.status
@@ -182,8 +185,12 @@ export function PromoteTab({
           },
         )
         onRunStarted({
+          actionLabel,
+          actionUrl,
           envName: toEnvName,
           initialStatus: data.run.status,
+          originOrgSlug: orgSlug,
+          originProjectId: projectId,
           runId: data.run.run_id,
           runUrl,
           toastId,
