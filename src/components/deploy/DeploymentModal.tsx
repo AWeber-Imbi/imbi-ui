@@ -99,12 +99,18 @@ function TabHeader({
   subtitle: string
   title: string
 }) {
+  // Headers are presentational — the modal mode is fixed by props at
+  // mount time, so mark non-active headers as disabled to make that
+  // unambiguous to assistive tech and keyboard users.
   return (
     <div
+      aria-current={active ? 'page' : undefined}
+      aria-disabled={!active}
       className={cn(
         'flex flex-col py-4 pr-6 text-sm',
-        active ? '-mb-px border-b-2 border-action' : 'text-tertiary',
+        active ? '-mb-px border-b-2 border-action' : 'text-tertiary opacity-60',
       )}
+      role="presentation"
     >
       <span className="flex items-center gap-1.5 font-medium">
         {icon}

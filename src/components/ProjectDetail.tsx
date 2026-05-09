@@ -404,10 +404,12 @@ export function ProjectDetail({
             </div>
           </div>
 
-          {/* Deployment Pipeline */}
-          {Object.keys(deploymentStatus).length > 0 && (
-            <div className="flex items-center gap-2">
-              {sortedEnvironments
+          {/* Deployment Pipeline — chips render only when there's
+               release history; the Deploy/Promote controls render
+               unconditionally so first-time deployments are reachable. */}
+          <div className="flex items-center gap-2">
+            {Object.keys(deploymentStatus).length > 0 &&
+              sortedEnvironments
                 .filter((env) => !!deploymentStatus[env.slug])
                 .map((env, idx) => {
                   const deployment = deploymentStatus[env.slug]
@@ -439,36 +441,35 @@ export function ProjectDetail({
                     </span>
                   )
                 })}
-              <Button
-                className="ml-4 border-amber-400 bg-amber-50 text-amber-800 hover:bg-amber-100"
-                onClick={() => openDeploy()}
-                size="sm"
-                variant="outline"
-              >
-                <Rocket className="mr-1 h-4 w-4" />
-                Deploy
+            <Button
+              className="ml-4 border-amber-400 bg-amber-50 text-amber-800 hover:bg-amber-100"
+              onClick={() => openDeploy()}
+              size="sm"
+              variant="outline"
+            >
+              <Rocket className="mr-1 h-4 w-4" />
+              Deploy
+            </Button>
+            <PromoteDialog
+              onOpenChange={setPromotePopoverOpen}
+              onPromote={(opt) => {
+                setPromotePopoverOpen(false)
+                openPromote(
+                  opt.from_environment,
+                  opt.to_environment,
+                  opt.from_sha ?? opt.from_version ?? undefined,
+                )
+              }}
+              open={promotePopoverOpen}
+              orgSlug={orgSlug}
+              projectId={project.id}
+            >
+              <Button size="sm" variant="outline">
+                <GitMerge className="mr-1 h-4 w-4" />
+                Promote
               </Button>
-              <PromoteDialog
-                onOpenChange={setPromotePopoverOpen}
-                onPromote={(opt) => {
-                  setPromotePopoverOpen(false)
-                  openPromote(
-                    opt.from_environment,
-                    opt.to_environment,
-                    opt.from_sha ?? opt.from_version ?? undefined,
-                  )
-                }}
-                open={promotePopoverOpen}
-                orgSlug={orgSlug}
-                projectId={project.id}
-              >
-                <Button size="sm" variant="outline">
-                  <GitMerge className="mr-1 h-4 w-4" />
-                  Promote
-                </Button>
-              </PromoteDialog>
-            </div>
-          )}
+            </PromoteDialog>
+          </div>
         </div>
 
         <div className="-ml-[18px] mt-3 text-secondary">

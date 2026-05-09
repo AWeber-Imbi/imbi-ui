@@ -128,8 +128,18 @@ export function DeployTab({
     setSelected(null)
   }, [envSlug])
 
+  // For first-env (commit-based) deployments, ``selected.label`` is the
+  // branch name (e.g. ``main``), so compare against ``selected.sha``.
+  // For tag-based envs ``selected.label`` is the tag and matches
+  // ``current.release.version``.
   const isRedeploy =
-    !!current?.release && current.release.version === selected?.label
+    !!current?.release &&
+    !!selected &&
+    (isFirstEnv
+      ? current.release.version === selected.sha ||
+        selected.sha.startsWith(current.release.version) ||
+        current.release.version.startsWith(selected.sha)
+      : current.release.version === selected.label)
 
   const queryClient = useQueryClient()
   const mutation = useMutation({

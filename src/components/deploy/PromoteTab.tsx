@@ -59,8 +59,10 @@ export function PromoteTab({
   const fromTipSha = fromCommittish ?? fromCurrent?.release?.version ?? null
 
   // Compare last_tag → fromTipSha to enumerate the commits in flight.
-  const { data: compare } = useQuery({
-    enabled: open && !!lastTag && !!fromTipSha && lastTag !== fromTipSha,
+  const compareEnabled =
+    open && !!lastTag && !!fromTipSha && lastTag !== fromTipSha
+  const { data: compare, isLoading: compareLoading } = useQuery({
+    enabled: compareEnabled,
     queryFn: ({ signal }) =>
       compareDeploymentRefs(
         orgSlug,
@@ -186,8 +188,14 @@ export function PromoteTab({
         <p className="mb-2 text-xs uppercase tracking-wider text-tertiary">
           Step 1 — Build to promote
         </p>
-        {!compare ? (
+        {compareEnabled && compareLoading ? (
           <LoadingState label="Loading commits…" />
+        ) : !compareEnabled ? (
+          <p className="rounded-md border border-secondary p-3 text-sm text-tertiary">
+            {!lastTag
+              ? 'No prior release to compare against.'
+              : 'No commit delta to compare for this selection.'}
+          </p>
         ) : commits.length === 0 ? (
           <p className="rounded-md border border-secondary p-3 text-sm text-tertiary">
             No new commits between <span className="font-mono">{lastTag}</span>{' '}
@@ -322,7 +330,7 @@ export function PromoteTab({
 
       {/* Footer */}
       <p className="text-xs text-tertiary">
-        On deploy, a release{' '}
+        On promote, a release{' '}
         <span className="font-mono">{tag || 'vX.Y.Z'}</span> will be created at{' '}
         <span className="font-mono">{selectedSha?.slice(0, 7) ?? '—'}</span> and
         rolled out to {toEnvironment}.
