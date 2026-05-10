@@ -50,11 +50,13 @@ export function NewOpsLogDialog({
   // Fetch the selected project on demand so we can show only its
   // environments. ``getProjects`` returns a lighter projection that
   // doesn't include environments.
-  const { data: selectedProject } = useQuery({
-    enabled: !!orgSlug && !!projectId && isOpen,
-    queryFn: ({ signal }) => getProject(orgSlug, projectId, signal),
-    queryKey: ['project', orgSlug, projectId],
-  })
+  const { data: selectedProject, isLoading: selectedProjectLoading } = useQuery(
+    {
+      enabled: !!orgSlug && !!projectId && isOpen,
+      queryFn: ({ signal }) => getProject(orgSlug, projectId, signal),
+      queryKey: ['project', orgSlug, projectId],
+    },
+  )
 
   const projectOptions = useMemo(
     () =>
@@ -180,16 +182,22 @@ export function NewOpsLogDialog({
               </label>
               <select
                 className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-400"
-                disabled={!projectId || projectEnvironments.length === 0}
+                disabled={
+                  !projectId ||
+                  selectedProjectLoading ||
+                  projectEnvironments.length === 0
+                }
                 id="new-ops-environment"
                 onChange={(e) => setEnvironmentSlug(e.target.value)}
                 value={environmentSlug}
               >
                 <option value="">
                   {projectId
-                    ? projectEnvironments.length === 0
-                      ? 'Project has no environments'
-                      : 'Select environment...'
+                    ? selectedProjectLoading
+                      ? 'Loading environments...'
+                      : projectEnvironments.length === 0
+                        ? 'Project has no environments'
+                        : 'Select environment...'
                     : 'Pick a project first'}
                 </option>
                 {projectEnvironments.map((env) => (

@@ -124,21 +124,41 @@ export function ProjectDetail({
     navigate(path, { replace: true })
   }
 
+  const sortedEnvironments = useMemo(
+    () => sortEnvironments(project.environments || []),
+    [project.environments],
+  )
+
   // Redirect to clean URL when the tab slug is invalid. ``deploy`` and
   // ``promote`` are not page tabs — they are URL-driven modal triggers
   // (``/projects/<id>/deploy/<env>``) — so they're allowed to bypass
-  // the page-tab redirect, but they must carry an env in ``subId`` to
-  // be meaningful.
+  // the page-tab redirect, but they must carry a *known* env in
+  // ``subId`` to be meaningful, and ``promote`` further requires a
+  // previous env in the pipeline.
   useEffect(() => {
     const isModalTab = initialTab === 'deploy' || initialTab === 'promote'
     if (initialTab && !VALID_TAB_SET.has(initialTab) && !isModalTab) {
       navigate(`/projects/${project.id}`, { replace: true })
       return
     }
-    if (isModalTab && !initialSubId) {
-      navigate(`/projects/${project.id}`, { replace: true })
+    if (isModalTab) {
+      if (!initialSubId) {
+        navigate(`/projects/${project.id}`, { replace: true })
+        return
+      }
+      // Wait for environments to load before validating; an empty list
+      // here just means the project hasn't finished resolving.
+      if (sortedEnvironments.length === 0) return
+      const idx = sortedEnvironments.findIndex((e) => e.slug === initialSubId)
+      if (idx < 0) {
+        navigate(`/projects/${project.id}`, { replace: true })
+        return
+      }
+      if (initialTab === 'promote' && idx <= 0) {
+        navigate(`/projects/${project.id}`, { replace: true })
+      }
     }
-  }, [initialTab, initialSubId, navigate, project.id])
+  }, [initialTab, initialSubId, navigate, project.id, sortedEnvironments])
 
   const { data: currentReleases = [] } = useQuery({
     enabled: !!orgSlug && !!project.id,
@@ -184,11 +204,6 @@ export function ProjectDetail({
     }
     return out
   }, [currentReleases])
-
-  const sortedEnvironments = useMemo(
-    () => sortEnvironments(project.environments || []),
-    [project.environments],
-  )
 
   const { data: linkDefs = [] } = useQuery({
     enabled: !!orgSlug,
@@ -339,7 +354,12 @@ export function ProjectDetail({
   // Fetch any time a deployment plugin exists so we can also surface the
   // identity-plugin label in the "connect to ..." banner even when the
   // assignment lacks an explicit identity_plugin_id.
-  const { data: myIdentities, isSuccess: myIdentitiesSuccess } = useQuery({
+  const {
+    data: myIdentities,
+    isError: myIdentitiesError,
+    isLoading: myIdentitiesLoading,
+    isSuccess: myIdentitiesSuccess,
+  } = useQuery({
     enabled: !!deploymentPlugin,
     queryFn: ({ signal }) => getMyIdentities(signal),
     queryKey: ['my-identities'],
@@ -351,7 +371,11 @@ export function ProjectDetail({
   // Fetch whenever a deployment plugin is present so the catalog is
   // available — we may need it even before ``deploymentIdentityPluginId``
   // resolves on the first render.
-  const { data: identityPlugins } = useQuery({
+  const {
+    data: identityPlugins,
+    isError: identityPluginsError,
+    isLoading: identityPluginsLoading,
+  } = useQuery({
     enabled: !!orgSlug && !!deploymentPlugin,
     queryFn: ({ signal }) => listIdentityPlugins(orgSlug, signal),
     queryKey: ['identity-plugins', orgSlug],
@@ -386,7 +410,9 @@ export function ProjectDetail({
 
   // A deployment plugin ALWAYS needs an identity connection — without an
   // active connection to the resolved identity plugin we keep the chips
-  // non-interactive (the API would 401 anyway).
+  // non-interactive (the API would 401 anyway). Distinguish the three
+  // not-ready states so the banner doesn't tell already-connected users
+  // to "connect" while queries are still in flight or failing.
   const isUserConnectedToDeployment =
     !!resolvedIdentityPlugin &&
     myIdentitiesSuccess &&
@@ -395,8 +421,21 @@ export function ProjectDetail({
         i.plugin_id === resolvedIdentityPlugin.plugin_id &&
         i.status === 'active',
     )
+  const deploymentReadiness:
+    | 'connected'
+    | 'disconnected'
+    | 'error'
+    | 'loading' = !deploymentPlugin
+    ? 'disconnected'
+    : myIdentitiesLoading || identityPluginsLoading
+      ? 'loading'
+      : myIdentitiesError || identityPluginsError
+        ? 'error'
+        : isUserConnectedToDeployment
+          ? 'connected'
+          : 'disconnected'
   const canTriggerDeployments =
-    !!deploymentPlugin && isUserConnectedToDeployment
+    !!deploymentPlugin && deploymentReadiness === 'connected'
 
   const deploymentConnectLabel = (() => {
     if (resolvedIdentityPlugin?.label) return resolvedIdentityPlugin.label
@@ -555,89 +594,95 @@ export function ProjectDetail({
                for Deploy/Promote, routed by position in the train. */}
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center gap-2">
-              {Object.keys(deploymentStatus).length > 0 &&
-                (() => {
-                  const visible = sortedEnvironments.filter(
-                    (env) => !!deploymentStatus[env.slug],
-                  )
-                  return visible.map((env, idx) => {
-                    const deployment = deploymentStatus[env.slug]
-                    const color = env.label_color
-                    const ciDot = renderCiDot(deployment.ciStatus)
-                    // Release-train conventions, by position only — no
-                    // hardcoded env names:
-                    //   idx 0   — entry point, Deploy a chosen commit
-                    //   idx 1   — Promote (tag + release the idx-0 build)
-                    //   idx 2+  — Deploy: re-roll whatever was tagged at
-                    //             idx 1 to a downstream env
-                    const isPromoteSlot = idx === 1
-                    const previousSlug = isPromoteSlot
-                      ? visible[0].slug
-                      : undefined
-                    const handleClick = isPromoteSlot
-                      ? () => openPromote(previousSlug as string, env.slug)
-                      : () => openDeploy(env.slug)
-                    const tooltipText = isPromoteSlot
-                      ? 'Promote'
-                      : 'Deploy / Redeploy'
-                    const chipBody = color ? (
-                      <LabelChip
-                        className="rounded-md px-3 py-1.5 text-sm"
-                        hex={color}
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          {env.name}: {deployment.version}
-                          {ciDot}
-                        </span>
-                      </LabelChip>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium">
-                        {env.name}: {deployment.version}
+              {sortedEnvironments.length > 0 &&
+                sortedEnvironments.map((env, idx) => {
+                  const deployment = deploymentStatus[env.slug]
+                  const color = env.label_color
+                  const ciDot = deployment
+                    ? renderCiDot(deployment.ciStatus)
+                    : null
+                  // Release-train conventions, by position only — no
+                  // hardcoded env names:
+                  //   idx 0   — entry point, Deploy a chosen commit
+                  //   idx 1   — Promote (tag + release the idx-0 build)
+                  //   idx 2+  — Deploy: re-roll whatever was tagged at
+                  //             idx 1 to a downstream env
+                  const isPromoteSlot = idx === 1
+                  const previousSlug = isPromoteSlot
+                    ? sortedEnvironments[0]?.slug
+                    : undefined
+                  const handleClick = isPromoteSlot
+                    ? () => openPromote(previousSlug as string, env.slug)
+                    : () => openDeploy(env.slug)
+                  const tooltipText = isPromoteSlot
+                    ? 'Promote'
+                    : 'Deploy / Redeploy'
+                  const versionSuffix = deployment
+                    ? `: ${deployment.version}`
+                    : ''
+                  const chipBody = color ? (
+                    <LabelChip
+                      className="rounded-md px-3 py-1.5 text-sm"
+                      hex={color}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        {env.name}
+                        {versionSuffix}
                         {ciDot}
                       </span>
-                    )
-                    return (
-                      <span className="contents" key={env.slug}>
-                        {idx > 0 && (
-                          <ArrowRight className="h-4 w-4 text-tertiary" />
-                        )}
-                        {canTriggerDeployments ? (
-                          <TooltipProvider delayDuration={200}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  aria-label={
-                                    isPromoteSlot
-                                      ? `Promote ${previousSlug} to ${env.name}`
-                                      : `Deploy to ${env.name}`
-                                  }
-                                  className="cursor-pointer rounded-md transition hover:shadow-md hover:ring-1 hover:ring-ring hover:ring-offset-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                  onClick={handleClick}
-                                  type="button"
-                                >
-                                  {chipBody}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{tooltipText}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ) : (
-                          chipBody
-                        )}
-                      </span>
-                    )
-                  })
-                })()}
+                    </LabelChip>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium">
+                      {env.name}
+                      {versionSuffix}
+                      {ciDot}
+                    </span>
+                  )
+                  return (
+                    <span className="contents" key={env.slug}>
+                      {idx > 0 && (
+                        <ArrowRight className="h-4 w-4 text-tertiary" />
+                      )}
+                      {canTriggerDeployments ? (
+                        <TooltipProvider delayDuration={200}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                aria-label={
+                                  isPromoteSlot
+                                    ? `Promote ${previousSlug} to ${env.name}`
+                                    : `Deploy to ${env.name}`
+                                }
+                                className="cursor-pointer rounded-md transition hover:shadow-md hover:ring-1 hover:ring-ring hover:ring-offset-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                onClick={handleClick}
+                                type="button"
+                              >
+                                {chipBody}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{tooltipText}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        chipBody
+                      )}
+                    </span>
+                  )
+                })}
             </div>
             {deploymentPlugin && (
               <div className="flex items-center gap-1.5 text-xs italic text-tertiary">
                 <Info className="h-3.5 w-3.5" />
                 <span>
-                  {canTriggerDeployments
+                  {deploymentReadiness === 'connected'
                     ? 'Click on an environment to deploy to it'
-                    : `Connect to ${deploymentConnectLabel} to enable deployments`}
+                    : deploymentReadiness === 'loading'
+                      ? 'Checking deployment access…'
+                      : deploymentReadiness === 'error'
+                        ? 'Could not check deployment access — retry shortly'
+                        : `Connect to ${deploymentConnectLabel} to enable deployments`}
                 </span>
               </div>
             )}

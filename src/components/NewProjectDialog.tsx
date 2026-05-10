@@ -10,6 +10,13 @@ import {
 } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { slugify } from '@/lib/utils'
@@ -106,39 +113,21 @@ export function NewProjectDialog({
 
   const canProceed = teamSlug && projectTypeSlug && name && slug
 
-  if (!isOpen) return null
-
   return (
-    <div
-      aria-label="Create New Project"
-      aria-modal="true"
-      className="fixed inset-x-0 top-0 z-50 flex items-center justify-center"
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') handleClose()
-      }}
-      role="dialog"
-      style={{
-        bottom: 'var(--assistant-height, 0px)',
-      }}
-    >
-      <button
-        aria-label="Close dialog"
-        className="absolute inset-0 bg-black/50"
-        onClick={handleClose}
-        type="button"
-      />
-      <div
-        className="relative mx-4 flex w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl"
+    <Dialog onOpenChange={(open) => !open && handleClose()} open={isOpen}>
+      <DialogContent
+        aria-label="Create New Project"
+        className="flex max-w-2xl flex-col gap-0 p-0 sm:max-w-2xl"
         style={{
           maxHeight: 'calc(100vh - var(--assistant-height, 0px) - 2rem - 10px)',
         }}
       >
         {/* Header */}
-        <div className="border-b p-6">
-          <h2 className="text-lg font-semibold text-slate-900">
+        <DialogHeader className="border-b p-6">
+          <DialogTitle className="text-lg font-semibold text-slate-900">
             Create New Project
-          </h2>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -289,7 +278,7 @@ export function NewProjectDialog({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 border-t p-6">
+        <DialogFooter className="flex items-center justify-end gap-2 border-t p-6 sm:justify-end sm:space-x-0">
           <Button onClick={handleClose} variant="outline">
             Cancel
           </Button>
@@ -299,8 +288,8 @@ export function NewProjectDialog({
           >
             {createMutation.isPending ? 'Creating...' : 'Save'}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

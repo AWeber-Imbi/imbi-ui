@@ -55,8 +55,12 @@ export function DeployTab({
   // Env is locked at modal open time — the URL ``/deploy/<env>`` carries
   // the target, and re-deploys are scoped to that single env. No picker
   // is rendered; users navigate to a different chip to change env.
-  const envSlug = initialEnvSlug ?? sorted[0]?.slug ?? ''
-  const env = sorted.find((e) => e.slug === envSlug) ?? sorted[0]
+  // Resolve the env first so a stale ``initialEnvSlug`` falls back to the
+  // first env *and* the slug used to display / dispatch matches.
+  const env = initialEnvSlug
+    ? (sorted.find((e) => e.slug === initialEnvSlug) ?? sorted[0])
+    : sorted[0]
+  const envSlug = env?.slug ?? ''
 
   const { data: currentReleases = [] } = useQuery<CurrentReleaseEnvironment[]>({
     enabled: open && !!orgSlug && !!projectId,
