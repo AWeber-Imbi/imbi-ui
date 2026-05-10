@@ -129,37 +129,6 @@ export function ProjectDetail({
     [project.environments],
   )
 
-  // Redirect to clean URL when the tab slug is invalid. ``deploy`` and
-  // ``promote`` are not page tabs — they are URL-driven modal triggers
-  // (``/projects/<id>/deploy/<env>``) — so they're allowed to bypass
-  // the page-tab redirect, but they must carry a *known* env in
-  // ``subId`` to be meaningful, and ``promote`` further requires a
-  // previous env in the pipeline.
-  useEffect(() => {
-    const isModalTab = initialTab === 'deploy' || initialTab === 'promote'
-    if (initialTab && !VALID_TAB_SET.has(initialTab) && !isModalTab) {
-      navigate(`/projects/${project.id}`, { replace: true })
-      return
-    }
-    if (isModalTab) {
-      if (!initialSubId) {
-        navigate(`/projects/${project.id}`, { replace: true })
-        return
-      }
-      // Wait for environments to load before validating; an empty list
-      // here just means the project hasn't finished resolving.
-      if (sortedEnvironments.length === 0) return
-      const idx = sortedEnvironments.findIndex((e) => e.slug === initialSubId)
-      if (idx < 0) {
-        navigate(`/projects/${project.id}`, { replace: true })
-        return
-      }
-      if (initialTab === 'promote' && idx <= 0) {
-        navigate(`/projects/${project.id}`, { replace: true })
-      }
-    }
-  }, [initialTab, initialSubId, navigate, project.id, sortedEnvironments])
-
   const { data: currentReleases = [] } = useQuery({
     enabled: !!orgSlug && !!project.id,
     queryFn: ({ signal }) => listCurrentReleases(orgSlug, project.id, signal),
@@ -204,6 +173,60 @@ export function ProjectDetail({
     }
     return out
   }, [currentReleases])
+
+  // Redirect to clean URL when the tab slug or sub-id is invalid.
+  // ``deploy`` and ``promote`` are not page tabs — they are URL-driven
+  // modal triggers (``/projects/<id>/deploy/<env>``) — so they bypass
+  // the page-tab redirect, but they must carry a *known* env in
+  // ``subId`` to be meaningful, ``promote`` requires a previous env in
+  // the pipeline, *and* ``promote`` requires the upstream env to have a
+  // deployed version (otherwise ``fromCommittish`` would be undefined
+  // and the promote flow can't succeed).
+  useEffect(() => {
+    const isModalTab = initialTab === 'deploy' || initialTab === 'promote'
+    if (initialTab && !VALID_TAB_SET.has(initialTab) && !isModalTab) {
+      navigate(`/projects/${project.id}`, { replace: true })
+      return
+    }
+    if (isModalTab) {
+      if (!initialSubId) {
+        navigate(`/projects/${project.id}`, { replace: true })
+        return
+      }
+      // Wait for environments to load before validating; an empty list
+      // here just means the project hasn't finished resolving.
+      if (sortedEnvironments.length === 0) return
+      const idx = sortedEnvironments.findIndex((e) => e.slug === initialSubId)
+      if (idx < 0) {
+        navigate(`/projects/${project.id}`, { replace: true })
+        return
+      }
+      if (initialTab === 'promote') {
+        if (idx <= 0) {
+          navigate(`/projects/${project.id}`, { replace: true })
+          return
+        }
+        const fromSlug = sortedEnvironments[idx - 1]?.slug
+        const fromVersion = fromSlug
+          ? deploymentStatus[fromSlug]?.version
+          : undefined
+        // Wait for the releases query (drives ``deploymentStatus``) to
+        // settle before deciding the upstream is empty.
+        if (currentReleases.length === 0) return
+        if (!fromVersion) {
+          navigate(`/projects/${project.id}`, { replace: true })
+        }
+      }
+    }
+  }, [
+    currentReleases,
+    deploymentStatus,
+    initialSubId,
+    initialTab,
+    navigate,
+    project.id,
+    sortedEnvironments,
+  ])
 
   const { data: linkDefs = [] } = useQuery({
     enabled: !!orgSlug,
@@ -989,41 +1012,41 @@ export function ProjectDetail({
         projectId={project.id}
         projectName={project.name}
       />
-      {isPromoteModal &&
-      (() => {
+      {(() => {
+        if (!isPromoteModal) return null
         const toIdx = sortedEnvironments.findIndex(
           (e) => e.slug === initialSubId,
         )
         // Promote requires a previous env in the pipeline to act as the
-        // source. ``idx <= 0`` means the URL points at the entry-point
-        // env (or an unknown one); fall back to the clean URL.
-        return toIdx > 0
-      })() ? (
-        <PromoteModal
-          environments={sortedEnvironments}
-          fromCommittish={(() => {
-            const toIdx = sortedEnvironments.findIndex(
-              (e) => e.slug === initialSubId,
-            )
-            const fromSlug = sortedEnvironments[toIdx - 1]?.slug
-            return fromSlug ? deploymentStatus[fromSlug]?.version : undefined
-          })()}
-          fromEnvironment={
-            sortedEnvironments[
-              sortedEnvironments.findIndex((e) => e.slug === initialSubId) - 1
-            ].slug
-          }
-          onOpenChange={(open) => {
-            if (!open) closeModal()
-          }}
-          onRunStarted={handleRunStarted}
-          open={isPromoteModal}
-          orgSlug={orgSlug}
-          projectId={project.id}
-          projectName={project.name}
-          toEnvironment={initialSubId as string}
-        />
-      ) : null}
+        // source AND a deployed version on that upstream env (else
+        // ``fromCommittish`` would be undefined and the API can't
+        // resolve the source). ``idx <= 0`` means the URL points at the
+        // entry-point env (or an unknown one); the redirect effect
+        // above will already navigate away — render nothing here so we
+        // never mount PromoteModal in an impossible state.
+        if (toIdx <= 0) return null
+        const fromSlug = sortedEnvironments[toIdx - 1]?.slug
+        const fromVersion = fromSlug
+          ? deploymentStatus[fromSlug]?.version
+          : undefined
+        if (!fromSlug || !fromVersion) return null
+        return (
+          <PromoteModal
+            environments={sortedEnvironments}
+            fromCommittish={fromVersion}
+            fromEnvironment={fromSlug}
+            onOpenChange={(open) => {
+              if (!open) closeModal()
+            }}
+            onRunStarted={handleRunStarted}
+            open={isPromoteModal}
+            orgSlug={orgSlug}
+            projectId={project.id}
+            projectName={project.name}
+            toEnvironment={initialSubId as string}
+          />
+        )
+      })()}
       {activeRuns.map((run) => (
         // Bind each watcher to the org/project that triggered the run
         // so polling stays correct if the user navigates to another
