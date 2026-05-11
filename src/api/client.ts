@@ -2,12 +2,11 @@ import { useAuthStore } from '@/stores/authStore'
 import type { TokenResponse } from '@/types'
 
 function resolveApiBaseUrl(): string {
-  // Runtime value injected into index.html via `{{env "IMBI_API_URL"}}`.
-  // When served without a templater (e.g. Vite dev), the placeholder
-  // reaches the browser literally — detect that and fall back.
-  const runtime =
-    typeof window !== 'undefined' ? window.__IMBI_API_URL__ : undefined
-  if (typeof runtime === 'string' && runtime && !runtime.includes('{{')) {
+  // index.html injects `{{env "IMBI_API_URL"}}`; when served without a
+  // templater (e.g. Vite dev) the placeholder reaches the browser literally,
+  // so detect the unsubstituted form and fall back.
+  const runtime = window.__IMBI_API_URL__
+  if (runtime && !runtime.includes('{{')) {
     return runtime
   }
   return import.meta.env.VITE_API_URL
