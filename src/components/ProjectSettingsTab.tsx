@@ -65,15 +65,18 @@ export function ProjectSettingsTab({ project }: { project: Project }) {
   })
 
   const archiveMutation = useMutation({
-    mutationFn: () =>
-      isArchived
+    mutationFn: (action: 'archive' | 'unarchive') =>
+      action === 'unarchive'
         ? unarchiveProject(orgSlug, project.id)
         : archiveProject(orgSlug, project.id),
-    onError: mutationErrorHandler(
-      isArchived ? 'unarchive project' : 'archive project',
-    ),
-    onSuccess: () => {
-      toast.success(isArchived ? 'Project restored' : 'Project archived')
+    onError: (error, action) =>
+      mutationErrorHandler(
+        action === 'unarchive' ? 'unarchive project' : 'archive project',
+      )(error),
+    onSuccess: (_data, action) => {
+      toast.success(
+        action === 'unarchive' ? 'Project restored' : 'Project archived',
+      )
       setShowArchiveConfirm(false)
       invalidateProject()
       queryClient.invalidateQueries({ queryKey: ['projects', orgSlug] })
@@ -198,7 +201,7 @@ export function ProjectSettingsTab({ project }: { project: Project }) {
             disabled={archiveMutation.isPending}
             onClick={() => {
               if (isArchived) {
-                archiveMutation.mutate()
+                archiveMutation.mutate('unarchive')
               } else {
                 setShowArchiveConfirm(true)
               }
@@ -221,7 +224,7 @@ export function ProjectSettingsTab({ project }: { project: Project }) {
         confirmLabel="Archive project"
         description={`Archiving ${project.slug} will hide it from the dashboard and search results until it is restored.`}
         onCancel={() => setShowArchiveConfirm(false)}
-        onConfirm={() => archiveMutation.mutate()}
+        onConfirm={() => archiveMutation.mutate('archive')}
         open={showArchiveConfirm}
         title="Archive this project?"
       />
