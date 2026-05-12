@@ -31,12 +31,20 @@ import { buildDiffPatch } from '@/lib/json-patch'
 import type {
   PatchOperation,
   ScoringPolicy,
+  ScoringPolicyCategory,
   ScoringPolicyCreate,
 } from '@/types'
 
 import { AdminSection } from './AdminSection'
 import { ImportScoringPolicyDialog } from './scoring-policies/ImportScoringPolicyDialog'
 import { ScoringPolicyForm } from './scoring-policies/ScoringPolicyForm'
+
+const CATEGORY_LABELS: Record<ScoringPolicyCategory, string> = {
+  age: 'Age',
+  attribute: 'Attribute',
+  link_presence: 'Link Presence',
+  presence: 'Presence',
+}
 
 export function ScoringPolicyManagement() {
   const {
@@ -90,11 +98,12 @@ export function ScoringPolicyManagement() {
   const filteredPolicies = policies.filter((p) => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase()
+      const subjectKey = policySubjectKey(p).toLowerCase()
       if (
         !p.name.toLowerCase().includes(q) &&
         !p.slug.toLowerCase().includes(q) &&
         !(p.description?.toLowerCase().includes(q) ?? false) &&
-        !p.attribute_name.toLowerCase().includes(q)
+        !subjectKey.includes(q)
       )
         return false
     }
@@ -104,22 +113,7 @@ export function ScoringPolicyManagement() {
   })
 
   const handleCopy = (policy: ScoringPolicy) => {
-    const exportObj = {
-      attribute_name: policy.attribute_name,
-      ...(policy.description ? { description: policy.description } : {}),
-      enabled: policy.enabled,
-      name: policy.name,
-      priority: policy.priority,
-      ...(policy.range_score_map
-        ? { range_score_map: policy.range_score_map }
-        : {}),
-      slug: policy.slug,
-      targets: policy.targets ?? [],
-      ...(policy.value_score_map
-        ? { value_score_map: policy.value_score_map }
-        : {}),
-      weight: policy.weight,
-    }
+    const exportObj = policyToExportPayload(policy)
     if (!navigator.clipboard?.writeText) return
     navigator.clipboard
       .writeText(JSON.stringify(exportObj, null, 2))
@@ -268,12 +262,23 @@ export function ScoringPolicyManagement() {
             },
             {
               cellAlign: 'left',
-              header: 'Attribute',
+              header: 'Category',
               headerAlign: 'left',
-              key: 'attribute',
+              key: 'category',
+              render: (p) => (
+                <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary">
+                  {CATEGORY_LABELS[p.category]}
+                </span>
+              ),
+            },
+            {
+              cellAlign: 'left',
+              header: 'Subject',
+              headerAlign: 'left',
+              key: 'subject',
               render: (p) => (
                 <code className="rounded bg-secondary px-1.5 py-0.5 text-xs text-primary">
-                  {p.attribute_name}
+                  {policySubjectKey(p)}
                 </code>
               ),
             },
@@ -342,4 +347,40 @@ export function ScoringPolicyManagement() {
       />
     </>
   )
+}
+
+function policySubjectKey(policy: ScoringPolicy): string {
+  return policy.category === 'link_presence'
+    ? policy.link_slug
+    : policy.attribute_name
+}
+
+function policyToExportPayload(policy: ScoringPolicy): Record<string, unknown> {
+  const base: Record<string, unknown> = {
+    category: policy.category,
+    enabled: policy.enabled,
+    name: policy.name,
+    priority: policy.priority,
+    slug: policy.slug,
+    targets: policy.targets ?? [],
+    weight: policy.weight,
+  }
+  if (policy.description) base.description = policy.description
+  if (policy.category === 'attribute') {
+    base.attribute_name = policy.attribute_name
+    if (policy.value_score_map) base.value_score_map = policy.value_score_map
+    if (policy.range_score_map) base.range_score_map = policy.range_score_map
+  } else if (policy.category === 'presence') {
+    base.attribute_name = policy.attribute_name
+    if (policy.present_score != null) base.present_score = policy.present_score
+    if (policy.missing_score != null) base.missing_score = policy.missing_score
+  } else if (policy.category === 'link_presence') {
+    base.link_slug = policy.link_slug
+    if (policy.present_score != null) base.present_score = policy.present_score
+    if (policy.missing_score != null) base.missing_score = policy.missing_score
+  } else {
+    base.attribute_name = policy.attribute_name
+    base.age_score_map = policy.age_score_map
+  }
+  return base
 }

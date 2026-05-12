@@ -1078,11 +1078,12 @@ function buildRecommendation(
   c: AttributeContribution,
   policy: ScoringPolicy,
 ): null | string {
+  if (policy.category !== 'attribute') return null
   const current = c.mapped_score
   if (policy.value_score_map) {
     const better = Object.entries(policy.value_score_map)
-      .filter(([, score]) => score > current)
-      .sort(([, a], [, b]) => b - a)
+      .filter(([, score]) => (score as number) > current)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
     if (better.length === 0) return null
     const topScore = better[0][1]
     const top = better
@@ -1094,8 +1095,8 @@ function buildRecommendation(
   }
   if (policy.range_score_map) {
     const better = Object.entries(policy.range_score_map)
-      .filter(([, score]) => score > current)
-      .sort(([, a], [, b]) => b - a)
+      .filter(([, score]) => (score as number) > current)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
     if (better.length === 0) return null
     const [target] = better[0]
     return `Update to reach ${target}`

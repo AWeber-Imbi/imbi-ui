@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import type { ScoringPolicyCreate } from '@/types'
+import type { ScoringPolicyCategory, ScoringPolicyCreate } from '@/types'
 
 type DetectedFormat = 'json' | 'unknown' | 'yaml'
 
@@ -25,7 +25,21 @@ interface ImportScoringPolicyDialogProps {
   onImport: (policy: ScoringPolicyCreate) => void
 }
 
-const REQUIRED_FIELDS = ['name', 'slug', 'attribute_name', 'weight'] as const
+const COMMON_REQUIRED = ['name', 'slug', 'weight'] as const
+
+const VALID_CATEGORIES: ScoringPolicyCategory[] = [
+  'attribute',
+  'presence',
+  'link_presence',
+  'age',
+]
+
+const CATEGORY_LABELS: Record<ScoringPolicyCategory, string> = {
+  age: 'Age',
+  attribute: 'Attribute',
+  link_presence: 'Link Presence',
+  presence: 'Presence',
+}
 
 export function ImportScoringPolicyDialog({
   apiError,
@@ -162,21 +176,33 @@ export function ImportScoringPolicyDialog({
           <DialogDescription>
             Paste a JSON or YAML scoring policy definition below. Required
             fields:{' '}
-            {REQUIRED_FIELDS.map((f, i) => (
+            {COMMON_REQUIRED.map((f, i) => (
               <span key={f}>
                 <code className="rounded bg-secondary px-1 py-0.5 text-xs">
                   {f}
                 </code>
-                {i < REQUIRED_FIELDS.length - 1 ? ', ' : ''}
+                {i < COMMON_REQUIRED.length - 1 ? ', ' : ''}
               </span>
-            ))}{' '}
-            and at least one of{' '}
+            ))}
+            . Optional{' '}
             <code className="rounded bg-secondary px-1 py-0.5 text-xs">
-              value_score_map
+              category
             </code>{' '}
-            or{' '}
+            defaults to{' '}
             <code className="rounded bg-secondary px-1 py-0.5 text-xs">
-              range_score_map
+              attribute
+            </code>
+            ; other supported values are{' '}
+            <code className="rounded bg-secondary px-1 py-0.5 text-xs">
+              presence
+            </code>
+            ,{' '}
+            <code className="rounded bg-secondary px-1 py-0.5 text-xs">
+              link_presence
+            </code>
+            , and{' '}
+            <code className="rounded bg-secondary px-1 py-0.5 text-xs">
+              age
             </code>
             .
           </DialogDescription>
@@ -260,20 +286,24 @@ export function ImportScoringPolicyDialog({
                   </span>
                 </div>
                 <div>
-                  <span className="text-tertiary">Attribute: </span>
+                  <span className="text-tertiary">Category: </span>
+                  <span className="text-primary">
+                    {CATEGORY_LABELS[parsedPreview.category]}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-tertiary">
+                    {parsedPreview.category === 'link_presence'
+                      ? 'Link slug: '
+                      : 'Attribute: '}
+                  </span>
                   <code className="rounded bg-card px-1 py-0.5 text-xs text-primary">
-                    {parsedPreview.attribute_name}
+                    {policySubjectKey(parsedPreview)}
                   </code>
                 </div>
                 <div>
                   <span className="text-tertiary">Weight: </span>
                   <span className="text-primary">{parsedPreview.weight}</span>
-                </div>
-                <div>
-                  <span className="text-tertiary">Map type: </span>
-                  <span className="text-primary">
-                    {parsedPreview.range_score_map ? 'Range' : 'Value'}
-                  </span>
                 </div>
                 {(parsedPreview.targets ?? []).length > 0 && (
                   <div className="col-span-2">
@@ -318,6 +348,49 @@ function detectFormat(input: string): DetectedFormat {
   return 'unknown'
 }
 
+function isNonEmptyNumberMap(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const entries = Object.entries(value as Record<string, unknown>)
+  if (entries.length === 0) return false
+  return entries.every(([, v]) => typeof v === 'number' && Number.isFinite(v))
+}
+
+function optionalScore(
+  value: unknown,
+  field: string,
+): { error: string; ok: false } | { ok: true; value: null | number } {
+  if (value === undefined || value === null) return { ok: true, value: null }
+  if (
+    typeof value !== 'number' ||
+    !Number.isFinite(value) ||
+    value < 0 ||
+    value > 100
+  ) {
+    return {
+      error: `"${field}" must be a number between 0 and 100.`,
+      ok: false,
+    }
+  }
+  return { ok: true, value }
+}
+
+function policySubjectKey(policy: ScoringPolicyCreate): string {
+  return policy.category === 'link_presence'
+    ? policy.link_slug
+    : policy.attribute_name
+}
+
+function requireString(
+  obj: Record<string, unknown>,
+  field: string,
+): { error: string; ok: false } | { ok: true; value: string } {
+  const value = obj[field]
+  if (typeof value !== 'string' || !value.trim()) {
+    return { error: `"${field}" must be a non-empty string.`, ok: false }
+  }
+  return { ok: true, value: value.trim() }
+}
+
 function validatePolicyShape(
   data: unknown,
 ):
@@ -329,7 +402,7 @@ function validatePolicyShape(
 
   const obj = data as Record<string, unknown>
 
-  for (const field of REQUIRED_FIELDS) {
+  for (const field of COMMON_REQUIRED) {
     if (obj[field] === undefined || obj[field] === null) {
       return { error: `Missing required field: "${field}".`, valid: false }
     }
@@ -342,12 +415,6 @@ function validatePolicyShape(
     return {
       error:
         '"slug" must be lowercase letters, numbers, hyphens, or underscores.',
-      valid: false,
-    }
-  }
-  if (typeof obj.attribute_name !== 'string' || !obj.attribute_name.trim()) {
-    return {
-      error: '"attribute_name" must be a non-empty string.',
       valid: false,
     }
   }
@@ -364,27 +431,6 @@ function validatePolicyShape(
     }
   }
   const weight = obj.weight
-
-  const hasValueMap =
-    obj.value_score_map !== null &&
-    obj.value_score_map !== undefined &&
-    typeof obj.value_score_map === 'object' &&
-    !Array.isArray(obj.value_score_map) &&
-    Object.keys(obj.value_score_map as object).length > 0
-  const hasRangeMap =
-    obj.range_score_map !== null &&
-    obj.range_score_map !== undefined &&
-    typeof obj.range_score_map === 'object' &&
-    !Array.isArray(obj.range_score_map) &&
-    Object.keys(obj.range_score_map as object).length > 0
-
-  if (!hasValueMap && !hasRangeMap) {
-    return {
-      error:
-        'At least one of "value_score_map" or "range_score_map" must have entries.',
-      valid: false,
-    }
-  }
 
   if (
     obj.targets !== undefined &&
@@ -406,47 +452,142 @@ function validatePolicyShape(
     return { error: '"priority" must be a number.', valid: false }
   }
 
-  const hasOnlyNumericValues = (map: unknown): map is Record<string, number> =>
-    !!map &&
-    typeof map === 'object' &&
-    !Array.isArray(map) &&
-    Object.values(map as Record<string, unknown>).every(
-      (v) => typeof v === 'number' && Number.isFinite(v),
-    )
-
-  if (hasValueMap && !hasOnlyNumericValues(obj.value_score_map)) {
+  const rawCategory = obj.category ?? 'attribute'
+  if (
+    typeof rawCategory !== 'string' ||
+    !VALID_CATEGORIES.includes(rawCategory as ScoringPolicyCategory)
+  ) {
     return {
-      error: '"value_score_map" values must be numbers.',
+      error: `"category" must be one of: ${VALID_CATEGORIES.join(', ')}.`,
       valid: false,
     }
   }
+  const category = rawCategory as ScoringPolicyCategory
 
-  if (hasRangeMap && !hasOnlyNumericValues(obj.range_score_map)) {
-    return {
-      error: '"range_score_map" values must be numbers.',
-      valid: false,
-    }
-  }
-
-  const policy: ScoringPolicyCreate = {
-    attribute_name: (obj.attribute_name as string).trim(),
+  const base = {
     description:
       typeof obj.description === 'string'
         ? obj.description.trim() || null
         : null,
-    enabled: obj.enabled === undefined ? true : obj.enabled,
+    enabled: obj.enabled === undefined ? true : (obj.enabled as boolean),
     name: (obj.name as string).trim(),
-    priority: obj.priority === undefined ? 0 : obj.priority,
-    range_score_map: hasRangeMap
-      ? (obj.range_score_map as Record<string, number>)
-      : null,
+    priority: obj.priority === undefined ? 0 : (obj.priority as number),
     slug: obj.slug as string,
     targets: Array.isArray(obj.targets) ? (obj.targets as string[]) : [],
-    value_score_map: hasValueMap
-      ? (obj.value_score_map as Record<string, number>)
-      : null,
     weight,
   }
 
-  return { policy, valid: true }
+  if (category === 'attribute') {
+    const attrCheck = requireString(obj, 'attribute_name')
+    if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
+    const hasValueMap = isNonEmptyNumberMap(obj.value_score_map)
+    const hasRangeMap = isNonEmptyNumberMap(obj.range_score_map)
+    if (!hasValueMap && !hasRangeMap) {
+      return {
+        error:
+          'At least one of "value_score_map" or "range_score_map" must have entries.',
+        valid: false,
+      }
+    }
+    if (
+      obj.value_score_map !== undefined &&
+      obj.value_score_map !== null &&
+      !hasValueMap
+    ) {
+      return {
+        error: '"value_score_map" values must be numbers.',
+        valid: false,
+      }
+    }
+    if (
+      obj.range_score_map !== undefined &&
+      obj.range_score_map !== null &&
+      !hasRangeMap
+    ) {
+      return {
+        error: '"range_score_map" values must be numbers.',
+        valid: false,
+      }
+    }
+    return {
+      policy: {
+        ...base,
+        attribute_name: attrCheck.value,
+        category: 'attribute',
+        range_score_map: hasRangeMap
+          ? (obj.range_score_map as Record<string, number>)
+          : null,
+        value_score_map: hasValueMap
+          ? (obj.value_score_map as Record<string, number>)
+          : null,
+      },
+      valid: true,
+    }
+  }
+
+  if (category === 'presence') {
+    const attrCheck = requireString(obj, 'attribute_name')
+    if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
+    const present = optionalScore(obj.present_score, 'present_score')
+    if (!present.ok) return { error: present.error, valid: false }
+    const missing = optionalScore(obj.missing_score, 'missing_score')
+    if (!missing.ok) return { error: missing.error, valid: false }
+    return {
+      policy: {
+        ...base,
+        attribute_name: attrCheck.value,
+        category: 'presence',
+        missing_score: missing.value ?? null,
+        present_score: present.value ?? null,
+      },
+      valid: true,
+    }
+  }
+
+  if (category === 'link_presence') {
+    const linkCheck = requireString(obj, 'link_slug')
+    if (!linkCheck.ok) return { error: linkCheck.error, valid: false }
+    const present = optionalScore(obj.present_score, 'present_score')
+    if (!present.ok) return { error: present.error, valid: false }
+    const missing = optionalScore(obj.missing_score, 'missing_score')
+    if (!missing.ok) return { error: missing.error, valid: false }
+    return {
+      policy: {
+        ...base,
+        category: 'link_presence',
+        link_slug: linkCheck.value,
+        missing_score: missing.value ?? null,
+        present_score: present.value ?? null,
+      },
+      valid: true,
+    }
+  }
+
+  // age
+  const attrCheck = requireString(obj, 'attribute_name')
+  if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
+  if (!isNonEmptyNumberMap(obj.age_score_map)) {
+    return {
+      error:
+        '"age_score_map" must be a non-empty object whose values are numbers.',
+      valid: false,
+    }
+  }
+  for (const key of Object.keys(obj.age_score_map as object)) {
+    if (!/^(>=|>|<=|<|==)\s*\d+(?:\.\d+)?\s*[smhdw]$/.test(key)) {
+      return {
+        error: `"age_score_map" key ${JSON.stringify(key)} is not a valid threshold (e.g. ">30d", "<=7d").`,
+        valid: false,
+      }
+    }
+  }
+  return {
+    policy: {
+      ...base,
+      age_score_map: obj.age_score_map as Record<string, number>,
+      attribute_name: attrCheck.value,
+      category: 'age',
+    },
+    valid: true,
+  }
 }
