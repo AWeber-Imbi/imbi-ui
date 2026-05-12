@@ -29,6 +29,7 @@ import { useAdminCrud } from '@/hooks/useAdminCrud'
 import { useAdminNav } from '@/hooks/useAdminNav'
 import { buildDiffPatch } from '@/lib/json-patch'
 import type {
+  AttributeScoringPolicy,
   PatchOperation,
   ScoringPolicy,
   ScoringPolicyCategory,
@@ -349,6 +350,42 @@ export function ScoringPolicyManagement() {
   )
 }
 
+function attributeExport(
+  policy: AttributeScoringPolicy,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { attribute_name: policy.attribute_name }
+  if (policy.value_score_map) out.value_score_map = policy.value_score_map
+  if (policy.range_score_map) out.range_score_map = policy.range_score_map
+  return out
+}
+
+// fallow-ignore-next-line complexity
+function categorySpecificExport(
+  policy: ScoringPolicy,
+): Record<string, unknown> {
+  switch (policy.category) {
+    case 'age':
+      return {
+        age_score_map: policy.age_score_map,
+        attribute_name: policy.attribute_name,
+      }
+    case 'attribute':
+      return attributeExport(policy)
+    case 'link_presence':
+      return presenceExport({
+        missing_score: policy.missing_score,
+        present_score: policy.present_score,
+        subject: { link_slug: policy.link_slug },
+      })
+    case 'presence':
+      return presenceExport({
+        missing_score: policy.missing_score,
+        present_score: policy.present_score,
+        subject: { attribute_name: policy.attribute_name },
+      })
+  }
+}
+
 function policySubjectKey(policy: ScoringPolicy): string {
   return policy.category === 'link_presence'
     ? policy.link_slug
@@ -366,21 +403,16 @@ function policyToExportPayload(policy: ScoringPolicy): Record<string, unknown> {
     weight: policy.weight,
   }
   if (policy.description) base.description = policy.description
-  if (policy.category === 'attribute') {
-    base.attribute_name = policy.attribute_name
-    if (policy.value_score_map) base.value_score_map = policy.value_score_map
-    if (policy.range_score_map) base.range_score_map = policy.range_score_map
-  } else if (policy.category === 'presence') {
-    base.attribute_name = policy.attribute_name
-    if (policy.present_score != null) base.present_score = policy.present_score
-    if (policy.missing_score != null) base.missing_score = policy.missing_score
-  } else if (policy.category === 'link_presence') {
-    base.link_slug = policy.link_slug
-    if (policy.present_score != null) base.present_score = policy.present_score
-    if (policy.missing_score != null) base.missing_score = policy.missing_score
-  } else {
-    base.attribute_name = policy.attribute_name
-    base.age_score_map = policy.age_score_map
-  }
-  return base
+  return { ...base, ...categorySpecificExport(policy) }
+}
+
+function presenceExport(args: {
+  missing_score?: null | number
+  present_score?: null | number
+  subject: Record<string, unknown>
+}): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...args.subject }
+  if (args.present_score != null) out.present_score = args.present_score
+  if (args.missing_score != null) out.missing_score = args.missing_score
+  return out
 }

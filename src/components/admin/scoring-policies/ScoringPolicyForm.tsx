@@ -29,6 +29,7 @@ import type {
 type AttributeMapType = 'range' | 'value'
 
 interface MapRow {
+  id: string
   key: string
   score: string
 }
@@ -118,16 +119,16 @@ export function ScoringPolicyForm({
         ? parseMapToRows(policy.range_score_map)
         : parseMapToRows(policy.value_score_map)
     }
-    return [{ key: '', score: '' }]
+    return [emptyRow()]
   })
   const [ageMapRows, setAgeMapRows] = useState<MapRow[]>(() =>
     policy?.category === 'age'
       ? parseMapToRows(policy.age_score_map)
       : [
-          { key: '>90d', score: '0' },
-          { key: '>30d', score: '25' },
-          { key: '>7d', score: '75' },
-          { key: '<=7d', score: '100' },
+          newRow('>90d', '0'),
+          newRow('>30d', '25'),
+          newRow('>7d', '75'),
+          newRow('<=7d', '100'),
         ],
   )
 
@@ -166,54 +167,22 @@ export function ScoringPolicyForm({
 
   const handleAttributeMapTypeChange = (type: AttributeMapType) => {
     setAttributeMapType(type)
-    setAttributeMapRows([{ key: '', score: '' }])
+    setAttributeMapRows([emptyRow()])
   }
 
   const validate = (): boolean => {
-    const newErrors: Record<string, string> = {}
-    if (!name.trim()) newErrors.name = 'Name is required'
-    if (!slug.trim()) newErrors.slug = 'Slug is required'
-    if (slug && !/^[a-z0-9_-]+$/.test(slug))
-      newErrors.slug =
-        'Slug must be lowercase letters, numbers, hyphens, or underscores'
-
-    if (category !== 'link_presence' && !attributeName.trim()) {
-      newErrors.attribute_name = 'Attribute name is required'
+    const newErrors: Record<string, string> = {
+      ...validateIdentity({ name, slug }),
+      ...validateSubject({ attributeName, category, linkSlug }),
+      ...validateWeight(weight),
+      ...validateCategoryFields({
+        ageMapRows,
+        attributeMapRows,
+        category,
+        missingScore,
+        presentScore,
+      }),
     }
-    if (category === 'link_presence' && !linkSlug.trim()) {
-      newErrors.link_slug = 'Link type is required'
-    }
-
-    const w = parseInt(weight, 10)
-    if (isNaN(w) || w < 0 || w > 100) newErrors.weight = 'Weight must be 0–100'
-
-    if (category === 'attribute') {
-      const hasMap = attributeMapRows.some(
-        (r) => r.key.trim() && r.score.trim(),
-      )
-      if (!hasMap) newErrors.map = 'At least one mapping entry is required'
-    }
-
-    if (category === 'age') {
-      const validRows = ageMapRows.filter((r) => r.key.trim() && r.score.trim())
-      if (validRows.length === 0) {
-        newErrors.age_map = 'At least one age threshold is required'
-      } else if (
-        validRows.some((r) => !isAgeThreshold(r.key.trim())) ||
-        validRows.some((r) => !isScoreInRange(r.score))
-      ) {
-        newErrors.age_map =
-          'Each entry must use a threshold like ">30d" or "<=7d" and a score 0–100'
-      }
-    }
-
-    if (category === 'presence' || category === 'link_presence') {
-      if (!isScoreInRange(presentScore))
-        newErrors.present_score = 'Score must be 0–100'
-      if (!isScoreInRange(missingScore))
-        newErrors.missing_score = 'Score must be 0–100'
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -741,7 +710,7 @@ function MapEditor({
     onChange(next)
   }
 
-  const addRow = () => onChange([...rows, { key: '', score: '' }])
+  const addRow = () => onChange([...rows, emptyRow()])
   const removeRow = (i: number) => onChange(rows.filter((_, idx) => idx !== i))
 
   return (
@@ -754,7 +723,7 @@ function MapEditor({
       {rows.map((row, i) => (
         <div
           className="grid grid-cols-[1fr_100px_32px] items-center gap-2"
-          key={i}
+          key={row.id}
         >
           <Input
             disabled={disabled}
@@ -803,15 +772,19 @@ function MapEditor({
   )
 }
 
+function newRow(key: string, score: string): MapRow {
+  rowIdCounter += 1
+  return { id: `row-${rowIdCounter}`, key, score }
+}
+
 function parseMapToRows(
   map: null | Record<string, number> | undefined,
 ): MapRow[] {
-  if (!map) return [{ key: '', score: '' }]
-  const rows = Object.entries(map).map(([key, score]) => ({
-    key,
-    score: String(score),
-  }))
-  return rows.length > 0 ? rows : [{ key: '', score: '' }]
+  if (!map) return [emptyRow()]
+  const rows = Object.entries(map).map(([key, score]) =>
+    newRow(key, String(score)),
+  )
+  return rows.length > 0 ? rows : [emptyRow()]
 }
 
 function rowsToMap(rows: MapRow[]): null | Record<string, number> {
@@ -828,6 +801,11 @@ function rowsToMap(rows: MapRow[]): null | Record<string, number> {
 
 const AGE_THRESHOLD_RE = /^(>=|>|<=|<|==)\s*\d+(?:\.\d+)?\s*[smhdw]$/
 
+let rowIdCounter = 0
+function emptyRow(): MapRow {
+  return newRow('', '')
+}
+
 function isAgeThreshold(value: string): boolean {
   return AGE_THRESHOLD_RE.test(value.trim())
 }
@@ -835,4 +813,87 @@ function isAgeThreshold(value: string): boolean {
 function isScoreInRange(value: string): boolean {
   const n = parseInt(value, 10)
   return !isNaN(n) && n >= 0 && n <= 100
+}
+
+function validateAgeMap(rows: MapRow[]): null | string {
+  const valid = rows.filter((r) => r.key.trim() && r.score.trim())
+  if (valid.length === 0) return 'At least one age threshold is required'
+  const anyInvalid = valid.some(
+    (r) => !isAgeThreshold(r.key.trim()) || !isScoreInRange(r.score),
+  )
+  return anyInvalid
+    ? 'Each entry must use a threshold like ">30d" or "<=7d" and a score 0–100'
+    : null
+}
+
+function validateAttributeMap(rows: MapRow[]): null | string {
+  const valid = rows.filter((r) => r.key.trim() && r.score.trim())
+  if (valid.length === 0) return 'At least one mapping entry is required'
+  if (valid.some((r) => !isScoreInRange(r.score))) {
+    return 'All scores must be between 0 and 100'
+  }
+  return null
+}
+
+// fallow-ignore-next-line complexity
+function validateCategoryFields(args: {
+  ageMapRows: MapRow[]
+  attributeMapRows: MapRow[]
+  category: ScoringPolicyCategory
+  missingScore: string
+  presentScore: string
+}): Record<string, string> {
+  if (args.category === 'age') {
+    const err = validateAgeMap(args.ageMapRows)
+    return err ? { age_map: err } : {}
+  }
+  if (args.category === 'attribute') {
+    const err = validateAttributeMap(args.attributeMapRows)
+    return err ? { map: err } : {}
+  }
+  return validatePresenceScores(args.presentScore, args.missingScore)
+}
+
+function validateIdentity(args: {
+  name: string
+  slug: string
+}): Record<string, string> {
+  const errors: Record<string, string> = {}
+  if (!args.name.trim()) errors.name = 'Name is required'
+  if (!args.slug.trim()) errors.slug = 'Slug is required'
+  else if (!/^[a-z0-9_-]+$/.test(args.slug)) {
+    errors.slug =
+      'Slug must be lowercase letters, numbers, hyphens, or underscores'
+  }
+  return errors
+}
+
+function validatePresenceScores(
+  presentScore: string,
+  missingScore: string,
+): Record<string, string> {
+  const errors: Record<string, string> = {}
+  if (!isScoreInRange(presentScore))
+    errors.present_score = 'Score must be 0–100'
+  if (!isScoreInRange(missingScore))
+    errors.missing_score = 'Score must be 0–100'
+  return errors
+}
+
+function validateSubject(args: {
+  attributeName: string
+  category: ScoringPolicyCategory
+  linkSlug: string
+}): Record<string, string> {
+  if (args.category === 'link_presence') {
+    return args.linkSlug.trim() ? {} : { link_slug: 'Link type is required' }
+  }
+  return args.attributeName.trim()
+    ? {}
+    : { attribute_name: 'Attribute name is required' }
+}
+
+function validateWeight(weight: string): Record<string, string> {
+  const w = parseInt(weight, 10)
+  return isNaN(w) || w < 0 || w > 100 ? { weight: 'Weight must be 0–100' } : {}
 }

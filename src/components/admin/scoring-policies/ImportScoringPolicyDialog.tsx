@@ -1,20 +1,31 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import yaml from 'js-yaml'
-import { AlertCircle, FileJson, FileText, Upload } from 'lucide-react'
+import { AlertCircle, FileJson, FileText } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import type { ScoringPolicyCategory, ScoringPolicyCreate } from '@/types'
+import { type DetectedFormat, detectFormat } from '@/lib/import-format'
+import type {
+  AgeScoringPolicyCreate,
+  AttributeScoringPolicyCreate,
+  LinkPresenceScoringPolicyCreate,
+  PresenceScoringPolicyCreate,
+  ScoringPolicyCategory,
+  ScoringPolicyCreate,
+} from '@/types'
 
-type DetectedFormat = 'json' | 'unknown' | 'yaml'
+import { ImportDialogFooter } from '../import-dialog-shared'
+
+interface FieldRule {
+  error: string
+  ok: (obj: Record<string, unknown>) => boolean
+}
 
 interface ImportScoringPolicyDialogProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,6 +35,20 @@ interface ImportScoringPolicyDialogProps {
   onClose: () => void
   onImport: (policy: ScoringPolicyCreate) => void
 }
+
+interface PolicyBase {
+  description: null | string
+  enabled: boolean
+  name: string
+  priority: number
+  slug: string
+  targets: string[]
+  weight: number
+}
+
+type PolicyResult<T> =
+  | { error: string; valid: false }
+  | { policy: T; valid: true }
 
 const COMMON_REQUIRED = ['name', 'slug', 'weight'] as const
 
@@ -40,6 +65,42 @@ const CATEGORY_LABELS: Record<ScoringPolicyCategory, string> = {
   link_presence: 'Link Presence',
   presence: 'Presence',
 }
+
+const BASE_FIELD_RULES: FieldRule[] = [
+  {
+    error: 'Missing required fields: name, slug, weight.',
+    ok: (obj) =>
+      COMMON_REQUIRED.every((f) => obj[f] !== undefined && obj[f] !== null),
+  },
+  {
+    error: '"name" must be a non-empty string.',
+    ok: (obj) => typeof obj.name === 'string' && obj.name.trim().length > 0,
+  },
+  {
+    error:
+      '"slug" must be lowercase letters, numbers, hyphens, or underscores.',
+    ok: (obj) => typeof obj.slug === 'string' && /^[a-z0-9_-]+$/.test(obj.slug),
+  },
+  {
+    error: '"weight" must be a number between 0 and 100.',
+    ok: (obj) => isNumberInRange(obj.weight, 0, 100),
+  },
+  {
+    error: '"targets" must be an array of strings.',
+    ok: (obj) =>
+      obj.targets === undefined ||
+      obj.targets === null ||
+      isStringArray(obj.targets),
+  },
+  {
+    error: '"enabled" must be a boolean.',
+    ok: (obj) => obj.enabled === undefined || typeof obj.enabled === 'boolean',
+  },
+  {
+    error: '"priority" must be a number.',
+    ok: (obj) => obj.priority === undefined || isFiniteNumber(obj.priority),
+  },
+]
 
 export function ImportScoringPolicyDialog({
   apiError,
@@ -318,41 +379,60 @@ export function ImportScoringPolicyDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button disabled={isLoading} onClick={handleClose} variant="outline">
-            Cancel
-          </Button>
-          <Button
-            className="bg-action text-action-foreground hover:bg-action-hover"
-            disabled={isLoading || !rawInput.trim()}
-            onClick={handleValidateAndImport}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            {isLoading ? 'Importing...' : 'Import'}
-          </Button>
-        </DialogFooter>
+        <ImportDialogFooter
+          hasInput={!!rawInput.trim()}
+          isLoading={isLoading}
+          onClose={handleClose}
+          onImport={handleValidateAndImport}
+        />
       </DialogContent>
     </Dialog>
   )
 }
 
-function detectFormat(input: string): DetectedFormat {
-  const trimmed = input.trim()
-  if (trimmed.startsWith('{') || trimmed.startsWith('[')) return 'json'
-  if (
-    trimmed.includes(': ') ||
-    trimmed.includes(':\n') ||
-    trimmed.startsWith('---')
-  )
-    return 'yaml'
-  return 'unknown'
+function buildBase(obj: Record<string, unknown>): PolicyBase {
+  return {
+    description: trimDescription(obj.description),
+    enabled: (obj.enabled ?? true) as boolean,
+    name: (obj.name as string).trim(),
+    priority: (obj.priority ?? 0) as number,
+    slug: obj.slug as string,
+    targets: Array.isArray(obj.targets) ? (obj.targets as string[]) : [],
+    weight: obj.weight as number,
+  }
+}
+
+function checkBaseFields(obj: Record<string, unknown>): null | string {
+  for (const rule of BASE_FIELD_RULES) {
+    if (!rule.ok(obj)) return rule.error
+  }
+  return null
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
 }
 
 function isNonEmptyNumberMap(value: unknown): boolean {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  const entries = Object.entries(value as Record<string, unknown>)
-  if (entries.length === 0) return false
-  return entries.every(([, v]) => typeof v === 'number' && Number.isFinite(v))
+  if (!isPlainObject(value)) return false
+  const entries = Object.entries(value)
+  return entries.length > 0 && entries.every(([, v]) => isFiniteNumber(v))
+}
+
+function isNumberInRange(
+  value: unknown,
+  min: number,
+  max: number,
+): value is number {
+  return isFiniteNumber(value) && value >= min && value <= max
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === 'string')
 }
 
 function optionalScore(
@@ -360,12 +440,7 @@ function optionalScore(
   field: string,
 ): { error: string; ok: false } | { ok: true; value: null | number } {
   if (value === undefined || value === null) return { ok: true, value: null }
-  if (
-    typeof value !== 'number' ||
-    !Number.isFinite(value) ||
-    value < 0 ||
-    value > 100
-  ) {
+  if (!isNumberInRange(value, 0, 100)) {
     return {
       error: `"${field}" must be a number between 0 and 100.`,
       ok: false,
@@ -380,6 +455,31 @@ function policySubjectKey(policy: ScoringPolicyCreate): string {
     : policy.attribute_name
 }
 
+function readScoreMap(
+  raw: unknown,
+  field: string,
+):
+  | { error: string; ok: false }
+  | { ok: true; value: null | Record<string, number> } {
+  if (raw === undefined || raw === null) return { ok: true, value: null }
+  if (!isNonEmptyNumberMap(raw)) {
+    return { error: `"${field}" values must be numbers.`, ok: false }
+  }
+  return { ok: true, value: raw as Record<string, number> }
+}
+
+function readScorePair(
+  obj: Record<string, unknown>,
+):
+  | { error: string; ok: false }
+  | { missing: null | number; ok: true; present: null | number } {
+  const present = optionalScore(obj.present_score, 'present_score')
+  if (!present.ok) return { error: present.error, ok: false }
+  const missing = optionalScore(obj.missing_score, 'missing_score')
+  if (!missing.ok) return { error: missing.error, ok: false }
+  return { missing: missing.value, ok: true, present: present.value }
+}
+
 function requireString(
   obj: Record<string, unknown>,
   field: string,
@@ -391,202 +491,189 @@ function requireString(
   return { ok: true, value: value.trim() }
 }
 
-function validatePolicyShape(
-  data: unknown,
-):
-  | { error: string; valid: false }
-  | { policy: ScoringPolicyCreate; valid: true } {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return { error: 'Input must be a JSON/YAML object.', valid: false }
-  }
-
-  const obj = data as Record<string, unknown>
-
-  for (const field of COMMON_REQUIRED) {
-    if (obj[field] === undefined || obj[field] === null) {
-      return { error: `Missing required field: "${field}".`, valid: false }
-    }
-  }
-
-  if (typeof obj.name !== 'string' || !obj.name.trim()) {
-    return { error: '"name" must be a non-empty string.', valid: false }
-  }
-  if (typeof obj.slug !== 'string' || !/^[a-z0-9_-]+$/.test(obj.slug)) {
-    return {
-      error:
-        '"slug" must be lowercase letters, numbers, hyphens, or underscores.',
-      valid: false,
-    }
-  }
-
+function resolveCategory(
+  raw: unknown,
+): { error: string; ok: false } | { ok: true; value: ScoringPolicyCategory } {
+  const candidate = raw ?? 'attribute'
   if (
-    typeof obj.weight !== 'number' ||
-    !Number.isFinite(obj.weight) ||
-    obj.weight < 0 ||
-    obj.weight > 100
-  ) {
-    return {
-      error: '"weight" must be a number between 0 and 100.',
-      valid: false,
-    }
-  }
-  const weight = obj.weight
-
-  if (
-    obj.targets !== undefined &&
-    obj.targets !== null &&
-    (!Array.isArray(obj.targets) ||
-      !(obj.targets as unknown[]).every((v) => typeof v === 'string'))
-  ) {
-    return { error: '"targets" must be an array of strings.', valid: false }
-  }
-
-  if (obj.enabled !== undefined && typeof obj.enabled !== 'boolean') {
-    return { error: '"enabled" must be a boolean.', valid: false }
-  }
-
-  if (
-    obj.priority !== undefined &&
-    (typeof obj.priority !== 'number' || !Number.isFinite(obj.priority))
-  ) {
-    return { error: '"priority" must be a number.', valid: false }
-  }
-
-  const rawCategory = obj.category ?? 'attribute'
-  if (
-    typeof rawCategory !== 'string' ||
-    !VALID_CATEGORIES.includes(rawCategory as ScoringPolicyCategory)
+    typeof candidate !== 'string' ||
+    !VALID_CATEGORIES.includes(candidate as ScoringPolicyCategory)
   ) {
     return {
       error: `"category" must be one of: ${VALID_CATEGORIES.join(', ')}.`,
-      valid: false,
+      ok: false,
     }
   }
-  const category = rawCategory as ScoringPolicyCategory
+  return { ok: true, value: candidate as ScoringPolicyCategory }
+}
 
-  const base = {
-    description:
-      typeof obj.description === 'string'
-        ? obj.description.trim() || null
-        : null,
-    enabled: obj.enabled === undefined ? true : (obj.enabled as boolean),
-    name: (obj.name as string).trim(),
-    priority: obj.priority === undefined ? 0 : (obj.priority as number),
-    slug: obj.slug as string,
-    targets: Array.isArray(obj.targets) ? (obj.targets as string[]) : [],
-    weight,
-  }
+function trimDescription(value: unknown): null | string {
+  return typeof value === 'string' ? value.trim() || null : null
+}
 
-  if (category === 'attribute') {
-    const attrCheck = requireString(obj, 'attribute_name')
-    if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
-    const hasValueMap = isNonEmptyNumberMap(obj.value_score_map)
-    const hasRangeMap = isNonEmptyNumberMap(obj.range_score_map)
-    if (!hasValueMap && !hasRangeMap) {
-      return {
-        error:
-          'At least one of "value_score_map" or "range_score_map" must have entries.',
-        valid: false,
-      }
-    }
-    if (
-      obj.value_score_map !== undefined &&
-      obj.value_score_map !== null &&
-      !hasValueMap
-    ) {
-      return {
-        error: '"value_score_map" values must be numbers.',
-        valid: false,
-      }
-    }
-    if (
-      obj.range_score_map !== undefined &&
-      obj.range_score_map !== null &&
-      !hasRangeMap
-    ) {
-      return {
-        error: '"range_score_map" values must be numbers.',
-        valid: false,
-      }
-    }
-    return {
-      policy: {
-        ...base,
-        attribute_name: attrCheck.value,
-        category: 'attribute',
-        range_score_map: hasRangeMap
-          ? (obj.range_score_map as Record<string, number>)
-          : null,
-        value_score_map: hasValueMap
-          ? (obj.value_score_map as Record<string, number>)
-          : null,
-      },
-      valid: true,
-    }
-  }
-
-  if (category === 'presence') {
-    const attrCheck = requireString(obj, 'attribute_name')
-    if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
-    const present = optionalScore(obj.present_score, 'present_score')
-    if (!present.ok) return { error: present.error, valid: false }
-    const missing = optionalScore(obj.missing_score, 'missing_score')
-    if (!missing.ok) return { error: missing.error, valid: false }
-    return {
-      policy: {
-        ...base,
-        attribute_name: attrCheck.value,
-        category: 'presence',
-        missing_score: missing.value ?? null,
-        present_score: present.value ?? null,
-      },
-      valid: true,
-    }
-  }
-
-  if (category === 'link_presence') {
-    const linkCheck = requireString(obj, 'link_slug')
-    if (!linkCheck.ok) return { error: linkCheck.error, valid: false }
-    const present = optionalScore(obj.present_score, 'present_score')
-    if (!present.ok) return { error: present.error, valid: false }
-    const missing = optionalScore(obj.missing_score, 'missing_score')
-    if (!missing.ok) return { error: missing.error, valid: false }
-    return {
-      policy: {
-        ...base,
-        category: 'link_presence',
-        link_slug: linkCheck.value,
-        missing_score: missing.value ?? null,
-        present_score: present.value ?? null,
-      },
-      valid: true,
-    }
-  }
-
-  // age
+function validateAgePolicy(
+  obj: Record<string, unknown>,
+  base: PolicyBase,
+): PolicyResult<AgeScoringPolicyCreate> {
   const attrCheck = requireString(obj, 'attribute_name')
   if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
-  if (!isNonEmptyNumberMap(obj.age_score_map)) {
-    return {
-      error:
-        '"age_score_map" must be a non-empty object whose values are numbers.',
-      valid: false,
-    }
-  }
-  for (const key of Object.keys(obj.age_score_map as object)) {
-    if (!/^(>=|>|<=|<|==)\s*\d+(?:\.\d+)?\s*[smhdw]$/.test(key)) {
-      return {
-        error: `"age_score_map" key ${JSON.stringify(key)} is not a valid threshold (e.g. ">30d", "<=7d").`,
-        valid: false,
-      }
-    }
-  }
+  const ageCheck = validateAgeScoreMap(obj.age_score_map)
+  if (!ageCheck.ok) return { error: ageCheck.error, valid: false }
   return {
     policy: {
       ...base,
       age_score_map: obj.age_score_map as Record<string, number>,
       attribute_name: attrCheck.value,
       category: 'age',
+    },
+    valid: true,
+  }
+}
+
+function validateAgeScoreMap(
+  raw: unknown,
+): { error: string; ok: false } | { ok: true } {
+  if (!isNonEmptyNumberMap(raw)) {
+    return {
+      error:
+        '"age_score_map" must be a non-empty object whose values are numbers.',
+      ok: false,
+    }
+  }
+  const invalid = Object.keys(raw as object).find(
+    (key) => !/^(>=|>|<=|<|==)\s*\d+(?:\.\d+)?\s*[smhdw]$/.test(key),
+  )
+  if (invalid !== undefined) {
+    return {
+      error: `"age_score_map" key ${JSON.stringify(invalid)} is not a valid threshold (e.g. ">30d", "<=7d").`,
+      ok: false,
+    }
+  }
+  return { ok: true }
+}
+
+// fallow-ignore-next-line complexity
+function validateAttributeMaps(obj: Record<string, unknown>):
+  | { error: string; ok: false }
+  | {
+      ok: true
+      range: null | Record<string, number>
+      value: null | Record<string, number>
+    } {
+  const valueCheck = readScoreMap(obj.value_score_map, 'value_score_map')
+  if (!valueCheck.ok) return { error: valueCheck.error, ok: false }
+  const rangeCheck = readScoreMap(obj.range_score_map, 'range_score_map')
+  if (!rangeCheck.ok) return { error: rangeCheck.error, ok: false }
+  if (!valueCheck.value && !rangeCheck.value) {
+    return {
+      error:
+        'At least one of "value_score_map" or "range_score_map" must have entries.',
+      ok: false,
+    }
+  }
+  return { ok: true, range: rangeCheck.value, value: valueCheck.value }
+}
+
+function validateAttributePolicy(
+  obj: Record<string, unknown>,
+  base: PolicyBase,
+): PolicyResult<AttributeScoringPolicyCreate> {
+  const attrCheck = requireString(obj, 'attribute_name')
+  if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
+  const maps = validateAttributeMaps(obj)
+  if (!maps.ok) return { error: maps.error, valid: false }
+  return {
+    policy: {
+      ...base,
+      attribute_name: attrCheck.value,
+      category: 'attribute',
+      range_score_map: maps.range,
+      value_score_map: maps.value,
+    },
+    valid: true,
+  }
+}
+
+function validateBaseShape(obj: Record<string, unknown>):
+  | {
+      base: PolicyBase
+      category: ScoringPolicyCategory
+      obj: Record<string, unknown>
+      valid: true
+    }
+  | { error: string; valid: false } {
+  const fieldError = checkBaseFields(obj)
+  if (fieldError) return { error: fieldError, valid: false }
+  const categoryCheck = resolveCategory(obj.category)
+  if (!categoryCheck.ok) return { error: categoryCheck.error, valid: false }
+  return {
+    base: buildBase(obj),
+    category: categoryCheck.value,
+    obj,
+    valid: true,
+  }
+}
+
+function validateLinkPresencePolicy(
+  obj: Record<string, unknown>,
+  base: PolicyBase,
+): PolicyResult<LinkPresenceScoringPolicyCreate> {
+  const linkCheck = requireString(obj, 'link_slug')
+  if (!linkCheck.ok) return { error: linkCheck.error, valid: false }
+  const scores = readScorePair(obj)
+  if (!scores.ok) return { error: scores.error, valid: false }
+  return {
+    policy: {
+      ...base,
+      category: 'link_presence',
+      link_slug: linkCheck.value,
+      missing_score: scores.missing,
+      present_score: scores.present,
+    },
+    valid: true,
+  }
+}
+
+const CATEGORY_VALIDATORS: Record<
+  ScoringPolicyCategory,
+  (
+    obj: Record<string, unknown>,
+    base: PolicyBase,
+  ) => PolicyResult<ScoringPolicyCreate>
+> = {
+  age: validateAgePolicy,
+  attribute: validateAttributePolicy,
+  link_presence: validateLinkPresencePolicy,
+  presence: validatePresencePolicy,
+}
+
+function validatePolicyShape(data: unknown): PolicyResult<ScoringPolicyCreate> {
+  if (!isPlainObject(data)) {
+    return { error: 'Input must be a JSON/YAML object.', valid: false }
+  }
+  const baseResult = validateBaseShape(data)
+  if (!baseResult.valid) return baseResult
+  return CATEGORY_VALIDATORS[baseResult.category](
+    baseResult.obj,
+    baseResult.base,
+  )
+}
+
+function validatePresencePolicy(
+  obj: Record<string, unknown>,
+  base: PolicyBase,
+): PolicyResult<PresenceScoringPolicyCreate> {
+  const attrCheck = requireString(obj, 'attribute_name')
+  if (!attrCheck.ok) return { error: attrCheck.error, valid: false }
+  const scores = readScorePair(obj)
+  if (!scores.ok) return { error: scores.error, valid: false }
+  return {
+    policy: {
+      ...base,
+      attribute_name: attrCheck.value,
+      category: 'presence',
+      missing_score: scores.missing,
+      present_score: scores.present,
     },
     valid: true,
   }
