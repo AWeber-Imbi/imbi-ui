@@ -1,9 +1,11 @@
+import type { ReactElement } from 'react'
+
 import md5 from 'md5'
 
 import { usePluginOpsLogTemplates } from '@/hooks/usePluginOpsLogTemplates'
 import type { ActivityFeedEntry, OperationsLogEntry } from '@/types'
 
-import { renderOpsLogTemplate } from './operations-log/renderOpsLogTemplate'
+import { renderActivityTemplate } from './activityFeed/renderActivityTemplate'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 
@@ -18,10 +20,17 @@ interface ActivityLineProps {
   renderTemplate: (entry: OperationsLogEntry) => null | string
 }
 
-interface ParsedPayload {
-  action?: string
-  payload: Record<string, unknown>
-  pluginSlug?: string
+interface OpsLogActivityLineProps {
+  entry: OperationsLogEntry
+  projectButton: null | ReactElement
+  renderTemplate: (entry: OperationsLogEntry) => null | string
+  userButton: ReactElement
+}
+
+interface ProjectFeedActivityLineProps {
+  activity: Extract<ActivityFeedEntry, { type: 'ProjectFeedEntry' }>
+  projectButton: null | ReactElement
+  userButton: ReactElement
 }
 
 interface RecentActivityProps {
@@ -87,29 +96,9 @@ export function RecentActivity({
                 activity={activity}
                 onProjectSelect={onProjectSelect}
                 onUserSelect={onUserSelect}
-                renderTemplate={(opsEntry) => {
-                  const parsed = parseActivityDescription(opsEntry.description)
-                  if (!parsed?.pluginSlug) return null
-                  const template = templates.get(
-                    parsed.pluginSlug,
-                    parsed.action,
-                  )
-                  if (!template) return null
-                  return renderOpsLogTemplate(template.label, {
-                    display: {
-                      environment: opsEntry.environment ?? undefined,
-                      performer: opsEntry.performed_by ?? opsEntry.recorded_by,
-                      project: opsEntry.project_name ?? undefined,
-                    },
-                    entry: {
-                      description: opsEntry.description,
-                      environment_slug: opsEntry.environment ?? '',
-                      project_slug: opsEntry.project_name ?? '',
-                      version: opsEntry.version ?? null,
-                    } as never,
-                    payload: parsed.payload,
-                  })
-                }}
+                renderTemplate={(opsEntry) =>
+                  renderActivityTemplate(opsEntry, templates)
+                }
               />
 
               <p className="text-tertiary mt-1 text-xs">
@@ -178,39 +167,22 @@ function ActivityLine({
   ) : null
 
   if (activity.type === 'OperationsLogEntry') {
-    const rendered = renderTemplate(activity)
-    if (rendered) {
-      return (
-        <p className="text-secondary text-sm leading-relaxed">
-          {userButton} {rendered}
-          {projectButton ? <> on {projectButton}</> : null}
-        </p>
-      )
-    }
     return (
-      <p className="text-secondary text-sm leading-relaxed">
-        {userButton} {activity.change_type.toLowerCase()} {projectButton}
-        {activity.environment && (
-          <span>
-            {activity.change_type === 'Deployed' ? ' to the ' : ' in the '}
-            {activity.environment} environment.
-          </span>
-        )}
-        {activity.version && (
-          <span className="text-tertiary"> ({activity.version})</span>
-        )}
-      </p>
+      <OpsLogActivityLine
+        entry={activity}
+        projectButton={projectButton}
+        renderTemplate={renderTemplate}
+        userButton={userButton}
+      />
     )
   }
 
-  const trailing = activity.what === 'updated facts' ? ' project.' : '.'
-  const verbPhrase =
-    activity.what === 'updated facts' ? 'updated facts for the' : activity.what
   return (
-    <p className="text-secondary text-sm leading-relaxed">
-      {userButton} {verbPhrase} {projectButton}
-      {trailing}
-    </p>
+    <ProjectFeedActivityLine
+      activity={activity}
+      projectButton={projectButton}
+      userButton={userButton}
+    />
   )
 }
 
@@ -256,26 +228,49 @@ function getRelativeTime(timestamp: string): string {
   }
 }
 
-function parseActivityDescription(
-  description: null | string | undefined,
-): null | ParsedPayload {
-  const raw = (description ?? '').trim()
-  if (!raw.startsWith('{')) return null
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return null
-    }
-    const payload = parsed as Record<string, unknown>
-    const pluginSlug =
-      typeof payload.plugin_slug === 'string' ? payload.plugin_slug : undefined
-    if (!pluginSlug) return null
-    return {
-      action: typeof payload.action === 'string' ? payload.action : undefined,
-      payload,
-      pluginSlug,
-    }
-  } catch {
-    return null
+function OpsLogActivityLine({
+  entry,
+  projectButton,
+  renderTemplate,
+  userButton,
+}: OpsLogActivityLineProps) {
+  const rendered = renderTemplate(entry)
+  if (rendered) {
+    return (
+      <p className="text-secondary text-sm leading-relaxed">
+        {userButton} {rendered}
+        {projectButton ? <> on {projectButton}</> : null}
+      </p>
+    )
   }
+  return (
+    <p className="text-secondary text-sm leading-relaxed">
+      {userButton} {entry.change_type.toLowerCase()} {projectButton}
+      {entry.environment && (
+        <span>
+          {entry.change_type === 'Deployed' ? ' to the ' : ' in the '}
+          {entry.environment} environment.
+        </span>
+      )}
+      {entry.version && (
+        <span className="text-tertiary"> ({entry.version})</span>
+      )}
+    </p>
+  )
+}
+
+function ProjectFeedActivityLine({
+  activity,
+  projectButton,
+  userButton,
+}: ProjectFeedActivityLineProps) {
+  const trailing = activity.what === 'updated facts' ? ' project.' : '.'
+  const verbPhrase =
+    activity.what === 'updated facts' ? 'updated facts for the' : activity.what
+  return (
+    <p className="text-secondary text-sm leading-relaxed">
+      {userButton} {verbPhrase} {projectButton}
+      {trailing}
+    </p>
+  )
 }

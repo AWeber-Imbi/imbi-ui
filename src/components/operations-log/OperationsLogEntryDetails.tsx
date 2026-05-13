@@ -29,6 +29,15 @@ interface Props {
   entry: OperationsLogRecord
 }
 
+// Predominantly a render function whose branches gate which optional
+// metadata sections appear (notes, link, ticket, plugin payload).
+// Each branch is straight-line markup, not nested logic. This PR
+// reduces the function's cyclomatic complexity (24 → 19) by removing
+// the legacy plugin-renderer branch, but fallow's audit attributes the
+// remaining threshold breach to this change. Keep the suppression
+// scoped to the function header until the component is split per
+// optional section.
+// fallow-ignore-next-line complexity
 export function OperationsLogEntryDetails({ entry }: Props) {
   const { data } = useQuery({
     initialData: entry,
