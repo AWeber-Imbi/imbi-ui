@@ -58,7 +58,7 @@ export function renderActivityTemplate(
       environment_slug: opsEntry.environment ?? '',
       project_slug: opsEntry.project_name ?? '',
       version: opsEntry.version ?? null,
-    } as never,
+    },
     payload: parsed.payload,
   })
 }

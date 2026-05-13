@@ -133,15 +133,15 @@ describe('renderOpsLogTemplate', () => {
     expect(result).toBe('value=hello')
   })
 
-  it('treats dotted placeholder names as literal keys', () => {
-    // The current renderer matches [\w.] so dotted names are looked up
-    // verbatim. We deliberately do not split on "." -- plugins should
-    // flatten nested payloads before sending.
+  it('does not match placeholders that contain dots', () => {
+    // The renderer's placeholder regex matches ``\w+`` only. Dotted
+    // names are left untouched so plugins flatten nested payloads
+    // before sending rather than relying on path-style traversal.
     const result = renderOpsLogTemplate('{{nested.key}}', {
       entry: makeEntry(),
       payload: { 'nested.key': 'value' },
     })
-    expect(result).toBe('value')
+    expect(result).toBe('{{nested.key}}')
   })
 })
 

@@ -1,7 +1,11 @@
 import type { OpsLogTemplate } from '@/api/endpoints'
 import type { OperationsLogRecord } from '@/types'
 
-const PLACEHOLDER_RE = /\{\{\s*([\w.]+)\s*\}\}/g
+// Placeholder names are limited to a single word: no dots, no path
+// traversal. Plugins that need to expose nested data must flatten it
+// into the payload before sending. The regex deliberately matches the
+// resolver: see ``resolve`` below.
+const PLACEHOLDER_RE = /\{\{\s*(\w+)\s*\}\}/g
 
 export interface OpsLogTemplateContext {
   // Display-resolved values the row already computes locally (so the
@@ -13,8 +17,18 @@ export interface OpsLogTemplateContext {
     performer?: string
     project?: string
   }
-  entry: OperationsLogRecord
+  entry: OperationsLogRecord | OpsLogTemplateEntry
   payload: Record<string, unknown>
+}
+
+// Only fields the renderer actually reads off ``entry`` -- callers
+// don't need to materialize a full ``OperationsLogRecord`` just to
+// substitute these placeholders.
+export interface OpsLogTemplateEntry {
+  description?: string
+  environment_slug?: string
+  project_slug?: string
+  version?: null | string
 }
 
 export function renderOpsLogLabel(

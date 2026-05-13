@@ -38,7 +38,13 @@ export function usePluginOpsLogTemplates(): {
 function buildMap(plugins: PluginOpsLogTemplates[]): PluginOpsLogTemplateMap {
   const bySlug = new Map<string, Record<string, OpsLogTemplate>>()
   for (const plugin of plugins) {
-    if (plugin.slug) bySlug.set(plugin.slug, plugin.templates ?? {})
+    // ``slug`` is typed as ``string`` in the API contract but the
+    // backend currently allows empty strings (the field originates
+    // from the plugin manifest, not a database key). Skip empty
+    // slugs explicitly: callers cannot look them up via ``get``
+    // anyway because that path is also guarded.
+    if (!plugin.slug) continue
+    bySlug.set(plugin.slug, plugin.templates ?? {})
   }
   return {
     // ``action`` is the discriminator the API encodes into the
