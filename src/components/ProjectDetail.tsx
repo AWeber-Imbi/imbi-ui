@@ -214,20 +214,23 @@ export function ProjectDetail({
           ? deploymentStatus[fromSlug]?.version
           : undefined
         // Wait for the releases query (drives ``deploymentStatus``) to
-        // settle before deciding the upstream is empty.
-        if (currentReleases.length === 0) return
+        // settle before deciding the upstream is empty. Use the
+        // query's pending flag, not array length — a project with
+        // genuinely zero releases would otherwise stay stuck here
+        // without redirecting.
+        if (releasesPending) return
         if (!fromVersion) {
           navigate(`/projects/${project.id}`, { replace: true })
         }
       }
     }
   }, [
-    currentReleases,
     deploymentStatus,
     initialSubId,
     initialTab,
     navigate,
     project.id,
+    releasesPending,
     sortedEnvironments,
   ])
 
