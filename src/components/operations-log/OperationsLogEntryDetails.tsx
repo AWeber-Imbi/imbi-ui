@@ -97,7 +97,9 @@ export function OperationsLogEntryDetails({ entry }: Props) {
             Notes
           </h3>
           <div className="document-markdown border-tertiary bg-primary text-primary max-w-none rounded-md border p-3 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-            <Markdown remarkPlugins={[remarkGfm]}>{record.notes}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {cleanNotes(record.notes!)}
+            </Markdown>
           </div>
         </div>
       )}
@@ -172,6 +174,10 @@ export function OperationsLogEntryDetails({ entry }: Props) {
       />
     </div>
   )
+}
+
+function cleanNotes(notes: string): string {
+  return notes.replace(/<!--[\s\S]*?-->/g, '').trim()
 }
 
 function formatAbsolute(iso: string): string {
