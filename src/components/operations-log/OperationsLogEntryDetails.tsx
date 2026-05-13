@@ -22,7 +22,6 @@ import type { OperationsLogRecord } from '@/types'
 import { parseDescription } from './parseDescription'
 import {
   GenericPluginPayload,
-  getPluginRenderer,
   type PluginOpsLogContext,
 } from './plugin-renderers'
 
@@ -53,8 +52,6 @@ export function OperationsLogEntryDetails({ entry }: Props) {
     version: record.version,
   }
   const parsed = parseDescription(record)
-  const pluginRenderer =
-    parsed.kind === 'plugin' ? getPluginRenderer(record.plugin_slug) : undefined
   const pluginCtx: null | PluginOpsLogContext =
     parsed.kind === 'plugin'
       ? { action: parsed.action, entry: record, payload: parsed.payload }
@@ -83,12 +80,10 @@ export function OperationsLogEntryDetails({ entry }: Props) {
       {pluginCtx && (
         <div>
           <h3 className="text-overline text-tertiary mb-1.5 uppercase">
-            {pluginRenderer?.displayName ?? record.plugin_slug}
+            {record.plugin_slug}
           </h3>
           <div className="border-tertiary bg-primary rounded-md border p-3">
-            {pluginRenderer?.details?.(pluginCtx) ?? (
-              <GenericPluginPayload {...pluginCtx} />
-            )}
+            <GenericPluginPayload {...pluginCtx} />
           </div>
         </div>
       )}

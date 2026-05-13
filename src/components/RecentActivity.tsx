@@ -1,9 +1,28 @@
 import md5 from 'md5'
 
-import type { ActivityFeedEntry } from '@/types'
+import { usePluginOpsLogTemplates } from '@/hooks/usePluginOpsLogTemplates'
+import type { ActivityFeedEntry, OperationsLogEntry } from '@/types'
 
+import { renderOpsLogTemplate } from './operations-log/renderOpsLogTemplate'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
+
+interface ActivityLineProps {
+  activity: ActivityFeedEntry
+  onProjectSelect?: (projectName: string) => void
+  onUserSelect?: (userName: string) => void
+  // When the activity is an ops-log entry whose plugin ships a template
+  // for the embedded ``action``, return the rendered label string;
+  // otherwise return ``null`` so the line falls back to the legacy
+  // hand-built sentence.
+  renderTemplate: (entry: OperationsLogEntry) => null | string
+}
+
+interface ParsedPayload {
+  action?: string
+  payload: Record<string, unknown>
+  pluginSlug?: string
+}
 
 interface RecentActivityProps {
   activities: ActivityFeedEntry[]
@@ -24,6 +43,7 @@ export function RecentActivity({
   onProjectSelect,
   onUserSelect,
 }: RecentActivityProps) {
+  const { templates } = usePluginOpsLogTemplates()
   if (isLoading) {
     return (
       <Card className="p-6">
@@ -63,47 +83,34 @@ export function RecentActivity({
             />
 
             <div className="min-w-0 flex-1">
-              <p className="text-secondary text-sm leading-relaxed">
-                <Button
-                  className="text-primary hover:text-info h-auto p-0 font-medium transition-colors"
-                  onClick={() => onUserSelect?.(activity.display_name)}
-                  variant="link"
-                >
-                  {activity.display_name}
-                </Button>{' '}
-                {activity.type === 'OperationsLogEntry'
-                  ? activity.change_type.toLowerCase()
-                  : activity.what === 'updated facts'
-                    ? 'updated facts for the'
-                    : activity.what}{' '}
-                {activity.project_name && (
-                  <Button
-                    className="text-info hover:text-info/80 h-auto p-0 font-medium transition-colors"
-                    onClick={() => onProjectSelect?.(activity.project_name!)}
-                    variant="link"
-                  >
-                    {activity.project_name}
-                  </Button>
-                )}
-                {activity.type === 'OperationsLogEntry' &&
-                  activity.environment && (
-                    <span>
-                      {activity.change_type === 'Deployed'
-                        ? ' to the '
-                        : ' in the '}
-                      {activity.environment} environment.
-                    </span>
-                  )}
-                {activity.type === 'ProjectFeedEntry' &&
-                  activity.what === 'updated facts' &&
-                  ' project.'}
-                {activity.type === 'ProjectFeedEntry' &&
-                  activity.what !== 'updated facts' &&
-                  '.'}
-                {activity.type === 'OperationsLogEntry' && activity.version && (
-                  <span className="text-tertiary"> ({activity.version})</span>
-                )}
-              </p>
+              <ActivityLine
+                activity={activity}
+                onProjectSelect={onProjectSelect}
+                onUserSelect={onUserSelect}
+                renderTemplate={(opsEntry) => {
+                  const parsed = parseActivityDescription(opsEntry.description)
+                  if (!parsed?.pluginSlug) return null
+                  const template = templates.get(
+                    parsed.pluginSlug,
+                    parsed.action,
+                  )
+                  if (!template) return null
+                  return renderOpsLogTemplate(template.label, {
+                    display: {
+                      environment: opsEntry.environment ?? undefined,
+                      performer: opsEntry.performed_by ?? opsEntry.recorded_by,
+                      project: opsEntry.project_name ?? undefined,
+                    },
+                    entry: {
+                      description: opsEntry.description,
+                      environment_slug: opsEntry.environment ?? '',
+                      project_slug: opsEntry.project_name ?? '',
+                      version: opsEntry.version ?? null,
+                    } as never,
+                    payload: parsed.payload,
+                  })
+                }}
+              />
 
               <p className="text-tertiary mt-1 text-xs">
                 {getRelativeTime(
@@ -142,6 +149,68 @@ export function RecentActivity({
       )}
       {activityList}
     </Card>
+  )
+}
+
+function ActivityLine({
+  activity,
+  onProjectSelect,
+  onUserSelect,
+  renderTemplate,
+}: ActivityLineProps) {
+  const userButton = (
+    <Button
+      className="text-primary hover:text-info h-auto p-0 font-medium transition-colors"
+      onClick={() => onUserSelect?.(activity.display_name)}
+      variant="link"
+    >
+      {activity.display_name}
+    </Button>
+  )
+  const projectButton = activity.project_name ? (
+    <Button
+      className="text-info hover:text-info/80 h-auto p-0 font-medium transition-colors"
+      onClick={() => onProjectSelect?.(activity.project_name!)}
+      variant="link"
+    >
+      {activity.project_name}
+    </Button>
+  ) : null
+
+  if (activity.type === 'OperationsLogEntry') {
+    const rendered = renderTemplate(activity)
+    if (rendered) {
+      return (
+        <p className="text-secondary text-sm leading-relaxed">
+          {userButton} {rendered}
+          {projectButton ? <> on {projectButton}</> : null}
+        </p>
+      )
+    }
+    return (
+      <p className="text-secondary text-sm leading-relaxed">
+        {userButton} {activity.change_type.toLowerCase()} {projectButton}
+        {activity.environment && (
+          <span>
+            {activity.change_type === 'Deployed' ? ' to the ' : ' in the '}
+            {activity.environment} environment.
+          </span>
+        )}
+        {activity.version && (
+          <span className="text-tertiary"> ({activity.version})</span>
+        )}
+      </p>
+    )
+  }
+
+  const trailing = activity.what === 'updated facts' ? ' project.' : '.'
+  const verbPhrase =
+    activity.what === 'updated facts' ? 'updated facts for the' : activity.what
+  return (
+    <p className="text-secondary text-sm leading-relaxed">
+      {userButton} {verbPhrase} {projectButton}
+      {trailing}
+    </p>
   )
 }
 
@@ -184,5 +253,29 @@ function getRelativeTime(timestamp: string): string {
   } catch (error) {
     console.error('Error parsing timestamp:', timestamp, error)
     return 'unknown time'
+  }
+}
+
+function parseActivityDescription(
+  description: null | string | undefined,
+): null | ParsedPayload {
+  const raw = (description ?? '').trim()
+  if (!raw.startsWith('{')) return null
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null
+    }
+    const payload = parsed as Record<string, unknown>
+    const pluginSlug =
+      typeof payload.plugin_slug === 'string' ? payload.plugin_slug : undefined
+    if (!pluginSlug) return null
+    return {
+      action: typeof payload.action === 'string' ? payload.action : undefined,
+      payload,
+      pluginSlug,
+    }
+  } catch {
+    return null
   }
 }
