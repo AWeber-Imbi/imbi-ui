@@ -104,15 +104,14 @@ export function ProjectSettingsTab({ project }: { project: Project }) {
   // and only render the resync card when its manifest opts in. Multiple
   // deployment assignments are rare; we resync the default one and
   // expose ``source`` via the existing endpoint flag if needed later.
-  const deploymentPlugin = useMemo(
-    () =>
-      projectPlugins.find(
-        (assignment) =>
-          assignment.tab === 'deployment' &&
-          assignment.supports_deployment_sync === true,
-      ),
-    [projectPlugins],
-  )
+  const deploymentPlugin = useMemo(() => {
+    const candidates = projectPlugins.filter(
+      (assignment) =>
+        assignment.tab === 'deployment' &&
+        assignment.supports_deployment_sync === true,
+    )
+    return candidates.find((assignment) => assignment.default) ?? candidates[0]
+  }, [projectPlugins])
 
   const resyncMutation = useProjectDeploymentResync(orgSlug, project.id)
 
