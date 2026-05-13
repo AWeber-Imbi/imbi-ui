@@ -177,7 +177,10 @@ export function OperationsLogEntryDetails({ entry }: Props) {
 }
 
 function cleanNotes(notes: string): string {
-  return notes.replace(/<!--[\s\S]*?-->/g, '').trim()
+  return notes
+    .replace(/\\n/g, '\n')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .trim()
 }
 
 function formatAbsolute(iso: string): string {
