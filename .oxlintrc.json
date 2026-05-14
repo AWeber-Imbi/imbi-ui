@@ -15,7 +15,7 @@
       "ignorePrefixes": ["--radix-", "--assistant-", "--tw-"]
     }
   },
-  "jsPlugins": ["eslint-plugin-react-refresh", "eslint-plugin-perfectionist", "oxlint-tailwindcss", "./tools/oxlint-plugin-css-vars.js"],
+  "jsPlugins": ["eslint-plugin-react-refresh", "eslint-plugin-perfectionist", "oxlint-tailwindcss", "./tools/oxlint-plugin-css-vars.ts"],
   "overrides": [
     {
       "files": ["src/test/**/*.{ts,tsx}"],

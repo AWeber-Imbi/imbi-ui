@@ -1,3 +1,4 @@
+import type { Context, ESTree, Visitor } from '@oxlint/plugins'
 import { definePlugin, defineRule } from '@oxlint/plugins'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -9,9 +10,9 @@ const SHORTHAND_REF_RE = /(?<=[\w-])\((--[\w-]+)\)/g
 const DEFAULT_CSS_FILE = 'src/index.css'
 const DEFAULT_IGNORE_PREFIXES = ['--radix-', '--assistant-', '--tw-']
 
-export function parseCssCustomProperties(cssFilePath) {
+export function parseCssCustomProperties(cssFilePath: string): Set<string> {
   const css = readFileSync(cssFilePath, 'utf8')
-  const props = new Set()
+  const props = new Set<string>()
   for (const line of css.split('\n')) {
     const match = line.match(CSS_PROP_DEF_RE)
     if (match) props.add(match[1])
@@ -19,22 +20,29 @@ export function parseCssCustomProperties(cssFilePath) {
   return props
 }
 
-export function levenshtein(a, b) {
+export function levenshtein(a: string, b: string): number {
   const m = a.length
   const n = b.length
-  const d = Array.from({ length: m + 1 }, (_, i) => [i])
+  const d: number[][] = Array.from({ length: m + 1 }, (_, i) => [i])
   for (let j = 1; j <= n; j++) d[0][j] = j
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1
-      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost)
+      d[i][j] = Math.min(
+        d[i - 1][j] + 1,
+        d[i][j - 1] + 1,
+        d[i - 1][j - 1] + cost,
+      )
     }
   }
   return d[m][n]
 }
 
-export function findSuggestion(input, candidates) {
-  let best = null
+export function findSuggestion(
+  input: string,
+  candidates: Set<string>,
+): string | null {
+  let best: string | null = null
   let bestDist = Infinity
   const maxDist = Math.max(3, Math.floor(input.length * 0.4))
   for (const c of candidates) {
@@ -47,14 +55,31 @@ export function findSuggestion(input, candidates) {
   return best
 }
 
-let cachedState = null
+interface VarRef {
+  index: number
+  name: string
+}
 
-function getState(context) {
+interface CachedState {
+  ignorePrefixes: string[]
+  knownProperties: Set<string>
+}
+
+interface CssVarsSettings {
+  cssFile?: string
+  ignorePrefixes?: string[]
+}
+
+let cachedState: CachedState | null = null
+
+function getState(context: Context): CachedState | null {
   if (cachedState) return cachedState
 
-  let settings
+  let settings: CssVarsSettings | undefined
   try {
-    settings = context.settings?.cssVars
+    settings = (context.settings as Record<string, unknown>)?.cssVars as
+      | CssVarsSettings
+      | undefined
   } catch {
     return null
   }
@@ -63,7 +88,7 @@ function getState(context) {
   const cssFilePath = resolve(process.cwd(), cssFile)
   const ignorePrefixes = settings?.ignorePrefixes ?? DEFAULT_IGNORE_PREFIXES
 
-  let knownProperties
+  let knownProperties: Set<string>
   try {
     knownProperties = parseCssCustomProperties(cssFilePath)
   } catch {
@@ -74,9 +99,9 @@ function getState(context) {
   return cachedState
 }
 
-export function extractVarRefs(str) {
-  const refs = []
-  let match
+export function extractVarRefs(str: string): VarRef[] {
+  const refs: VarRef[] = []
+  let match: RegExpExecArray | null
   VAR_REF_RE.lastIndex = 0
   while ((match = VAR_REF_RE.exec(str)) !== null) {
     refs.push({ index: match.index, name: match[1] })
@@ -91,8 +116,11 @@ export function extractVarRefs(str) {
 }
 
 const noUnknownCssVar = defineRule({
-  create(context) {
-    function checkString(value, node) {
+  create(context: Context): Visitor {
+    function checkString(
+      value: string,
+      node: ESTree.StringLiteral | ESTree.TemplateElement,
+    ): void {
       const state = getState(context)
       if (!state) return
 
@@ -111,12 +139,12 @@ const noUnknownCssVar = defineRule({
     }
 
     return {
-      Literal(node) {
+      Literal(node: ESTree.StringLiteral) {
         if (typeof node.value !== 'string') return
         if (!node.value.includes('--')) return
         checkString(node.value, node)
       },
-      TemplateLiteral(node) {
+      TemplateLiteral(node: ESTree.TemplateLiteral) {
         for (const quasi of node.quasis) {
           const raw = quasi.value.cooked ?? quasi.value.raw
           if (!raw || !raw.includes('--')) continue
@@ -126,10 +154,13 @@ const noUnknownCssVar = defineRule({
     }
   },
   meta: {
-    docs: { description: 'Disallow references to undefined CSS custom properties' },
+    docs: {
+      description: 'Disallow references to undefined CSS custom properties',
+    },
     messages: {
       unknownVar: 'Unknown CSS custom property "{{name}}".',
-      unknownVarSuggestion: 'Unknown CSS custom property "{{name}}". Did you mean "{{suggestion}}"?',
+      unknownVarSuggestion:
+        'Unknown CSS custom property "{{name}}". Did you mean "{{suggestion}}"?',
     },
     schema: [],
     type: 'problem',

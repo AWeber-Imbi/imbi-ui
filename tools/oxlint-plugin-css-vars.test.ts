@@ -6,7 +6,7 @@ import {
   findSuggestion,
   levenshtein,
   parseCssCustomProperties,
-} from './oxlint-plugin-css-vars.js'
+} from './oxlint-plugin-css-vars'
 
 describe('parseCssCustomProperties', () => {
   const cssFile = resolve(import.meta.dirname, '../src/index.css')
