@@ -9,7 +9,7 @@ const SHORTHAND_REF_RE = /(?<=[\w-])\((--[\w-]+)\)/g
 const DEFAULT_CSS_FILE = 'src/index.css'
 const DEFAULT_IGNORE_PREFIXES = ['--radix-', '--assistant-', '--tw-']
 
-function parseCssCustomProperties(cssFilePath) {
+export function parseCssCustomProperties(cssFilePath) {
   const css = readFileSync(cssFilePath, 'utf8')
   const props = new Set()
   for (const line of css.split('\n')) {
@@ -19,7 +19,7 @@ function parseCssCustomProperties(cssFilePath) {
   return props
 }
 
-function levenshtein(a, b) {
+export function levenshtein(a, b) {
   const m = a.length
   const n = b.length
   const d = Array.from({ length: m + 1 }, (_, i) => [i])
@@ -33,7 +33,7 @@ function levenshtein(a, b) {
   return d[m][n]
 }
 
-function findSuggestion(input, candidates) {
+export function findSuggestion(input, candidates) {
   let best = null
   let bestDist = Infinity
   const maxDist = Math.max(3, Math.floor(input.length * 0.4))
@@ -74,7 +74,7 @@ function getState(context) {
   return cachedState
 }
 
-function extractVarRefs(str) {
+export function extractVarRefs(str) {
   const refs = []
   let match
   VAR_REF_RE.lastIndex = 0
