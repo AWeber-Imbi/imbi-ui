@@ -123,10 +123,10 @@ export function UnconnectedIntegrationWidget({
               />
             </div>
             <div className="flex gap-1.25">
-              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--color-text-tertiary)" />
-              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--color-text-tertiary) [animation-delay:0.15s]" />
-              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--color-text-tertiary) [animation-delay:0.3s]" />
-              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--color-text-tertiary) [animation-delay:0.45s]" />
+              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--text-color-tertiary)" />
+              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--text-color-tertiary) [animation-delay:0.15s]" />
+              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--text-color-tertiary) [animation-delay:0.3s]" />
+              <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--text-color-tertiary) [animation-delay:0.45s]" />
             </div>
             <div className="border-border bg-card text-primary grid size-11.5 place-items-center rounded-xl border opacity-50 shadow-sm grayscale-[0.4]">
               {ResolvedIcon ? (

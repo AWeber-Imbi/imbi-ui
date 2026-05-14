@@ -8,8 +8,14 @@
     "builtin": true,
     "es2020": true
   },
-  "ignorePatterns": ["dist", "src/types/api-generated.ts"],
-  "jsPlugins": ["eslint-plugin-react-refresh", "eslint-plugin-perfectionist", "oxlint-tailwindcss"],
+  "ignorePatterns": ["dist", "src/types/api-generated.ts", "tools/"],
+  "settings": {
+    "cssVars": {
+      "cssFile": "src/index.css",
+      "ignorePrefixes": ["--radix-", "--assistant-", "--tw-"]
+    }
+  },
+  "jsPlugins": ["eslint-plugin-react-refresh", "eslint-plugin-perfectionist", "oxlint-tailwindcss", "./tools/oxlint-plugin-css-vars.js"],
   "overrides": [
     {
       "files": ["src/test/**/*.{ts,tsx}"],
@@ -227,6 +233,7 @@
     "tailwindcss/no-hardcoded-colors": "warn",
     "tailwindcss/no-unnecessary-arbitrary-value": "warn",
     "tailwindcss/no-unnecessary-whitespace": "error",
-    "tailwindcss/no-unknown-classes": "error"
+    "tailwindcss/no-unknown-classes": "error",
+    "css-vars/no-unknown-css-var": "error"
   }
 }
