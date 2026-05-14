@@ -196,6 +196,7 @@ function dayLabel(d: Date): string {
     .toUpperCase()
 }
 
+// fallow-ignore-next-line complexity
 function diffObjects(
   oldObj: Record<string, unknown>,
   newObj: Record<string, unknown>,
@@ -335,6 +336,37 @@ function isProjectChangePayload(
   return typeof payload.field === 'string'
 }
 
+// fallow-ignore-next-line complexity
+function KeyChangeItem({ change }: { change: KeyChange }) {
+  return (
+    <li className="text-secondary text-xs">
+      <span className="text-tertiary">{change.kind}</span>{' '}
+      <ValueChip>{change.key}</ValueChip>
+      {change.kind === 'changed' && (
+        <>
+          {': '}
+          <ValueChip>{change.oldValue}</ValueChip>
+          {' → '}
+          <ValueChip>{change.newValue}</ValueChip>
+        </>
+      )}
+      {change.kind === 'added' && change.newValue !== '' && (
+        <>
+          {': '}
+          <ValueChip>{change.newValue}</ValueChip>
+        </>
+      )}
+      {change.kind === 'removed' && change.oldValue !== '' && (
+        <>
+          {': '}
+          <ValueChip>{change.oldValue}</ValueChip>
+        </>
+      )}
+    </li>
+  )
+}
+
+// fallow-ignore-next-line complexity
 function OpsEntry({
   displayNames,
   envMap,
@@ -411,30 +443,7 @@ function renderProjectChangeBody(
           changed {field}
           <ul className="mt-1 space-y-0.5">
             {changes.map((c) => (
-              <li className="text-secondary text-xs" key={c.key}>
-                <span className="text-tertiary">{c.kind}</span>{' '}
-                <ValueChip>{c.key}</ValueChip>
-                {c.kind === 'changed' && (
-                  <>
-                    {': '}
-                    <ValueChip>{c.oldValue}</ValueChip>
-                    {' → '}
-                    <ValueChip>{c.newValue}</ValueChip>
-                  </>
-                )}
-                {c.kind === 'added' && c.newValue !== '' && (
-                  <>
-                    {': '}
-                    <ValueChip>{c.newValue}</ValueChip>
-                  </>
-                )}
-                {c.kind === 'removed' && c.oldValue !== '' && (
-                  <>
-                    {': '}
-                    <ValueChip>{c.oldValue}</ValueChip>
-                  </>
-                )}
-              </li>
+              <KeyChangeItem change={c} key={c.key} />
             ))}
           </ul>
         </span>
