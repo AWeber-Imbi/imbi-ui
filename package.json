@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "build": "tsc && vite build",
-    "check:types": "tsc && tsc -p tsconfig.tools.json",
     "codegen": "openapi-typescript openapi.json -o src/types/api-generated.ts",
     "codegen:fetch": "curl -sf http://localhost:8000/openapi.json -o openapi.json && npm run codegen",
     "dev": "vite",

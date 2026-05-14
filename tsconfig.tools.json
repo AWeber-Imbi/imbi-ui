@@ -5,7 +5,7 @@
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
+    "composite": true,
     "isolatedModules": true,
     "types": ["node"]
   },
