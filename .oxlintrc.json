@@ -8,7 +8,7 @@
     "builtin": true,
     "es2020": true
   },
-  "ignorePatterns": ["dist", "src/types/api-generated.ts", "tools/"],
+  "ignorePatterns": ["dist", "src/types/api-generated.ts"],
   "settings": {
     "cssVars": {
       "cssFile": "src/index.css",
@@ -21,6 +21,31 @@
       "files": ["src/test/**/*.{ts,tsx}"],
       "rules": {
         "react-refresh/only-export-components": "off"
+      }
+    },
+    {
+      "files": ["tools/**/*.ts"],
+      "rules": {
+        "css-vars/no-unknown-css-var": "off",
+        "react/exhaustive-deps": "off",
+        "react/rules-of-hooks": "off",
+        "react-refresh/only-export-components": "off",
+        "tailwindcss/consistent-variant-order": "off",
+        "tailwindcss/enforce-canonical": "off",
+        "tailwindcss/enforce-consistent-important-position": "off",
+        "tailwindcss/enforce-consistent-variable-syntax": "off",
+        "tailwindcss/enforce-negative-arbitrary-values": "off",
+        "tailwindcss/enforce-shorthand": "off",
+        "tailwindcss/enforce-sort-order": "off",
+        "tailwindcss/no-conflicting-classes": "off",
+        "tailwindcss/no-contradicting-variants": "off",
+        "tailwindcss/no-dark-without-light": "off",
+        "tailwindcss/no-deprecated-classes": "off",
+        "tailwindcss/no-duplicate-classes": "off",
+        "tailwindcss/no-hardcoded-colors": "off",
+        "tailwindcss/no-unnecessary-arbitrary-value": "off",
+        "tailwindcss/no-unnecessary-whitespace": "off",
+        "tailwindcss/no-unknown-classes": "off"
       }
     }
   ],

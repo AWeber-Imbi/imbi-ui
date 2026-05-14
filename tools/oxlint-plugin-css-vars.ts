@@ -10,14 +10,36 @@ const SHORTHAND_REF_RE = /(?<=[\w-])\((--[\w-]+)\)/g
 const DEFAULT_CSS_FILE = 'src/index.css'
 const DEFAULT_IGNORE_PREFIXES = ['--radix-', '--assistant-', '--tw-']
 
-export function parseCssCustomProperties(cssFilePath: string): Set<string> {
-  const css = readFileSync(cssFilePath, 'utf8')
-  const props = new Set<string>()
-  for (const line of css.split('\n')) {
-    const match = line.match(CSS_PROP_DEF_RE)
-    if (match) props.add(match[1])
+interface CachedState {
+  ignorePrefixes: string[]
+  knownProperties: Set<string>
+}
+
+interface CssVarsSettings {
+  cssFile?: string
+  ignorePrefixes?: string[]
+}
+
+interface VarRef {
+  index: number
+  name: string
+}
+
+export function findSuggestion(
+  input: string,
+  candidates: Set<string>,
+): null | string {
+  let best: null | string = null
+  let bestDist = Infinity
+  const maxDist = Math.max(3, Math.floor(input.length * 0.4))
+  for (const c of candidates) {
+    const dist = levenshtein(input, c)
+    if (dist < bestDist && dist <= maxDist) {
+      bestDist = dist
+      best = c
+    }
   }
-  return props
+  return best
 }
 
 export function levenshtein(a: string, b: string): number {
@@ -38,39 +60,33 @@ export function levenshtein(a: string, b: string): number {
   return d[m][n]
 }
 
-export function findSuggestion(
-  input: string,
-  candidates: Set<string>,
-): string | null {
-  let best: string | null = null
-  let bestDist = Infinity
-  const maxDist = Math.max(3, Math.floor(input.length * 0.4))
-  for (const c of candidates) {
-    const dist = levenshtein(input, c)
-    if (dist < bestDist && dist <= maxDist) {
-      bestDist = dist
-      best = c
-    }
+export function parseCssCustomProperties(cssFilePath: string): Set<string> {
+  const css = readFileSync(cssFilePath, 'utf8')
+  const props = new Set<string>()
+  for (const line of css.split('\n')) {
+    const match = line.match(CSS_PROP_DEF_RE)
+    if (match) props.add(match[1])
   }
-  return best
-}
-
-interface VarRef {
-  index: number
-  name: string
-}
-
-interface CachedState {
-  ignorePrefixes: string[]
-  knownProperties: Set<string>
-}
-
-interface CssVarsSettings {
-  cssFile?: string
-  ignorePrefixes?: string[]
+  return props
 }
 
 let cachedState: CachedState | null = null
+
+export function extractVarRefs(str: string): VarRef[] {
+  const refs: VarRef[] = []
+  let match: null | RegExpExecArray
+  VAR_REF_RE.lastIndex = 0
+  while ((match = VAR_REF_RE.exec(str)) !== null) {
+    refs.push({ index: match.index, name: match[1] })
+  }
+  SHORTHAND_REF_RE.lastIndex = 0
+  while ((match = SHORTHAND_REF_RE.exec(str)) !== null) {
+    if (!str.slice(Math.max(0, match.index - 3), match.index).endsWith('var')) {
+      refs.push({ index: match.index, name: match[1] })
+    }
+  }
+  return refs
+}
 
 function getState(context: Context): CachedState | null {
   if (cachedState) return cachedState
@@ -97,22 +113,6 @@ function getState(context: Context): CachedState | null {
 
   cachedState = { ignorePrefixes, knownProperties }
   return cachedState
-}
-
-export function extractVarRefs(str: string): VarRef[] {
-  const refs: VarRef[] = []
-  let match: RegExpExecArray | null
-  VAR_REF_RE.lastIndex = 0
-  while ((match = VAR_REF_RE.exec(str)) !== null) {
-    refs.push({ index: match.index, name: match[1] })
-  }
-  SHORTHAND_REF_RE.lastIndex = 0
-  while ((match = SHORTHAND_REF_RE.exec(str)) !== null) {
-    if (!str.slice(Math.max(0, match.index - 3), match.index).endsWith('var')) {
-      refs.push({ index: match.index, name: match[1] })
-    }
-  }
-  return refs
 }
 
 const noUnknownCssVar = defineRule({

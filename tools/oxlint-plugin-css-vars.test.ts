@@ -103,12 +103,12 @@ describe('levenshtein', () => {
 
 describe('findSuggestion', () => {
   const candidates = new Set([
+    '--background-color-action',
+    '--border-color-primary',
+    '--ds-text-primary',
     '--text-color-primary',
     '--text-color-secondary',
     '--text-color-tertiary',
-    '--border-color-primary',
-    '--background-color-action',
-    '--ds-text-primary',
   ])
 
   it('finds close matches', () => {
