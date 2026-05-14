@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 
 const CSS_PROP_DEF_RE = /^\s*(--[\w-]+)\s*:/
 const VAR_REF_RE = /var\(\s*(--[\w-]+)/g
-const SHORTHAND_REF_RE = /(?<=[\w-])\(\s*(--[\w-]+)\)/g
+const SHORTHAND_REF_RE = /(?<=[\w-])\(\s*(--[\w-]+)\s*\)/g
 
 const DEFAULT_CSS_FILE = 'src/index.css'
 const DEFAULT_IGNORE_PREFIXES = ['--radix-', '--assistant-', '--tw-']

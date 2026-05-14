@@ -82,6 +82,18 @@ describe('extractVarRefs', () => {
     expect(refs[0].name).toBe('--border-color-success')
     expect(refs[1].name).toBe('--text-color-tertiary')
   })
+
+  it('handles whitespace inside var()', () => {
+    const refs = extractVarRefs('var( --text-color-primary )')
+    expect(refs).toHaveLength(1)
+    expect(refs[0].name).toBe('--text-color-primary')
+  })
+
+  it('handles whitespace inside shorthand refs', () => {
+    const refs = extractVarRefs('bg-( --text-color-primary )')
+    expect(refs).toHaveLength(1)
+    expect(refs[0].name).toBe('--text-color-primary')
+  })
 })
 
 describe('levenshtein', () => {
