@@ -69,16 +69,16 @@ export function UnconnectedIntegrationWidget({
             className="border-tertiary bg-tertiary relative mt-3.5 rounded-[10px] border border-dashed p-2.5"
           >
             <div className="flex items-center gap-2 py-1.5">
-              <span className="to-secondary h-1.5 flex-[0.4] rounded-[3px] bg-linear-to-r from-(--color-text-tertiary) filter-[blur(1.5px)]" />
-              <span className="to-secondary h-1.5 flex-1 rounded-[3px] bg-linear-to-r from-(--color-text-tertiary) filter-[blur(1.5px)]" />
+              <span className="to-secondary h-1.5 flex-[0.4] rounded-[3px] bg-linear-to-r from-(--text-color-tertiary) filter-[blur(1.5px)]" />
+              <span className="to-secondary h-1.5 flex-1 rounded-[3px] bg-linear-to-r from-(--text-color-tertiary) filter-[blur(1.5px)]" />
             </div>
             <div className="border-border flex items-center gap-2 border-t py-1.5">
-              <span className="to-secondary h-1.5 flex-[0.7] rounded-[3px] bg-linear-to-r from-(--color-text-tertiary) filter-[blur(1.5px)]" />
-              <span className="to-secondary h-1.5 flex-[0.4] rounded-[3px] bg-linear-to-r from-(--color-text-tertiary) filter-[blur(1.5px)]" />
+              <span className="to-secondary h-1.5 flex-[0.7] rounded-[3px] bg-linear-to-r from-(--text-color-tertiary) filter-[blur(1.5px)]" />
+              <span className="to-secondary h-1.5 flex-[0.4] rounded-[3px] bg-linear-to-r from-(--text-color-tertiary) filter-[blur(1.5px)]" />
             </div>
             <div className="border-border flex items-center gap-2 border-t py-1.5">
-              <span className="to-secondary h-1.5 flex-1 rounded-[3px] bg-linear-to-r from-(--color-text-tertiary) filter-[blur(1.5px)]" />
-              <span className="to-secondary h-1.5 flex-[0.7] rounded-[3px] bg-linear-to-r from-(--color-text-tertiary) filter-[blur(1.5px)]" />
+              <span className="to-secondary h-1.5 flex-1 rounded-[3px] bg-linear-to-r from-(--text-color-tertiary) filter-[blur(1.5px)]" />
+              <span className="to-secondary h-1.5 flex-[0.7] rounded-[3px] bg-linear-to-r from-(--text-color-tertiary) filter-[blur(1.5px)]" />
             </div>
             <div className="border-border bg-card text-secondary absolute top-1/2 left-1/2 grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border shadow-sm">
               <Lock className="size-3.5" strokeWidth={1.8} />
