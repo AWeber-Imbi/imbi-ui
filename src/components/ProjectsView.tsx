@@ -222,7 +222,7 @@ export function ProjectsView() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-screen-2xl px-6 py-8">
         <div className="flex h-64 items-center justify-center">
           <div className="text-lg">Loading projects...</div>
         </div>
@@ -231,7 +231,7 @@ export function ProjectsView() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8">
+    <div className="mx-auto max-w-screen-2xl px-6 py-8">
       <div className="mb-6">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-primary text-2xl font-semibold">Projects</h1>
