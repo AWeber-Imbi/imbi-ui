@@ -465,24 +465,18 @@ export function ProjectsView() {
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex flex-col gap-0.5">
-                          {(project.open_pr_count ?? 0) > 0 && (
-                            <span className="text-action flex items-center gap-1 text-xs font-medium">
-                              <GitPullRequest className="size-3" />
-                              {project.open_pr_count} open
-                            </span>
-                          )}
-                          {(project.closed_pr_count ?? 0) > 0 && (
-                            <span className="text-tertiary flex items-center gap-1 text-xs">
-                              <GitPullRequest className="size-3" />
-                              {project.closed_pr_count} closed
-                            </span>
-                          )}
-                          {(project.viewer_open_pr_count ?? 0) > 0 && (
-                            <span className="text-amber-text flex items-center gap-1 text-xs font-medium">
-                              <GitPullRequest className="size-3" />
-                              {project.viewer_open_pr_count} mine
-                            </span>
-                          )}
+                          <span className="text-action flex items-center gap-1 text-xs font-medium">
+                            <GitPullRequest className="size-3" />
+                            {project.open_pr_count ?? 0} open
+                          </span>
+                          <span className="text-tertiary flex items-center gap-1 text-xs">
+                            <GitPullRequest className="size-3" />
+                            {project.closed_pr_count ?? 0} closed
+                          </span>
+                          <span className="text-amber-text flex items-center gap-1 text-xs font-medium">
+                            <GitPullRequest className="size-3" />
+                            {project.viewer_open_pr_count ?? 0} mine
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="px-6 py-4">
