@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { GitMerge } from 'lucide-react'
 
 import { getMyIdentities, getOrgPullRequests } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
@@ -46,6 +47,8 @@ export function MyPullRequestsWidget() {
 
   const isLoading = identitiesLoading || openLoading || closedLoading
   const notConnected = !identitiesLoading && !login
+  const openCount = openData?.total ?? 0
+  const closedCount = closedData?.total ?? 0
 
   return (
     <div className="border-border bg-card rounded-lg border p-6">
@@ -55,7 +58,7 @@ export function MyPullRequestsWidget() {
           {isLoading ? (
             <span
               aria-label="Loading My Pull Requests"
-              className="bg-tertiary/40 mt-2 inline-block h-8 w-20 animate-pulse rounded"
+              className="bg-tertiary/40 mt-2 inline-block h-9 w-32 animate-pulse rounded"
               role="status"
             />
           ) : notConnected ? (
@@ -69,17 +72,20 @@ export function MyPullRequestsWidget() {
               </a>
             </>
           ) : (
-            <>
-              <p className="text-action mt-2 text-3xl">
-                {openData?.total ?? 0}
-              </p>
-              <p className="text-tertiary mt-1 text-xs">
-                {closedData?.total ?? 0} closed
-              </p>
-            </>
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-primary text-3xl">
+                {openCount.toLocaleString()}
+              </span>
+              <span className="text-secondary text-sm">Open</span>
+              <span className="text-tertiary text-sm">/</span>
+              <span className="text-tertiary text-3xl">
+                {closedCount.toLocaleString()}
+              </span>
+              <span className="text-secondary text-sm">Closed</span>
+            </div>
           )}
         </div>
-        <div className="text-4xl">🔀</div>
+        <GitMerge className="text-tertiary size-9 shrink-0" />
       </div>
     </div>
   )

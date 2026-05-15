@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useQuery } from '@tanstack/react-query'
-import { Settings } from 'lucide-react'
+import { GitPullRequest, Settings } from 'lucide-react'
 
 import {
   getAdminPlugins,
@@ -98,7 +98,7 @@ const availableWidgets: WidgetConfig[] = [
     description: 'Open pull requests across all projects',
     icon: '🔀',
     id: 'stat-open-prs',
-    name: 'Open PRs',
+    name: 'Total Open PRs',
   },
   {
     category: 'activity',
@@ -323,14 +323,35 @@ export function Dashboard({
         value={activeDeploymentCount.toLocaleString()}
       />
     ),
+    // fallow-ignore-next-line complexity
     'stat-open-prs': () => (
-      <StatWidget
-        icon="🔀"
-        isError={isOpenPrsError}
-        isLoading={isOpenPrsLoading}
-        title="Open PRs"
-        value={(openPrsData?.total ?? 0).toLocaleString()}
-      />
+      <div className="border-border bg-card rounded-lg border p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-secondary text-sm">Total Open PRs</p>
+            {isOpenPrsLoading ? (
+              <span
+                aria-label="Loading Total Open PRs"
+                className="bg-tertiary/40 mt-2 inline-block h-9 w-32 animate-pulse rounded"
+                role="status"
+              />
+            ) : isOpenPrsError ? (
+              <p className="text-danger mt-2 text-sm">Unavailable</p>
+            ) : (
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-primary text-3xl">
+                  {(openPrsData?.total ?? 0).toLocaleString()}
+                </span>
+                <span className="text-secondary text-sm">
+                  across {(openPrsData?.project_count ?? 0).toLocaleString()}{' '}
+                  projects
+                </span>
+              </div>
+            )}
+          </div>
+          <GitPullRequest className="text-tertiary size-9 shrink-0" />
+        </div>
+      </div>
     ),
     'stat-teams': () => (
       <StatWidget icon="👥" title="Teams" value={teamCount.toLocaleString()} />

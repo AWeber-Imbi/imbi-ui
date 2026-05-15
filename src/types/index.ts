@@ -239,6 +239,7 @@ export interface PullRequest {
 
 export interface PullRequestListResponse {
   data: PullRequest[]
+  project_count: number
   total: number
 }
 
