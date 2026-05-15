@@ -14,21 +14,21 @@ import {
   Network,
   Plus,
   Search,
+  User,
 } from 'lucide-react'
 import { matchSorter } from 'match-sorter'
 
 import { getProjects } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { sortEnvironments } from '@/lib/utils'
 
 import { NewProjectDialog } from './NewProjectDialog'
 import { ProjectGraphView } from './ProjectGraphView'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Checkbox } from './ui/checkbox'
-import { EnvironmentBadge } from './ui/environment-badge'
 import { Input } from './ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import { buildReleaseTrainStops, ReleaseTrain } from './ui/release-train'
 import { ScoreBadge } from './ui/score-badge'
 import {
   Table,
@@ -334,40 +334,32 @@ export function ProjectsView() {
                 </div>
 
                 {project.environments && project.environments.length > 0 && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {sortEnvironments(project.environments || []).map((env) => (
-                      <EnvironmentBadge
-                        key={env.slug}
-                        label_color={env.label_color}
-                        name={env.name}
-                        slug={env.slug}
-                      />
-                    ))}
-                  </div>
+                  <ReleaseTrain
+                    size="compact"
+                    stops={buildReleaseTrainStops(
+                      project.environments,
+                      new Map(
+                        Object.entries(project.current_releases ?? {}).map(
+                          ([slug, r]) => [slug, r.version],
+                        ),
+                      ),
+                    )}
+                  />
                 )}
-                {((project.open_pr_count ?? 0) > 0 ||
-                  (project.closed_pr_count ?? 0) > 0) && (
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {(project.open_pr_count ?? 0) > 0 && (
-                      <span className="text-action flex items-center gap-1 text-xs font-medium">
-                        <GitPullRequest className="size-3" />
-                        {project.open_pr_count} open
-                      </span>
-                    )}
-                    {(project.closed_pr_count ?? 0) > 0 && (
-                      <span className="text-tertiary flex items-center gap-1 text-xs">
-                        <GitPullRequest className="size-3" />
-                        {project.closed_pr_count} closed
-                      </span>
-                    )}
-                    {(project.viewer_open_pr_count ?? 0) > 0 && (
-                      <span className="text-amber-text flex items-center gap-1 text-xs font-medium">
-                        <GitPullRequest className="size-3" />
-                        {project.viewer_open_pr_count} mine
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="mt-2 flex items-center gap-1.5">
+                  <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
+                    <GitPullRequest className="text-action size-3.5" />
+                    <span className="text-action text-xs font-medium">
+                      {project.open_pr_count ?? 0}
+                    </span>
+                  </span>
+                  <span className="border-action flex items-center gap-1 rounded-md border px-1.5 py-0.5">
+                    <User className="text-action size-3.5" />
+                    <span className="text-action text-xs font-medium">
+                      {project.viewer_open_pr_count ?? 0}
+                    </span>
+                  </span>
+                </div>
               </Card>
             )
           })}
@@ -449,33 +441,32 @@ export function ProjectsView() {
                       <TableCell className="px-6 py-4">
                         {project.environments &&
                           project.environments.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-2">
-                              {sortEnvironments(project.environments || []).map(
-                                (env) => (
-                                  <EnvironmentBadge
-                                    key={env.slug}
-                                    label_color={env.label_color}
-                                    name={env.name}
-                                    slug={env.slug}
-                                  />
+                            <ReleaseTrain
+                              size="compact"
+                              stops={buildReleaseTrainStops(
+                                project.environments,
+                                new Map(
+                                  Object.entries(
+                                    project.current_releases ?? {},
+                                  ).map(([slug, r]) => [slug, r.version]),
                                 ),
                               )}
-                            </div>
+                            />
                           )}
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-action flex items-center gap-1 text-xs font-medium">
-                            <GitPullRequest className="size-3" />
-                            {project.open_pr_count ?? 0} open
+                        <div className="flex items-center gap-1.5">
+                          <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
+                            <GitPullRequest className="text-action size-3.5" />
+                            <span className="text-action text-xs font-medium">
+                              {project.open_pr_count ?? 0}
+                            </span>
                           </span>
-                          <span className="text-tertiary flex items-center gap-1 text-xs">
-                            <GitPullRequest className="size-3" />
-                            {project.closed_pr_count ?? 0} closed
-                          </span>
-                          <span className="text-amber-text flex items-center gap-1 text-xs font-medium">
-                            <GitPullRequest className="size-3" />
-                            {project.viewer_open_pr_count ?? 0} mine
+                          <span className="border-action flex items-center gap-1 rounded-md border px-1.5 py-0.5">
+                            <User className="text-action size-3.5" />
+                            <span className="text-action text-xs font-medium">
+                              {project.viewer_open_pr_count ?? 0}
+                            </span>
                           </span>
                         </div>
                       </TableCell>
