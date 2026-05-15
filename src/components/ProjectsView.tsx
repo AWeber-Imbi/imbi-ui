@@ -294,8 +294,8 @@ export function ProjectsView() {
       {viewMode === 'graph' ? (
         <ProjectGraphView projects={filteredProjects} />
       ) : viewMode === 'grid' ? (
-        // fallow-ignore-next-line complexity
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* fallow-ignore-next-line complexity */}
           {filteredProjects.map((project) => {
             return (
               <Card
@@ -427,6 +427,7 @@ export function ProjectsView() {
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-tertiary divide-y">
+                {/* fallow-ignore-next-line complexity */}
                 {filteredProjects.map((project) => {
                   return (
                     <TableRow
