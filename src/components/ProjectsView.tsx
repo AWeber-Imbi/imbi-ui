@@ -3,7 +3,14 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useQuery } from '@tanstack/react-query'
-import { Grid3x3, List, Network, Plus, Search } from 'lucide-react'
+import {
+  GitPullRequest,
+  Grid3x3,
+  List,
+  Network,
+  Plus,
+  Search,
+} from 'lucide-react'
 import { matchSorter } from 'match-sorter'
 
 import { getProjects } from '@/api/endpoints'
@@ -211,6 +218,23 @@ export function ProjectsView() {
                     ))}
                   </div>
                 )}
+                {((project.open_pr_count ?? 0) > 0 ||
+                  (project.closed_pr_count ?? 0) > 0) && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {(project.open_pr_count ?? 0) > 0 && (
+                      <span className="text-action flex items-center gap-1 text-xs font-medium">
+                        <GitPullRequest className="size-3" />
+                        {project.open_pr_count} open
+                      </span>
+                    )}
+                    {(project.closed_pr_count ?? 0) > 0 && (
+                      <span className="text-tertiary flex items-center gap-1 text-xs">
+                        <GitPullRequest className="size-3" />
+                        {project.closed_pr_count} closed
+                      </span>
+                    )}
+                  </div>
+                )}
               </Card>
             )
           })}
@@ -248,6 +272,13 @@ export function ProjectsView() {
                     }
                   >
                     Environments
+                  </TableHead>
+                  <TableHead
+                    className={
+                      'text-secondary px-6 py-3 text-left text-sm font-medium'
+                    }
+                  >
+                    PRs
                   </TableHead>
                   <TableHead
                     className={
@@ -293,6 +324,22 @@ export function ProjectsView() {
                               )}
                             </div>
                           )}
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <div className="flex flex-col gap-0.5">
+                          {(project.open_pr_count ?? 0) > 0 && (
+                            <span className="text-action flex items-center gap-1 text-xs font-medium">
+                              <GitPullRequest className="size-3" />
+                              {project.open_pr_count} open
+                            </span>
+                          )}
+                          {(project.closed_pr_count ?? 0) > 0 && (
+                            <span className="text-tertiary flex items-center gap-1 text-xs">
+                              <GitPullRequest className="size-3" />
+                              {project.closed_pr_count} closed
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <ScoreBadge score={project.score} variant="circle" />

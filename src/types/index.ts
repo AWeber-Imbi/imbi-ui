@@ -129,6 +129,7 @@ export interface Project {
   [key: string]: unknown
   archived?: boolean
   archived_at?: null | string
+  closed_pr_count?: number
   created_at?: null | string
   description?: null | string
   environments?: Environment[]
@@ -137,6 +138,7 @@ export interface Project {
   identifiers?: Record<string, number | string>
   links?: Record<string, string>
   name: string
+  open_pr_count?: number
   project_type?: {
     name: string
     organization: {
@@ -215,6 +217,29 @@ export interface ProjectTypeCreate {
   icon?: null | string
   name: string
   slug: string
+}
+
+export interface PullRequest {
+  additions: number
+  author: string
+  changed_files: number
+  created_at: string
+  deletions: number
+  draft: boolean
+  merged: boolean
+  merged_at: null | string
+  pr_id: string
+  pr_number: number
+  project_id: string
+  state: string
+  title: string
+  updated_at: string
+  url: string
+}
+
+export interface PullRequestListResponse {
+  data: PullRequest[]
+  total: number
 }
 
 export type RelationshipLink = Schemas['RelationshipLink']
