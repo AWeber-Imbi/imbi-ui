@@ -131,6 +131,7 @@ export interface Project {
   archived_at?: null | string
   closed_pr_count?: number
   created_at?: null | string
+  current_releases?: Record<string, ReleaseInfo>
   description?: null | string
   environments?: Environment[]
   icon?: null | string
@@ -174,6 +175,8 @@ export interface Project {
     slug: string
   }
   updated_at?: null | string
+  viewer_closed_pr_count?: number
+  viewer_open_pr_count?: number
 }
 
 // `ProjectCreate` stays hand-written: the UI sends `environment_slugs` (a
@@ -244,6 +247,11 @@ export interface PullRequestListResponse {
 }
 
 export type RelationshipLink = Schemas['RelationshipLink']
+
+export interface ReleaseInfo {
+  deployed_at: string
+  version: string
+}
 
 // Scoring policy types — discriminated union on `category`. See
 // imbi-common/scoring/models.py for the canonical shape.

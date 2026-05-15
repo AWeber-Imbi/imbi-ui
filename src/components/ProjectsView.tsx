@@ -347,7 +347,7 @@ export function ProjectsView() {
                 )}
                 {((project.open_pr_count ?? 0) > 0 ||
                   (project.closed_pr_count ?? 0) > 0) && (
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     {(project.open_pr_count ?? 0) > 0 && (
                       <span className="text-action flex items-center gap-1 text-xs font-medium">
                         <GitPullRequest className="size-3" />
@@ -358,6 +358,12 @@ export function ProjectsView() {
                       <span className="text-tertiary flex items-center gap-1 text-xs">
                         <GitPullRequest className="size-3" />
                         {project.closed_pr_count} closed
+                      </span>
+                    )}
+                    {(project.viewer_open_pr_count ?? 0) > 0 && (
+                      <span className="text-amber-text flex items-center gap-1 text-xs font-medium">
+                        <GitPullRequest className="size-3" />
+                        {project.viewer_open_pr_count} mine
                       </span>
                     )}
                   </div>
@@ -468,6 +474,12 @@ export function ProjectsView() {
                             <span className="text-tertiary flex items-center gap-1 text-xs">
                               <GitPullRequest className="size-3" />
                               {project.closed_pr_count} closed
+                            </span>
+                          )}
+                          {(project.viewer_open_pr_count ?? 0) > 0 && (
+                            <span className="text-amber-text flex items-center gap-1 text-xs font-medium">
+                              <GitPullRequest className="size-3" />
+                              {project.viewer_open_pr_count} mine
                             </span>
                           )}
                         </div>
