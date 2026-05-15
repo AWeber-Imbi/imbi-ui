@@ -2087,7 +2087,12 @@ export const searchOrganization = (
 export const getProjectPullRequests = (
   orgSlug: string,
   projectId: string,
-  params?: { limit?: number; offset?: number; state?: 'closed' | 'open' },
+  params?: {
+    author?: string
+    limit?: number
+    offset?: number
+    state?: 'closed' | 'open'
+  },
   signal?: AbortSignal,
 ) =>
   apiClient.get<PullRequestListResponse>(
@@ -2098,7 +2103,12 @@ export const getProjectPullRequests = (
 
 export const getOrgPullRequests = (
   orgSlug: string,
-  params?: { limit?: number; offset?: number; state?: 'closed' | 'open' },
+  params?: {
+    author?: string
+    limit?: number
+    offset?: number
+    state?: 'closed' | 'open'
+  },
   signal?: AbortSignal,
 ) =>
   apiClient.get<PullRequestListResponse>(
