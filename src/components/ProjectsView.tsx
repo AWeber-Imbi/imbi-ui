@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useQuery } from '@tanstack/react-query'
 import {
+  ArrowRight,
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
@@ -20,6 +21,8 @@ import { matchSorter } from 'match-sorter'
 
 import { getProjects } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { deriveChipColors } from '@/lib/chip-colors'
 
 import { NewProjectDialog } from './NewProjectDialog'
 import { ProjectGraphView } from './ProjectGraphView'
@@ -28,7 +31,6 @@ import { Card } from './ui/card'
 import { Checkbox } from './ui/checkbox'
 import { Input } from './ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
-import { buildReleaseTrainStops, ReleaseTrain } from './ui/release-train'
 import { ScoreBadge } from './ui/score-badge'
 import {
   Table,
@@ -334,19 +336,14 @@ export function ProjectsView() {
                 </div>
 
                 {project.environments && project.environments.length > 0 && (
-                  <ReleaseTrain
-                    size="compact"
-                    stops={buildReleaseTrainStops(
-                      project.environments,
-                      new Map(
-                        Object.entries(project.current_releases ?? {}).map(
-                          ([slug, r]) => [slug, r.version],
-                        ),
-                      ),
-                    )}
-                  />
+                  <div className="mb-2">
+                    <DeploymentCards
+                      environments={project.environments}
+                      releases={project.current_releases ?? {}}
+                    />
+                  </div>
                 )}
-                <div className="mt-2 flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5">
                   <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
                     <GitPullRequest className="text-action size-3.5" />
                     <span className="text-action text-xs font-medium">
@@ -370,13 +367,17 @@ export function ProjectsView() {
             <Table>
               <TableHeader className="border-tertiary bg-secondary border-b">
                 <TableRow>
-                  <SortHeader
+                  <FilterHeader
+                    activeFilters={activeTeamSet}
+                    label="team"
                     onSort={() => setSort('name')}
+                    onToggle={(s) => toggleFilter('teams', s)}
+                    options={teamOptions}
                     sortDir={sortDir}
                     sorted={sortKey === 'name'}
                   >
                     Project
-                  </SortHeader>
+                  </FilterHeader>
                   <FilterHeader
                     activeFilters={activeTypeSet}
                     label="type"
@@ -388,20 +389,6 @@ export function ProjectsView() {
                   >
                     Type
                   </FilterHeader>
-                  <FilterHeader
-                    activeFilters={activeTeamSet}
-                    label="team"
-                    onSort={() => setSort('team')}
-                    onToggle={(s) => toggleFilter('teams', s)}
-                    options={teamOptions}
-                    sortDir={sortDir}
-                    sorted={sortKey === 'team'}
-                  >
-                    Team
-                  </FilterHeader>
-                  <TableHead className="text-secondary px-6 py-3 text-left text-sm font-medium">
-                    Environments
-                  </TableHead>
                   <SortHeader
                     onSort={() => setSort('prs')}
                     sortDir={sortDir}
@@ -409,6 +396,9 @@ export function ProjectsView() {
                   >
                     PRs
                   </SortHeader>
+                  <TableHead className="text-secondary px-6 py-3 text-left text-sm font-medium">
+                    Deployments
+                  </TableHead>
                   <SortHeader
                     onSort={() => setSort('score')}
                     sortDir={sortDir}
@@ -427,32 +417,20 @@ export function ProjectsView() {
                       key={`table-${project.id}`}
                       onClick={() => handleProjectSelect(project.id)}
                     >
-                      <TableCell className="text-primary px-6 py-4 font-medium">
-                        {project.name}
+                      <TableCell className="px-6 py-4">
+                        <div>
+                          <p className="text-primary font-medium">
+                            {project.name}
+                          </p>
+                          <p className="text-tertiary text-xs">
+                            {project.team.name}
+                          </p>
+                        </div>
                       </TableCell>
                       <TableCell className="text-secondary px-6 py-4">
                         {(project.project_types || [])
                           .map((pt) => pt.name)
                           .join(', ')}
-                      </TableCell>
-                      <TableCell className="text-secondary px-6 py-4">
-                        {project.team.name}
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        {project.environments &&
-                          project.environments.length > 0 && (
-                            <ReleaseTrain
-                              size="compact"
-                              stops={buildReleaseTrainStops(
-                                project.environments,
-                                new Map(
-                                  Object.entries(
-                                    project.current_releases ?? {},
-                                  ).map(([slug, r]) => [slug, r.version]),
-                                ),
-                              )}
-                            />
-                          )}
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex items-center gap-1.5">
@@ -469,6 +447,15 @@ export function ProjectsView() {
                             </span>
                           </span>
                         </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        {project.environments &&
+                          project.environments.length > 0 && (
+                            <DeploymentCards
+                              environments={project.environments}
+                              releases={project.current_releases ?? {}}
+                            />
+                          )}
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <ScoreBadge score={project.score} variant="circle" />
@@ -495,6 +482,73 @@ export function ProjectsView() {
         onClose={() => setNewProjectDialogOpen(false)}
         onProjectCreated={(id) => navigate(`/projects/${id}`)}
       />
+    </div>
+  )
+}
+
+function DeploymentCards({
+  environments,
+  releases,
+}: {
+  environments: {
+    label_color?: null | string
+    name: string
+    slug: string
+    sort_order?: null | number
+  }[]
+  releases: Record<
+    string,
+    { deployed_at: string; performed_by?: null | string; version: string }
+  >
+}) {
+  const { isDarkMode } = useTheme()
+  const sorted = [...environments].sort(
+    (a, b) =>
+      (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name),
+  )
+  return (
+    <div className="flex items-start gap-2" style={{ flexWrap: 'nowrap' }}>
+      {sorted.map((env, idx) => {
+        const release = releases[env.slug]
+        const derived = env.label_color
+          ? deriveChipColors(env.label_color, isDarkMode)
+          : null
+        return (
+          <span className="flex shrink-0 items-center" key={env.slug}>
+            {idx > 0 && (
+              <ArrowRight className="text-tertiary mx-2 size-3.5 shrink-0" />
+            )}
+            <span
+              className={`min-w-35 rounded-lg p-3 ${
+                release
+                  ? 'border-border bg-card border'
+                  : 'border-tertiary/40 border border-dashed opacity-60'
+              }`}
+            >
+              <p className="text-secondary mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                <span
+                  className="size-2 rounded-full"
+                  style={derived ? { backgroundColor: derived.fg } : undefined}
+                />
+                {env.name}
+              </p>
+              {release ? (
+                <>
+                  <p className="text-primary font-mono text-base leading-tight font-bold">
+                    {release.version}
+                  </p>
+                  <p className="text-tertiary mt-1 text-xs">
+                    {release.performed_by ? `${release.performed_by} · ` : ''}
+                    {timeAgo(release.deployed_at)}
+                  </p>
+                </>
+              ) : (
+                <p className="text-tertiary font-mono text-sm">Not deployed</p>
+              )}
+            </span>
+          </span>
+        )
+      })}
     </div>
   )
 }
@@ -592,4 +646,12 @@ function SortHeader({ children, onSort, sortDir, sorted }: SortHeaderProps) {
       </span>
     </TableHead>
   )
+}
+
+function timeAgo(iso: string): string {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
 }

@@ -250,6 +250,7 @@ export type RelationshipLink = Schemas['RelationshipLink']
 
 export interface ReleaseInfo {
   deployed_at: string
+  performed_by?: null | string
   version: string
 }
 
