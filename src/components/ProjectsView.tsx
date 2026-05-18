@@ -513,7 +513,7 @@ function DeploymentCards({
               <ArrowRight className="text-tertiary mx-2 size-3.5 shrink-0" />
             )}
             <span
-              className={`w-40 rounded-lg p-3 ${
+              className={`w-45 rounded-lg p-3 ${
                 release
                   ? 'border-border bg-card border'
                   : 'border-tertiary/40 border border-dashed opacity-60'
