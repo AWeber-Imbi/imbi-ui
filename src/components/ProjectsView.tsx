@@ -21,8 +21,6 @@ import { matchSorter } from 'match-sorter'
 
 import { getProjects } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
-import { useTheme } from '@/contexts/ThemeContext'
-import { deriveChipColors } from '@/lib/chip-colors'
 
 import { NewProjectDialog } from './NewProjectDialog'
 import { ProjectGraphView } from './ProjectGraphView'
@@ -501,7 +499,6 @@ function DeploymentCards({
     { deployed_at: string; performed_by?: null | string; version: string }
   >
 }) {
-  const { isDarkMode } = useTheme()
   const sorted = [...environments].sort(
     (a, b) =>
       (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name),
@@ -510,16 +507,13 @@ function DeploymentCards({
     <div className="flex items-start gap-2" style={{ flexWrap: 'nowrap' }}>
       {sorted.map((env, idx) => {
         const release = releases[env.slug]
-        const derived = env.label_color
-          ? deriveChipColors(env.label_color, isDarkMode)
-          : null
         return (
           <span className="flex shrink-0 items-center" key={env.slug}>
             {idx > 0 && (
               <ArrowRight className="text-tertiary mx-2 size-3.5 shrink-0" />
             )}
             <span
-              className={`min-w-35 rounded-lg p-3 ${
+              className={`w-40 rounded-lg p-3 ${
                 release
                   ? 'border-border bg-card border'
                   : 'border-tertiary/40 border border-dashed opacity-60'
@@ -527,8 +521,12 @@ function DeploymentCards({
             >
               <p className="text-secondary mb-1.5 flex items-center gap-1.5 text-sm font-medium">
                 <span
-                  className="size-2 rounded-full"
-                  style={derived ? { backgroundColor: derived.fg } : undefined}
+                  className="size-2 shrink-0 rounded-full"
+                  style={
+                    env.label_color
+                      ? { backgroundColor: env.label_color }
+                      : undefined
+                  }
                 />
                 {env.name}
               </p>
