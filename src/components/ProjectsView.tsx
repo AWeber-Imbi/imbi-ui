@@ -8,11 +8,11 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
+  CircleCheck,
   GitPullRequest,
   Grid3x3,
   List,
   ListFilter,
-  Network,
   Plus,
   Search,
   User,
@@ -24,21 +24,12 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { deriveChipColors } from '@/lib/chip-colors'
 
 import { NewProjectDialog } from './NewProjectDialog'
-import { ProjectGraphView } from './ProjectGraphView'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Checkbox } from './ui/checkbox'
 import { Input } from './ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { ScoreBadge } from './ui/score-badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table'
 
 interface FilterHeaderProps {
   activeFilters: Set<string>
@@ -66,6 +57,7 @@ type SortDir = 'asc' | 'desc'
 
 interface SortHeaderProps {
   children: React.ReactNode
+  className?: string
   onSort: () => void
   sortDir: SortDir
   sorted: boolean
@@ -81,17 +73,16 @@ export function ProjectsView() {
   const orgSlug = selectedOrganization?.slug || ''
 
   const rawView = searchParams.get('view')
-  const viewMode: 'graph' | 'grid' | 'list' =
-    rawView === 'grid' || rawView === 'list' || rawView === 'graph'
-      ? rawView
-      : 'grid'
+  const viewMode: 'grid' | 'list' =
+    rawView === 'grid' || rawView === 'list' ? rawView : 'grid'
   const searchQuery = searchParams.get('q') ?? ''
   const sortKey = searchParams.get('sort') as null | SortKey
   const sortDir = (searchParams.get('dir') ?? 'asc') as SortDir
   const teamsParam = searchParams.get('teams') ?? ''
   const typesParam = searchParams.get('types') ?? ''
+  const driftsParam = searchParams.get('drifts') ?? ''
 
-  const setViewMode = (v: 'graph' | 'grid' | 'list') =>
+  const setViewMode = (v: 'grid' | 'list') =>
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
@@ -189,6 +180,7 @@ export function ProjectsView() {
   const filteredProjects = useMemo(() => {
     const teamSet = new Set(teamsParam.split(',').filter(Boolean))
     const typeSet = new Set(typesParam.split(',').filter(Boolean))
+    const driftSet = new Set(driftsParam.split(',').filter(Boolean))
     let all = projects ?? []
 
     if (teamSet.size > 0) {
@@ -198,6 +190,9 @@ export function ProjectsView() {
       all = all.filter((p) =>
         (p.project_types ?? []).some((pt) => typeSet.has(pt.slug)),
       )
+    }
+    if (driftSet.size > 0) {
+      all = all.filter(() => driftSet.has('none'))
     }
     if (searchQuery) {
       return matchSorter(all, searchQuery, {
@@ -225,10 +220,20 @@ export function ProjectsView() {
       else if (sortKey === 'score') cmp = (a.score ?? 0) - (b.score ?? 0)
       return sortDir === 'asc' ? cmp : -cmp
     })
-  }, [projects, searchQuery, sortKey, sortDir, teamsParam, typesParam])
+  }, [
+    projects,
+    searchQuery,
+    sortKey,
+    sortDir,
+    teamsParam,
+    typesParam,
+    driftsParam,
+  ])
 
   const activeTeamSet = new Set(teamsParam.split(',').filter(Boolean))
   const activeTypeSet = new Set(typesParam.split(',').filter(Boolean))
+  const activeDriftSet = new Set(driftsParam.split(',').filter(Boolean))
+  const driftOptions = [{ label: 'None', slug: 'none' }]
 
   if (isLoading) {
     return (
@@ -281,31 +286,20 @@ export function ProjectsView() {
               </Button>
               <Button
                 aria-label="List view"
-                className={`rounded-none ${viewMode === 'list' ? 'bg-amber-bg text-amber-text' : ''}`}
+                className={`rounded-l-none ${viewMode === 'list' ? 'bg-amber-bg text-amber-text' : ''}`}
                 onClick={() => setViewMode('list')}
                 size="sm"
                 variant="ghost"
               >
                 <List className="size-4" />
               </Button>
-              <Button
-                aria-label="Graph view"
-                className={`rounded-l-none ${viewMode === 'graph' ? 'bg-amber-bg text-amber-text' : ''}`}
-                onClick={() => setViewMode('graph')}
-                size="sm"
-                variant="ghost"
-              >
-                <Network className="size-4" />
-              </Button>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Projects Graph/Grid/List */}
-      {viewMode === 'graph' ? (
-        <ProjectGraphView projects={filteredProjects} />
-      ) : viewMode === 'grid' ? (
+      {/* Projects Grid/List */}
+      {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* fallow-ignore-next-line complexity */}
           {filteredProjects.map((project) => {
@@ -373,120 +367,130 @@ export function ProjectsView() {
         </div>
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="border-tertiary bg-secondary border-b">
-                <TableRow>
-                  <FilterHeader
-                    activeFilters={activeTeamSet}
-                    centerFilter={{
-                      activeFilters: activeTeamSet,
-                      label: 'team',
-                      onToggle: (s) => toggleFilter('teams', s),
-                      options: teamOptions,
-                      title: 'Team',
-                    }}
-                    className="min-w-72"
-                    hideMainFilter
-                    label="team"
-                    onSort={() => setSort('name')}
-                    onToggle={(s) => toggleFilter('teams', s)}
-                    options={teamOptions}
-                    rightFilter={{
-                      activeFilters: activeTypeSet,
-                      label: 'type',
-                      onToggle: (s) => toggleFilter('types', s),
-                      options: typeOptions,
-                      title: 'Type',
-                    }}
-                    sortDir={sortDir}
-                    sorted={sortKey === 'name'}
-                  >
-                    Project
-                  </FilterHeader>
-                  <SortHeader
-                    onSort={() => setSort('prs')}
-                    sortDir={sortDir}
-                    sorted={sortKey === 'prs'}
-                  >
-                    PRs
-                  </SortHeader>
-                  <TableHead className="text-secondary w-px px-6 py-3 text-left text-sm font-medium whitespace-nowrap">
-                    Deployments
-                  </TableHead>
-                  <SortHeader
-                    onSort={() => setSort('score')}
-                    sortDir={sortDir}
-                    sorted={sortKey === 'score'}
-                  >
-                    Health
-                  </SortHeader>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="divide-tertiary divide-y">
-                {/* fallow-ignore-next-line complexity */}
-                {filteredProjects.map((project) => {
-                  return (
-                    <TableRow
-                      className="hover:bg-secondary cursor-pointer transition-colors"
-                      key={`table-${project.id}`}
-                      onClick={() => handleProjectSelect(project.id)}
-                    >
-                      <TableCell className="min-w-72 px-6 py-4">
-                        <div>
-                          <p className="text-primary font-medium">
-                            {project.name}
-                          </p>
-                          {(project.project_types ?? []).length > 0 && (
-                            <p className="text-secondary text-xs">
-                              {project
-                                .project_types!.map((pt) => pt.name)
-                                .join(', ')}
-                            </p>
-                          )}
-                          <p className="text-tertiary text-xs">
-                            {project.team.name}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
-                            <GitPullRequest className="text-action size-3.5" />
-                            <span className="text-action text-xs font-medium">
-                              {project.open_pr_count ?? 0}
-                            </span>
-                          </span>
-                          <span className="border-action flex items-center gap-1 rounded-md border px-1.5 py-0.5">
-                            <User className="text-action size-3.5" />
-                            <span className="text-action text-xs font-medium">
-                              {project.viewer_open_pr_count ?? 0}
-                            </span>
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="w-px items-center px-6 py-4 whitespace-nowrap">
-                        {project.environments &&
-                          project.environments.length > 0 && (
-                            <DeploymentCards
-                              environments={project.environments}
-                              releases={project.current_releases ?? {}}
-                            />
-                          )}
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <ScoreBadge score={project.score} variant="circle" />
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+          <div className="border-tertiary bg-secondary text-secondary flex items-stretch border-b text-sm font-medium">
+            <FilterHeader
+              activeFilters={activeTeamSet}
+              centerFilter={{
+                activeFilters: activeTeamSet,
+                label: 'team',
+                onToggle: (s) => toggleFilter('teams', s),
+                options: teamOptions,
+                title: 'Team',
+              }}
+              className="w-72 shrink-0"
+              hideMainFilter
+              label="team"
+              onSort={() => setSort('name')}
+              onToggle={(s) => toggleFilter('teams', s)}
+              options={teamOptions}
+              rightFilter={{
+                activeFilters: activeTypeSet,
+                label: 'type',
+                onToggle: (s) => toggleFilter('types', s),
+                options: typeOptions,
+                title: 'Type',
+              }}
+              sortDir={sortDir}
+              sorted={sortKey === 'name'}
+            >
+              Project
+            </FilterHeader>
+            <SortHeader
+              className="w-32 shrink-0"
+              onSort={() => setSort('prs')}
+              sortDir={sortDir}
+              sorted={sortKey === 'prs'}
+            >
+              PRs
+            </SortHeader>
+            <div className="w-24 shrink-0 px-2.5 py-3 text-center whitespace-nowrap">
+              <div className="flex items-center justify-center gap-1">
+                Drift
+                <FilterPopover
+                  activeFilters={activeDriftSet}
+                  label="drift"
+                  onToggle={(s) => toggleFilter('drifts', s)}
+                  options={driftOptions}
+                />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1 px-6 py-3 text-center whitespace-nowrap">
+              Deployments
+            </div>
+            <SortHeader
+              className="w-28 shrink-0 text-right"
+              onSort={() => setSort('score')}
+              sortDir={sortDir}
+              sorted={sortKey === 'score'}
+            >
+              Health
+            </SortHeader>
+          </div>
+          <div
+            className="divide-tertiary divide-y overflow-y-auto"
+            style={{
+              maxHeight: 'calc(100vh - 330px - var(--assistant-height, 64px))',
+            }}
+          >
+            {/* fallow-ignore-next-line complexity */}
+            {filteredProjects.map((project) => (
+              <div
+                className="hover:bg-secondary flex cursor-pointer items-center transition-colors"
+                key={`row-${project.id}`}
+                onClick={() => handleProjectSelect(project.id)}
+              >
+                <div className="w-72 shrink-0 px-6 py-4">
+                  <p className="text-primary font-medium">{project.name}</p>
+                  {(project.project_types ?? []).length > 0 && (
+                    <p className="text-secondary text-xs">
+                      {project.project_types!.map((pt) => pt.name).join(', ')}
+                    </p>
+                  )}
+                  <p className="text-tertiary text-xs">{project.team.name}</p>
+                </div>
+                <div className="w-32 shrink-0 px-6 py-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
+                      <GitPullRequest className="text-action size-3.5" />
+                      <span className="text-action text-xs font-medium">
+                        {project.open_pr_count ?? 0}
+                      </span>
+                    </span>
+                    <span className="border-action flex items-center gap-1 rounded-md border px-1.5 py-0.5">
+                      <User className="text-action size-3.5" />
+                      <span className="text-action text-xs font-medium">
+                        {project.viewer_open_pr_count ?? 0}
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div className="w-24 shrink-0 px-2.5 py-4 text-center whitespace-nowrap">
+                  <span className="text-success inline-flex items-center gap-1.5">
+                    <CircleCheck className="size-4 shrink-0" />
+                    <span className="text-xs font-medium">None</span>
+                  </span>
+                </div>
+                <div
+                  className="flex min-w-0 flex-1 overflow-x-auto px-6 py-4"
+                  style={{ justifyContent: 'safe center' }}
+                >
+                  {project.environments && project.environments.length > 0 && (
+                    <DeploymentCards
+                      environments={project.environments}
+                      releases={project.current_releases ?? {}}
+                    />
+                  )}
+                </div>
+                <div className="w-28 shrink-0 px-6 py-4 text-right">
+                  <ScoreBadge score={project.score} variant="circle" />
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
       )}
 
-      {filteredProjects.length === 0 && viewMode !== 'graph' && (
+      {filteredProjects.length === 0 && (
         <div className="py-12 text-center">
           <p className="text-tertiary">
             No projects found matching your criteria
@@ -523,10 +527,8 @@ function DeploymentCards({
       (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name),
   )
   return (
-    <div
-      className="flex w-fit items-start gap-2"
-      style={{ flexWrap: 'nowrap' }}
-    >
+    <div className="flex items-start gap-2" style={{ flexWrap: 'nowrap' }}>
+      {/* fallow-ignore-next-line complexity */}
       {sorted.map((env, idx) => {
         const release = releases[env.slug]
         const derived = env.label_color
@@ -544,38 +546,36 @@ function DeploymentCards({
               <ArrowRight className="text-tertiary mx-2 size-3.5 shrink-0" />
             )}
             <span className={cardClass} style={cardStyle}>
-              <p className="text-secondary mb-1.5 flex items-center justify-between gap-1.5 text-sm font-medium">
-                <span className="flex items-center gap-1.5">
-                  <span
-                    className="size-2 shrink-0 rounded-full"
-                    style={
-                      env.label_color
-                        ? { backgroundColor: env.label_color }
-                        : undefined
-                    }
-                  />
-                  {env.name}
-                </span>
-                {release && (
-                  <span className="text-tertiary text-xs font-normal">
-                    {timeAgo(release.deployed_at)}
+              <p className="text-secondary mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+                <span
+                  className="size-2 shrink-0 rounded-full"
+                  style={
+                    env.label_color
+                      ? { backgroundColor: env.label_color }
+                      : undefined
+                  }
+                />
+                {env.name}
+              </p>
+              <p className="font-mono text-base leading-tight font-bold">
+                {release ? (
+                  <span className="text-primary">{release.version}</span>
+                ) : (
+                  <span className="text-tertiary text-sm font-normal">
+                    Not deployed
                   </span>
                 )}
               </p>
-              {release ? (
-                <>
-                  <p className="text-primary font-mono text-base leading-tight font-bold">
-                    {release.version}
-                  </p>
-                  {release.performed_by && (
-                    <p className="text-tertiary mt-1 text-xs">
-                      {release.performed_by}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-tertiary font-mono text-sm">Not deployed</p>
-              )}
+              <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
+                {release ? (
+                  <>
+                    <span>{release.performed_by ?? ''}</span>
+                    <span>{timeAgo(release.deployed_at)}</span>
+                  </>
+                ) : (
+                  <span className="invisible">—</span>
+                )}
+              </p>
             </span>
           </span>
         )
@@ -600,9 +600,7 @@ function FilterHeader({
   sorted,
 }: FilterHeaderProps) {
   return (
-    <TableHead
-      className={`text-secondary px-6 py-3 text-left text-sm font-medium ${className ? ` ${className}` : ''}`}
-    >
+    <div className={`px-6 py-3${className ? ` ${className}` : ''}`}>
       <div className="flex items-center justify-between gap-0.5">
         <div className="flex items-center gap-0.5">
           <button
@@ -632,7 +630,7 @@ function FilterHeader({
         </div>
         {centerFilter && (
           <div className="flex items-center gap-1">
-            <span className="text-tertiary/70 text-xs">
+            <span className="text-tertiary text-sm font-medium">
               {centerFilter.title}
             </span>
             <FilterPopover {...centerFilter} />
@@ -640,14 +638,14 @@ function FilterHeader({
         )}
         {rightFilter && (
           <div className="flex items-center gap-1">
-            <span className="text-tertiary/70 text-xs">
+            <span className="text-tertiary text-sm font-medium">
               {rightFilter.title}
             </span>
             <FilterPopover {...rightFilter} />
           </div>
         )}
       </div>
-    </TableHead>
+    </div>
   )
 }
 
@@ -698,10 +696,16 @@ function FilterPopover({
   )
 }
 
-function SortHeader({ children, onSort, sortDir, sorted }: SortHeaderProps) {
+function SortHeader({
+  children,
+  className,
+  onSort,
+  sortDir,
+  sorted,
+}: SortHeaderProps) {
   return (
-    <TableHead
-      className="text-secondary hover:text-primary cursor-pointer px-6 py-3 text-left text-sm font-medium select-none"
+    <div
+      className={`hover:text-primary cursor-pointer px-6 py-3 select-none ${className ? ` ${className}` : ''}`}
       onClick={onSort}
     >
       <span className="inline-flex items-center gap-1">
@@ -716,7 +720,7 @@ function SortHeader({ children, onSort, sortDir, sorted }: SortHeaderProps) {
           <ChevronsUpDown className="text-tertiary/50 size-3.5 shrink-0" />
         )}
       </span>
-    </TableHead>
+    </div>
   )
 }
 

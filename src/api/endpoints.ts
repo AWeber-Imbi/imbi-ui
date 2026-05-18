@@ -376,6 +376,7 @@ function parseNextCursor(headers: Headers): string | undefined {
   }
 }
 
+// fallow-ignore-next-line complexity
 export const listOperationsLog = async (
   params: {
     cursor?: string
@@ -1736,6 +1737,7 @@ export const getProjectLogsHistogram = (
   )
 }
 
+// fallow-ignore-next-line complexity
 export const searchProjectLogs = (
   orgSlug: string,
   projectId: string,

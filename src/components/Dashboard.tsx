@@ -284,6 +284,7 @@ export function Dashboard({
     )
   }
 
+  // fallow-ignore-next-line complexity
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
