@@ -381,6 +381,7 @@ export function ProjectsView() {
                   </FilterHeader>
                   <FilterHeader
                     activeFilters={activeTypeSet}
+                    className="min-w-48"
                     label="type"
                     onSort={() => setSort('type')}
                     onToggle={(s) => toggleFilter('types', s)}
@@ -428,7 +429,7 @@ export function ProjectsView() {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-secondary px-6 py-4">
+                      <TableCell className="text-secondary min-w-48 px-6 py-4">
                         {(project.project_types || [])
                           .map((pt) => pt.name)
                           .join(', ')}
@@ -525,26 +526,34 @@ function DeploymentCards({
               <ArrowRight className="text-tertiary mx-2 size-3.5 shrink-0" />
             )}
             <span className={cardClass} style={cardStyle}>
-              <p className="text-secondary mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-                <span
-                  className="size-2 shrink-0 rounded-full"
-                  style={
-                    env.label_color
-                      ? { backgroundColor: env.label_color }
-                      : undefined
-                  }
-                />
-                {env.name}
+              <p className="text-secondary mb-1.5 flex items-center justify-between gap-1.5 text-sm font-medium">
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={
+                      env.label_color
+                        ? { backgroundColor: env.label_color }
+                        : undefined
+                    }
+                  />
+                  {env.name}
+                </span>
+                {release && (
+                  <span className="text-tertiary text-xs font-normal">
+                    {timeAgo(release.deployed_at)}
+                  </span>
+                )}
               </p>
               {release ? (
                 <>
                   <p className="text-primary font-mono text-base leading-tight font-bold">
                     {release.version}
                   </p>
-                  <p className="text-tertiary mt-1 text-xs">
-                    {release.performed_by ? `${release.performed_by} · ` : ''}
-                    {timeAgo(release.deployed_at)}
-                  </p>
+                  {release.performed_by && (
+                    <p className="text-tertiary mt-1 text-xs">
+                      {release.performed_by}
+                    </p>
+                  )}
                 </>
               ) : (
                 <p className="text-tertiary font-mono text-sm">Not deployed</p>
