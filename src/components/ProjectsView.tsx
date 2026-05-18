@@ -21,6 +21,7 @@ import { matchSorter } from 'match-sorter'
 
 import { getProjects } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { deriveChipColors } from '@/lib/chip-colors'
 
 import { NewProjectDialog } from './NewProjectDialog'
 import { ProjectGraphView } from './ProjectGraphView'
@@ -507,18 +508,21 @@ function DeploymentCards({
     <div className="flex items-start gap-2" style={{ flexWrap: 'nowrap' }}>
       {sorted.map((env, idx) => {
         const release = releases[env.slug]
+        const derived = env.label_color
+          ? deriveChipColors(env.label_color, false)
+          : null
+        const cardClass = derived
+          ? `w-45 rounded-lg border p-3${!release ? ' border-dashed opacity-60' : ''}`
+          : `w-45 rounded-lg border p-3${release ? ' border-border bg-card' : ' border-tertiary/40 border-dashed opacity-60'}`
+        const cardStyle = derived
+          ? { backgroundColor: derived.bg, borderColor: derived.border }
+          : undefined
         return (
           <span className="flex shrink-0 items-center" key={env.slug}>
             {idx > 0 && (
               <ArrowRight className="text-tertiary mx-2 size-3.5 shrink-0" />
             )}
-            <span
-              className={`w-45 rounded-lg p-3 ${
-                release
-                  ? 'border-border bg-card border'
-                  : 'border-tertiary/40 border border-dashed opacity-60'
-              }`}
-            >
+            <span className={cardClass} style={cardStyle}>
               <p className="text-secondary mb-1.5 flex items-center gap-1.5 text-sm font-medium">
                 <span
                   className="size-2 shrink-0 rounded-full"
