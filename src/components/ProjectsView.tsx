@@ -664,10 +664,17 @@ function SortHeader({ children, onSort, sortDir, sorted }: SortHeaderProps) {
   )
 }
 
+// fallow-ignore-next-line complexity
 function timeAgo(iso: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
   if (mins < 60) return `${mins}m ago`
   const hours = Math.floor(mins / 60)
   if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
+  const days = Math.floor(hours / 24)
+  if (days < 14) return `${days}d ago`
+  const months = Math.round(days / 30.44)
+  if (days < 365) return `${months}mo ago`
+  const years = days / 365.25
+  const rounded = Math.round(years * 10) / 10
+  return `${rounded}y ago`
 }
