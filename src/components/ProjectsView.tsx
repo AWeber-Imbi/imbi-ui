@@ -22,12 +22,15 @@ import { matchSorter } from 'match-sorter'
 
 import { getProjects } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { deriveChipColors } from '@/lib/chip-colors'
 
 import { NewProjectDialog } from './NewProjectDialog'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { Checkbox } from './ui/checkbox'
+import { EnvironmentBadge } from './ui/environment-badge'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Input } from './ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { ScoreBadge } from './ui/score-badge'
@@ -82,6 +85,8 @@ export function ProjectsView() {
   const teamsParam = searchParams.get('teams') ?? ''
   const typesParam = searchParams.get('types') ?? ''
   const driftsParam = searchParams.get('drifts') ?? ''
+  const hasOpenPRs = searchParams.get('has_open_prs') === '1'
+  const hasMyOpenPRs = searchParams.get('has_my_open_prs') === '1'
 
   const setViewMode = (v: 'grid' | 'list') =>
     setSearchParams(
@@ -119,6 +124,28 @@ export function ProjectsView() {
           next.set('sort', key)
           next.set('dir', 'asc')
         }
+        return next
+      },
+      { replace: true },
+    )
+
+  const toggleOpenPRs = () =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (prev.get('has_open_prs') === '1') next.delete('has_open_prs')
+        else next.set('has_open_prs', '1')
+        return next
+      },
+      { replace: true },
+    )
+
+  const toggleMyOpenPRs = () =>
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (prev.get('has_my_open_prs') === '1') next.delete('has_my_open_prs')
+        else next.set('has_my_open_prs', '1')
         return next
       },
       { replace: true },
@@ -200,6 +227,12 @@ export function ProjectsView() {
     if (driftSet.size > 0) {
       all = all.filter(() => driftSet.has('none'))
     }
+    if (hasOpenPRs) {
+      all = all.filter((p) => (p.open_pr_count ?? 0) > 0)
+    }
+    if (hasMyOpenPRs) {
+      all = all.filter((p) => (p.viewer_open_pr_count ?? 0) > 0)
+    }
     if (searchQuery) {
       return matchSorter(all, searchQuery, {
         keys: [
@@ -234,7 +267,18 @@ export function ProjectsView() {
     teamsParam,
     typesParam,
     driftsParam,
+    hasOpenPRs,
+    hasMyOpenPRs,
   ])
+
+  const totalOpenPRs = (projects ?? []).reduce(
+    (sum, p) => sum + (p.open_pr_count ?? 0),
+    0,
+  )
+  const totalMyOpenPRs = (projects ?? []).reduce(
+    (sum, p) => sum + (p.viewer_open_pr_count ?? 0),
+    0,
+  )
 
   const activeTeamSet = new Set(teamsParam.split(',').filter(Boolean))
   const activeTypeSet = new Set(typesParam.split(',').filter(Boolean))
@@ -284,13 +328,25 @@ export function ProjectsView() {
               <StatBadge label="Healthy" value={0} variant="success" />
               <StatBadge label="Deploying" value={0} variant="warning" />
               <StatBadge label="Failed" value={0} variant="danger" />
-              <StatBadge label="Open PRs" value={0} variant="accent" />
+              <StatBadge
+                active={hasOpenPRs}
+                label="Open PRs"
+                onClick={toggleOpenPRs}
+                value={totalOpenPRs}
+                variant="accent"
+              />
               <StatBadge label="Need Release" value={0} variant="amber" />
-              <StatBadge label="My PRs" value={0} variant="info" />
+              <StatBadge
+                active={hasMyOpenPRs}
+                label="My PRs"
+                onClick={toggleMyOpenPRs}
+                value={totalMyOpenPRs}
+                variant="info"
+              />
               <StatBadge label="My Commits" value={0} variant="teal" />
             </div>
 
-            <div className="border-secondary flex items-center rounded-lg border">
+            <div className="border-secondary flex items-center overflow-hidden rounded-lg border">
               <Button
                 aria-label="Grid view"
                 className={`rounded-r-none ${viewMode === 'grid' ? 'bg-amber-bg text-amber-text' : ''}`}
@@ -311,7 +367,7 @@ export function ProjectsView() {
               </Button>
             </div>
 
-            <div className="border-secondary flex items-center rounded-lg border">
+            <div className="border-secondary flex items-center overflow-hidden rounded-lg border">
               <Button
                 aria-label="Refresh"
                 disabled={isFetching}
@@ -333,63 +389,76 @@ export function ProjectsView() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* fallow-ignore-next-line complexity */}
           {filteredProjects.map((project) => {
+            const typeNames = (project.project_types ?? [])
+              .map((pt) => pt.name)
+              .join(', ')
+            const meta = [typeNames, project.team.name]
+              .filter(Boolean)
+              .join(' · ')
+            const envs = [...(project.environments ?? [])].sort(
+              (a, b) =>
+                (a.sort_order ?? 0) - (b.sort_order ?? 0) ||
+                a.name.localeCompare(b.name),
+            )
             return (
               <Card
-                className={`cursor-pointer p-5 transition-shadow hover:shadow-md ${''}`}
+                className="flex min-h-56 cursor-pointer flex-col p-5 transition-shadow hover:shadow-md"
                 key={`card-${project.id}`}
                 onClick={() => handleProjectSelect(project.id)}
               >
-                <div className="mb-3 flex items-start justify-between">
+                <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-primary mb-1 truncate font-medium">
                       {project.name}
                     </h3>
-                    <p className="text-tertiary text-sm">
-                      {(project.project_types || [])
-                        .map((pt) => pt.name)
-                        .join(', ')}
-                    </p>
+                    <p className="text-tertiary text-sm">{meta}</p>
                   </div>
-                  <div className="ml-3">
-                    <ScoreBadge
-                      score={project.score}
-                      size="lg"
-                      variant="circle"
-                    />
-                  </div>
+                  <ScoreBadge
+                    score={project.score}
+                    size="md"
+                    variant="circle"
+                  />
                 </div>
 
                 {project.description && (
-                  <p className="text-secondary mb-3 line-clamp-2 text-sm">
+                  <p className="text-secondary line-clamp-2 text-sm">
                     {project.description}
                   </p>
                 )}
 
-                <div className="mb-3">
-                  <p className="text-tertiary text-xs">{project.team.name}</p>
-                </div>
-
-                {project.environments && project.environments.length > 0 && (
-                  <div className="mb-2">
-                    <DeploymentCards
-                      environments={project.environments}
-                      releases={project.current_releases ?? {}}
-                    />
+                <div className="border-tertiary mt-auto border-t pt-[18px]">
+                  <div className="flex min-h-8 flex-wrap items-center gap-2">
+                    <span
+                      className={`border-accent bg-accent text-accent inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs ${(project.open_pr_count ?? 0) > 0 ? '' : 'invisible'}`}
+                    >
+                      <GitPullRequest className="size-3.5" />
+                      <span className="font-medium">
+                        {project.open_pr_count ?? 0}
+                      </span>
+                    </span>
+                    <span
+                      className={`border-info bg-info text-info inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs ${(project.viewer_open_pr_count ?? 0) > 0 ? '' : 'invisible'}`}
+                    >
+                      <User className="size-3.5" />
+                      <span className="font-medium">
+                        {project.viewer_open_pr_count ?? 0}
+                      </span>
+                    </span>
+                    <span className="text-success text-xs font-medium">
+                      No drift
+                    </span>
+                    {isProjectDeployable(project) && envs.length > 0 && (
+                      <div className="ml-auto flex flex-wrap items-center gap-2">
+                        {envs.map((env) => (
+                          <EnvDeploymentHover
+                            env={env}
+                            key={env.slug}
+                            release={(project.current_releases ?? {})[env.slug]}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-                <div className="flex items-center gap-1.5">
-                  <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
-                    <GitPullRequest className="text-action size-3.5" />
-                    <span className="text-action text-xs font-medium">
-                      {project.open_pr_count ?? 0}
-                    </span>
-                  </span>
-                  <span className="border-action flex items-center gap-1 rounded-md border px-1.5 py-0.5">
-                    <User className="text-action size-3.5" />
-                    <span className="text-action text-xs font-medium">
-                      {project.viewer_open_pr_count ?? 0}
-                    </span>
-                  </span>
                 </div>
               </Card>
             )
@@ -480,18 +549,22 @@ export function ProjectsView() {
                 </div>
                 <div className="w-40 shrink-0 px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center justify-center gap-1.5">
-                    <span className="border-accent bg-accent text-accent inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
-                      <GitPullRequest className="size-3.5" />
-                      <span className="font-medium">
-                        {project.open_pr_count ?? 0}
+                    {(project.open_pr_count ?? 0) > 0 && (
+                      <span className="border-accent bg-accent text-accent inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
+                        <GitPullRequest className="size-3.5" />
+                        <span className="font-medium">
+                          {project.open_pr_count}
+                        </span>
                       </span>
-                    </span>
-                    <span className="border-info bg-info text-info inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
-                      <User className="size-3.5" />
-                      <span className="font-medium">
-                        {project.viewer_open_pr_count ?? 0}
+                    )}
+                    {(project.viewer_open_pr_count ?? 0) > 0 && (
+                      <span className="border-info bg-info text-info inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
+                        <User className="size-3.5" />
+                        <span className="font-medium">
+                          {project.viewer_open_pr_count}
+                        </span>
                       </span>
-                    </span>
+                    )}
                   </div>
                 </div>
                 <div className="w-24 shrink-0 px-2.5 py-4 text-center whitespace-nowrap">
@@ -504,12 +577,14 @@ export function ProjectsView() {
                   className="flex min-w-0 flex-1 overflow-x-auto px-6 py-4"
                   style={{ justifyContent: 'safe center' }}
                 >
-                  {project.environments && project.environments.length > 0 && (
-                    <DeploymentCards
-                      environments={project.environments}
-                      releases={project.current_releases ?? {}}
-                    />
-                  )}
+                  {isProjectDeployable(project) &&
+                    project.environments &&
+                    project.environments.length > 0 && (
+                      <DeploymentCards
+                        environments={project.environments}
+                        releases={project.current_releases ?? {}}
+                      />
+                    )}
                 </div>
                 <div className="flex w-40 shrink-0 justify-center px-6 py-4 whitespace-nowrap">
                   <ScoreBadge
@@ -590,6 +665,7 @@ function DeploymentCards({
                   }
                 />
                 {env.name}
+                <CircleCheck className="text-success ml-auto size-4 shrink-0" />
               </p>
               <p className="font-mono text-base leading-tight">
                 {release ? (
@@ -615,6 +691,80 @@ function DeploymentCards({
         )
       })}
     </div>
+  )
+}
+
+// fallow-ignore-next-line complexity
+function EnvDeploymentHover({
+  env,
+  release,
+}: {
+  env: {
+    label_color?: null | string
+    name: string
+    slug: string
+    sort_order?: null | number
+  }
+  release?: {
+    deployed_at: string
+    performed_by?: null | string
+    version: string
+  }
+}) {
+  const { isDarkMode } = useTheme()
+  const derived = env.label_color
+    ? deriveChipColors(env.label_color, isDarkMode)
+    : null
+  const cardStyle = derived
+    ? { backgroundColor: derived.bg, borderColor: derived.border }
+    : undefined
+  return (
+    <HoverCard openDelay={150}>
+      <HoverCardTrigger asChild>
+        <span>
+          <EnvironmentBadge
+            label_color={env.label_color}
+            name={env.name}
+            slug={env.slug}
+          />
+        </span>
+      </HoverCardTrigger>
+      <HoverCardContent align="center" className="w-55 overflow-hidden p-0">
+        <div className="p-3" style={cardStyle}>
+          <p className="text-secondary mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+            <span
+              className="size-2 shrink-0 rounded-full"
+              style={
+                env.label_color
+                  ? { backgroundColor: env.label_color }
+                  : undefined
+              }
+            />
+            {env.name}
+            <CircleCheck className="text-success ml-auto size-4 shrink-0" />
+          </p>
+          <p className="font-mono text-base leading-tight font-bold">
+            {release ? (
+              <span className="text-primary">{release.version}</span>
+            ) : (
+              <span className="text-tertiary text-sm font-normal">
+                Not deployed
+              </span>
+            )}
+          </p>
+          <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
+            {release ? (
+              <>
+                <span>{release.performed_by ?? ''}</span>
+                <span>{timeAgo(release.deployed_at)}</span>
+              </>
+            ) : (
+              <span className="invisible">—</span>
+            )}
+          </p>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
@@ -730,6 +880,14 @@ function FilterPopover({
   )
 }
 
+function isProjectDeployable(project: {
+  project_types?: null | object[]
+}): boolean {
+  return (project.project_types ?? []).some(
+    (pt) => (pt as { deployable?: boolean }).deployable === true,
+  )
+}
+
 function SortHeader({
   children,
   className,
@@ -760,11 +918,15 @@ function SortHeader({
 
 // fallow-ignore-next-line complexity
 function StatBadge({
+  active,
   label,
+  onClick,
   value,
   variant,
 }: {
+  active?: boolean
   label: string
+  onClick?: () => void
   value: number
   variant?:
     | 'accent'
@@ -791,16 +953,31 @@ function StatBadge({
                 : variant === 'amber'
                   ? 'bg-amber-bg border-amber-border text-amber-text'
                   : 'border-secondary text-secondary'
-  return (
-    <span
-      className={`inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs ${variantCls}`}
-    >
+  const interactiveCls = onClick
+    ? `cursor-pointer transition-shadow${active ? ' ring-2 ring-current ring-offset-2 ring-offset-background' : ' hover:ring-1 hover:ring-current hover:ring-offset-1 hover:ring-offset-background'}`
+    : ''
+  const content = (
+    <>
       <span className={variant ? 'font-medium' : 'text-primary font-medium'}>
         {value}
       </span>
       <span>{label}</span>
-    </span>
+    </>
   )
+  const cls = `inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs ${variantCls} ${interactiveCls}`
+  if (onClick) {
+    return (
+      <button
+        aria-pressed={active}
+        className={cls}
+        onClick={onClick}
+        type="button"
+      >
+        {content}
+      </button>
+    )
+  }
+  return <span className={cls}>{content}</span>
 }
 
 // fallow-ignore-next-line complexity

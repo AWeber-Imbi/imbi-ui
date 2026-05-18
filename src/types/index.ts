@@ -216,6 +216,7 @@ export type ProjectType = Schemas['ProjectTypeResponse']
 // mounts project-type creation via the generic org scoped endpoint.
 export interface ProjectTypeCreate {
   [key: string]: unknown
+  deployable?: boolean
   description?: null | string
   icon?: null | string
   name: string

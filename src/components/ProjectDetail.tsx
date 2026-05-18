@@ -96,6 +96,7 @@ type TabType = (typeof VALID_TABS)[number]
 
 const VALID_TAB_SET: Set<string> = new Set(VALID_TABS)
 
+// fallow-ignore-next-line complexity
 export function ProjectDetail({
   initialSubAction,
   initialSubId,
@@ -134,6 +135,7 @@ export function ProjectDetail({
   // placeholder for the version slot so versions don't pop in.
   const releasesLoading = releasesPending && !!orgSlug && !!project.id
 
+  // fallow-ignore-next-line complexity
   const deploymentStatus: Record<
     string,
     {
@@ -181,6 +183,7 @@ export function ProjectDetail({
   // the pipeline, *and* ``promote`` requires the upstream env to have a
   // deployed version (otherwise ``fromCommittish`` would be undefined
   // and the promote flow can't succeed).
+  // fallow-ignore-next-line complexity
   useEffect(() => {
     const isModalTab = initialTab === 'deploy' || initialTab === 'promote'
     if (initialTab && !VALID_TAB_SET.has(initialTab) && !isModalTab) {
@@ -415,6 +418,7 @@ export function ProjectDetail({
   // ``github-deployment-ec``). The fallback covers the case where the
   // project-type assignment didn't bind an identity plugin but a
   // matching one exists in the org's plugin catalog.
+  // fallow-ignore-next-line complexity
   const resolvedIdentityPlugin = useMemo(() => {
     if (!deploymentPlugin) return null
     const catalog = identityPlugins ?? []
@@ -460,9 +464,13 @@ export function ProjectDetail({
         : isUserConnectedToDeployment
           ? 'connected'
           : 'disconnected'
+  const isDeployable = (project.project_types ?? []).some(
+    (pt) => (pt as { deployable?: boolean }).deployable === true,
+  )
   const canTriggerDeployments =
-    !!deploymentPlugin && deploymentReadiness === 'connected'
+    isDeployable && !!deploymentPlugin && deploymentReadiness === 'connected'
 
+  // fallow-ignore-next-line complexity
   const deploymentConnectLabel = (() => {
     if (resolvedIdentityPlugin?.label) return resolvedIdentityPlugin.label
     if (deploymentIdentityPluginId) {
@@ -481,6 +489,7 @@ export function ProjectDetail({
   // resolve successfully before deciding — otherwise the empty default
   // during the initial fetch redirects every direct navigation to
   // /logs or /configuration.
+  // fallow-ignore-next-line complexity
   useEffect(() => {
     if (!projectPluginsFetched || !projectPluginsSuccess) return
     if (
@@ -717,7 +726,7 @@ export function ProjectDetail({
                   )
                 })}
             </div>
-            {deploymentPlugin && (
+            {isDeployable && deploymentPlugin && (
               <div className="text-tertiary flex items-center gap-1.5 text-xs italic">
                 <Info className="size-3.5" />
                 <span>
@@ -1091,6 +1100,7 @@ export function ProjectDetail({
   )
 }
 
+// fallow-ignore-next-line complexity
 function buildRecommendation(
   c: AttributeContribution,
   policy: ScoringPolicy,

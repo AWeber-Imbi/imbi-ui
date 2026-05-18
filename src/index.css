@@ -284,6 +284,15 @@
   --ds-action-bg-hover: #e0b525;
   --ds-action-fg: #1a1a18;
 
+  /* WorkerBee amber brand tokens — dim the cream backdrop and brighten
+     the text so highlighted "selected" surfaces (StatBadge amber, active
+     nav, etc.) carry the same visual weight as the other --ds-bg-*
+     tinted variants in dark mode. Border/ring stay brand-orange. */
+  --background-color-amber-bg: #3d2e12;
+  --text-color-amber-text: #e0a830;
+  --text-color-amber-text-mid: #d1962a;
+  --border-color-amber-text: #e0a830;
+
   --color-background: hsl(40 5% 11%);
   --color-foreground: hsl(40 4% 90%);
   --color-primary: hsl(38 90% 50%);
