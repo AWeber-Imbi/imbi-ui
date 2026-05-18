@@ -42,14 +42,24 @@ import {
 
 interface FilterHeaderProps {
   activeFilters: Set<string>
+  centerFilter?: FilterPopoverProps & { title: string }
   children: React.ReactNode
   className?: string
+  hideMainFilter?: boolean
   label: string
   onSort: () => void
   onToggle: (slug: string) => void
   options: { label: string; slug: string }[]
+  rightFilter?: FilterPopoverProps & { title: string }
   sortDir: SortDir
   sorted: boolean
+}
+
+interface FilterPopoverProps {
+  activeFilters: Set<string>
+  label: string
+  onToggle: (slug: string) => void
+  options: { label: string; slug: string }[]
 }
 
 type SortDir = 'asc' | 'desc'
@@ -369,27 +379,30 @@ export function ProjectsView() {
                 <TableRow>
                   <FilterHeader
                     activeFilters={activeTeamSet}
+                    centerFilter={{
+                      activeFilters: activeTeamSet,
+                      label: 'team',
+                      onToggle: (s) => toggleFilter('teams', s),
+                      options: teamOptions,
+                      title: 'Team',
+                    }}
                     className="min-w-72"
+                    hideMainFilter
                     label="team"
                     onSort={() => setSort('name')}
                     onToggle={(s) => toggleFilter('teams', s)}
                     options={teamOptions}
+                    rightFilter={{
+                      activeFilters: activeTypeSet,
+                      label: 'type',
+                      onToggle: (s) => toggleFilter('types', s),
+                      options: typeOptions,
+                      title: 'Type',
+                    }}
                     sortDir={sortDir}
                     sorted={sortKey === 'name'}
                   >
                     Project
-                  </FilterHeader>
-                  <FilterHeader
-                    activeFilters={activeTypeSet}
-                    className="min-w-48"
-                    label="type"
-                    onSort={() => setSort('type')}
-                    onToggle={(s) => toggleFilter('types', s)}
-                    options={typeOptions}
-                    sortDir={sortDir}
-                    sorted={sortKey === 'type'}
-                  >
-                    Type
                   </FilterHeader>
                   <SortHeader
                     onSort={() => setSort('prs')}
@@ -424,15 +437,17 @@ export function ProjectsView() {
                           <p className="text-primary font-medium">
                             {project.name}
                           </p>
+                          {(project.project_types ?? []).length > 0 && (
+                            <p className="text-secondary text-xs">
+                              {project
+                                .project_types!.map((pt) => pt.name)
+                                .join(', ')}
+                            </p>
+                          )}
                           <p className="text-tertiary text-xs">
                             {project.team.name}
                           </p>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-secondary min-w-48 px-6 py-4">
-                        {(project.project_types || [])
-                          .map((pt) => pt.name)
-                          .join(', ')}
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex items-center gap-1.5">
@@ -572,12 +587,15 @@ function DeploymentCards({
 // fallow-ignore-next-line complexity
 function FilterHeader({
   activeFilters,
+  centerFilter,
   children,
   className,
+  hideMainFilter,
   label,
   onSort,
   onToggle,
   options,
+  rightFilter,
   sortDir,
   sorted,
 }: FilterHeaderProps) {
@@ -585,63 +603,98 @@ function FilterHeader({
     <TableHead
       className={`text-secondary px-6 py-3 text-left text-sm font-medium ${className ? ` ${className}` : ''}`}
     >
-      <div className="flex items-center gap-0.5">
-        <button
-          className="hover:text-primary inline-flex items-center gap-1"
-          onClick={onSort}
-          type="button"
-        >
-          {children}
-          {sorted ? (
-            sortDir === 'asc' ? (
-              <ChevronUp className="size-3.5 shrink-0" />
+      <div className="flex items-center justify-between gap-0.5">
+        <div className="flex items-center gap-0.5">
+          <button
+            className="hover:text-primary inline-flex items-center gap-1"
+            onClick={onSort}
+            type="button"
+          >
+            {children}
+            {sorted ? (
+              sortDir === 'asc' ? (
+                <ChevronUp className="size-3.5 shrink-0" />
+              ) : (
+                <ChevronDown className="size-3.5 shrink-0" />
+              )
             ) : (
-              <ChevronDown className="size-3.5 shrink-0" />
-            )
-          ) : (
-            <ChevronsUpDown className="text-tertiary/50 size-3.5 shrink-0" />
+              <ChevronsUpDown className="text-tertiary/50 size-3.5 shrink-0" />
+            )}
+          </button>
+          {!hideMainFilter && (
+            <FilterPopover
+              activeFilters={activeFilters}
+              label={label}
+              onToggle={onToggle}
+              options={options}
+            />
           )}
-        </button>
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={`flex items-center gap-0.5 rounded px-0.5 py-0.5 ${
-                activeFilters.size > 0
-                  ? 'text-action'
-                  : 'text-tertiary/50 hover:text-secondary'
-              }`}
-              type="button"
-            >
-              <ListFilter className="size-3.5" />
-              {activeFilters.size > 0 && (
-                <span className="text-xs leading-none">
-                  {activeFilters.size}
-                </span>
-              )}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-48 p-2">
-            <p className="text-secondary mb-2 px-1 text-xs font-medium tracking-wide uppercase">
-              Filter by {label}
-            </p>
-            <div className="space-y-0.5">
-              {options.map((opt) => (
-                <label
-                  className="hover:bg-secondary flex cursor-pointer items-center gap-2 rounded px-1 py-1.5"
-                  key={opt.slug}
-                >
-                  <Checkbox
-                    checked={activeFilters.has(opt.slug)}
-                    onCheckedChange={() => onToggle(opt.slug)}
-                  />
-                  <span className="text-primary text-sm">{opt.label}</span>
-                </label>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+        </div>
+        {centerFilter && (
+          <div className="flex items-center gap-1">
+            <span className="text-tertiary/70 text-xs">
+              {centerFilter.title}
+            </span>
+            <FilterPopover {...centerFilter} />
+          </div>
+        )}
+        {rightFilter && (
+          <div className="flex items-center gap-1">
+            <span className="text-tertiary/70 text-xs">
+              {rightFilter.title}
+            </span>
+            <FilterPopover {...rightFilter} />
+          </div>
+        )}
       </div>
     </TableHead>
+  )
+}
+
+// fallow-ignore-next-line complexity
+function FilterPopover({
+  activeFilters,
+  label,
+  onToggle,
+  options,
+}: FilterPopoverProps) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={`flex items-center gap-0.5 rounded px-0.5 py-0.5 ${
+            activeFilters.size > 0
+              ? 'text-action'
+              : 'text-tertiary/50 hover:text-secondary'
+          }`}
+          type="button"
+        >
+          <ListFilter className="size-3.5" />
+          {activeFilters.size > 0 && (
+            <span className="text-xs leading-none">{activeFilters.size}</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-48 p-2">
+        <p className="text-secondary mb-2 px-1 text-xs font-medium tracking-wide uppercase">
+          Filter by {label}
+        </p>
+        <div className="space-y-0.5">
+          {options.map((opt) => (
+            <label
+              className="hover:bg-secondary flex cursor-pointer items-center gap-2 rounded px-1 py-1.5"
+              key={opt.slug}
+            >
+              <Checkbox
+                checked={activeFilters.has(opt.slug)}
+                onCheckedChange={() => onToggle(opt.slug)}
+              />
+              <span className="text-primary text-sm">{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   )
 }
 
