@@ -58,7 +58,7 @@ export function ScoreBadge({
   if (size === 'md') {
     return (
       <div
-        className={`flex size-12 shrink-0 items-center justify-center border-[0.25px] ring-4 ${rounded} ${bg} ${border} ${text} ${ring}`}
+        className={`flex size-12 shrink-0 items-center justify-center ring-2 ${rounded} ${bg} ${border} ${text} ${ring}`}
       >
         <span className="text-sm font-semibold">{display}</span>
       </div>
@@ -67,7 +67,7 @@ export function ScoreBadge({
 
   return (
     <div
-      className={`inline-flex size-10 items-center justify-center border-[0.25px] ${rounded} ${bg} ${border} ${text}`}
+      className={`inline-flex size-10 items-center justify-center border ${rounded} ${bg} ${border} ${text}`}
     >
       <span className="text-sm font-semibold">{display}</span>
     </div>

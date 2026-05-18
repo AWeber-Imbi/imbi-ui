@@ -591,7 +591,7 @@ function DeploymentCards({
                 />
                 {env.name}
               </p>
-              <p className="font-mono text-base leading-tight font-bold">
+              <p className="font-mono text-base leading-tight">
                 {release ? (
                   <span className="text-primary">{release.version}</span>
                 ) : (
