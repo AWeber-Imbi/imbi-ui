@@ -140,20 +140,22 @@ export function ProjectDetail({
     string,
     {
       ciStatus: 'fail' | 'pass' | 'warn' | null
+      committish: string
       runUrl: null | string
       status: string
+      tag: null | string
       updated: string
-      version: string
     }
   > = useMemo(() => {
     const out: Record<
       string,
       {
         ciStatus: 'fail' | 'pass' | 'warn' | null
+        committish: string
         runUrl: null | string
         status: string
+        tag: null | string
         updated: string
-        version: string
       }
     > = {}
     for (const row of currentReleases) {
@@ -164,12 +166,13 @@ export function ProjectDetail({
         row.ci_status && row.ci_status !== 'unknown' ? row.ci_status : null
       out[row.environment.slug] = {
         ciStatus: ci,
+        committish: row.release.committish,
         runUrl: row.external_run_url,
         status: row.current_status ?? '',
+        tag: row.release.tag ?? null,
         updated: formatDistanceToNow(new Date(row.last_event_at), {
           addSuffix: true,
         }),
-        version: row.release.version,
       }
     }
     return out
@@ -210,8 +213,8 @@ export function ProjectDetail({
           return
         }
         const fromSlug = sortedEnvironments[idx - 1]?.slug
-        const fromVersion = fromSlug
-          ? deploymentStatus[fromSlug]?.version
+        const fromCommittish = fromSlug
+          ? deploymentStatus[fromSlug]?.committish
           : undefined
         // Wait for the releases query (drives ``deploymentStatus``) to
         // settle before deciding the upstream is empty. Use the
@@ -219,7 +222,7 @@ export function ProjectDetail({
         // genuinely zero releases would otherwise stay stuck here
         // without redirecting.
         if (releasesPending) return
-        if (!fromVersion) {
+        if (!fromCommittish) {
           navigate(`/projects/${project.id}`, { replace: true })
         }
       }
@@ -669,7 +672,9 @@ export function ProjectDetail({
                       ? 'Deploy / Promote'
                       : 'Deploy'
                   const versionSlot = deployment ? (
-                    <span className="font-mono">{deployment.version}</span>
+                    <span className="font-mono">
+                      {deployment.tag ?? deployment.committish}
+                    </span>
                   ) : releasesLoading ? (
                     <span
                       aria-hidden
@@ -1051,18 +1056,18 @@ export function ProjectDetail({
           // omit the Promote tab when prerequisites are unmet.
           const fromSlug =
             targetIdx > 0 ? sortedEnvironments[targetIdx - 1]?.slug : undefined
-          const fromVersion = fromSlug
-            ? deploymentStatus[fromSlug]?.version
+          const fromCommittish = fromSlug
+            ? deploymentStatus[fromSlug]?.committish
             : undefined
           const promoteAvailable =
-            canPromote && !!fromSlug && !!fromVersion && targetIdx > 0
+            canPromote && !!fromSlug && !!fromCommittish && targetIdx > 0
           if (!canDeploy && !promoteAvailable) return null
           return (
             <ReleaseModal
               canDeploy={canDeploy}
               canPromote={promoteAvailable}
               environments={sortedEnvironments}
-              fromCommittish={fromVersion}
+              fromCommittish={fromCommittish}
               fromEnvironment={fromSlug}
               initialAction={isPromoteModal ? 'promote' : 'deploy'}
               initialEnvSlug={initialSubId}

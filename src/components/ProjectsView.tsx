@@ -628,7 +628,12 @@ function DeploymentCards({
   }[]
   releases: Record<
     string,
-    { deployed_at: string; performed_by?: null | string; version: string }
+    {
+      committish?: null | string
+      deployed_at: string
+      performed_by?: null | string
+      tag?: null | string
+    }
   >
 }) {
   const sorted = [...environments].sort(
@@ -669,7 +674,16 @@ function DeploymentCards({
               </p>
               <p className="font-mono text-base leading-tight">
                 {release ? (
-                  <span className="text-primary">{release.version}</span>
+                  <>
+                    <span className="text-primary">
+                      {release.tag ?? release.committish ?? '—'}
+                    </span>
+                    {release.tag && release.committish && (
+                      <span className="text-tertiary ml-2 text-xs font-normal">
+                        {release.committish}
+                      </span>
+                    )}
+                  </>
                 ) : (
                   <span className="text-tertiary text-sm font-normal">
                     Not deployed
@@ -706,9 +720,10 @@ function EnvDeploymentHover({
     sort_order?: null | number
   }
   release?: {
+    committish?: null | string
     deployed_at: string
     performed_by?: null | string
-    version: string
+    tag?: null | string
   }
 }) {
   const { isDarkMode } = useTheme()
@@ -745,7 +760,16 @@ function EnvDeploymentHover({
           </p>
           <p className="font-mono text-base leading-tight font-bold">
             {release ? (
-              <span className="text-primary">{release.version}</span>
+              <>
+                <span className="text-primary">
+                  {release.tag ?? release.committish ?? '—'}
+                </span>
+                {release.tag && release.committish && (
+                  <span className="text-tertiary ml-2 text-xs font-normal">
+                    {release.committish}
+                  </span>
+                )}
+              </>
             ) : (
               <span className="text-tertiary text-sm font-normal">
                 Not deployed

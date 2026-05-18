@@ -250,9 +250,10 @@ export interface PullRequestListResponse {
 export type RelationshipLink = Schemas['RelationshipLink']
 
 export interface ReleaseInfo {
+  committish?: null | string
   deployed_at: string
   performed_by?: null | string
-  version: string
+  tag?: null | string
 }
 
 // Scoring policy types — discriminated union on `category`. See
@@ -937,15 +938,16 @@ export type ProjectRelationshipsResponse =
   Schemas['ProjectRelationshipsResponse']
 
 export interface Release {
+  committish: string
   created_at: string
   created_by: string
   description?: null | string
   id: string
   links: ReleaseLink[]
   project_id: string
+  tag?: null | string
   title: string
   updated_at?: null | string
-  version: string
 }
 export interface ReleaseLink {
   label?: null | string
