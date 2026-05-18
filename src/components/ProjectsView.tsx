@@ -450,7 +450,7 @@ export function ProjectsView() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-6 py-4">
+                      <TableCell className="items-center px-6 py-4">
                         {project.environments &&
                           project.environments.length > 0 && (
                             <DeploymentCards
@@ -508,15 +508,18 @@ function DeploymentCards({
       (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name),
   )
   return (
-    <div className="flex items-start gap-2" style={{ flexWrap: 'nowrap' }}>
+    <div
+      className="flex w-fit items-start gap-2"
+      style={{ flexWrap: 'nowrap' }}
+    >
       {sorted.map((env, idx) => {
         const release = releases[env.slug]
         const derived = env.label_color
           ? deriveChipColors(env.label_color, false)
           : null
         const cardClass = derived
-          ? `w-45 rounded-lg border p-3${!release ? ' border-dashed opacity-60' : ''}`
-          : `w-45 rounded-lg border p-3${release ? ' border-border bg-card' : ' border-tertiary/40 border-dashed opacity-60'}`
+          ? `w-55 rounded-lg border p-3${!release ? ' border-dashed opacity-60' : ''}`
+          : `w-55 rounded-lg border p-3${release ? ' border-border bg-card' : ' border-tertiary/40 border-dashed opacity-60'}`
         const cardStyle = derived
           ? { backgroundColor: derived.bg, borderColor: derived.border }
           : undefined
