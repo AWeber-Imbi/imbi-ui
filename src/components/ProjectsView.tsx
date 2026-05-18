@@ -43,6 +43,7 @@ import {
 interface FilterHeaderProps {
   activeFilters: Set<string>
   children: React.ReactNode
+  className?: string
   label: string
   onSort: () => void
   onToggle: (slug: string) => void
@@ -368,6 +369,7 @@ export function ProjectsView() {
                 <TableRow>
                   <FilterHeader
                     activeFilters={activeTeamSet}
+                    className="min-w-72"
                     label="team"
                     onSort={() => setSort('name')}
                     onToggle={(s) => toggleFilter('teams', s)}
@@ -416,7 +418,7 @@ export function ProjectsView() {
                       key={`table-${project.id}`}
                       onClick={() => handleProjectSelect(project.id)}
                     >
-                      <TableCell className="px-6 py-4">
+                      <TableCell className="min-w-72 px-6 py-4">
                         <div>
                           <p className="text-primary font-medium">
                             {project.name}
@@ -559,6 +561,7 @@ function DeploymentCards({
 function FilterHeader({
   activeFilters,
   children,
+  className,
   label,
   onSort,
   onToggle,
@@ -567,7 +570,9 @@ function FilterHeader({
   sorted,
 }: FilterHeaderProps) {
   return (
-    <TableHead className="text-secondary px-6 py-3 text-left text-sm font-medium">
+    <TableHead
+      className={`text-secondary px-6 py-3 text-left text-sm font-medium ${className ? ` ${className}` : ''}`}
+    >
       <div className="flex items-center gap-0.5">
         <button
           className="hover:text-primary inline-flex items-center gap-1"
