@@ -398,7 +398,7 @@ export function ProjectsView() {
                   >
                     PRs
                   </SortHeader>
-                  <TableHead className="text-secondary px-6 py-3 text-left text-sm font-medium">
+                  <TableHead className="text-secondary w-px px-6 py-3 text-left text-sm font-medium whitespace-nowrap">
                     Deployments
                   </TableHead>
                   <SortHeader
@@ -450,7 +450,7 @@ export function ProjectsView() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="items-center px-6 py-4">
+                      <TableCell className="w-px items-center px-6 py-4 whitespace-nowrap">
                         {project.environments &&
                           project.environments.length > 0 && (
                             <DeploymentCards
