@@ -14,6 +14,7 @@ import {
   List,
   ListFilter,
   Plus,
+  RefreshCw,
   Search,
   User,
 } from 'lucide-react'
@@ -141,7 +142,12 @@ export function ProjectsView() {
 
   const [newProjectDialogOpen, setNewProjectDialogOpen] = useState(false)
 
-  const { data: projects, isLoading } = useQuery({
+  const {
+    data: projects,
+    isFetching,
+    isLoading,
+    refetch,
+  } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => getProjects(orgSlug, signal),
     queryKey: ['projects', orgSlug],
@@ -263,15 +269,25 @@ export function ProjectsView() {
         {/* Search and Filters */}
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="relative max-w-md flex-1">
+            <div className="relative w-80 shrink-0">
               <Search className="text-tertiary absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <Input
-                className={`pl-9 ${''}`}
+                className="pl-9"
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search projects..."
                 type="text"
                 value={searchQuery}
               />
+            </div>
+
+            <div className="flex flex-1 items-center gap-2">
+              <StatBadge label="Healthy" value={0} variant="success" />
+              <StatBadge label="Deploying" value={0} variant="warning" />
+              <StatBadge label="Failed" value={0} variant="danger" />
+              <StatBadge label="Open PRs" value={0} variant="accent" />
+              <StatBadge label="Need Release" value={0} variant="amber" />
+              <StatBadge label="My PRs" value={0} variant="info" />
+              <StatBadge label="My Commits" value={0} variant="teal" />
             </div>
 
             <div className="border-secondary flex items-center rounded-lg border">
@@ -292,6 +308,20 @@ export function ProjectsView() {
                 variant="ghost"
               >
                 <List className="size-4" />
+              </Button>
+            </div>
+
+            <div className="border-secondary flex items-center rounded-lg border">
+              <Button
+                aria-label="Refresh"
+                disabled={isFetching}
+                onClick={() => refetch()}
+                size="sm"
+                variant="ghost"
+              >
+                <RefreshCw
+                  className={`size-4${isFetching ? ' animate-spin' : ''}`}
+                />
               </Button>
             </div>
           </div>
@@ -323,7 +353,7 @@ export function ProjectsView() {
                   <div className="ml-3">
                     <ScoreBadge
                       score={project.score}
-                      size="md"
+                      size="lg"
                       variant="circle"
                     />
                   </div>
@@ -396,7 +426,7 @@ export function ProjectsView() {
               Project
             </FilterHeader>
             <SortHeader
-              className="w-32 shrink-0"
+              className="w-40 shrink-0 text-center whitespace-nowrap"
               onSort={() => setSort('prs')}
               sortDir={sortDir}
               sorted={sortKey === 'prs'}
@@ -418,12 +448,12 @@ export function ProjectsView() {
               Deployments
             </div>
             <SortHeader
-              className="w-28 shrink-0 text-right"
+              className="w-40 shrink-0 text-center whitespace-nowrap"
               onSort={() => setSort('score')}
               sortDir={sortDir}
               sorted={sortKey === 'score'}
             >
-              Health
+              Health Score
             </SortHeader>
           </div>
           <div
@@ -448,17 +478,17 @@ export function ProjectsView() {
                   )}
                   <p className="text-tertiary text-xs">{project.team.name}</p>
                 </div>
-                <div className="w-32 shrink-0 px-6 py-4">
-                  <div className="flex items-center gap-1.5">
-                    <span className="bg-secondary flex items-center gap-1 rounded-md px-1.5 py-0.5">
-                      <GitPullRequest className="text-action size-3.5" />
-                      <span className="text-action text-xs font-medium">
+                <div className="w-40 shrink-0 px-6 py-4 whitespace-nowrap">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <span className="border-accent bg-accent text-accent inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
+                      <GitPullRequest className="size-3.5" />
+                      <span className="font-medium">
                         {project.open_pr_count ?? 0}
                       </span>
                     </span>
-                    <span className="border-action flex items-center gap-1 rounded-md border px-1.5 py-0.5">
-                      <User className="text-action size-3.5" />
-                      <span className="text-action text-xs font-medium">
+                    <span className="border-info bg-info text-info inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
+                      <User className="size-3.5" />
+                      <span className="font-medium">
                         {project.viewer_open_pr_count ?? 0}
                       </span>
                     </span>
@@ -467,7 +497,7 @@ export function ProjectsView() {
                 <div className="w-24 shrink-0 px-2.5 py-4 text-center whitespace-nowrap">
                   <span className="text-success inline-flex items-center gap-1.5">
                     <CircleCheck className="size-4 shrink-0" />
-                    <span className="text-xs font-medium">None</span>
+                    <span className="font-medium">None</span>
                   </span>
                 </div>
                 <div
@@ -481,8 +511,12 @@ export function ProjectsView() {
                     />
                   )}
                 </div>
-                <div className="w-28 shrink-0 px-6 py-4 text-right">
-                  <ScoreBadge score={project.score} variant="circle" />
+                <div className="flex w-40 shrink-0 justify-center px-6 py-4 whitespace-nowrap">
+                  <ScoreBadge
+                    score={project.score}
+                    size="md"
+                    variant="circle"
+                  />
                 </div>
               </div>
             ))}
@@ -721,6 +755,51 @@ function SortHeader({
         )}
       </span>
     </div>
+  )
+}
+
+// fallow-ignore-next-line complexity
+function StatBadge({
+  label,
+  value,
+  variant,
+}: {
+  label: string
+  value: number
+  variant?:
+    | 'accent'
+    | 'amber'
+    | 'danger'
+    | 'info'
+    | 'success'
+    | 'teal'
+    | 'warning'
+}) {
+  const variantCls =
+    variant === 'success'
+      ? 'bg-success border-success text-success'
+      : variant === 'warning'
+        ? 'bg-warning border-warning text-warning'
+        : variant === 'danger'
+          ? 'bg-danger border-danger text-danger'
+          : variant === 'accent'
+            ? 'bg-accent border-accent text-accent'
+            : variant === 'info'
+              ? 'bg-info border-info text-info'
+              : variant === 'teal'
+                ? 'bg-teal border-teal text-teal'
+                : variant === 'amber'
+                  ? 'bg-amber-bg border-amber-border text-amber-text'
+                  : 'border-secondary text-secondary'
+  return (
+    <span
+      className={`inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs ${variantCls}`}
+    >
+      <span className={variant ? 'font-medium' : 'text-primary font-medium'}>
+        {value}
+      </span>
+      <span>{label}</span>
+    </span>
   )
 }
 
