@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -34,6 +34,13 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Input } from './ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { ScoreBadge } from './ui/score-badge'
+
+interface DriftPair {
+  drifted: boolean
+  from: string
+  to: string
+  toLabelColor?: null | string
+}
 
 interface FilterHeaderProps {
   activeFilters: Set<string>
@@ -78,23 +85,20 @@ export function ProjectsView() {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
 
+  const [storedView] = useState(() =>
+    typeof window === 'undefined'
+      ? null
+      : window.localStorage.getItem(VIEW_MODE_STORAGE_KEY),
+  )
   const rawView = searchParams.get('view')
-  const storedView =
-    typeof window !== 'undefined'
-      ? window.localStorage.getItem(VIEW_MODE_STORAGE_KEY)
-      : null
-  const viewMode: 'grid' | 'list' =
-    rawView === 'grid' || rawView === 'list'
-      ? rawView
-      : storedView === 'grid' || storedView === 'list'
-        ? storedView
-        : 'list'
+  const viewMode = resolveViewMode(rawView, storedView)
   const searchQuery = searchParams.get('q') ?? ''
   const sortKey = searchParams.get('sort') as null | SortKey
   const sortDir = (searchParams.get('dir') ?? 'asc') as SortDir
   const teamsParam = searchParams.get('teams') ?? ''
   const typesParam = searchParams.get('types') ?? ''
   const driftsParam = searchParams.get('drifts') ?? ''
+  const hasDrift = searchParams.get('has_drift') === '1'
   const hasOpenPRs = searchParams.get('has_open_prs') === '1'
   const hasMyOpenPRs = searchParams.get('has_my_open_prs') === '1'
 
@@ -111,16 +115,6 @@ export function ProjectsView() {
       { replace: true },
     )
   }
-
-  useEffect(() => {
-    if (
-      rawView !== 'grid' &&
-      rawView !== 'list' &&
-      typeof window !== 'undefined'
-    ) {
-      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode)
-    }
-  }, [rawView, viewMode])
 
   const setSearchQuery = (q: string) =>
     setSearchParams(
@@ -153,27 +147,19 @@ export function ProjectsView() {
       { replace: true },
     )
 
-  const toggleOpenPRs = () =>
+  const toggleBoolParam = (key: string) => () =>
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
-        if (prev.get('has_open_prs') === '1') next.delete('has_open_prs')
-        else next.set('has_open_prs', '1')
+        if (prev.get(key) === '1') next.delete(key)
+        else next.set(key, '1')
         return next
       },
       { replace: true },
     )
-
-  const toggleMyOpenPRs = () =>
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (prev.get('has_my_open_prs') === '1') next.delete('has_my_open_prs')
-        else next.set('has_my_open_prs', '1')
-        return next
-      },
-      { replace: true },
-    )
+  const toggleDrift = toggleBoolParam('has_drift')
+  const toggleOpenPRs = toggleBoolParam('has_open_prs')
+  const toggleMyOpenPRs = toggleBoolParam('has_my_open_prs')
 
   const toggleFilter = (param: string, slug: string) =>
     setSearchParams(
@@ -233,6 +219,13 @@ export function ProjectsView() {
     navigate(`/projects/${projectId}`)
   }
 
+  const driftedProjectIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const p of projects ?? []) if (projectHasDrift(p)) ids.add(p.id)
+    return ids
+  }, [projects])
+  const totalDriftProjects = driftedProjectIds.size
+
   // fallow-ignore-next-line complexity
   const filteredProjects = useMemo(() => {
     const teamSet = new Set(teamsParam.split(',').filter(Boolean))
@@ -256,6 +249,9 @@ export function ProjectsView() {
     }
     if (hasMyOpenPRs) {
       all = all.filter((p) => (p.viewer_open_pr_count ?? 0) > 0)
+    }
+    if (hasDrift) {
+      all = all.filter((p) => driftedProjectIds.has(p.id))
     }
     if (searchQuery) {
       return matchSorter(all, searchQuery, {
@@ -285,39 +281,35 @@ export function ProjectsView() {
     })
   }, [
     projects,
+    driftedProjectIds,
     searchQuery,
     sortKey,
     sortDir,
     teamsParam,
     typesParam,
     driftsParam,
+    hasDrift,
     hasOpenPRs,
     hasMyOpenPRs,
   ])
 
-  const totalOpenPRs = (projects ?? []).reduce(
-    (sum, p) => sum + (p.open_pr_count ?? 0),
-    0,
+  const totalOpenPRs = useMemo(
+    () => (projects ?? []).reduce((sum, p) => sum + (p.open_pr_count ?? 0), 0),
+    [projects],
   )
-  const totalMyOpenPRs = (projects ?? []).reduce(
-    (sum, p) => sum + (p.viewer_open_pr_count ?? 0),
-    0,
+  const totalMyOpenPRs = useMemo(
+    () =>
+      (projects ?? []).reduce(
+        (sum, p) => sum + (p.viewer_open_pr_count ?? 0),
+        0,
+      ),
+    [projects],
   )
 
   const activeTeamSet = new Set(teamsParam.split(',').filter(Boolean))
   const activeTypeSet = new Set(typesParam.split(',').filter(Boolean))
   const activeDriftSet = new Set(driftsParam.split(',').filter(Boolean))
   const driftOptions = [{ label: 'None', slug: 'none' }]
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-screen-2xl px-6 py-8">
-        <div className="flex h-64 items-center justify-center">
-          <div className="text-lg">Loading projects...</div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-auto max-w-screen-2xl px-6 py-8">
@@ -326,6 +318,7 @@ export function ProjectsView() {
           <h1 className="text-primary text-2xl font-semibold">Projects</h1>
           <Button
             className="bg-action text-action-foreground hover:bg-action-hover"
+            disabled={isLoading}
             onClick={() => setNewProjectDialogOpen(true)}
             size="sm"
           >
@@ -341,6 +334,7 @@ export function ProjectsView() {
               <Search className="text-tertiary absolute top-1/2 left-3 size-4 -translate-y-1/2" />
               <Input
                 className="pl-9"
+                disabled={isLoading}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search projects..."
                 type="text"
@@ -349,31 +343,40 @@ export function ProjectsView() {
             </div>
 
             <div className="flex flex-1 items-center gap-2">
-              <StatBadge label="Healthy" value={0} variant="success" />
-              <StatBadge label="Deploying" value={0} variant="warning" />
-              <StatBadge label="Failed" value={0} variant="danger" />
+              <StatBadge hidden label="Healthy" value={0} variant="success" />
+              <StatBadge hidden label="Deploying" value={0} variant="warning" />
+              <StatBadge hidden label="Failed" value={0} variant="danger" />
               <StatBadge
                 active={hasOpenPRs}
+                disabled={isLoading}
                 label="Open PRs"
                 onClick={toggleOpenPRs}
                 value={totalOpenPRs}
                 variant="accent"
               />
-              <StatBadge label="Need Release" value={0} variant="amber" />
+              <StatBadge
+                active={hasDrift}
+                disabled={isLoading}
+                label="Need Release"
+                onClick={toggleDrift}
+                value={totalDriftProjects}
+                variant="amber"
+              />
               <StatBadge
                 active={hasMyOpenPRs}
+                disabled={isLoading}
                 label="My PRs"
                 onClick={toggleMyOpenPRs}
                 value={totalMyOpenPRs}
                 variant="info"
               />
-              <StatBadge label="My Commits" value={0} variant="teal" />
             </div>
 
             <div className="border-secondary flex items-center overflow-hidden rounded-lg border">
               <Button
                 aria-label="List view"
                 className={`rounded-r-none ${viewMode === 'list' ? 'bg-amber-bg text-amber-text' : ''}`}
+                disabled={isLoading}
                 onClick={() => setViewMode('list')}
                 size="sm"
                 variant="ghost"
@@ -383,6 +386,7 @@ export function ProjectsView() {
               <Button
                 aria-label="Grid view"
                 className={`rounded-l-none ${viewMode === 'grid' ? 'bg-amber-bg text-amber-text' : ''}`}
+                disabled={isLoading}
                 onClick={() => setViewMode('grid')}
                 size="sm"
                 variant="ghost"
@@ -394,7 +398,7 @@ export function ProjectsView() {
             <div className="border-secondary flex items-center overflow-hidden rounded-lg border">
               <Button
                 aria-label="Refresh"
-                disabled={isFetching}
+                disabled={isFetching || isLoading}
                 onClick={() => refetch()}
                 size="sm"
                 variant="ghost"
@@ -407,9 +411,11 @@ export function ProjectsView() {
           </div>
         </Card>
       </div>
-
-      {/* Projects Grid/List */}
-      {viewMode === 'grid' ? (
+      {isLoading ? (
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-tertiary text-lg">Loading projects...</div>
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* fallow-ignore-next-line complexity */}
           {filteredProjects.map((project) => {
@@ -456,21 +462,17 @@ export function ProjectsView() {
                       className={`border-accent bg-accent text-accent inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs ${(project.open_pr_count ?? 0) > 0 ? '' : 'invisible'}`}
                     >
                       <GitPullRequest className="size-3.5" />
-                      <span className="font-medium">
-                        {project.open_pr_count ?? 0}
-                      </span>
+                      <span>{project.open_pr_count ?? 0}</span>
                     </span>
                     <span
                       className={`border-info bg-info text-info inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs ${(project.viewer_open_pr_count ?? 0) > 0 ? '' : 'invisible'}`}
                     >
                       <User className="size-3.5" />
-                      <span className="font-medium">
-                        {project.viewer_open_pr_count ?? 0}
-                      </span>
+                      <span>{project.viewer_open_pr_count ?? 0}</span>
                     </span>
-                    <span className="text-success text-xs font-medium">
-                      No drift
-                    </span>
+                    <div className="ml-auto flex flex-wrap items-center gap-2">
+                      <DriftCell inline project={project} />
+                    </div>
                     {isProjectDeployable(project) && envs.length > 0 && (
                       <div className="ml-auto flex flex-wrap items-center gap-2">
                         {envs.map((env) => (
@@ -500,7 +502,7 @@ export function ProjectsView() {
                 options: teamOptions,
                 title: 'Team',
               }}
-              className="w-72 shrink-0"
+              className="w-65 shrink-0"
               hideMainFilter
               label="team"
               onSort={() => setSort('name')}
@@ -526,8 +528,8 @@ export function ProjectsView() {
             >
               PRs
             </SortHeader>
-            <div className="w-24 shrink-0 px-2.5 py-3 text-center whitespace-nowrap">
-              <div className="flex items-center justify-center gap-1">
+            <div className="w-40 shrink-0 px-2.5 py-3 text-center whitespace-nowrap">
+              <div className="flex items-center justify-center gap-1 text-center">
                 Drift
                 <FilterPopover
                   activeFilters={activeDriftSet}
@@ -538,7 +540,7 @@ export function ProjectsView() {
               </div>
             </div>
             <div className="min-w-0 flex-1 px-6 py-3 text-center whitespace-nowrap">
-              Deployments
+              Current Deployments
             </div>
             <SortHeader
               className="w-40 shrink-0 text-center whitespace-nowrap"
@@ -562,7 +564,7 @@ export function ProjectsView() {
                 key={`row-${project.id}`}
                 onClick={() => handleProjectSelect(project.id)}
               >
-                <div className="w-72 shrink-0 px-6 py-4">
+                <div className="w-65 shrink-0 px-6 py-4">
                   <p className="text-primary font-medium">{project.name}</p>
                   {(project.project_types ?? []).length > 0 && (
                     <p className="text-secondary text-xs">
@@ -574,28 +576,21 @@ export function ProjectsView() {
                 <div className="w-40 shrink-0 px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center justify-center gap-1.5">
                     {(project.open_pr_count ?? 0) > 0 && (
-                      <span className="border-accent bg-accent text-accent inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
+                      <span className="border-accent bg-accent text-accent inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs">
                         <GitPullRequest className="size-3.5" />
-                        <span className="font-medium">
-                          {project.open_pr_count}
-                        </span>
+                        <span>{project.open_pr_count}</span>
                       </span>
                     )}
                     {(project.viewer_open_pr_count ?? 0) > 0 && (
-                      <span className="border-info bg-info text-info inline-flex h-10 items-center gap-1.5 rounded-md border p-3 text-xs">
+                      <span className="border-info bg-info text-info inline-flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-xs">
                         <User className="size-3.5" />
-                        <span className="font-medium">
-                          {project.viewer_open_pr_count}
-                        </span>
+                        <span>{project.viewer_open_pr_count}</span>
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="w-24 shrink-0 px-2.5 py-4 text-center whitespace-nowrap">
-                  <span className="text-success inline-flex items-center gap-1.5">
-                    <CircleCheck className="size-4 shrink-0" />
-                    <span className="font-medium">None</span>
-                  </span>
+                <div className="flex w-40 shrink-0 items-center justify-center px-5 py-4">
+                  <DriftCell project={project} />
                 </div>
                 <div
                   className="flex min-w-0 flex-1 overflow-x-auto px-6 py-4"
@@ -622,15 +617,13 @@ export function ProjectsView() {
           </div>
         </Card>
       )}
-
-      {filteredProjects.length === 0 && (
+      {!isLoading && filteredProjects.length === 0 && (
         <div className="py-12 text-center">
           <p className="text-tertiary">
             No projects found matching your criteria
           </p>
         </div>
       )}
-
       <NewProjectDialog
         isOpen={newProjectDialogOpen}
         onClose={() => setNewProjectDialogOpen(false)}
@@ -638,6 +631,48 @@ export function ProjectsView() {
       />
     </div>
   )
+}
+
+function abbreviateEnvName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0][0]!.toUpperCase()
+  return parts.map((w) => w[0]!.toUpperCase()).join('')
+}
+
+// fallow-ignore-next-line complexity
+function computeDriftPairs(
+  environments: {
+    label_color?: null | string
+    name: string
+    slug: string
+    sort_order?: null | number
+  }[],
+  releases: Record<string, { committish?: null | string; tag?: null | string }>,
+): DriftPair[] {
+  const sorted = [...environments].sort(
+    (a, b) =>
+      (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.name.localeCompare(b.name),
+  )
+  const pairs: DriftPair[] = []
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const a = sorted[i]
+    const b = sorted[i + 1]
+    const ra = releases[a.slug]
+    const rb = releases[b.slug]
+    const aTag = ra?.tag ?? null
+    const bTag = rb?.tag ?? null
+    const aSha = ra?.committish ?? null
+    const bSha = rb?.committish ?? null
+    const drifted = aTag !== bTag || aSha !== bSha
+    pairs.push({
+      drifted,
+      from: a.name,
+      to: b.name,
+      toLabelColor: b.label_color ?? null,
+    })
+  }
+  return pairs
 }
 
 function DeploymentCards({
@@ -673,8 +708,8 @@ function DeploymentCards({
           ? deriveChipColors(env.label_color, false)
           : null
         const cardClass = derived
-          ? `w-55 rounded-lg border p-3${!release ? ' border-dashed opacity-60' : ''}`
-          : `w-55 rounded-lg border p-3${release ? ' border-border bg-card' : ' border-tertiary/40 border-dashed opacity-60'}`
+          ? `w-50 rounded-lg border px-3 py-2${!release ? ' border-dashed opacity-60' : ''}`
+          : `w-50 rounded-lg border px-3 py-2${release ? ' border-border bg-card' : ' border-tertiary/40 border-dashed opacity-60'}`
         const cardStyle = derived
           ? { backgroundColor: derived.bg, borderColor: derived.border }
           : undefined
@@ -694,25 +729,26 @@ function DeploymentCards({
                   }
                 />
                 {env.name}
-                <CircleCheck className="text-success ml-auto size-4 shrink-0" />
               </p>
-              <p className="font-mono text-base leading-tight">
-                {release ? (
-                  <>
-                    <span className="text-primary">
-                      {release.tag ?? release.committish ?? '—'}
-                    </span>
-                    {release.tag && release.committish && (
-                      <span className="text-tertiary ml-2 text-xs font-normal">
-                        {release.committish}
+              <p className="flex items-center gap-2 font-mono text-base leading-tight">
+                <span className="min-w-0 flex-1">
+                  {release ? (
+                    <>
+                      <span className="text-primary">
+                        {release.tag ?? release.committish ?? '—'}
                       </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-tertiary text-sm font-normal">
-                    Not deployed
-                  </span>
-                )}
+                      {release.tag && release.committish && (
+                        <span className="text-tertiary ml-2 text-xs font-normal">
+                          {release.committish}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-tertiary text-sm font-normal">
+                      Not deployed
+                    </span>
+                  )}
+                </span>
               </p>
               <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
                 {release ? (
@@ -725,6 +761,81 @@ function DeploymentCards({
                 )}
               </p>
             </span>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+// fallow-ignore-next-line complexity
+function DriftCell({
+  inline,
+  project,
+}: {
+  inline?: boolean
+  project: {
+    current_releases?: null | Record<
+      string,
+      { committish?: null | string; tag?: null | string }
+    >
+    environments?:
+      | null
+      | {
+          label_color?: null | string
+          name: string
+          slug: string
+          sort_order?: null | number
+        }[]
+    project_types?: null | object[]
+  }
+}) {
+  const { isDarkMode } = useTheme()
+  if (!isProjectDeployable(project)) return null
+  const envs = project.environments ?? []
+  if (envs.length < 2) {
+    return null
+  }
+  const pairs = computeDriftPairs(envs, project.current_releases ?? {})
+  const drifted = pairs.filter((p) => p.drifted)
+  if (drifted.length === 0) {
+    return null
+  }
+  const containerCls = inline
+    ? 'flex flex-row flex-wrap items-center gap-1'
+    : 'flex flex-col items-center gap-1.5'
+  const badgeBaseCls = inline
+    ? 'inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-mono text-xs'
+    : 'inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-xs'
+  const fallbackCls = 'border-amber-border bg-amber-bg text-amber-text border'
+  return (
+    <div className={containerCls}>
+      {drifted.map((p) => {
+        const derived = p.toLabelColor
+          ? deriveChipColors(p.toLabelColor, isDarkMode)
+          : null
+        return (
+          <span
+            className={
+              derived
+                ? `${badgeBaseCls} border`
+                : `${badgeBaseCls} ${fallbackCls}`
+            }
+            key={`${p.from}->${p.to}`}
+            style={
+              derived
+                ? {
+                    backgroundColor: derived.bg,
+                    borderColor: derived.border,
+                    color: derived.fg,
+                  }
+                : undefined
+            }
+          >
+            <span className="font-medium">Δ</span>
+            <span>{abbreviateEnvName(p.from)}</span>
+            <span>→</span>
+            <span>{abbreviateEnvName(p.to)}</span>
           </span>
         )
       })}
@@ -780,25 +891,27 @@ function EnvDeploymentHover({
               }
             />
             {env.name}
-            <CircleCheck className="text-success ml-auto size-4 shrink-0" />
           </p>
-          <p className="font-mono text-base leading-tight font-bold">
-            {release ? (
-              <>
-                <span className="text-primary">
-                  {release.tag ?? release.committish ?? '—'}
-                </span>
-                {release.tag && release.committish && (
-                  <span className="text-tertiary ml-2 text-xs font-normal">
-                    {release.committish}
+          <p className="flex items-center gap-2 font-mono text-base leading-tight font-bold">
+            <span className="min-w-0 flex-1">
+              {release ? (
+                <>
+                  <span className="text-primary">
+                    {release.tag ?? release.committish ?? '—'}
                   </span>
-                )}
-              </>
-            ) : (
-              <span className="text-tertiary text-sm font-normal">
-                Not deployed
-              </span>
-            )}
+                  {release.tag && release.committish && (
+                    <span className="text-tertiary ml-2 text-xs font-normal">
+                      {release.committish}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="text-tertiary text-sm font-normal">
+                  Not deployed
+                </span>
+              )}
+            </span>
+            <CircleCheck className="text-success size-4 shrink-0" />
           </p>
           <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
             {release ? (
@@ -936,6 +1049,39 @@ function isProjectDeployable(project: {
   )
 }
 
+// fallow-ignore-next-line complexity
+function projectHasDrift(project: {
+  current_releases?: null | Record<
+    string,
+    { committish?: null | string; tag?: null | string }
+  >
+  environments?:
+    | null
+    | {
+        label_color?: null | string
+        name: string
+        slug: string
+        sort_order?: null | number
+      }[]
+  project_types?: null | object[]
+}): boolean {
+  if (!isProjectDeployable(project)) return false
+  const envs = project.environments ?? []
+  if (envs.length < 2) return false
+  const pairs = computeDriftPairs(envs, project.current_releases ?? {})
+  return pairs.some((p) => p.drifted)
+}
+
+// fallow-ignore-next-line complexity
+function resolveViewMode(
+  raw: null | string,
+  stored: null | string,
+): 'grid' | 'list' {
+  if (raw === 'grid' || raw === 'list') return raw
+  if (stored === 'grid' || stored === 'list') return stored
+  return 'list'
+}
+
 function SortHeader({
   children,
   className,
@@ -967,12 +1113,16 @@ function SortHeader({
 // fallow-ignore-next-line complexity
 function StatBadge({
   active,
+  disabled,
+  hidden,
   label,
   onClick,
   value,
   variant,
 }: {
   active?: boolean
+  disabled?: boolean
+  hidden?: boolean
   label: string
   onClick?: () => void
   value: number
@@ -985,6 +1135,7 @@ function StatBadge({
     | 'teal'
     | 'warning'
 }) {
+  if (hidden) return null
   const variantCls =
     variant === 'success'
       ? 'bg-success border-success text-success'
@@ -1002,7 +1153,9 @@ function StatBadge({
                   ? 'bg-amber-bg border-amber-border text-amber-text'
                   : 'border-secondary text-secondary'
   const interactiveCls = onClick
-    ? `cursor-pointer transition-shadow${active ? ' ring-2 ring-current ring-offset-2 ring-offset-background' : ' hover:ring-1 hover:ring-current hover:ring-offset-1 hover:ring-offset-background'}`
+    ? disabled
+      ? 'cursor-not-allowed opacity-50'
+      : `cursor-pointer transition-shadow${active ? ' ring-2 ring-current ring-offset-2 ring-offset-background' : ' hover:ring-1 hover:ring-current hover:ring-offset-1 hover:ring-offset-background'}`
     : ''
   const content = (
     <>
@@ -1018,6 +1171,7 @@ function StatBadge({
       <button
         aria-pressed={active}
         className={cls}
+        disabled={disabled}
         onClick={onClick}
         type="button"
       >
