@@ -9,11 +9,26 @@ export function ProjectsGraphReport() {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug ?? ''
 
-  const { data: projects, isLoading } = useQuery({
+  const {
+    data: projects,
+    error,
+    isLoading,
+  } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => getProjects(orgSlug, signal),
     queryKey: ['projects', orgSlug],
   })
+
+  if (error) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-danger text-sm">
+          Failed to load projects:{' '}
+          {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (

@@ -242,7 +242,9 @@ export function ProjectsView() {
       )
     }
     if (driftSet.size > 0) {
-      all = all.filter(() => driftSet.has('none'))
+      all = all.filter((p) =>
+        driftSet.has('none') ? !driftedProjectIds.has(p.id) : true,
+      )
     }
     if (hasOpenPRs) {
       all = all.filter((p) => (p.open_pr_count ?? 0) > 0)
@@ -664,7 +666,11 @@ function computeDriftPairs(
     const bTag = rb?.tag ?? null
     const aSha = ra?.committish ?? null
     const bSha = rb?.committish ?? null
-    const drifted = aTag !== bTag || aSha !== bSha
+    // When both envs have a SHA, compare them directly so that a tag-only
+    // difference on identical commits does not register as drift. Otherwise
+    // fall back to tag-or-SHA equality.
+    const drifted =
+      aSha && bSha ? aSha !== bSha : (aTag ?? aSha) !== (bTag ?? bSha)
     pairs.push({
       drifted,
       from: a.name,
@@ -911,7 +917,9 @@ function EnvDeploymentHover({
                 </span>
               )}
             </span>
-            <CircleCheck className="text-success size-4 shrink-0" />
+            {release && (
+              <CircleCheck className="text-success size-4 shrink-0" />
+            )}
           </p>
           <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
             {release ? (

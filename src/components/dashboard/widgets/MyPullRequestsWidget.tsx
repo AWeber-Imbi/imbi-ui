@@ -12,7 +12,11 @@ export function MyPullRequestsWidget() {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug ?? ''
 
-  const { data: identities, isLoading: identitiesLoading } = useQuery({
+  const {
+    data: identities,
+    isError: identitiesError,
+    isLoading: identitiesLoading,
+  } = useQuery({
     queryFn: ({ signal }) => getMyIdentities(signal),
     queryKey: ['me-identities'],
     staleTime: 0,
@@ -21,7 +25,11 @@ export function MyPullRequestsWidget() {
   const login = identities ? githubLogin(identities) : undefined
   const hasIdentity = !identitiesLoading && !!login
 
-  const { data: openData, isLoading: openLoading } = useQuery({
+  const {
+    data: openData,
+    isError: openError,
+    isLoading: openLoading,
+  } = useQuery({
     enabled: hasIdentity && !!orgSlug,
     queryFn: ({ signal }) =>
       getOrgPullRequests(
@@ -33,7 +41,11 @@ export function MyPullRequestsWidget() {
     staleTime: 60 * 1000,
   })
 
-  const { data: closedData, isLoading: closedLoading } = useQuery({
+  const {
+    data: closedData,
+    isError: closedError,
+    isLoading: closedLoading,
+  } = useQuery({
     enabled: hasIdentity && !!orgSlug,
     queryFn: ({ signal }) =>
       getOrgPullRequests(
@@ -46,6 +58,7 @@ export function MyPullRequestsWidget() {
   })
 
   const isLoading = identitiesLoading || openLoading || closedLoading
+  const isError = identitiesError || openError || closedError
   const notConnected = !identitiesLoading && !login
   const openCount = openData?.total ?? 0
   const closedCount = closedData?.total ?? 0
@@ -61,6 +74,8 @@ export function MyPullRequestsWidget() {
               className="bg-tertiary/40 mt-2 inline-block h-9 w-32 animate-pulse rounded"
               role="status"
             />
+          ) : isError ? (
+            <p className="text-danger mt-2 text-sm">Unavailable</p>
           ) : notConnected ? (
             <>
               <p className="text-tertiary mt-2 text-3xl">—</p>
