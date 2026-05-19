@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -69,6 +69,8 @@ interface SortHeaderProps {
 
 type SortKey = 'name' | 'prs' | 'score' | 'team' | 'type'
 
+const VIEW_MODE_STORAGE_KEY = 'imbi.projects.view-mode'
+
 // fallow-ignore-next-line complexity
 export function ProjectsView() {
   const navigate = useNavigate()
@@ -77,8 +79,16 @@ export function ProjectsView() {
   const orgSlug = selectedOrganization?.slug || ''
 
   const rawView = searchParams.get('view')
+  const storedView =
+    typeof window !== 'undefined'
+      ? window.localStorage.getItem(VIEW_MODE_STORAGE_KEY)
+      : null
   const viewMode: 'grid' | 'list' =
-    rawView === 'grid' || rawView === 'list' ? rawView : 'grid'
+    rawView === 'grid' || rawView === 'list'
+      ? rawView
+      : storedView === 'grid' || storedView === 'list'
+        ? storedView
+        : 'list'
   const searchQuery = searchParams.get('q') ?? ''
   const sortKey = searchParams.get('sort') as null | SortKey
   const sortDir = (searchParams.get('dir') ?? 'asc') as SortDir
@@ -88,7 +98,10 @@ export function ProjectsView() {
   const hasOpenPRs = searchParams.get('has_open_prs') === '1'
   const hasMyOpenPRs = searchParams.get('has_my_open_prs') === '1'
 
-  const setViewMode = (v: 'grid' | 'list') =>
+  const setViewMode = (v: 'grid' | 'list') => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, v)
+    }
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev)
@@ -97,6 +110,17 @@ export function ProjectsView() {
       },
       { replace: true },
     )
+  }
+
+  useEffect(() => {
+    if (
+      rawView !== 'grid' &&
+      rawView !== 'list' &&
+      typeof window !== 'undefined'
+    ) {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode)
+    }
+  }, [rawView, viewMode])
 
   const setSearchQuery = (q: string) =>
     setSearchParams(
@@ -348,22 +372,22 @@ export function ProjectsView() {
 
             <div className="border-secondary flex items-center overflow-hidden rounded-lg border">
               <Button
-                aria-label="Grid view"
-                className={`rounded-r-none ${viewMode === 'grid' ? 'bg-amber-bg text-amber-text' : ''}`}
-                onClick={() => setViewMode('grid')}
-                size="sm"
-                variant="ghost"
-              >
-                <Grid3x3 className="size-4" />
-              </Button>
-              <Button
                 aria-label="List view"
-                className={`rounded-l-none ${viewMode === 'list' ? 'bg-amber-bg text-amber-text' : ''}`}
+                className={`rounded-r-none ${viewMode === 'list' ? 'bg-amber-bg text-amber-text' : ''}`}
                 onClick={() => setViewMode('list')}
                 size="sm"
                 variant="ghost"
               >
                 <List className="size-4" />
+              </Button>
+              <Button
+                aria-label="Grid view"
+                className={`rounded-l-none ${viewMode === 'grid' ? 'bg-amber-bg text-amber-text' : ''}`}
+                onClick={() => setViewMode('grid')}
+                size="sm"
+                variant="ghost"
+              >
+                <Grid3x3 className="size-4" />
               </Button>
             </div>
 
