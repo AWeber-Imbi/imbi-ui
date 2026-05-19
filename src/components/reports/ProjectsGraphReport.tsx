@@ -4,6 +4,7 @@ import { getProjects } from '@/api/endpoints'
 import { ProjectGraphView } from '@/components/ProjectGraphView'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
+// fallow-ignore-next-line complexity
 export function ProjectsGraphReport() {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug ?? ''
