@@ -1,7 +1,25 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { execSync } from 'child_process'
 import path from 'path'
 import { defineConfig, type Plugin, type ViteDevServer } from 'vite'
+
+function resolveBuildId(): string {
+  const fromEnv = process.env.VITE_GIT_REF?.trim()
+  if (fromEnv && fromEnv !== 'latest') return fromEnv
+  try {
+    return execSync('git describe --tags --always --dirty', {
+      cwd: __dirname,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+      .toString()
+      .trim()
+  } catch {
+    return Date.now().toString()
+  }
+}
+
+const BUILD_ID = resolveBuildId()
 
 function requestLogger(): Plugin {
   return {
@@ -12,6 +30,20 @@ function requestLogger(): Plugin {
       })
     },
     name: 'request-logger',
+  }
+}
+
+function versionManifest(): Plugin {
+  return {
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        fileName: 'version.json',
+        source: JSON.stringify({ version: BUILD_ID }),
+        type: 'asset',
+      })
+    },
+    name: 'version-manifest',
   }
 }
 
@@ -36,10 +68,13 @@ export default defineConfig({
     },
     sourcemap: true,
   },
+  define: {
+    __APP_VERSION__: JSON.stringify(BUILD_ID),
+  },
   esbuild: {
     drop: ['console'],
   },
-  plugins: [tailwindcss(), react(), requestLogger()],
+  plugins: [tailwindcss(), react(), requestLogger(), versionManifest()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
