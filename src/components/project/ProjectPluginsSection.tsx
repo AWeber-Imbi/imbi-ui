@@ -484,15 +484,29 @@ function OverrideOptionsEditor({
   inheritedOptions,
   onChange,
 }: OverrideOptionsEditorProps) {
-  const { data: manifest, isPending } = useQuery({
+  const {
+    data: manifest,
+    error: manifestError,
+    isPending,
+  } = useQuery({
     queryFn: ({ signal }) => getPluginManifest(draft.plugin_slug, signal),
     queryKey: ['plugin-manifest', draft.plugin_slug],
+    retry: false,
     staleTime: 5 * 60 * 1000,
   })
 
   if (isPending) {
     return (
       <div className="text-secondary px-6 py-4 text-sm">Loading options…</div>
+    )
+  }
+  if (manifestError) {
+    return (
+      <div className="text-destructive px-6 py-4 text-sm">
+        Couldn't load options for{' '}
+        <span className="font-mono">{draft.plugin_slug}</span>:{' '}
+        {extractApiErrorDetail(manifestError) ?? 'request failed'}.
+      </div>
     )
   }
   if (!manifest || manifest.options.length === 0) {
