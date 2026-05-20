@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -10,8 +10,13 @@ import {
   listProjectPlugins,
   listServicePlugins,
   listThirdPartyServices,
+  type PluginManifestResponse,
   replaceProjectPlugins,
 } from '@/api/endpoints'
+import {
+  OverrideCountChevron,
+  RemoveRowButton,
+} from '@/components/plugin-options/ExpandableRowControls'
 import { OptionRow } from '@/components/plugin-options/OptionRow'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -69,6 +74,24 @@ interface OverrideOptionsEditorProps {
   onChange: (idx: number, name: string, next: unknown) => void
 }
 
+interface PluginOptionsListProps {
+  draft: OverrideDraft
+  idx: number
+  inheritedOptions: Record<string, unknown>
+  manifest: PluginManifestResponse
+  onChange: (idx: number, name: string, next: unknown) => void
+}
+
+interface ProjectPluginOverrideRowProps {
+  draft: OverrideDraft
+  idx: number
+  inheritedOptions: Record<string, unknown>
+  isExpanded: boolean
+  onRemove: (idx: number) => void
+  onToggle: (idx: number) => void
+  onUpdateOption: (idx: number, name: string, next: unknown) => void
+}
+
 interface ProjectPluginsSectionProps {
   orgSlug: string
   projectId: string
@@ -85,6 +108,7 @@ export function ProjectPluginsSection({
   const [selectedTab, setSelectedTab] = useState<PluginTab>('configuration')
   const [isDefault, setIsDefault] = useState(false)
   const [drafts, setDrafts] = useState<OverrideDraft[]>([])
+  const lastSeedRef = useRef<null | string>(null)
 
   const { data: merged } = useQuery({
     queryFn: ({ signal }) => listProjectPlugins(orgSlug, projectId, signal),
@@ -107,49 +131,34 @@ export function ProjectPluginsSection({
   })
 
   useEffect(() => {
-    if (merged) {
-      const projectOnly = merged.filter((a) => a.source === 'project')
-      setDrafts(
-        projectOnly.map((a) => ({
-          default: a.default,
-          label: a.label,
-          options: a.options,
-          plugin_id: a.plugin_id,
-          plugin_slug: a.plugin_slug,
-          source: a.source,
-          tab: a.tab,
-        })),
-      )
-    }
+    if (!merged) return
+    const projectOnly = merged.filter((a) => a.source === 'project')
+    const seed = projectOnly.map(assignmentToDraft)
+    // Only reseed drafts when the server snapshot actually changes;
+    // otherwise a focus refetch or sibling invalidate would clobber
+    // unsaved option edits.
+    const hash = JSON.stringify(seed)
+    if (hash === lastSeedRef.current) return
+    lastSeedRef.current = hash
+    setDrafts(seed)
   }, [merged])
 
-  // Inherited options keyed by plugin_id -- shown as placeholders inside
-  // the per-row option editor so users can see what value they'd be
-  // overriding before picking one.
-  const inheritedOptionsByPluginId = useMemo(() => {
-    const out: Record<string, Record<string, unknown>> = {}
-    for (const a of merged ?? []) {
-      if (a.source === 'project_type') {
-        out[a.plugin_id] = a.options ?? {}
-      }
-    }
-    return out
-  }, [merged])
+  // Inherited options keyed by ``plugin_id:tab`` -- shown as
+  // placeholders inside the per-row option editor so users can see what
+  // value they'd be overriding before picking one. Keying by tab too
+  // means the same plugin on different tabs doesn't merge inherited
+  // values.
+  const inheritedOptionsByKey = useMemo(
+    () => buildInheritedOptionsByKey(merged ?? []),
+    [merged],
+  )
 
-  const { expanded, setExpanded, toggleExpanded } = useExpandableRows()
+  const { expanded, removeRow, setExpanded, toggleExpanded } =
+    useExpandableRows()
 
   const updateOption = (idx: number, name: string, next: unknown) => {
     setDrafts((prev) =>
-      prev.map((d, i) => {
-        if (i !== idx) return d
-        const options = { ...d.options }
-        if (next === null || next === '' || next === undefined) {
-          delete options[name]
-        } else {
-          options[name] = next
-        }
-        return { ...d, options }
-      }),
+      prev.map((d, i) => applyOptionEdit(d, i, idx, name, next)),
     )
   }
 
@@ -210,41 +219,13 @@ export function ProjectPluginsSection({
     setShowAdd(false)
   }
 
-  const handleRemove = (idx: number) => {
-    setDrafts((prev) => prev.filter((_, i) => i !== idx))
-    setExpanded((prev) => {
-      const next = new Set<number>()
-      for (const i of prev) {
-        if (i < idx) next.add(i)
-        else if (i > idx) next.add(i - 1)
-      }
-      return next
-    })
-  }
+  const handleRemove = (idx: number) => removeRow(idx, setDrafts)
 
   const projectOnlyFromServer =
     merged?.filter((a) => a.source === 'project') ?? []
   const isDirty =
-    JSON.stringify(
-      drafts.map(({ default: d, label, options, plugin_id, tab }) => ({
-        default: d,
-        label,
-        options,
-        plugin_id,
-        tab,
-      })),
-    ) !==
-    JSON.stringify(
-      projectOnlyFromServer.map(
-        ({ default: d, label, options, plugin_id, tab }) => ({
-          default: d,
-          label,
-          options,
-          plugin_id,
-          tab,
-        }),
-      ),
-    )
+    JSON.stringify(drafts.map(draftToCompare)) !==
+    JSON.stringify(projectOnlyFromServer.map(draftToCompare))
 
   const inherited = merged?.filter((a) => a.source === 'project_type') ?? []
 
@@ -267,7 +248,7 @@ export function ProjectPluginsSection({
               {inherited.map((a) => (
                 <div
                   className="border-tertiary bg-secondary flex items-center gap-1.5 rounded border px-2 py-1 text-xs"
-                  key={a.plugin_id}
+                  key={`${a.plugin_id}:${a.tab}`}
                 >
                   <span className="text-primary">{a.label}</span>
                   <Badge variant="secondary">{a.tab}</Badge>
@@ -316,74 +297,22 @@ export function ProjectPluginsSection({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {drafts.map((draft, idx) => {
-                  const isExpanded = expanded.has(idx)
-                  const overrideCount = Object.keys(draft.options).length
-                  return (
-                    <React.Fragment key={idx}>
-                      <TableRow
-                        aria-expanded={isExpanded}
-                        className="hover:bg-secondary/40 cursor-pointer"
-                        onClick={() => toggleExpanded(idx)}
-                      >
-                        <TableCell className="font-medium">
-                          {draft.label}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{draft.tab}</Badge>
-                        </TableCell>
-                        <TableCell className="text-secondary text-sm">
-                          {draft.default ? 'Yes' : 'No'}
-                        </TableCell>
-                        <TableCell>
-                          <span className="relative inline-flex items-center">
-                            <ChevronDown
-                              className={`text-tertiary size-3.5 transition-transform ${
-                                isExpanded ? 'rotate-180' : ''
-                              }`}
-                            />
-                            {overrideCount > 0 && (
-                              <Badge
-                                className="ml-1 h-4 px-1 text-[10px]"
-                                variant="secondary"
-                              >
-                                {overrideCount}
-                              </Badge>
-                            )}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            aria-label="Remove override"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleRemove(idx)
-                            }}
-                            size="icon"
-                            variant="ghost"
-                          >
-                            <Trash2 className="text-destructive size-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                      {isExpanded && (
-                        <TableRow className="bg-secondary/30 hover:bg-secondary/30">
-                          <TableCell className="p-0" colSpan={5}>
-                            <OverrideOptionsEditor
-                              draft={draft}
-                              idx={idx}
-                              inheritedOptions={
-                                inheritedOptionsByPluginId[draft.plugin_id] ??
-                                {}
-                              }
-                              onChange={updateOption}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  )
-                })}
+                {drafts.map((draft, idx) => (
+                  <ProjectPluginOverrideRow
+                    draft={draft}
+                    idx={idx}
+                    inheritedOptions={
+                      inheritedOptionsByKey[
+                        inheritedKey(draft.plugin_id, draft.tab)
+                      ] ?? {}
+                    }
+                    isExpanded={expanded.has(idx)}
+                    key={idx}
+                    onRemove={handleRemove}
+                    onToggle={toggleExpanded}
+                    onUpdateOption={updateOption}
+                  />
+                ))}
               </TableBody>
             </Table>
           )}
@@ -478,6 +407,120 @@ export function ProjectPluginsSection({
   )
 }
 
+function applyOptionEdit(
+  draft: OverrideDraft,
+  i: number,
+  idx: number,
+  name: string,
+  next: unknown,
+): OverrideDraft {
+  if (i !== idx) return draft
+  const options = { ...draft.options }
+  // Treat empty / null / undefined as "remove the override" so the
+  // editor restores inherited / default behavior for that option.
+  if (isClearValue(next)) delete options[name]
+  else options[name] = next
+  return { ...draft, options }
+}
+
+function assignmentToDraft(a: PluginAssignmentResponse): OverrideDraft {
+  return {
+    default: a.default,
+    label: a.label,
+    options: a.options ?? {},
+    plugin_id: a.plugin_id,
+    plugin_slug: a.plugin_slug,
+    source: a.source,
+    tab: a.tab,
+  }
+}
+
+function buildInheritedOptionsByKey(merged: PluginAssignmentResponse[]) {
+  const out: Record<string, Record<string, unknown>> = {}
+  for (const a of merged) {
+    if (a.source !== 'project_type') continue
+    out[inheritedKey(a.plugin_id, a.tab)] = a.options ?? {}
+  }
+  return out
+}
+
+function draftToCompare(d: {
+  default: boolean
+  label: string
+  options: Record<string, unknown>
+  plugin_id: string
+  tab: PluginTab
+}) {
+  return {
+    default: d.default,
+    label: d.label,
+    options: d.options,
+    plugin_id: d.plugin_id,
+    tab: d.tab,
+  }
+}
+
+function hasRenderableManifest(
+  isPending: boolean,
+  error: unknown,
+  manifest: PluginManifestResponse | undefined,
+): manifest is PluginManifestResponse {
+  if (isPending) return false
+  if (error) return false
+  if (!manifest) return false
+  return manifest.options.length > 0
+}
+
+// Composite key so the same plugin can be assigned on different tabs
+// (e.g. ``configuration`` and ``logs``) without one overwriting the
+// other in the inherited-options lookup.
+function inheritedKey(pluginId: string, tab: PluginTab) {
+  return `${pluginId}:${tab}`
+}
+
+// Placeholder text shown when the override is empty: prefer the
+// project-type-inherited value, fall back to the manifest default, and
+// finally to ``Inherits default`` when nothing concrete is available.
+function inheritedPlaceholder(
+  opt: import('@/types').PluginOptionDef,
+  inheritedRaw: unknown,
+): string {
+  const value = pickInheritedValue(inheritedRaw, opt.default ?? null)
+  return value === null ? 'Inherits default' : `Inherits: ${String(value)}`
+}
+
+function isClearValue(v: unknown): boolean {
+  return v === null || v === undefined || v === ''
+}
+
+function ManifestStateMessage({
+  error,
+  isPending,
+  pluginSlug,
+}: {
+  error: Error | null
+  isPending: boolean
+  pluginSlug: string
+}) {
+  if (isPending)
+    return (
+      <div className="text-secondary px-6 py-4 text-sm">Loading options…</div>
+    )
+  if (error)
+    return (
+      <div className="text-destructive px-6 py-4 text-sm">
+        Couldn&apos;t load options for{' '}
+        <span className="font-mono">{pluginSlug}</span>:{' '}
+        {extractApiErrorDetail(error) ?? 'request failed'}.
+      </div>
+    )
+  return (
+    <div className="text-secondary px-6 py-4 text-sm">
+      This plugin has no configurable options.
+    </div>
+  )
+}
+
 function OverrideOptionsEditor({
   draft,
   idx,
@@ -495,36 +538,42 @@ function OverrideOptionsEditor({
     staleTime: 5 * 60 * 1000,
   })
 
-  if (isPending) {
+  if (!hasRenderableManifest(isPending, manifestError, manifest))
     return (
-      <div className="text-secondary px-6 py-4 text-sm">Loading options…</div>
+      <ManifestStateMessage
+        error={manifestError ?? null}
+        isPending={isPending}
+        pluginSlug={draft.plugin_slug}
+      />
     )
-  }
-  if (manifestError) {
-    return (
-      <div className="text-destructive px-6 py-4 text-sm">
-        Couldn't load options for{' '}
-        <span className="font-mono">{draft.plugin_slug}</span>:{' '}
-        {extractApiErrorDetail(manifestError) ?? 'request failed'}.
-      </div>
-    )
-  }
-  if (!manifest || manifest.options.length === 0) {
-    return (
-      <div className="text-secondary px-6 py-4 text-sm">
-        This plugin has no configurable options.
-      </div>
-    )
-  }
+  return (
+    <PluginOptionsList
+      draft={draft}
+      idx={idx}
+      inheritedOptions={inheritedOptions}
+      manifest={manifest}
+      onChange={onChange}
+    />
+  )
+}
+
+function pickInheritedValue(inheritedRaw: unknown, fallback: unknown): unknown {
+  if (inheritedRaw === undefined) return fallback
+  if (inheritedRaw === null) return fallback
+  return inheritedRaw
+}
+
+function PluginOptionsList({
+  draft,
+  idx,
+  inheritedOptions,
+  manifest,
+  onChange,
+}: PluginOptionsListProps) {
   return (
     <div className="space-y-3 px-6 py-4">
       {manifest.options.map((opt) => {
         const overridden = opt.name in draft.options
-        const inheritedRaw = inheritedOptions[opt.name]
-        const inherited =
-          inheritedRaw !== undefined && inheritedRaw !== null
-            ? inheritedRaw
-            : (opt.default ?? null)
         return (
           <OptionRow
             description={opt.description ?? null}
@@ -536,14 +585,75 @@ function OverrideOptionsEditor({
             placeholder={
               overridden
                 ? undefined
-                : inherited !== null
-                  ? `Inherits: ${String(inherited)}`
-                  : 'Inherits default'
+                : inheritedPlaceholder(opt, inheritedOptions[opt.name])
             }
             value={overridden ? draft.options[opt.name] : ''}
           />
         )
       })}
     </div>
+  )
+}
+
+// Single override row + its expanded option editor pulled out of the
+// parent's drafts.map so the parent stays under the complexity gate
+// and so keyboard users can activate the expand toggle via Enter or
+// Space (the bare clickable row was mouse-only).
+function ProjectPluginOverrideRow({
+  draft,
+  idx,
+  inheritedOptions,
+  isExpanded,
+  onRemove,
+  onToggle,
+  onUpdateOption,
+}: ProjectPluginOverrideRowProps) {
+  const overrideCount = Object.keys(draft.options).length
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onToggle(idx)
+    }
+  }
+  return (
+    <React.Fragment>
+      <TableRow
+        aria-expanded={isExpanded}
+        className="hover:bg-secondary/40 focus-visible:ring-ring cursor-pointer focus-visible:ring-1 focus-visible:outline-none"
+        onClick={() => onToggle(idx)}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+      >
+        <TableCell className="font-medium">{draft.label}</TableCell>
+        <TableCell>
+          <Badge variant="secondary">{draft.tab}</Badge>
+        </TableCell>
+        <TableCell className="text-secondary text-sm">
+          {draft.default ? 'Yes' : 'No'}
+        </TableCell>
+        <TableCell>
+          <OverrideCountChevron count={overrideCount} isExpanded={isExpanded} />
+        </TableCell>
+        <TableCell>
+          <RemoveRowButton
+            ariaLabel="Remove override"
+            onRemove={() => onRemove(idx)}
+          />
+        </TableCell>
+      </TableRow>
+      {isExpanded && (
+        <TableRow className="bg-secondary/30 hover:bg-secondary/30">
+          <TableCell className="p-0" colSpan={5}>
+            <OverrideOptionsEditor
+              draft={draft}
+              idx={idx}
+              inheritedOptions={inheritedOptions}
+              onChange={onUpdateOption}
+            />
+          </TableCell>
+        </TableRow>
+      )}
+    </React.Fragment>
   )
 }

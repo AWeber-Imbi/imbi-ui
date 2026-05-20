@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, Plus, Trash2 } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -17,8 +17,11 @@ import {
   replaceServicePluginAssignments,
   updateServicePlugin,
 } from '@/api/endpoints'
+import {
+  OverrideCountChevron,
+  RemoveRowButton,
+} from '@/components/plugin-options/ExpandableRowControls'
 import { OptionRow } from '@/components/plugin-options/OptionRow'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -747,7 +750,7 @@ function ProjectTypesCard({
 }: ProjectTypesCardProps) {
   const [drafts, setDrafts] = useState<DraftAssignment[]>([])
   const [seedHash, setSeedHash] = useState<null | string>(null)
-  const { expanded, setExpanded, toggleExpanded } = useExpandableRows()
+  const { expanded, removeRow, toggleExpanded } = useExpandableRows()
 
   const { data: existing } = useQuery({
     queryFn: ({ signal }) =>
@@ -847,19 +850,7 @@ function ProjectTypesCard({
     })
   }
 
-  const handleRemove = (idx: number) => {
-    setDrafts((prev) => prev.filter((_, i) => i !== idx))
-    setExpanded((prev) => {
-      const next = new Set<number>()
-      // Indices shift left by 1 once we drop ``idx``; rebuild the set
-      // accordingly so a different row doesn't suddenly appear expanded.
-      for (const i of prev) {
-        if (i === idx) continue
-        next.add(i > idx ? i - 1 : i)
-      }
-      return next
-    })
-  }
+  const handleRemove = (idx: number) => removeRow(idx, setDrafts)
 
   const updateDraft = (idx: number, patch: Partial<DraftAssignment>) => {
     setDrafts((prev) =>
@@ -979,34 +970,16 @@ function ProjectTypesCard({
                         />
                       </TableCell>
                       <TableCell className="align-middle">
-                        <span className="relative inline-flex items-center">
-                          <ChevronDown
-                            className={`text-tertiary size-3.5 transition-transform ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          />
-                          {overrideCount > 0 && (
-                            <Badge
-                              className="ml-1 h-4 px-1 text-[10px]"
-                              variant="secondary"
-                            >
-                              {overrideCount}
-                            </Badge>
-                          )}
-                        </span>
+                        <OverrideCountChevron
+                          count={overrideCount}
+                          isExpanded={isExpanded}
+                        />
                       </TableCell>
                       <TableCell className="align-middle">
-                        <Button
-                          aria-label="Remove assignment"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleRemove(idx)
-                          }}
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <Trash2 className="text-destructive size-3" />
-                        </Button>
+                        <RemoveRowButton
+                          ariaLabel="Remove assignment"
+                          onRemove={() => handleRemove(idx)}
+                        />
                       </TableCell>
                     </TableRow>
                     {isExpanded && (

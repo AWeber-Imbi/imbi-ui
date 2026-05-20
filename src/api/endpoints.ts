@@ -1897,7 +1897,7 @@ export const getAdminPlugin = (slug: string, signal?: AbortSignal) =>
 // Non-admin manifest endpoint -- returns just the static schema so
 // project editors with ``project:write`` (but not ``admin:plugins:read``)
 // can render a typed option editor for per-project overrides.
-interface PluginManifestResponse {
+export interface PluginManifestResponse {
   credentials: { description?: null | string; label: string; name: string }[]
   description: null | string
   name: string
