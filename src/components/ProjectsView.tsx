@@ -21,12 +21,11 @@ import {
 } from 'lucide-react'
 import { matchSorter } from 'match-sorter'
 
-import { getProjectsSlim } from '@/api/endpoints'
+import { getProjectsSlim, type ProjectListItem } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { deriveChipColors } from '@/lib/chip-colors'
-import type { Project } from '@/types'
 
 import { NewProjectDialog } from './NewProjectDialog'
 import { Button } from './ui/button'
@@ -69,7 +68,7 @@ interface FilterPopoverProps {
 
 interface ProjectListRowProps {
   onSelect: (id: string) => void
-  project: Project
+  project: ProjectListItem
 }
 
 type SortDir = 'asc' | 'desc'
@@ -212,7 +211,7 @@ export function ProjectsView() {
   } = useQuery({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => getProjectsSlim(orgSlug, signal),
-    queryKey: ['projects', orgSlug],
+    queryKey: ['projects', orgSlug, 'slim'],
   })
 
   const teamOptions = useMemo(
