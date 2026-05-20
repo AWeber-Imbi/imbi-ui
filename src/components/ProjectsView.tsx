@@ -26,6 +26,7 @@ import { useOrganization } from '@/contexts/OrganizationContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { deriveChipColors } from '@/lib/chip-colors'
+import { formatRelativeDate } from '@/lib/formatDate'
 import type { Project } from '@/types'
 
 import { NewProjectDialog } from './NewProjectDialog'
@@ -724,7 +725,7 @@ function DeploymentCards({
                 {release ? (
                   <>
                     <span>{release.performed_by ?? ''}</span>
-                    <span>{timeAgo(release.deployed_at)}</span>
+                    <span>{formatRelativeDate(release.deployed_at)}</span>
                   </>
                 ) : (
                   <span className="invisible">—</span>
@@ -872,7 +873,7 @@ function EnvDeploymentHover({
             {release ? (
               <>
                 <span>{release.performed_by ?? ''}</span>
-                <span>{timeAgo(release.deployed_at)}</span>
+                <span>{formatRelativeDate(release.deployed_at)}</span>
               </>
             ) : (
               <span className="invisible">—</span>
@@ -1183,21 +1184,6 @@ function StatBadge({
     )
   }
   return <span className={cls}>{content}</span>
-}
-
-// fallow-ignore-next-line complexity
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 14) return `${days}d ago`
-  const months = Math.round(days / 30.44)
-  if (days < 365) return `${months}mo ago`
-  const years = days / 365.25
-  const rounded = Math.round(years * 10) / 10
-  return `${rounded}y ago`
 }
 
 // Memoized list-mode row so a parent re-render (e.g. an ``inputQuery``
