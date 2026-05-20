@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react'
+import * as React from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
+  getPluginManifest,
   listProjectPlugins,
   listServicePlugins,
   listThirdPartyServices,
   replaceProjectPlugins,
 } from '@/api/endpoints'
+import { OptionRow } from '@/components/plugin-options/OptionRow'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -42,6 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useExpandableRows } from '@/hooks/useExpandableRows'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import type {
   PluginAssignmentCreate,
@@ -51,7 +55,18 @@ import type {
 
 interface OverrideDraft extends PluginAssignmentCreate {
   label: string
+  // Always present on drafts (initialized to ``{}`` on add) so the
+  // option editor can index it without a null guard.
+  options: Record<string, unknown>
+  plugin_slug: string
   source: PluginAssignmentResponse['source']
+}
+
+interface OverrideOptionsEditorProps {
+  draft: OverrideDraft
+  idx: number
+  inheritedOptions: Record<string, unknown>
+  onChange: (idx: number, name: string, next: unknown) => void
 }
 
 interface ProjectPluginsSectionProps {
@@ -100,12 +115,43 @@ export function ProjectPluginsSection({
           label: a.label,
           options: a.options,
           plugin_id: a.plugin_id,
+          plugin_slug: a.plugin_slug,
           source: a.source,
           tab: a.tab,
         })),
       )
     }
   }, [merged])
+
+  // Inherited options keyed by plugin_id -- shown as placeholders inside
+  // the per-row option editor so users can see what value they'd be
+  // overriding before picking one.
+  const inheritedOptionsByPluginId = useMemo(() => {
+    const out: Record<string, Record<string, unknown>> = {}
+    for (const a of merged ?? []) {
+      if (a.source === 'project_type') {
+        out[a.plugin_id] = a.options ?? {}
+      }
+    }
+    return out
+  }, [merged])
+
+  const { expanded, setExpanded, toggleExpanded } = useExpandableRows()
+
+  const updateOption = (idx: number, name: string, next: unknown) => {
+    setDrafts((prev) =>
+      prev.map((d, i) => {
+        if (i !== idx) return d
+        const options = { ...d.options }
+        if (next === null || next === '' || next === undefined) {
+          delete options[name]
+        } else {
+          options[name] = next
+        }
+        return { ...d, options }
+      }),
+    )
+  }
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -143,22 +189,37 @@ export function ProjectPluginsSection({
   const handleAdd = () => {
     const plugin = servicePlugins?.find((p) => p.id === selectedPlugin)
     if (!plugin) return
-    setDrafts((prev) => [
-      ...prev,
-      {
-        default: isDefault,
-        label: plugin.label,
-        options: {},
-        plugin_id: plugin.id,
-        source: 'project',
-        tab: selectedTab,
-      },
-    ])
+    setDrafts((prev) => {
+      const nextDrafts = [
+        ...prev,
+        {
+          default: isDefault,
+          label: plugin.label,
+          options: {} as Record<string, unknown>,
+          plugin_id: plugin.id,
+          plugin_slug: plugin.plugin_slug,
+          source: 'project' as const,
+          tab: selectedTab,
+        },
+      ]
+      // Auto-expand the freshly added row so the option editor is
+      // visible without an extra click.
+      setExpanded((p) => new Set(p).add(nextDrafts.length - 1))
+      return nextDrafts
+    })
     setShowAdd(false)
   }
 
   const handleRemove = (idx: number) => {
     setDrafts((prev) => prev.filter((_, i) => i !== idx))
+    setExpanded((prev) => {
+      const next = new Set<number>()
+      for (const i of prev) {
+        if (i < idx) next.add(i)
+        else if (i > idx) next.add(i - 1)
+      }
+      return next
+    })
   }
 
   const projectOnlyFromServer =
@@ -250,30 +311,79 @@ export function ProjectPluginsSection({
                   <TableHead>Plugin</TableHead>
                   <TableHead>Tab</TableHead>
                   <TableHead>Default</TableHead>
+                  <TableHead className="w-16" />
                   <TableHead className="w-12" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {drafts.map((draft, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="font-medium">{draft.label}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{draft.tab}</Badge>
-                    </TableCell>
-                    <TableCell className="text-secondary text-sm">
-                      {draft.default ? 'Yes' : 'No'}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        onClick={() => handleRemove(idx)}
-                        size="icon"
-                        variant="ghost"
+                {drafts.map((draft, idx) => {
+                  const isExpanded = expanded.has(idx)
+                  const overrideCount = Object.keys(draft.options).length
+                  return (
+                    <React.Fragment key={idx}>
+                      <TableRow
+                        aria-expanded={isExpanded}
+                        className="hover:bg-secondary/40 cursor-pointer"
+                        onClick={() => toggleExpanded(idx)}
                       >
-                        <Trash2 className="text-destructive size-3" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <TableCell className="font-medium">
+                          {draft.label}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{draft.tab}</Badge>
+                        </TableCell>
+                        <TableCell className="text-secondary text-sm">
+                          {draft.default ? 'Yes' : 'No'}
+                        </TableCell>
+                        <TableCell>
+                          <span className="relative inline-flex items-center">
+                            <ChevronDown
+                              className={`text-tertiary size-3.5 transition-transform ${
+                                isExpanded ? 'rotate-180' : ''
+                              }`}
+                            />
+                            {overrideCount > 0 && (
+                              <Badge
+                                className="ml-1 h-4 px-1 text-[10px]"
+                                variant="secondary"
+                              >
+                                {overrideCount}
+                              </Badge>
+                            )}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            aria-label="Remove override"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleRemove(idx)
+                            }}
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <Trash2 className="text-destructive size-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow className="bg-secondary/30 hover:bg-secondary/30">
+                          <TableCell className="p-0" colSpan={5}>
+                            <OverrideOptionsEditor
+                              draft={draft}
+                              idx={idx}
+                              inheritedOptions={
+                                inheritedOptionsByPluginId[draft.plugin_id] ??
+                                {}
+                              }
+                              onChange={updateOption}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  )
+                })}
               </TableBody>
             </Table>
           )}
@@ -365,5 +475,61 @@ export function ProjectPluginsSection({
         </DialogContent>
       </Dialog>
     </Card>
+  )
+}
+
+function OverrideOptionsEditor({
+  draft,
+  idx,
+  inheritedOptions,
+  onChange,
+}: OverrideOptionsEditorProps) {
+  const { data: manifest, isPending } = useQuery({
+    queryFn: ({ signal }) => getPluginManifest(draft.plugin_slug, signal),
+    queryKey: ['plugin-manifest', draft.plugin_slug],
+    staleTime: 5 * 60 * 1000,
+  })
+
+  if (isPending) {
+    return (
+      <div className="text-secondary px-6 py-4 text-sm">Loading options…</div>
+    )
+  }
+  if (!manifest || manifest.options.length === 0) {
+    return (
+      <div className="text-secondary px-6 py-4 text-sm">
+        This plugin has no configurable options.
+      </div>
+    )
+  }
+  return (
+    <div className="space-y-3 px-6 py-4">
+      {manifest.options.map((opt) => {
+        const overridden = opt.name in draft.options
+        const inheritedRaw = inheritedOptions[opt.name]
+        const inherited =
+          inheritedRaw !== undefined && inheritedRaw !== null
+            ? inheritedRaw
+            : (opt.default ?? null)
+        return (
+          <OptionRow
+            description={opt.description ?? null}
+            key={opt.name}
+            label={opt.label}
+            name={`${draft.plugin_id}-${opt.name}`}
+            onChange={(next) => onChange(idx, opt.name, next)}
+            opt={opt}
+            placeholder={
+              overridden
+                ? undefined
+                : inherited !== null
+                  ? `Inherits: ${String(inherited)}`
+                  : 'Inherits default'
+            }
+            value={overridden ? draft.options[opt.name] : ''}
+          />
+        )
+      })}
+    </div>
   )
 }

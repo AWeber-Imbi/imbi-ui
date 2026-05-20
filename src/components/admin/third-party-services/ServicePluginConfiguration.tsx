@@ -17,6 +17,7 @@ import {
   replaceServicePluginAssignments,
   updateServicePlugin,
 } from '@/api/endpoints'
+import { OptionRow } from '@/components/plugin-options/OptionRow'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -51,13 +52,13 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useServiceDeploymentResync } from '@/hooks/useDeploymentResync'
+import { useExpandableRows } from '@/hooks/useExpandableRows'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { queryKeys } from '@/lib/queryKeys'
 import type {
   InstalledPlugin,
   PluginAssignmentInput,
   PluginAssignmentRow,
-  PluginOptionDef,
   PluginResponse,
   PluginTab,
 } from '@/types'
@@ -104,16 +105,6 @@ interface IdentityCardProps {
 }
 
 // --------------------------- Credentials -------------------------------
-
-interface OptionRowProps {
-  description: null | string
-  label: string
-  name: string
-  onChange: (next: unknown) => void
-  opt: PluginOptionDef
-  placeholder?: string
-  value: unknown
-}
 
 interface ProjectTypesCardProps {
   manifest: InstalledPlugin | null
@@ -747,93 +738,6 @@ function IdentityCard({
   )
 }
 
-// --------------------------- OptionRow ---------------------------------
-
-function OptionRow({
-  description,
-  label,
-  name,
-  onChange,
-  opt,
-  placeholder,
-  value,
-}: OptionRowProps) {
-  const id = `option-${name}`
-  let control: React.ReactNode
-
-  if (opt.choices && opt.choices.length > 0) {
-    control = (
-      <Select
-        onValueChange={(v) => onChange(v)}
-        value={typeof value === 'string' ? value : ''}
-      >
-        <SelectTrigger id={id}>
-          <SelectValue placeholder={placeholder ?? 'Select…'} />
-        </SelectTrigger>
-        <SelectContent>
-          {opt.choices.map((c) => (
-            <SelectItem key={c} value={c}>
-              {c}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    )
-  } else if (opt.type === 'boolean') {
-    control = (
-      <input
-        checked={Boolean(value)}
-        id={id}
-        onChange={(e) => onChange(e.target.checked)}
-        type="checkbox"
-      />
-    )
-  } else if (opt.type === 'integer') {
-    control = (
-      <Input
-        id={id}
-        onChange={(e) => {
-          const raw = e.target.value
-          if (raw === '') {
-            onChange(null)
-            return
-          }
-          const n = Number.parseInt(raw, 10)
-          if (!Number.isNaN(n)) onChange(n)
-        }}
-        placeholder={placeholder}
-        type="number"
-        value={
-          typeof value === 'number' ? String(value) : (value as string) || ''
-        }
-      />
-    )
-  } else {
-    control = (
-      <Input
-        id={id}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        type={opt.type === 'secret' ? 'password' : 'text'}
-        value={(value as string) ?? ''}
-      />
-    )
-  }
-
-  return (
-    <div className="grid grid-cols-[160px_1fr] items-center gap-3">
-      <Label className="truncate text-xs" htmlFor={id} title={label}>
-        {label}
-        {opt.required && <span className="text-destructive ml-1">*</span>}
-      </Label>
-      <div className="space-y-1">
-        {control}
-        {description && <p className="text-secondary text-xs">{description}</p>}
-      </div>
-    </div>
-  )
-}
-
 function ProjectTypesCard({
   manifest,
   orgSlug,
@@ -843,14 +747,7 @@ function ProjectTypesCard({
 }: ProjectTypesCardProps) {
   const [drafts, setDrafts] = useState<DraftAssignment[]>([])
   const [seedHash, setSeedHash] = useState<null | string>(null)
-  const [expanded, setExpanded] = useState<Set<number>>(new Set())
-  const toggleExpanded = (idx: number) =>
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      if (next.has(idx)) next.delete(idx)
-      else next.add(idx)
-      return next
-    })
+  const { expanded, setExpanded, toggleExpanded } = useExpandableRows()
 
   const { data: existing } = useQuery({
     queryFn: ({ signal }) =>
