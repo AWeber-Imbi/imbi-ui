@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { matchSorter } from 'match-sorter'
 
-import { getProjects } from '@/api/endpoints'
+import { getProjectsSlim } from '@/api/endpoints'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
@@ -211,7 +211,7 @@ export function ProjectsView() {
     refetch,
   } = useQuery({
     enabled: !!orgSlug,
-    queryFn: ({ signal }) => getProjects(orgSlug, signal),
+    queryFn: ({ signal }) => getProjectsSlim(orgSlug, signal),
     queryKey: ['projects', orgSlug],
   })
 
