@@ -1,5 +1,11 @@
 import * as React from 'react'
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -239,9 +245,14 @@ export function ProjectsView() {
       .sort((a, b) => a.label.localeCompare(b.label))
   }, [projects])
 
-  const handleProjectSelect = (projectId: string) => {
-    navigate(`/projects/${projectId}`)
-  }
+  // Stable ref so the memoized ``ProjectListRow`` can actually skip
+  // re-renders when only the parent's input/filter state changes.
+  const handleProjectSelect = useCallback(
+    (projectId: string) => {
+      navigate(`/projects/${projectId}`)
+    },
+    [navigate],
+  )
 
   const driftedProjectIds = useMemo(() => {
     const ids = new Set<string>()
