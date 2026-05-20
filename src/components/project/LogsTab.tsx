@@ -197,10 +197,11 @@ export function LogsTab({
       return { ...DEFAULT_CONFIG }
     }
   })
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(config))
-  }, [config, storageKey])
+  // Captured at mount before any persistence effect writes to
+  // ``storageKey``. The plugin-defaults effect below needs the *true*
+  // first-visit signal -- reading localStorage at runtime would always
+  // look like a saved config exists once the persistence effect runs.
+  const [hadSavedConfig] = useState(() => !!localStorage.getItem(storageKey))
 
   const [range, setRange] = useState<RelativeRange>(() => {
     const p = searchParams.get('range')
@@ -212,6 +213,13 @@ export function LogsTab({
     const p = searchParams.getAll('env')
     return p.length > 0 ? p : config.envs
   })
+  // Persist the *reconciled* env list along with ``config``. Without
+  // including ``envs`` in the saved payload, a stale ``staging`` that
+  // gets filtered out for this render would still be rehydrated on the
+  // next visit.
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify({ ...config, envs }))
+  }, [config, envs, storageKey])
   // Once we know the project's actual environments, intersect the
   // selection with them and pick a project-derived default when the
   // intersection is empty. Without this, a stale ``staging`` from
@@ -317,9 +325,8 @@ export function LogsTab({
       .filter((s) => s && available.has(s))
     if (defaults.length === 0) return
     pluginDefaultsApplied.current = true
-    const hasLocalConfig = !!localStorage.getItem(storageKey)
-    if (!hasLocalConfig) setEnvs(defaults)
-  }, [activeAssignment, storageKey, projectEnvSlugs])
+    if (!hadSavedConfig) setEnvs(defaults)
+  }, [activeAssignment, hadSavedConfig, projectEnvSlugs])
 
   // Sync filter state → URL params whenever they change
   useEffect(() => {
