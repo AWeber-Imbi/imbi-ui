@@ -407,15 +407,20 @@ function PrRow({
         </span>
       </td>
       <td className="max-w-0 px-4 py-3">
-        <a
-          className="text-primary hover:text-action inline-flex max-w-full items-center gap-1.5 transition-colors"
-          href={pr.url}
-          rel="noreferrer"
-          target="_blank"
-        >
-          <span className="truncate">{pr.title}</span>
-          <ExternalLink className="text-tertiary size-3 shrink-0" />
-        </a>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              className="text-primary hover:text-action inline-flex max-w-full items-center gap-1.5 transition-colors"
+              href={pr.url}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <span className="truncate">{pr.title}</span>
+              <ExternalLink className="text-tertiary size-3 shrink-0" />
+            </a>
+          </TooltipTrigger>
+          <TooltipContent>{pr.title}</TooltipContent>
+        </Tooltip>
       </td>
       <td className="px-4 py-3">
         <div className="flex justify-center">
