@@ -23,7 +23,7 @@ const EMPTY_ORGS: readonly Organization[] = Object.freeze([])
 
 interface OrganizationContextValue {
   isLoading: boolean
-  organizations: Organization[]
+  organizations: readonly Organization[]
   selectedOrganization: null | Organization
   setSelectedOrganization: (org: Organization) => void
 }
@@ -48,7 +48,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   // already keeps `data` stable across no-op refetches, but the inline
   // `?? []` default would produce a fresh array on every render while
   // the query is loading, blowing up every useOrganization() consumer.
-  const organizations = (data ?? EMPTY_ORGS) as Organization[]
+  const organizations: readonly Organization[] = data ?? EMPTY_ORGS
 
   // Auto-select when orgs load and nothing valid is selected
   useEffect(() => {
