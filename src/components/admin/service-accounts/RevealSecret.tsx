@@ -32,8 +32,9 @@ export function RevealSecretRow({
   const { copied, copy } = useClipboard()
 
   const handleCopy = () => {
-    void copy(value)
-    onCopy?.()
+    void copy(value).then((ok) => {
+      if (ok) onCopy?.()
+    })
   }
 
   return (
