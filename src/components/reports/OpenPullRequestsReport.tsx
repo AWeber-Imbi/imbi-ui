@@ -5,11 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ExternalLink, GitPullRequest, RefreshCw } from 'lucide-react'
 
-import {
-  getOrgPullRequests,
-  getProjectsSlim,
-  type ProjectListItem,
-} from '@/api/endpoints'
+import { getOrgPullRequests, type ProjectListItem } from '@/api/endpoints'
 import { DiffBar } from '@/components/pull-requests/DiffBar'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -28,8 +24,16 @@ import {
 import { UserDisplay } from '@/components/ui/user-display'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useLoginToEmail } from '@/hooks/useLoginToEmail'
+import { useProjectsSlimMap } from '@/hooks/useProjectsSlimMap'
 import { relTime } from '@/lib/formatDate'
 import type { PullRequest } from '@/types'
+
+interface AuthorInfo {
+  displayNamesForUser: Map<string, string> | undefined
+  emailOrAuthor: string
+  linkToProfile: boolean
+  tooltip: string
+}
 
 interface EnrichedPR extends PullRequest {
   project_name: string
@@ -39,19 +43,22 @@ interface EnrichedPR extends PullRequest {
   team_slug: string
 }
 
-interface ReportToolbarProps {
-  filteredCount: number
+interface ReportData {
+  enriched: EnrichedPR[]
+  hasError: boolean
   isLoading: boolean
-  onRefresh: () => void
-  onSearchChange: (v: string) => void
-  onTeamChange: (v: string) => void
-  onTypeChange: (v: string) => void
-  projectTypeFilter: string
   projectTypeOptions: SlugName[]
-  search: string
-  teamFilter: string
+  refreshAll: () => void
   teamOptions: SlugName[]
-  total: number
+}
+
+interface ReportFilters {
+  projectTypeFilter: string
+  search: string
+  setProjectTypeFilter: (v: string) => void
+  setSearch: (v: string) => void
+  setTeamFilter: (v: string) => void
+  teamFilter: string
 }
 
 interface SlugName {
@@ -88,65 +95,51 @@ export function OpenPullRequestsReport() {
   const orgSlug = selectedOrganization?.slug ?? ''
   const navigate = useNavigate()
 
-  const [teamFilter, setTeamFilter] = useState<string>(ALL)
-  const [projectTypeFilter, setProjectTypeFilter] = useState<string>(ALL)
-  const [search, setSearch] = useState('')
-
-  const {
-    enriched,
-    hasError,
-    isLoading,
-    projectTypeOptions,
-    refreshAll,
-    teamOptions,
-  } = useOpenPrReportData(orgSlug)
-
+  const filters = useReportFilters()
+  const data = useOpenPrReportData(orgSlug)
   const { displayNames, loginToEmail } = useLoginToEmail()
-
   const filtered = useOpenPrFilters(
-    enriched,
-    teamFilter,
-    projectTypeFilter,
-    search,
+    data.enriched,
+    filters.teamFilter,
+    filters.projectTypeFilter,
+    filters.search,
   )
 
   return (
     <TooltipProvider delayDuration={200}>
       <div className="border-tertiary bg-primary overflow-hidden rounded-lg border">
         <ReportToolbar
+          data={data}
           filteredCount={filtered.length}
-          isLoading={isLoading}
-          onRefresh={refreshAll}
-          onSearchChange={setSearch}
-          onTeamChange={setTeamFilter}
-          onTypeChange={setProjectTypeFilter}
-          projectTypeFilter={projectTypeFilter}
-          projectTypeOptions={projectTypeOptions}
-          search={search}
-          teamFilter={teamFilter}
-          teamOptions={teamOptions}
-          total={enriched.length}
+          filters={filters}
         />
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <ReportTableHead />
-            <tbody>
-              <ReportTableBody
-                displayNames={displayNames}
-                enrichedCount={enriched.length}
-                filtered={filtered}
-                hasError={hasError}
-                isLoading={isLoading}
-                loginToEmail={loginToEmail}
-                onOpenProject={(id) => navigate(`/projects/${id}`)}
-                onRetry={refreshAll}
-              />
-            </tbody>
-          </table>
-        </div>
+        <ReportTable
+          data={data}
+          displayNames={displayNames}
+          filtered={filtered}
+          loginToEmail={loginToEmail}
+          onOpenProject={(id) => navigate(`/projects/${id}`)}
+        />
       </div>
     </TooltipProvider>
   )
+}
+
+function bodyStatus({
+  enrichedCount,
+  filtered,
+  hasError,
+  isLoading,
+}: {
+  enrichedCount: number
+  filtered: EnrichedPR[]
+  hasError: boolean
+  isLoading: boolean
+}): 'empty' | 'error' | 'loading' | 'ready' {
+  if (hasError) return 'error'
+  if (isLoading && enrichedCount === 0) return 'loading'
+  if (filtered.length === 0) return 'empty'
+  return 'ready'
 }
 
 function deriveSlugNameOptions(
@@ -262,16 +255,7 @@ function matchesSearch(r: EnrichedPR, q: string): boolean {
   )
 }
 
-function PrAuthorCell({
-  author,
-  displayNames,
-  email,
-}: {
-  author: string
-  displayNames: Map<string, string>
-  email: string | undefined
-}) {
-  const tooltip = email ? (displayNames.get(email) ?? author) : author
+function PrAuthorCell({ info }: { info: AuthorInfo }) {
   return (
     <td className="px-4 py-3">
       <div className="flex justify-center">
@@ -279,15 +263,15 @@ function PrAuthorCell({
           <TooltipTrigger asChild>
             <span className="inline-flex">
               <UserDisplay
-                displayNames={email ? displayNames : undefined}
-                email={email ?? author}
+                displayNames={info.displayNamesForUser}
+                email={info.emailOrAuthor}
                 hideName
-                linkToProfile={!!email}
+                linkToProfile={info.linkToProfile}
                 title=""
               />
             </span>
           </TooltipTrigger>
-          <TooltipContent>{tooltip}</TooltipContent>
+          <TooltipContent>{info.tooltip}</TooltipContent>
         </Tooltip>
       </div>
     </td>
@@ -353,7 +337,7 @@ function PrRow({
   onOpenProject: () => void
   pr: EnrichedPR
 }) {
-  const email = loginToEmail.get(pr.author)
+  const authorInfo = resolveAuthorInfo(pr.author, loginToEmail, displayNames)
   return (
     <tr className="border-tertiary hover:bg-secondary/30 border-b transition-colors last:border-b-0">
       <td className="text-secondary px-4 py-3 font-mono text-xs">
@@ -363,11 +347,7 @@ function PrRow({
       <PrProjectCell name={pr.project_name} onOpen={onOpenProject} />
       <PrNumberCell number={pr.pr_number} />
       <PrTitleCell title={pr.title} url={pr.url} />
-      <PrAuthorCell
-        author={pr.author}
-        displayNames={displayNames}
-        email={email}
-      />
+      <PrAuthorCell info={authorInfo} />
       <td className="text-secondary px-4 py-3 text-center">
         {pr.changed_files}
       </td>
@@ -378,6 +358,32 @@ function PrRow({
         {relTime(pr.updated_at)}
       </td>
     </tr>
+  )
+}
+
+function PrRows({
+  displayNames,
+  filtered,
+  loginToEmail,
+  onOpenProject,
+}: {
+  displayNames: Map<string, string>
+  filtered: EnrichedPR[]
+  loginToEmail: Map<string, string>
+  onOpenProject: (id: string) => void
+}) {
+  return (
+    <>
+      {filtered.map((pr) => (
+        <PrRow
+          displayNames={displayNames}
+          key={pr.pr_id}
+          loginToEmail={loginToEmail}
+          onOpenProject={() => onOpenProject(pr.project_id)}
+          pr={pr}
+        />
+      ))}
+    </>
   )
 }
 
@@ -402,6 +408,40 @@ function PrTitleCell({ title, url }: { title: string; url: string }) {
   )
 }
 
+function ReportTable({
+  data,
+  displayNames,
+  filtered,
+  loginToEmail,
+  onOpenProject,
+}: {
+  data: ReportData
+  displayNames: Map<string, string>
+  filtered: EnrichedPR[]
+  loginToEmail: Map<string, string>
+  onOpenProject: (id: string) => void
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <ReportTableHead />
+        <tbody>
+          <ReportTableBody
+            displayNames={displayNames}
+            enrichedCount={data.enriched.length}
+            filtered={filtered}
+            hasError={data.hasError}
+            isLoading={data.isLoading}
+            loginToEmail={loginToEmail}
+            onOpenProject={onOpenProject}
+            onRetry={data.refreshAll}
+          />
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function ReportTableBody({
   displayNames,
   enrichedCount,
@@ -421,21 +461,17 @@ function ReportTableBody({
   onOpenProject: (id: string) => void
   onRetry: () => void
 }) {
-  if (hasError) return <ErrorRow onRetry={onRetry} />
-  if (isLoading && enrichedCount === 0) return <SkeletonRows />
-  if (filtered.length === 0) return <EmptyRow />
+  const status = bodyStatus({ enrichedCount, filtered, hasError, isLoading })
+  if (status === 'error') return <ErrorRow onRetry={onRetry} />
+  if (status === 'loading') return <SkeletonRows />
+  if (status === 'empty') return <EmptyRow />
   return (
-    <>
-      {filtered.map((pr) => (
-        <PrRow
-          displayNames={displayNames}
-          key={pr.pr_id}
-          loginToEmail={loginToEmail}
-          onOpenProject={() => onOpenProject(pr.project_id)}
-          pr={pr}
-        />
-      ))}
-    </>
+    <PrRows
+      displayNames={displayNames}
+      filtered={filtered}
+      loginToEmail={loginToEmail}
+      onOpenProject={onOpenProject}
+    />
   )
 }
 
@@ -457,58 +493,77 @@ function ReportTableHead() {
 }
 
 function ReportToolbar({
+  data,
   filteredCount,
-  isLoading,
-  onRefresh,
-  onSearchChange,
-  onTeamChange,
-  onTypeChange,
-  projectTypeFilter,
-  projectTypeOptions,
-  search,
-  teamFilter,
-  teamOptions,
-  total,
-}: ReportToolbarProps) {
+  filters,
+}: {
+  data: ReportData
+  filteredCount: number
+  filters: ReportFilters
+}) {
   return (
     <div className="border-tertiary flex flex-wrap items-center gap-3 border-b px-4 py-3">
       <FilterSelect
         label="Team"
-        onValueChange={onTeamChange}
-        options={teamOptions}
+        onValueChange={filters.setTeamFilter}
+        options={data.teamOptions}
         placeholder="All teams"
-        value={teamFilter}
+        value={filters.teamFilter}
       />
       <FilterSelect
         label="Project type"
-        onValueChange={onTypeChange}
-        options={projectTypeOptions}
+        onValueChange={filters.setProjectTypeFilter}
+        options={data.projectTypeOptions}
         placeholder="All types"
-        value={projectTypeFilter}
+        value={filters.projectTypeFilter}
       />
       <div className="flex flex-1 items-center justify-end gap-2">
         <input
           className="border-input bg-background text-primary focus:ring-action h-8 w-64 rounded border px-3 text-sm focus:ring-1 focus:outline-none"
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => filters.setSearch(e.target.value)}
           placeholder="Filter by title, author, project, or #"
           type="text"
-          value={search}
+          value={filters.search}
         />
         <span className="text-tertiary text-xs">
-          {filteredCount} of {total}
+          {filteredCount} of {data.enriched.length}
         </span>
         <button
           aria-label="Refresh"
           className="text-tertiary hover:text-primary rounded p-1.5 transition-colors"
-          disabled={isLoading}
-          onClick={onRefresh}
+          disabled={data.isLoading}
+          onClick={data.refreshAll}
           type="button"
         >
-          <RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`size-4 ${data.isLoading ? 'animate-spin' : ''}`}
+          />
         </button>
       </div>
     </div>
   )
+}
+
+function resolveAuthorInfo(
+  author: string,
+  loginToEmail: Map<string, string>,
+  displayNames: Map<string, string>,
+): AuthorInfo {
+  const email = loginToEmail.get(author)
+  if (!email) {
+    return {
+      displayNamesForUser: undefined,
+      emailOrAuthor: author,
+      linkToProfile: false,
+      tooltip: author,
+    }
+  }
+  return {
+    displayNamesForUser: displayNames,
+    emailOrAuthor: email,
+    linkToProfile: true,
+    tooltip: displayNames.get(email) ?? author,
+  }
 }
 
 function SkeletonRows() {
@@ -562,41 +617,18 @@ function useOpenPrReportData(orgSlug: string) {
   })
 
   const {
-    data: projects,
     isError: projectsError,
     isFetching: projectsFetching,
+    projectsById,
     refetch: refetchProjects,
-  } = useQuery({
-    enabled: !!orgSlug,
-    queryFn: ({ signal }) => getProjectsSlim(orgSlug, signal),
-    queryKey: ['projects-slim', orgSlug],
-    staleTime: 120_000,
-  })
-
-  const projectsById = useMemo(() => {
-    const m = new Map<string, ProjectListItem>()
-    for (const p of projects ?? []) m.set(p.id, p)
-    return m
-  }, [projects])
+  } = useProjectsSlimMap(orgSlug)
 
   const enriched = useMemo(
     () => enrichPullRequests(prData?.data ?? [], projectsById),
     [prData, projectsById],
   )
 
-  const teamOptions = useMemo(
-    () =>
-      deriveSlugNameOptions(enriched, (pr) => [[pr.team_slug, pr.team_name]]),
-    [enriched],
-  )
-
-  const projectTypeOptions = useMemo(
-    () =>
-      deriveSlugNameOptions(enriched, (pr) =>
-        pr.project_types.map((pt) => [pt.slug, pt.name] as const),
-      ),
-    [enriched],
-  )
+  const { projectTypeOptions, teamOptions } = useReportOptions(enriched)
 
   function refreshAll() {
     void refetchPrs()
@@ -611,4 +643,34 @@ function useOpenPrReportData(orgSlug: string) {
     refreshAll,
     teamOptions,
   }
+}
+
+function useReportFilters(): ReportFilters {
+  const [teamFilter, setTeamFilter] = useState<string>(ALL)
+  const [projectTypeFilter, setProjectTypeFilter] = useState<string>(ALL)
+  const [search, setSearch] = useState('')
+  return {
+    projectTypeFilter,
+    search,
+    setProjectTypeFilter,
+    setSearch,
+    setTeamFilter,
+    teamFilter,
+  }
+}
+
+function useReportOptions(enriched: EnrichedPR[]) {
+  const teamOptions = useMemo(
+    () =>
+      deriveSlugNameOptions(enriched, (pr) => [[pr.team_slug, pr.team_name]]),
+    [enriched],
+  )
+  const projectTypeOptions = useMemo(
+    () =>
+      deriveSlugNameOptions(enriched, (pr) =>
+        pr.project_types.map((pt) => [pt.slug, pt.name] as const),
+      ),
+    [enriched],
+  )
+  return { projectTypeOptions, teamOptions }
 }
