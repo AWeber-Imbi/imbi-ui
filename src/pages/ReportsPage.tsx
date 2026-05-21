@@ -81,7 +81,7 @@ export function ReportsPage() {
         className="pt-16"
         style={{ paddingBottom: 'var(--assistant-height, 64px)' }}
       >
-        <div className="mx-auto flex max-w-[1400px] gap-6 px-6 py-7">
+        <div className="mx-auto flex max-w-screen-2xl gap-6 px-6 py-7">
           {/* Left sidebar — report list */}
           <aside className="w-56 shrink-0">
             <div className="border-tertiary bg-primary rounded-lg border">

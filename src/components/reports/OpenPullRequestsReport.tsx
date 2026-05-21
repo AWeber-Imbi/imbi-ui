@@ -366,12 +366,14 @@ function PrRow({
 
   return (
     <tr className="border-tertiary hover:bg-secondary/30 border-b transition-colors last:border-b-0">
-      <td className="text-secondary px-4 py-3 text-xs">{pr.team_name}</td>
+      <td className="text-secondary px-4 py-3 font-mono text-xs">
+        {pr.team_slug}
+      </td>
       <td className="px-4 py-3">
         <div className="flex flex-wrap gap-1">
           {pr.project_types.map((pt) => (
             <Badge key={pt.slug} variant="neutral">
-              {pt.name}
+              {pt.slug}
             </Badge>
           ))}
         </div>
