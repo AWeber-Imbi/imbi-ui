@@ -34,7 +34,7 @@ const REPORTS: Report[] = [
   {
     description: 'Open pull requests across the org',
     id: 'open-pull-requests',
-    label: 'Open PRs',
+    label: 'Open Pull Requests',
     subtitle: 'Open pull requests, filterable by team and project type',
   },
   {

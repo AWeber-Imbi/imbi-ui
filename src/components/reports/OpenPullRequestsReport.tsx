@@ -232,13 +232,13 @@ export function OpenPullRequestsReport() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-tertiary border-b">
-              <th className="text-tertiary px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+              <th className="text-tertiary w-20 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
                 Team
               </th>
-              <th className="text-tertiary px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+              <th className="text-tertiary w-32 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
                 Project Type
               </th>
-              <th className="text-tertiary px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+              <th className="text-tertiary w-44 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
                 Project
               </th>
               <th className="text-tertiary w-16 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
@@ -378,10 +378,11 @@ function PrRow({
           ))}
         </div>
       </td>
-      <td className="px-4 py-3">
+      <td className="max-w-44 px-4 py-3">
         <button
-          className="text-primary hover:text-action text-left text-sm font-medium transition-colors"
+          className="text-primary hover:text-action block w-full truncate text-left text-sm font-medium transition-colors"
           onClick={onOpenProject}
+          title={pr.project_name}
           type="button"
         >
           {pr.project_name}
