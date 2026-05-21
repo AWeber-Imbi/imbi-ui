@@ -10,52 +10,44 @@ Confidence is annotated per item (H/M/L). Items marked **H** are directly verifi
 
 ---
 
-## Phase 0 — Bugs
+## Phase 0 — Bugs & small cleanups
 
-These are behavior bugs surfaced by the audit, not stylistic issues. Each ships as its own small PR.
+> **Implementation status (2026-05-21):** PRs #305, #306, #307, #308, #309 land items 0.1, 0.2, 0.4, 0.5, 0.6 respectively. 0.3 is deferred (audit was wrong); 0.7 needs product input. While shipping these, the original audit's framing for 0.1 and 0.3 was found to overstate the bug — both have been corrected below.
 
-### 0.1 `authProviders` query-key collision (H)
-- `src/components/admin/AuthProvidersManagement.tsx:144,153` invalidates `['authProviders']`.
-- The same component reads from `['admin', 'auth-providers']` at line 112.
-- `src/pages/LoginPage.tsx:36` caches under `['authProviders']`.
-- **Effect:** mutations on the admin page neither refresh the admin list (wrong key) nor the login page picker (same key, but never invalidated from any other context).
-- **Fix:** add `queryKeys.authProviders()` to `src/lib/queryKeys.ts`; consume from all three sites; invalidate it on mutation.
+Each item ships as its own scoped PR.
 
-### 0.2 `projectTypes` vs `project-types` cache split (H)
-- Both `['projectTypes', orgSlug]` (6 sites) and `['project-types', orgSlug]` (admin form) exist.
-- **Effect:** edits in the admin form don't invalidate the cache the rest of the app reads from.
-- **Fix:** add `queryKeys.projectTypes(orgSlug)` to `src/lib/queryKeys.ts`; mass-replace.
+### 0.1 Centralize auth-provider query keys ✅ shipped in #305
+- **Audit correction:** the original framing as a behavior bug ("every change requires a hard reload") was wrong. The `invalidateAll()` helper in `AuthProvidersManagement.tsx:151-154` does invalidate both keys, and every mutation calls it.
+- The two endpoints (`/auth/providers` for LoginPage, `/admin/auth-providers` for admin) return different shapes for different consumers, so two cache keys is correct — not a duplication bug.
+- **Real problem:** the dual-invalidate rule was tribal knowledge inside `invalidateAll()`, with literals scattered across three files.
+- **Fix shipped:** `queryKeys.adminAuthProviders / publicAuthProviders / adminLocalAuth` with a comment documenting why both must be invalidated together.
 
-### 0.3 `getQueryKeysForResource()` returns wrong literals (H)
-- `src/lib/queryKeys.ts` `getQueryKeysForResource()` returns hardcoded literal arrays (`['adminUsers']`, `['serviceAccounts']`, `['roles']`) that don't match the keys those resources are actually cached under in 5+ places.
-- **Effect:** the assistant's `refresh_data` tool no-ops for half the resources.
-- **Fix:** make `getQueryKeysForResource` source-of-truth-driven (compose from `queryKeys.*` helpers), and add a unit test that asserts every resource has a matching key entry.
+### 0.2 Unify `projectTypes` / `project-types` cache keys ✅ shipped in #306
+- Real bug: 7 sites used `['projectTypes', orgSlug]`; one site (`ServicePluginConfiguration.tsx:764`) used kebab-case `['project-types', orgSlug]`. `useAdminCrud` only invalidates the camelCase variant, so the service-plugin configuration page kept stale data after admin edits.
+- **Fix shipped:** `queryKeys.projectTypes(orgSlug)`; all 8 sites migrated.
 
-### 0.4 Index keys on mutable lists (H)
-- `src/components/ScoreHistoryTab.tsx:415,777,804` — event log with `onMouseEnter`/`onMouseLeave` per row.
-- `src/components/RecentActivity.tsx:85`.
-- `src/components/project/LogsTab.tsx:910,1233,1294` — filter chips removable by index.
-- **Effect:** hover state and edit state attach to the wrong row after a removal.
-- **Fix:** use stable keys (`event.timestamp + event.kind`, `activity.id`, the filter string itself).
+### 0.3 `getQueryKeysForResource()` literals — DEFERRED (audit was wrong)
+- **Audit correction:** every literal in `getQueryKeysForResource` actually matches the keys consumers use. The assistant's tool enum (`imbi-assistant/client_tools.py:53-63`) is `[projects, project_types, environments, teams, organizations, blueprints, roles, users, service_accounts]` and every case maps to a key in active use (verified for each via grep).
+- **Remaining low-value work:** add a regression test pinning the resource→key mapping. Deferred behind higher-impact items.
 
-### 0.5 Inconsistent relative-time helpers (H)
-- `src/components/RecentActivity.tsx:194-229` — 35-line `getRelativeTime()` (`Math.floor`, "X minutes ago").
-- `src/components/documents/documentsHelpers.ts:87-105` — `relativeShort()` (`Math.round`, "5m").
-- `src/lib/formatDate.ts` already exports `relTime` and `formatRelativeDate`.
-- **Effect:** same input → different output across the app.
-- **Fix:** delete both copies; import from `@/lib/formatDate`.
+### 0.4 Stable keys on removable lists ✅ shipped in #307
+- Real bugs at two sites: `LogsTab.tsx:910` (field-filter chips removable by index — strings are deduplicated on insert so the string itself is a safe key) and `RecentActivity.tsx:85` (mixed-type activity feed).
+- The other ScoreHistoryTab / LogsTab call-sites in the original audit were not actually removable-list bugs and were left alone (notes in the PR body).
+- **Fix shipped:** filter-string keys in LogsTab; composite `activityKey()` helper in RecentActivity (`ops-${id}` or `feed-${project_id}-${what}-${when}`).
 
-### 0.6 Gravatar default mismatch (H)
-- `src/components/RecentActivity.tsx:88-92,189-192` hand-builds avatar URLs with `d=identicon`.
-- Every other site uses `<Gravatar>` which defaults to `d=mp`.
-- **Effect:** same user → different avatar in Recent Activity vs everywhere else.
-- **Fix:** use `<Gravatar email={...} size={40} />`.
+### 0.5 Route RecentActivity through shared `formatRelativeDate` ✅ shipped in #308
+- Real bugs in `RecentActivity.getRelativeTime`: stripped `console.warn`/`console.error` in prod, ugly `Invalid date: <iso>` and `unknown time` fallbacks shown to users.
+- **UX trade-off accepted:** output changes from "5 minutes ago" long form to "5m ago" compact form (the format already used everywhere else).
+- **Not changed:** `documents/documentsHelpers.ts` `relativeShort()` keeps a deliberate ">8w → date string" fallback (`"Jan 14"` instead of `"3mo ago"`). Left as a documents-specific variant.
 
-### 0.7 Production console diagnostics dropped (M)
+### 0.6 Use shared `<Gravatar>` in RecentActivity ✅ shipped in #309
+- Real bug: hand-built URLs with `d=identicon` while every other site uses `<Gravatar>` (default `d=mp`). Same user → two different avatars.
+- **Fix shipped:** `<Gravatar email={...} size={40} />`; orphan `md5` / `@types/md5` deps removed.
+
+### 0.7 Production console diagnostics dropped — OPEN QUESTION (M)
 - `vite.config.ts` `esbuild.drop: ['console']` strips all `console.*` in prod.
 - `src/hooks/useAuth.ts:46,68,79,89` rely on `console.error` for auth-failure telemetry.
-- **Effect:** silent in prod.
-- **Fix:** either narrow drop to `['console.log','console.debug']`, or route auth diagnostics through a dedicated logger.
+- **Open question:** is the silent prod the intentional product policy, or should `console.error` survive for auth diagnostics? Fix options: narrow `drop` to `['console.log','console.debug']`, or route auth diagnostics through a dedicated logger.
 
 ---
 
