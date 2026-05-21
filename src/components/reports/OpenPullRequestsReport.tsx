@@ -126,18 +126,16 @@ export function OpenPullRequestsReport() {
 }
 
 function bodyStatus({
-  enrichedCount,
   filtered,
   hasError,
-  isLoading,
+  showSkeleton,
 }: {
-  enrichedCount: number
   filtered: EnrichedPR[]
   hasError: boolean
-  isLoading: boolean
+  showSkeleton: boolean
 }): 'empty' | 'error' | 'loading' | 'ready' {
   if (hasError) return 'error'
-  if (isLoading && enrichedCount === 0) return 'loading'
+  if (showSkeleton) return 'loading'
   if (filtered.length === 0) return 'empty'
   return 'ready'
 }
@@ -421,6 +419,7 @@ function ReportTable({
   loginToEmail: Map<string, string>
   onOpenProject: (id: string) => void
 }) {
+  const showSkeleton = data.isLoading && data.enriched.length === 0
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -428,13 +427,12 @@ function ReportTable({
         <tbody>
           <ReportTableBody
             displayNames={displayNames}
-            enrichedCount={data.enriched.length}
             filtered={filtered}
             hasError={data.hasError}
-            isLoading={data.isLoading}
             loginToEmail={loginToEmail}
             onOpenProject={onOpenProject}
             onRetry={data.refreshAll}
+            showSkeleton={showSkeleton}
           />
         </tbody>
       </table>
@@ -444,24 +442,22 @@ function ReportTable({
 
 function ReportTableBody({
   displayNames,
-  enrichedCount,
   filtered,
   hasError,
-  isLoading,
   loginToEmail,
   onOpenProject,
   onRetry,
+  showSkeleton,
 }: {
   displayNames: Map<string, string>
-  enrichedCount: number
   filtered: EnrichedPR[]
   hasError: boolean
-  isLoading: boolean
   loginToEmail: Map<string, string>
   onOpenProject: (id: string) => void
   onRetry: () => void
+  showSkeleton: boolean
 }) {
-  const status = bodyStatus({ enrichedCount, filtered, hasError, isLoading })
+  const status = bodyStatus({ filtered, hasError, showSkeleton })
   if (status === 'error') return <ErrorRow onRetry={onRetry} />
   if (status === 'loading') return <SkeletonRows />
   if (status === 'empty') return <EmptyRow />
