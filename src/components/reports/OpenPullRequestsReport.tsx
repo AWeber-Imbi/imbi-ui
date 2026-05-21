@@ -247,7 +247,7 @@ export function OpenPullRequestsReport() {
               <th className="text-tertiary px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
                 Title
               </th>
-              <th className="text-tertiary w-40 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
+              <th className="text-tertiary w-10 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
                 Author
               </th>
               <th className="text-tertiary w-14 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
@@ -404,13 +404,16 @@ function PrRow({
           <ExternalLink className="text-tertiary size-3 shrink-0" />
         </a>
       </td>
-      <td className="px-4 py-3 text-center">
-        <UserDisplay
-          displayNames={email ? displayNames : undefined}
-          email={email ?? pr.author}
-          linkToProfile={!!email}
-          textClassName="text-sm"
-        />
+      <td className="px-4 py-3">
+        <div className="flex justify-center">
+          <UserDisplay
+            displayNames={email ? displayNames : undefined}
+            email={email ?? pr.author}
+            hideName
+            linkToProfile={!!email}
+            title={email ? (displayNames.get(email) ?? pr.author) : pr.author}
+          />
+        </div>
       </td>
       <td className="text-secondary px-4 py-3 text-center">
         {pr.changed_files}
