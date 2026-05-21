@@ -18,6 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { UserDisplay } from '@/components/ui/user-display'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useUserDisplayNames } from '@/hooks/useUserDisplayNames'
@@ -164,151 +170,153 @@ export function OpenPullRequestsReport() {
   }
 
   return (
-    <div className="border-tertiary bg-primary overflow-hidden rounded-lg border">
-      {/* Toolbar */}
-      <div className="border-tertiary flex flex-wrap items-center gap-3 border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          <label className="text-tertiary text-xs">Team</label>
-          <Select onValueChange={setTeamFilter} value={teamFilter}>
-            <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue placeholder="All teams" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All teams</SelectItem>
-              {teamOptions.map((t) => (
-                <SelectItem key={t.slug} value={t.slug}>
-                  {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-tertiary text-xs">Project type</label>
-          <Select
-            onValueChange={setProjectTypeFilter}
-            value={projectTypeFilter}
-          >
-            <SelectTrigger className="h-8 w-44 text-xs">
-              <SelectValue placeholder="All types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>All types</SelectItem>
-              {projectTypeOptions.map((pt) => (
-                <SelectItem key={pt.slug} value={pt.slug}>
-                  {pt.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex flex-1 items-center justify-end gap-2">
-          <input
-            className="border-input bg-background text-primary focus:ring-action h-8 w-64 rounded border px-3 text-sm focus:ring-1 focus:outline-none"
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filter by title, author, project, or #"
-            type="text"
-            value={search}
-          />
-          <span className="text-tertiary text-xs">
-            {filtered.length} of {total}
-          </span>
-          <button
-            aria-label="Refresh"
-            className="text-tertiary hover:text-primary rounded p-1.5 transition-colors"
-            disabled={isLoading}
-            onClick={refreshAll}
-            type="button"
-          >
-            <RefreshCw
-              className={`size-4 ${isLoading ? 'animate-spin' : ''}`}
+    <TooltipProvider delayDuration={200}>
+      <div className="border-tertiary bg-primary overflow-hidden rounded-lg border">
+        {/* Toolbar */}
+        <div className="border-tertiary flex flex-wrap items-center gap-3 border-b px-4 py-3">
+          <div className="flex items-center gap-2">
+            <label className="text-tertiary text-xs">Team</label>
+            <Select onValueChange={setTeamFilter} value={teamFilter}>
+              <SelectTrigger className="h-8 w-44 text-xs">
+                <SelectValue placeholder="All teams" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>All teams</SelectItem>
+                {teamOptions.map((t) => (
+                  <SelectItem key={t.slug} value={t.slug}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-tertiary text-xs">Project type</label>
+            <Select
+              onValueChange={setProjectTypeFilter}
+              value={projectTypeFilter}
+            >
+              <SelectTrigger className="h-8 w-44 text-xs">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>All types</SelectItem>
+                {projectTypeOptions.map((pt) => (
+                  <SelectItem key={pt.slug} value={pt.slug}>
+                    {pt.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <input
+              className="border-input bg-background text-primary focus:ring-action h-8 w-64 rounded border px-3 text-sm focus:ring-1 focus:outline-none"
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter by title, author, project, or #"
+              type="text"
+              value={search}
             />
-          </button>
+            <span className="text-tertiary text-xs">
+              {filtered.length} of {total}
+            </span>
+            <button
+              aria-label="Refresh"
+              className="text-tertiary hover:text-primary rounded p-1.5 transition-colors"
+              disabled={isLoading}
+              onClick={refreshAll}
+              type="button"
+            >
+              <RefreshCw
+                className={`size-4 ${isLoading ? 'animate-spin' : ''}`}
+              />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-tertiary border-b">
-              <th className="text-tertiary w-20 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
-                Team
-              </th>
-              <th className="text-tertiary w-32 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
-                Project Type
-              </th>
-              <th className="text-tertiary w-44 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
-                Project
-              </th>
-              <th className="text-tertiary w-16 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
-                #
-              </th>
-              <th className="text-tertiary px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
-                Title
-              </th>
-              <th className="text-tertiary w-10 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
-                Author
-              </th>
-              <th className="text-tertiary w-14 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
-                Files
-              </th>
-              <th className="text-tertiary w-36 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
-                Diff
-              </th>
-              <th className="text-tertiary w-20 px-4 py-2 text-right text-xs font-medium tracking-wide uppercase">
-                Updated
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {hasError ? (
-              <tr>
-                <td className="px-4 py-8 text-center" colSpan={9}>
-                  <div className="text-danger text-sm">
-                    Failed to load pull requests.
-                  </div>
-                  <button
-                    className="text-action mt-2 text-xs hover:underline"
-                    onClick={refreshAll}
-                    type="button"
-                  >
-                    Retry
-                  </button>
-                </td>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-tertiary border-b">
+                <th className="text-tertiary w-20 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+                  Team
+                </th>
+                <th className="text-tertiary w-32 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+                  Project Type
+                </th>
+                <th className="text-tertiary w-44 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+                  Project
+                </th>
+                <th className="text-tertiary w-16 px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+                  #
+                </th>
+                <th className="text-tertiary px-4 py-2 text-left text-xs font-medium tracking-wide uppercase">
+                  Title
+                </th>
+                <th className="text-tertiary w-10 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
+                  Author
+                </th>
+                <th className="text-tertiary w-14 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
+                  Files
+                </th>
+                <th className="text-tertiary w-36 px-4 py-2 text-center text-xs font-medium tracking-wide uppercase">
+                  Diff
+                </th>
+                <th className="text-tertiary w-20 px-4 py-2 text-right text-xs font-medium tracking-wide uppercase">
+                  Updated
+                </th>
               </tr>
-            ) : isLoading && enriched.length === 0 ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <tr className="border-tertiary border-b" key={i}>
-                  <td className="px-4 py-3" colSpan={9}>
-                    <div className="bg-tertiary/30 h-4 animate-pulse rounded" />
+            </thead>
+            <tbody>
+              {hasError ? (
+                <tr>
+                  <td className="px-4 py-8 text-center" colSpan={9}>
+                    <div className="text-danger text-sm">
+                      Failed to load pull requests.
+                    </div>
+                    <button
+                      className="text-action mt-2 text-xs hover:underline"
+                      onClick={refreshAll}
+                      type="button"
+                    >
+                      Retry
+                    </button>
                   </td>
                 </tr>
-              ))
-            ) : filtered.length === 0 ? (
-              <tr>
-                <td
-                  className="text-tertiary px-4 py-12 text-center"
-                  colSpan={9}
-                >
-                  No open pull requests match the current filters.
-                </td>
-              </tr>
-            ) : (
-              filtered.map((pr) => (
-                <PrRow
-                  displayNames={displayNames}
-                  key={pr.pr_id}
-                  loginToEmail={loginToEmail}
-                  onOpenProject={() => navigate(`/projects/${pr.project_id}`)}
-                  pr={pr}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : isLoading && enriched.length === 0 ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr className="border-tertiary border-b" key={i}>
+                    <td className="px-4 py-3" colSpan={9}>
+                      <div className="bg-tertiary/30 h-4 animate-pulse rounded" />
+                    </td>
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td
+                    className="text-tertiary px-4 py-12 text-center"
+                    colSpan={9}
+                  >
+                    No open pull requests match the current filters.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((pr) => (
+                  <PrRow
+                    displayNames={displayNames}
+                    key={pr.pr_id}
+                    loginToEmail={loginToEmail}
+                    onOpenProject={() => navigate(`/projects/${pr.project_id}`)}
+                    pr={pr}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }
 
@@ -379,14 +387,18 @@ function PrRow({
         </div>
       </td>
       <td className="max-w-44 px-4 py-3">
-        <button
-          className="text-primary hover:text-action block w-full truncate text-left text-sm font-medium transition-colors"
-          onClick={onOpenProject}
-          title={pr.project_name}
-          type="button"
-        >
-          {pr.project_name}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="text-primary hover:text-action block w-full truncate text-left text-sm font-medium transition-colors"
+              onClick={onOpenProject}
+              type="button"
+            >
+              {pr.project_name}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{pr.project_name}</TooltipContent>
+        </Tooltip>
       </td>
       <td className="px-4 py-3">
         <span className="text-tertiary flex items-center gap-1.5 text-xs">
@@ -407,13 +419,22 @@ function PrRow({
       </td>
       <td className="px-4 py-3">
         <div className="flex justify-center">
-          <UserDisplay
-            displayNames={email ? displayNames : undefined}
-            email={email ?? pr.author}
-            hideName
-            linkToProfile={!!email}
-            title={email ? (displayNames.get(email) ?? pr.author) : pr.author}
-          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <UserDisplay
+                  displayNames={email ? displayNames : undefined}
+                  email={email ?? pr.author}
+                  hideName
+                  linkToProfile={!!email}
+                  title=""
+                />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {email ? (displayNames.get(email) ?? pr.author) : pr.author}
+            </TooltipContent>
+          </Tooltip>
         </div>
       </td>
       <td className="text-secondary px-4 py-3 text-center">
