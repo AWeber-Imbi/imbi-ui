@@ -61,9 +61,7 @@ function notifyNewVersion() {
   })
 }
 
-async function runCheck(
-  notifiedRef: MutableRefObject<boolean>,
-): Promise<void> {
+async function runCheck(notifiedRef: MutableRefObject<boolean>): Promise<void> {
   const remote = await fetchRemoteVersion()
   if (!isStale(remote)) return
   notifiedRef.current = true
