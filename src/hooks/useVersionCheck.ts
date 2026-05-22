@@ -51,11 +51,14 @@ function isStale(remote: null | string): boolean {
   return remote !== null && remote !== CURRENT_VERSION
 }
 
-function shouldCheck(
-  notifiedRef: MutableRefObject<boolean>,
-  inFlightRef: MutableRefObject<boolean>,
-): boolean {
-  return !notifiedRef.current && !inFlightRef.current && !document.hidden
+function notifyNewVersion() {
+  toast('A new version of Imbi is available', {
+    action: {
+      label: 'Reload',
+      onClick: () => window.location.reload(),
+    },
+    duration: Infinity,
+  })
 }
 
 async function runCheck(
@@ -67,12 +70,9 @@ async function runCheck(
   notifyNewVersion()
 }
 
-function notifyNewVersion() {
-  toast('A new version of Imbi is available', {
-    action: {
-      label: 'Reload',
-      onClick: () => window.location.reload(),
-    },
-    duration: Infinity,
-  })
+function shouldCheck(
+  notifiedRef: MutableRefObject<boolean>,
+  inFlightRef: MutableRefObject<boolean>,
+): boolean {
+  return !notifiedRef.current && !inFlightRef.current && !document.hidden
 }
