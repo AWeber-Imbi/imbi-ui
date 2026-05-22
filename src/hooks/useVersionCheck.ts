@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { MutableRefObject } from 'react'
 
 import { toast } from 'sonner'
 
@@ -7,16 +8,19 @@ const CURRENT_VERSION = __APP_VERSION__
 
 export function useVersionCheck(intervalMs = DEFAULT_INTERVAL_MS) {
   const notifiedRef = useRef(false)
+  const inFlightRef = useRef(false)
 
   useEffect(() => {
     if (import.meta.env.DEV) return
 
     const check = async () => {
-      if (notifiedRef.current || document.hidden) return
-      const remote = await fetchRemoteVersion()
-      if (!isStale(remote)) return
-      notifiedRef.current = true
-      notifyNewVersion()
+      if (!shouldCheck(notifiedRef, inFlightRef)) return
+      inFlightRef.current = true
+      try {
+        await runCheck(notifiedRef)
+      } finally {
+        inFlightRef.current = false
+      }
     }
 
     const id = window.setInterval(check, intervalMs)
@@ -45,6 +49,22 @@ async function fetchRemoteVersion(): Promise<null | string> {
 
 function isStale(remote: null | string): boolean {
   return remote !== null && remote !== CURRENT_VERSION
+}
+
+function shouldCheck(
+  notifiedRef: MutableRefObject<boolean>,
+  inFlightRef: MutableRefObject<boolean>,
+): boolean {
+  return !notifiedRef.current && !inFlightRef.current && !document.hidden
+}
+
+async function runCheck(
+  notifiedRef: MutableRefObject<boolean>,
+): Promise<void> {
+  const remote = await fetchRemoteVersion()
+  if (!isStale(remote)) return
+  notifiedRef.current = true
+  notifyNewVersion()
 }
 
 function notifyNewVersion() {
