@@ -169,7 +169,10 @@ export function TeamForm({
         <Card>
           <CardContent className="space-y-4 pt-6">
             <div>
-              <label className="text-secondary mb-1.5 block text-sm">
+              <label
+                className="text-secondary mb-1.5 block text-sm"
+                htmlFor="team-org"
+              >
                 Organization <RequiredAsterisk />
               </label>
               <Select
@@ -179,6 +182,7 @@ export function TeamForm({
               >
                 <SelectTrigger
                   className={errors.organization ? 'border-red-500' : ''}
+                  id="team-org"
                 >
                   <SelectValue placeholder="Select organization..." />
                 </SelectTrigger>
