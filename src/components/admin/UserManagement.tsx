@@ -269,6 +269,7 @@ export function UserManagement() {
                 className="gap-3"
                 displayName={user.display_name}
                 email={user.email}
+                linkToProfile={false}
                 size={32}
                 textClassName="text-primary text-sm font-medium"
               />
