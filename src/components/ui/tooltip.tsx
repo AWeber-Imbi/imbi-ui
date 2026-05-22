@@ -47,7 +47,7 @@ function IconTooltip({
   label,
   side,
 }: {
-  children: React.ReactNode
+  children: React.ReactElement
   delayDuration?: number
   label: React.ReactNode
   side?: 'bottom' | 'left' | 'right' | 'top'
