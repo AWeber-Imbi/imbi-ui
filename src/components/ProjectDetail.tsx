@@ -342,7 +342,7 @@ export function ProjectDetail({
   // Overview-only: feeds ProjectAttributesSection inside <TabsContent
   // value="overview">. The other tabs render their own components.
   const { data: projectSchema } = useQuery({
-    enabled: !!orgSlug && activeTab === 'overview',
+    enabled: !!orgSlug && !!project.id && activeTab === 'overview',
     queryFn: ({ signal }) => getProjectSchema(orgSlug, project.id, signal),
     queryKey: ['projectSchema', orgSlug, project.id],
   })
