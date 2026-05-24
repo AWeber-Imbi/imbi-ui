@@ -112,6 +112,7 @@ export function BlueprintUiMapEditor({
                 />
               )}
               <Button
+                aria-label="Remove entry"
                 className="text-tertiary hover:text-danger size-7 shrink-0"
                 onClick={() => {
                   const next = entries.filter((_, i) => i !== idx)

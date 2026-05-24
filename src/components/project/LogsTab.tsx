@@ -908,13 +908,14 @@ export function LogsTab({
               <Button
                 aria-label="Export"
                 className="bg-primary hover:border-primary hover:text-primary size-7 border [&_svg]:size-3"
+                disabled
                 size="icon"
                 variant="ghost"
               >
                 <Download />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Export</TooltipContent>
+            <TooltipContent>Export coming soon</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
