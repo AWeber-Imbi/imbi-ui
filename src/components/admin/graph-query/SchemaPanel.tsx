@@ -3,13 +3,15 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { getGraphSchema } from '@/api/endpoints'
-import type { GraphSchema } from '@/types/graph-query'
+import { useTheme } from '@/contexts/ThemeContext'
+import type { GraphSchema } from '@/types'
 
 interface SchemaPanelProps {
   onInsertSnippet: (snippet: string) => void
 }
 
 export function SchemaPanel({ onInsertSnippet }: SchemaPanelProps) {
+  const { isDarkMode } = useTheme()
   const { data, error, isLoading } = useQuery<GraphSchema>({
     queryFn: ({ signal }) => getGraphSchema(signal),
     queryKey: ['admin', 'graph', 'schema'],
@@ -48,10 +50,13 @@ export function SchemaPanel({ onInsertSnippet }: SchemaPanelProps) {
           labels.map((l) => (
             <SchemaChip
               count={l.count}
+              isDarkMode={isDarkMode}
               key={l.label}
               label={l.label}
               onClick={() =>
-                onInsertSnippet(`MATCH (n:${l.label}) RETURN n LIMIT 25`)
+                onInsertSnippet(
+                  `MATCH (n:${escapeCypherIdent(l.label)}) RETURN n LIMIT 25`,
+                )
               }
             />
           ))
@@ -66,10 +71,13 @@ export function SchemaPanel({ onInsertSnippet }: SchemaPanelProps) {
           types.map((t) => (
             <SchemaChip
               count={t.count}
+              isDarkMode={isDarkMode}
               key={t.type}
               label={t.type}
               onClick={() =>
-                onInsertSnippet(`MATCH ()-[r:${t.type}]->() RETURN r LIMIT 25`)
+                onInsertSnippet(
+                  `MATCH ()-[r:${escapeCypherIdent(t.type)}]->() RETURN r LIMIT 25`,
+                )
               }
             />
           ))
@@ -123,6 +131,15 @@ function chipColorsDark(label: string): {
 }
 
 /**
+ * Quote a Cypher identifier so labels/types containing spaces, dashes, or
+ * other special characters interpolate into valid queries. Backticks within
+ * the name are doubled per the openCypher spec.
+ */
+function escapeCypherIdent(value: string): string {
+  return `\`${value.replace(/`/g, '``')}\``
+}
+
+/**
  * Deterministic hash-to-hue mapping for label colours. Kept muted so it sits
  * inside the design system rather than competing with the amber accent.
  */
@@ -134,35 +151,27 @@ function hashHue(value: string): number {
   return h % 360
 }
 
-function lightAndDarkChipStyle(label: string): React.CSSProperties {
-  // CSS Tailwind dark mode toggles via the .dark class on <html>, so use a
-  // media query / matchMedia at runtime would over-complicate this; instead
-  // pick the palette based on a simple check at render time.
-  if (
-    typeof document !== 'undefined' &&
-    document.documentElement.classList.contains('dark')
-  ) {
-    return chipColorsDark(label)
-  }
-  return chipColors(label)
-}
-
 function SchemaChip({
   count,
+  isDarkMode,
   label,
   onClick,
 }: {
   count: number
+  isDarkMode: boolean
   label: string
   onClick: () => void
 }) {
+  // Pick colour palette from the React context so chips re-render when the
+  // theme toggles instead of reading `.dark` from the document at render time.
+  const palette = isDarkMode ? chipColorsDark(label) : chipColors(label)
   return (
     <button
       className="hover:border-amber-border inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] transition-colors"
       onClick={onClick}
       style={{
         borderWidth: '0.5px',
-        ...lightAndDarkChipStyle(label),
+        ...palette,
       }}
       title={`Insert MATCH for ${label}`}
       type="button"

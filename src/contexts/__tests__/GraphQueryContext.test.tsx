@@ -5,10 +5,7 @@ import {
   HISTORY_LIMIT,
   historyReducer,
 } from '@/contexts/GraphQueryContext'
-import type {
-  GraphQueryCard,
-  GraphQueryHistoryEntry,
-} from '@/types/graph-query'
+import type { GraphQueryCard, GraphQueryHistoryEntry } from '@/types'
 
 function makeCard(overrides: Partial<GraphQueryCard> = {}): GraphQueryCard {
   return {

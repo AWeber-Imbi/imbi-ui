@@ -35,6 +35,8 @@ import type {
   DraftReleaseNotesResponse,
   Environment,
   EnvironmentCreate,
+  GraphQueryResult,
+  GraphSchema,
   IdentityConnectionPollResponse,
   IdentityConnectionResponse,
   IdentityConnectionStartRequest,
@@ -97,7 +99,6 @@ import type {
   Webhook,
   WebhookCreate,
 } from '@/types'
-import type { GraphQueryResult, GraphSchema } from '@/types/graph-query'
 
 import { apiClient, apiUrl } from './client'
 

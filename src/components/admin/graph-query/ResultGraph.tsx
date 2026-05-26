@@ -4,7 +4,7 @@ import { darkTheme, GraphCanvas, lightTheme } from 'reagraph'
 import type { GraphEdge, GraphNode } from 'reagraph'
 
 import { useTheme } from '@/contexts/ThemeContext'
-import type { GraphQueryResult } from '@/types/graph-query'
+import type { GraphQueryResult } from '@/types'
 
 interface ResultGraphProps {
   result: GraphQueryResult

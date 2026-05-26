@@ -10,7 +10,7 @@ import type {
   GraphQueryCell,
   GraphQueryCellEdge,
   GraphQueryCellNode,
-} from '@/types/graph-query'
+} from '@/types'
 
 const ResultGraph = lazy(() =>
   import('./ResultGraph').then((m) => ({ default: m.ResultGraph })),

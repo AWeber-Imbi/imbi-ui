@@ -20,7 +20,7 @@ import type {
   GraphQueryErrorEnvelope,
   GraphQueryHistoryEntry,
   GraphQueryResult,
-} from '@/types/graph-query'
+} from '@/types'
 
 const HISTORY_STORAGE_KEY = 'imbi-cypher-history'
 export const HISTORY_LIMIT = 100

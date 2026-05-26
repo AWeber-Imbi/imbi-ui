@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '@/api/client'
 import { GraphQueryProvider } from '@/contexts/GraphQueryContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
-import type { GraphQueryResult } from '@/types/graph-query'
+import type { GraphQueryResult } from '@/types'
 
 // Stubs live in ../__mocks__/ so vitest's auto-mock convention picks them up.
 vi.mock('../CypherEditor')
