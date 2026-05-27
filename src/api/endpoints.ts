@@ -77,6 +77,8 @@ import type {
   ProjectType,
   ProjectTypeCreate,
   PullRequestListResponse,
+  Release,
+  ReleaseDependenciesResponse,
   Role,
   RoleCreate,
   RoleDetail,
@@ -1472,6 +1474,31 @@ export const listCurrentReleases = async (
   )
   return Array.isArray(response) ? response : []
 }
+
+export const listProjectReleases = async (
+  orgSlug: string,
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<Release[]> => {
+  const response = await apiClient.get<Release[]>(
+    `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}/releases/`,
+    undefined,
+    signal,
+  )
+  return Array.isArray(response) ? response : []
+}
+
+export const listReleaseDependencies = (
+  orgSlug: string,
+  projectId: string,
+  releaseId: string,
+  signal?: AbortSignal,
+): Promise<ReleaseDependenciesResponse> =>
+  apiClient.get<ReleaseDependenciesResponse>(
+    `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}/releases/${encodeURIComponent(releaseId)}/dependencies`,
+    undefined,
+    signal,
+  )
 
 // Deployments
 const deploymentsBase = (orgSlug: string, projectId: string): string =>
