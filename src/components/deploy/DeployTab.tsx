@@ -659,7 +659,7 @@ function TagList({
             key={t.sha}
           >
             <button
-              className="flex flex-1 items-center gap-3 text-left"
+              className="flex flex-1 cursor-pointer items-center gap-3 text-left"
               onClick={() => onSelect(t)}
               type="button"
             >
