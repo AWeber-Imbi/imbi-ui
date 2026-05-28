@@ -649,7 +649,7 @@ function CommitList({
             key={c.sha}
           >
             <button
-              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
               onClick={() => onSelect(c)}
               type="button"
             >
