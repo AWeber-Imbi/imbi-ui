@@ -259,117 +259,117 @@ export function DeployTab({
 
   return (
     <div className="flex max-h-[80vh] min-h-121.5 flex-col gap-4">
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-        {/* Locked target environment */}
-        <section>
-          <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
-            Environment
+      {/* Locked target environment */}
+      <section>
+        <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
+          Environment
+        </p>
+        <div className="border-action bg-action/5 rounded-md border p-3">
+          <div className="text-sm font-medium">{env?.name ?? envSlug}</div>
+          <div className="text-tertiary mt-1 text-xs">
+            {currentReleasesLoading ? (
+              <div
+                aria-busy="true"
+                aria-label="Loading current release"
+                className="flex items-center gap-2"
+              >
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            ) : current?.release ? (
+              <>
+                <span className="font-mono">
+                  {current.release.tag ?? current.release.committish}
+                </span>
+                {current.last_event_at ? (
+                  <>
+                    {' · '}
+                    {formatDistanceToNow(new Date(current.last_event_at), {
+                      addSuffix: true,
+                    })}
+                  </>
+                ) : null}
+              </>
+            ) : (
+              'not deployed'
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Version picker */}
+      <section>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-tertiary text-xs tracking-wider uppercase">
+            {isFirstEnv
+              ? showBranchPane
+                ? activeBranch
+                  ? `Commit on ${activeBranch}`
+                  : 'Pick a branch'
+                : `Commit on ${defaultBranchName}`
+              : 'Tag'}
           </p>
-          <div className="border-action bg-action/5 rounded-md border p-3">
-            <div className="text-sm font-medium">{env?.name ?? envSlug}</div>
-            <div className="text-tertiary mt-1 text-xs">
-              {currentReleasesLoading ? (
-                <div
-                  aria-busy="true"
-                  aria-label="Loading current release"
-                  className="flex items-center gap-2"
-                >
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-              ) : current?.release ? (
-                <>
-                  <span className="font-mono">
-                    {current.release.tag ?? current.release.committish}
-                  </span>
-                  {current.last_event_at ? (
-                    <>
-                      {' · '}
-                      {formatDistanceToNow(new Date(current.last_event_at), {
-                        addSuffix: true,
-                      })}
-                    </>
-                  ) : null}
-                </>
-              ) : (
-                'not deployed'
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Version picker */}
-        <section className="flex min-h-0 flex-1 flex-col">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-tertiary text-xs tracking-wider uppercase">
-              {isFirstEnv
-                ? showBranchPane
-                  ? activeBranch
-                    ? `Commit on ${activeBranch}`
-                    : 'Pick a branch'
-                  : `Commit on ${defaultBranchName}`
-                : 'Tag'}
-            </p>
-            {isFirstEnv ? (
-              <PickerToggle
-                defaultLabel={defaultBranchName}
-                mode={pickerMode}
-                onChange={(m) => {
-                  setPickerMode(m)
-                  setSelected(null)
-                  if (m === 'default') setActiveBranch(null)
-                }}
-              />
-            ) : null}
-          </div>
-          {!isFirstEnv ? (
-            <TagList
-              current={
-                current?.release?.tag ?? current?.release?.committish ?? null
-              }
-              isLoading={refsLoading}
-              onSelect={(r) => setSelected({ label: r.name, sha: r.sha })}
-              selectedSha={selected?.sha ?? null}
-              tags={tagOptions}
-            />
-          ) : showBranchPane ? (
-            <BranchPicker
-              activeBranch={activeBranch}
-              branches={filteredBranches}
-              branchesLoading={branchesLoading}
-              commits={activeBranchCommits}
-              commitsLoading={activeBranchLoading}
-              current={
-                current?.release?.tag ?? current?.release?.committish ?? null
-              }
-              onBranchSelect={(name) => {
-                setActiveBranch(name)
+          {isFirstEnv ? (
+            <PickerToggle
+              defaultLabel={defaultBranchName}
+              mode={pickerMode}
+              onChange={(m) => {
+                setPickerMode(m)
                 setSelected(null)
+                if (m === 'default') setActiveBranch(null)
               }}
-              onCommitSelect={(c) => {
-                if (!activeBranch) return
-                setSelected({ label: activeBranch, sha: c.sha })
-              }}
-              onQueryChange={setBranchQuery}
-              query={branchQuery}
-              selectedSha={selected?.sha ?? null}
             />
-          ) : (
-            <CommitList
-              commits={branchCommits}
-              current={
-                current?.release?.tag ?? current?.release?.committish ?? null
-              }
-              isLoading={commitsLoading}
-              onSelect={(c) =>
-                setSelected({ label: defaultBranchName, sha: c.sha })
-              }
-              selectedSha={selected?.sha ?? null}
-            />
-          )}
-        </section>
+          ) : null}
+        </div>
+        {!isFirstEnv ? (
+          <TagList
+            current={
+              current?.release?.tag ?? current?.release?.committish ?? null
+            }
+            isLoading={refsLoading}
+            onSelect={(r) => setSelected({ label: r.name, sha: r.sha })}
+            selectedSha={selected?.sha ?? null}
+            tags={tagOptions}
+          />
+        ) : showBranchPane ? (
+          <BranchPicker
+            activeBranch={activeBranch}
+            branches={filteredBranches}
+            branchesLoading={branchesLoading}
+            commits={activeBranchCommits}
+            commitsLoading={activeBranchLoading}
+            current={
+              current?.release?.tag ?? current?.release?.committish ?? null
+            }
+            onBranchSelect={(name) => {
+              setActiveBranch(name)
+              setSelected(null)
+            }}
+            onCommitSelect={(c) => {
+              if (!activeBranch) return
+              setSelected({ label: activeBranch, sha: c.sha })
+            }}
+            onQueryChange={setBranchQuery}
+            query={branchQuery}
+            selectedSha={selected?.sha ?? null}
+          />
+        ) : (
+          <CommitList
+            commits={branchCommits}
+            current={
+              current?.release?.tag ?? current?.release?.committish ?? null
+            }
+            isLoading={commitsLoading}
+            onSelect={(c) =>
+              setSelected({ label: defaultBranchName, sha: c.sha })
+            }
+            selectedSha={selected?.sha ?? null}
+          />
+        )}
+      </section>
 
-        {/* Diff summary */}
+      {/* Diff summary — fixed-height slot so footer doesn't shift */}
+      <div className="min-h-[70.5px]">
         {selected && current?.release ? (
           <DiffSummary
             base={current.release.committish}
@@ -584,7 +584,18 @@ function DiffSummary({
         Re-deploying — no commit delta to summarize.
       </p>
     )
-  if (isLoading || !data) return null
+  if (isLoading)
+    return (
+      <div
+        aria-busy="true"
+        aria-label="Loading diff summary"
+        className="border-secondary bg-tertiary/20 flex flex-col gap-2 rounded-md border p-3"
+      >
+        <Skeleton className="h-3 w-48" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+    )
+  if (!data) return null
   return (
     <div className="border-secondary bg-tertiary/20 rounded-md border p-3 text-xs">
       <div className="text-tertiary font-mono">
