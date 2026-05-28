@@ -231,6 +231,37 @@ describe('DependenciesTab', () => {
     expect(screen.getByLabelText('group: test')).toBeInTheDocument()
   })
 
+  it('shows an error message when the releases query fails', async () => {
+    vi.spyOn(endpoints, 'listProjectReleases').mockRejectedValue(
+      new Error('boom'),
+    )
+
+    render(<DependenciesTab orgSlug="org" project={PROJECT} />, {
+      wrapper: wrapper(qc),
+    })
+
+    expect(
+      await screen.findByText(/Failed to load releases/i),
+    ).toBeInTheDocument()
+  })
+
+  it('shows an error message when the dependencies query fails', async () => {
+    vi.spyOn(endpoints, 'listProjectReleases').mockResolvedValue([
+      makeRelease(),
+    ])
+    vi.spyOn(endpoints, 'listReleaseDependencies').mockRejectedValue(
+      new Error('boom'),
+    )
+
+    render(<DependenciesTab orgSlug="org" project={PROJECT} />, {
+      wrapper: wrapper(qc),
+    })
+
+    expect(
+      await screen.findByText(/Failed to load dependencies/i),
+    ).toBeInTheDocument()
+  })
+
   it('shows an em-dash when neither scope nor groups are present', async () => {
     vi.spyOn(endpoints, 'listProjectReleases').mockResolvedValue([
       makeRelease(),

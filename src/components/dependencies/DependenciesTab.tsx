@@ -157,6 +157,16 @@ export function DependenciesTab({ orgSlug, project }: DependenciesTabProps) {
     )
   }
 
+  if (releasesQuery.isError) {
+    return (
+      <Card>
+        <CardContent className="text-muted-foreground p-8 text-center">
+          Failed to load releases.
+        </CardContent>
+      </Card>
+    )
+  }
+
   if (releases.length === 0) {
     return (
       <Card>
@@ -204,6 +214,12 @@ export function DependenciesTab({ orgSlug, project }: DependenciesTabProps) {
         <Card>
           <CardContent className="p-6">
             <LoadingState label="Loading dependencies…" />
+          </CardContent>
+        </Card>
+      ) : dependenciesQuery.isError ? (
+        <Card>
+          <CardContent className="text-muted-foreground p-8 text-center">
+            Failed to load dependencies.
           </CardContent>
         </Card>
       ) : (
