@@ -64,12 +64,15 @@ export function DeployTab({
     : sorted[0]
   const envSlug = env?.slug ?? ''
 
-  const { data: currentReleases = [], isLoading: currentReleasesLoading } =
-    useQuery<CurrentReleaseEnvironment[]>({
-      enabled: open && !!orgSlug && !!projectId,
-      queryFn: ({ signal }) => listCurrentReleases(orgSlug, projectId, signal),
-      queryKey: ['currentReleases', orgSlug, projectId],
-    })
+  const {
+    data: currentReleases = [],
+    isError: currentReleasesError,
+    isLoading: currentReleasesLoading,
+  } = useQuery<CurrentReleaseEnvironment[]>({
+    enabled: open && !!orgSlug && !!projectId,
+    queryFn: ({ signal }) => listCurrentReleases(orgSlug, projectId, signal),
+    queryKey: ['currentReleases', orgSlug, projectId],
+  })
   const current = useMemo(
     () =>
       env
@@ -82,24 +85,27 @@ export function DeployTab({
   // branch.  For staging / production we list tags.
   const isFirstEnv = env?.slug === sorted[0]?.slug
 
-  const { data: refs = [], isLoading: refsLoading } = useQuery<DeploymentRef[]>(
-    {
-      enabled: open && !!env,
-      queryFn: ({ signal }) =>
-        listDeploymentRefs(
-          orgSlug,
-          projectId,
-          { kind: isFirstEnv ? 'default' : 'tag' },
-          signal,
-        ),
-      queryKey: [
-        'deploymentRefs',
+  const {
+    data: refs = [],
+    isError: refsError,
+    isLoading: refsLoading,
+    refetch: refsRefetch,
+  } = useQuery<DeploymentRef[]>({
+    enabled: open && !!env,
+    queryFn: ({ signal }) =>
+      listDeploymentRefs(
         orgSlug,
         projectId,
-        isFirstEnv ? 'branch' : 'tag',
-      ],
-    },
-  )
+        { kind: isFirstEnv ? 'default' : 'tag' },
+        signal,
+      ),
+    queryKey: [
+      'deploymentRefs',
+      orgSlug,
+      projectId,
+      isFirstEnv ? 'branch' : 'tag',
+    ],
+  })
 
   const defaultBranchName = useMemo(() => {
     const def = refs.find((r) => r.is_default)
@@ -276,6 +282,10 @@ export function DeployTab({
                 <Skeleton className="h-3 w-20" />
                 <Skeleton className="h-3 w-24" />
               </div>
+            ) : currentReleasesError ? (
+              <span className="text-danger">
+                Unable to load current release.
+              </span>
             ) : current?.release ? (
               <>
                 <span className="font-mono">
@@ -326,7 +336,9 @@ export function DeployTab({
             current={
               current?.release?.tag ?? current?.release?.committish ?? null
             }
+            isError={refsError}
             isLoading={refsLoading}
+            onRetry={refsRefetch}
             onSelect={(r) => setSelected({ label: r.name, sha: r.sha })}
             selectedSha={selected?.sha ?? null}
             tags={tagOptions}
@@ -657,17 +669,30 @@ function PickerToggle({
 
 function TagList({
   current,
+  isError,
   isLoading,
+  onRetry,
   onSelect,
   selectedSha,
   tags,
 }: {
   current: null | string
+  isError: boolean
   isLoading: boolean
+  onRetry: () => void
   onSelect: (tag: DeploymentRef) => void
   selectedSha: null | string
   tags: DeploymentRef[]
 }) {
+  if (isError)
+    return (
+      <div className="border-danger bg-danger/10 text-danger rounded-md border px-3 py-2 text-sm">
+        Failed to load tags.{' '}
+        <Button className="ml-2" onClick={onRetry} size="sm" variant="ghost">
+          Retry
+        </Button>
+      </div>
+    )
   if (isLoading)
     return (
       <ul
