@@ -16,7 +16,6 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { LoadingState } from '@/components/ui/loading-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { cn, sortEnvironments } from '@/lib/utils'
@@ -112,9 +111,12 @@ export function DeployTab({
     return def?.name ?? 'main'
   }, [refs])
 
-  const { data: branchCommits = [], isLoading: commitsLoading } = useQuery<
-    DeploymentCommit[]
-  >({
+  const {
+    data: branchCommits = [],
+    isError: commitsError,
+    isLoading: commitsLoading,
+    refetch: commitsRefetch,
+  } = useQuery<DeploymentCommit[]>({
     enabled: open && !!env && isFirstEnv,
     queryFn: ({ signal }) =>
       listRefCommits(
@@ -147,9 +149,12 @@ export function DeployTab({
   }, [envSlug])
 
   const showBranchPane = isFirstEnv && pickerMode === 'branches'
-  const { data: branchRefs = [], isLoading: branchesLoading } = useQuery<
-    DeploymentRef[]
-  >({
+  const {
+    data: branchRefs = [],
+    isError: branchesError,
+    isLoading: branchesLoading,
+    refetch: branchesRefetch,
+  } = useQuery<DeploymentRef[]>({
     enabled: open && showBranchPane,
     queryFn: ({ signal }) =>
       listDeploymentRefs(orgSlug, projectId, { kind: 'branch' }, signal),
@@ -160,19 +165,23 @@ export function DeployTab({
     if (!q) return branchRefs
     return branchRefs.filter((b) => b.name.toLowerCase().includes(q))
   }, [branchRefs, branchQuery])
-  const { data: activeBranchCommits = [], isLoading: activeBranchLoading } =
-    useQuery<DeploymentCommit[]>({
-      enabled: open && showBranchPane && !!activeBranch,
-      queryFn: ({ signal }) =>
-        listRefCommits(
-          orgSlug,
-          projectId,
-          activeBranch ?? '',
-          { limit: 25 },
-          signal,
-        ),
-      queryKey: ['refCommits', orgSlug, projectId, activeBranch],
-    })
+  const {
+    data: activeBranchCommits = [],
+    isError: activeBranchError,
+    isLoading: activeBranchLoading,
+    refetch: activeBranchRefetch,
+  } = useQuery<DeploymentCommit[]>({
+    enabled: open && showBranchPane && !!activeBranch,
+    queryFn: ({ signal }) =>
+      listRefCommits(
+        orgSlug,
+        projectId,
+        activeBranch ?? '',
+        { limit: 25 },
+        signal,
+      ),
+    queryKey: ['refCommits', orgSlug, projectId, activeBranch],
+  })
 
   const [selected, setSelected] = useState<null | SelectedVersion>(null)
   useEffect(() => {
@@ -347,12 +356,15 @@ export function DeployTab({
           <BranchPicker
             activeBranch={activeBranch}
             branches={filteredBranches}
+            branchesError={branchesError}
             branchesLoading={branchesLoading}
             commits={activeBranchCommits}
+            commitsError={activeBranchError}
             commitsLoading={activeBranchLoading}
             current={
               current?.release?.tag ?? current?.release?.committish ?? null
             }
+            onBranchesRetry={branchesRefetch}
             onBranchSelect={(name) => {
               setActiveBranch(name)
               setSelected(null)
@@ -361,6 +373,7 @@ export function DeployTab({
               if (!activeBranch) return
               setSelected({ label: activeBranch, sha: c.sha })
             }}
+            onCommitsRetry={activeBranchRefetch}
             onQueryChange={setBranchQuery}
             query={branchQuery}
             selectedSha={selected?.sha ?? null}
@@ -371,7 +384,9 @@ export function DeployTab({
             current={
               current?.release?.tag ?? current?.release?.committish ?? null
             }
+            isError={commitsError}
             isLoading={commitsLoading}
+            onRetry={commitsRefetch}
             onSelect={(c) =>
               setSelected({ label: defaultBranchName, sha: c.sha })
             }
@@ -416,27 +431,113 @@ export function DeployTab({
   )
 }
 
+function BranchList({
+  activeBranch,
+  branches,
+  isError,
+  isLoading,
+  onRetry,
+  onSelect,
+}: {
+  activeBranch: null | string
+  branches: DeploymentRef[]
+  isError: boolean
+  isLoading: boolean
+  onRetry: () => void
+  onSelect: (name: string) => void
+}) {
+  if (isError)
+    return (
+      <div className="border-danger bg-danger/10 text-danger rounded-md border px-3 py-2 text-sm">
+        Failed to load branches.{' '}
+        <Button className="ml-2" onClick={onRetry} size="sm" variant="ghost">
+          Retry
+        </Button>
+      </div>
+    )
+  if (isLoading)
+    return (
+      <ul
+        aria-busy="true"
+        aria-label="Loading branches"
+        className="border-secondary rounded-md border"
+      >
+        {Array.from({ length: 6 }, (_, i) => (
+          <li
+            aria-hidden="true"
+            className="border-tertiary flex items-center gap-3 border-b px-3 py-2 last:border-b-0"
+            key={i}
+          >
+            <Skeleton className="h-3 flex-1" />
+          </li>
+        ))}
+      </ul>
+    )
+  if (branches.length === 0)
+    return (
+      <p className="border-secondary text-tertiary rounded-md border p-3 text-sm">
+        No branches.
+      </p>
+    )
+  return (
+    <ul className="border-secondary max-h-65 overflow-y-auto rounded-md border">
+      {branches.map((b) => {
+        const active = b.name === activeBranch
+        return (
+          <li
+            className={cn(
+              'border-b border-tertiary last:border-b-0',
+              active && 'bg-action/5',
+            )}
+            key={b.name}
+          >
+            <button
+              className="flex w-full min-w-0 cursor-pointer items-center gap-2 px-3 py-2 text-left"
+              onClick={() => onSelect(b.name)}
+              type="button"
+            >
+              <span className="min-w-0 flex-1 truncate text-sm">{b.name}</span>
+              {b.pr_number ? (
+                <Badge variant="outline">#{b.pr_number}</Badge>
+              ) : null}
+              {active ? <Check className="text-action size-4" /> : null}
+            </button>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 function BranchPicker({
   activeBranch,
   branches,
+  branchesError,
   branchesLoading,
   commits,
+  commitsError,
   commitsLoading,
   current,
+  onBranchesRetry,
   onBranchSelect,
   onCommitSelect,
+  onCommitsRetry,
   onQueryChange,
   query,
   selectedSha,
 }: {
   activeBranch: null | string
   branches: DeploymentRef[]
+  branchesError: boolean
   branchesLoading: boolean
   commits: DeploymentCommit[]
+  commitsError: boolean
   commitsLoading: boolean
   current: null | string
+  onBranchesRetry: () => void
   onBranchSelect: (name: string) => void
   onCommitSelect: (commit: DeploymentCommit) => void
+  onCommitsRetry: () => void
   onQueryChange: (q: string) => void
   query: string
   selectedSha: null | string
@@ -452,42 +553,14 @@ function BranchPicker({
           type="text"
           value={query}
         />
-        {branchesLoading ? (
-          <LoadingState label="Loading branches…" />
-        ) : branches.length === 0 ? (
-          <p className="border-secondary text-tertiary rounded-md border p-3 text-sm">
-            No branches.
-          </p>
-        ) : (
-          <ul className="border-secondary max-h-65 overflow-y-auto rounded-md border">
-            {branches.map((b) => {
-              const active = b.name === activeBranch
-              return (
-                <li
-                  className={cn(
-                    'border-b border-tertiary last:border-b-0',
-                    active && 'bg-action/5',
-                  )}
-                  key={b.name}
-                >
-                  <button
-                    className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left"
-                    onClick={() => onBranchSelect(b.name)}
-                    type="button"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-sm">
-                      {b.name}
-                    </span>
-                    {b.pr_number ? (
-                      <Badge variant="outline">#{b.pr_number}</Badge>
-                    ) : null}
-                    {active ? <Check className="text-action size-4" /> : null}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
+        <BranchList
+          activeBranch={activeBranch}
+          branches={branches}
+          isError={branchesError}
+          isLoading={branchesLoading}
+          onRetry={onBranchesRetry}
+          onSelect={onBranchSelect}
+        />
       </div>
       <div>
         {!activeBranch ? (
@@ -498,7 +571,9 @@ function BranchPicker({
           <CommitList
             commits={commits}
             current={current}
+            isError={commitsError}
             isLoading={commitsLoading}
+            onRetry={onCommitsRetry}
             onSelect={onCommitSelect}
             selectedSha={selectedSha}
           />
@@ -511,17 +586,49 @@ function BranchPicker({
 function CommitList({
   commits,
   current,
+  isError,
   isLoading,
+  onRetry,
   onSelect,
   selectedSha,
 }: {
   commits: DeploymentCommit[]
   current: null | string
+  isError: boolean
   isLoading: boolean
+  onRetry: () => void
   onSelect: (commit: DeploymentCommit) => void
   selectedSha: null | string
 }) {
-  if (isLoading) return <LoadingState label="Loading commits…" />
+  if (isError)
+    return (
+      <div className="border-danger bg-danger/10 text-danger rounded-md border px-3 py-2 text-sm">
+        Failed to load commits.{' '}
+        <Button className="ml-2" onClick={onRetry} size="sm" variant="ghost">
+          Retry
+        </Button>
+      </div>
+    )
+  if (isLoading)
+    return (
+      <ul
+        aria-busy="true"
+        aria-label="Loading commits"
+        className="border-secondary rounded-md border"
+      >
+        {Array.from({ length: 6 }, (_, i) => (
+          <li
+            aria-hidden="true"
+            className="border-tertiary flex items-center gap-3 border-b px-3 py-2 last:border-b-0"
+            key={i}
+          >
+            <Skeleton className="h-3 w-12 shrink-0" />
+            <Skeleton className="h-3 flex-1" />
+            <Skeleton className="h-3 w-16 shrink-0" />
+          </li>
+        ))}
+      </ul>
+    )
   if (commits.length === 0)
     return (
       <p className="border-secondary text-tertiary rounded-md border p-3 text-sm">
