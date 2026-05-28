@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { LoadingState } from '@/components/ui/loading-state'
+import { Skeleton } from '@/components/ui/skeleton'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { cn, sortEnvironments } from '@/lib/utils'
 import type {
@@ -63,11 +64,12 @@ export function DeployTab({
     : sorted[0]
   const envSlug = env?.slug ?? ''
 
-  const { data: currentReleases = [] } = useQuery<CurrentReleaseEnvironment[]>({
-    enabled: open && !!orgSlug && !!projectId,
-    queryFn: ({ signal }) => listCurrentReleases(orgSlug, projectId, signal),
-    queryKey: ['currentReleases', orgSlug, projectId],
-  })
+  const { data: currentReleases = [], isLoading: currentReleasesLoading } =
+    useQuery<CurrentReleaseEnvironment[]>({
+      enabled: open && !!orgSlug && !!projectId,
+      queryFn: ({ signal }) => listCurrentReleases(orgSlug, projectId, signal),
+      queryKey: ['currentReleases', orgSlug, projectId],
+    })
   const current = useMemo(
     () =>
       env
@@ -80,22 +82,24 @@ export function DeployTab({
   // branch.  For staging / production we list tags.
   const isFirstEnv = env?.slug === sorted[0]?.slug
 
-  const { data: refs = [] } = useQuery<DeploymentRef[]>({
-    enabled: open && !!env,
-    queryFn: ({ signal }) =>
-      listDeploymentRefs(
+  const { data: refs = [], isLoading: refsLoading } = useQuery<DeploymentRef[]>(
+    {
+      enabled: open && !!env,
+      queryFn: ({ signal }) =>
+        listDeploymentRefs(
+          orgSlug,
+          projectId,
+          { kind: isFirstEnv ? 'default' : 'tag' },
+          signal,
+        ),
+      queryKey: [
+        'deploymentRefs',
         orgSlug,
         projectId,
-        { kind: isFirstEnv ? 'default' : 'tag' },
-        signal,
-      ),
-    queryKey: [
-      'deploymentRefs',
-      orgSlug,
-      projectId,
-      isFirstEnv ? 'branch' : 'tag',
-    ],
-  })
+        isFirstEnv ? 'branch' : 'tag',
+      ],
+    },
+  )
 
   const defaultBranchName = useMemo(() => {
     const def = refs.find((r) => r.is_default)
@@ -254,115 +258,127 @@ export function DeployTab({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Locked target environment */}
-      <section>
-        <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
-          Environment
-        </p>
-        <div className="border-action bg-action/5 rounded-md border p-3">
-          <div className="text-sm font-medium">{env?.name ?? envSlug}</div>
-          <div className="text-tertiary mt-1 text-xs">
-            {current?.release ? (
-              <>
-                <span className="font-mono">
-                  {current.release.tag ?? current.release.committish}
-                </span>
-                {current.last_event_at ? (
-                  <>
-                    {' · '}
-                    {formatDistanceToNow(new Date(current.last_event_at), {
-                      addSuffix: true,
-                    })}
-                  </>
-                ) : null}
-              </>
-            ) : (
-              'not deployed'
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Version picker */}
-      <section className="min-h-45">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-tertiary text-xs tracking-wider uppercase">
-            {isFirstEnv
-              ? showBranchPane
-                ? activeBranch
-                  ? `Commit on ${activeBranch}`
-                  : 'Pick a branch'
-                : `Commit on ${defaultBranchName}`
-              : 'Tag'}
+    <div className="flex max-h-[80vh] min-h-121.5 flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+        {/* Locked target environment */}
+        <section>
+          <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
+            Environment
           </p>
-          {isFirstEnv ? (
-            <PickerToggle
-              defaultLabel={defaultBranchName}
-              mode={pickerMode}
-              onChange={(m) => {
-                setPickerMode(m)
-                setSelected(null)
-                if (m === 'default') setActiveBranch(null)
-              }}
-            />
-          ) : null}
-        </div>
-        {!isFirstEnv ? (
-          <TagList
-            current={
-              current?.release?.tag ?? current?.release?.committish ?? null
-            }
-            onSelect={(r) => setSelected({ label: r.name, sha: r.sha })}
-            selectedSha={selected?.sha ?? null}
-            tags={tagOptions}
-          />
-        ) : showBranchPane ? (
-          <BranchPicker
-            activeBranch={activeBranch}
-            branches={filteredBranches}
-            branchesLoading={branchesLoading}
-            commits={activeBranchCommits}
-            commitsLoading={activeBranchLoading}
-            current={
-              current?.release?.tag ?? current?.release?.committish ?? null
-            }
-            onBranchSelect={(name) => {
-              setActiveBranch(name)
-              setSelected(null)
-            }}
-            onCommitSelect={(c) => {
-              if (!activeBranch) return
-              setSelected({ label: activeBranch, sha: c.sha })
-            }}
-            onQueryChange={setBranchQuery}
-            query={branchQuery}
-            selectedSha={selected?.sha ?? null}
-          />
-        ) : (
-          <CommitList
-            commits={branchCommits}
-            current={
-              current?.release?.tag ?? current?.release?.committish ?? null
-            }
-            isLoading={commitsLoading}
-            onSelect={(c) =>
-              setSelected({ label: defaultBranchName, sha: c.sha })
-            }
-            selectedSha={selected?.sha ?? null}
-          />
-        )}
-      </section>
+          <div className="border-action bg-action/5 rounded-md border p-3">
+            <div className="text-sm font-medium">{env?.name ?? envSlug}</div>
+            <div className="text-tertiary mt-1 text-xs">
+              {currentReleasesLoading ? (
+                <div
+                  aria-busy="true"
+                  aria-label="Loading current release"
+                  className="flex items-center gap-2"
+                >
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              ) : current?.release ? (
+                <>
+                  <span className="font-mono">
+                    {current.release.tag ?? current.release.committish}
+                  </span>
+                  {current.last_event_at ? (
+                    <>
+                      {' · '}
+                      {formatDistanceToNow(new Date(current.last_event_at), {
+                        addSuffix: true,
+                      })}
+                    </>
+                  ) : null}
+                </>
+              ) : (
+                'not deployed'
+              )}
+            </div>
+          </div>
+        </section>
 
-      {/* Diff summary */}
-      {selected && current?.release ? (
-        <DiffSummary
-          base={current.release.committish}
-          head={selected.label ?? selected.sha}
-          orgSlug={orgSlug}
-          projectId={projectId}
-        />
-      ) : null}
+        {/* Version picker */}
+        <section className="flex min-h-0 flex-1 flex-col">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-tertiary text-xs tracking-wider uppercase">
+              {isFirstEnv
+                ? showBranchPane
+                  ? activeBranch
+                    ? `Commit on ${activeBranch}`
+                    : 'Pick a branch'
+                  : `Commit on ${defaultBranchName}`
+                : 'Tag'}
+            </p>
+            {isFirstEnv ? (
+              <PickerToggle
+                defaultLabel={defaultBranchName}
+                mode={pickerMode}
+                onChange={(m) => {
+                  setPickerMode(m)
+                  setSelected(null)
+                  if (m === 'default') setActiveBranch(null)
+                }}
+              />
+            ) : null}
+          </div>
+          {!isFirstEnv ? (
+            <TagList
+              current={
+                current?.release?.tag ?? current?.release?.committish ?? null
+              }
+              isLoading={refsLoading}
+              onSelect={(r) => setSelected({ label: r.name, sha: r.sha })}
+              selectedSha={selected?.sha ?? null}
+              tags={tagOptions}
+            />
+          ) : showBranchPane ? (
+            <BranchPicker
+              activeBranch={activeBranch}
+              branches={filteredBranches}
+              branchesLoading={branchesLoading}
+              commits={activeBranchCommits}
+              commitsLoading={activeBranchLoading}
+              current={
+                current?.release?.tag ?? current?.release?.committish ?? null
+              }
+              onBranchSelect={(name) => {
+                setActiveBranch(name)
+                setSelected(null)
+              }}
+              onCommitSelect={(c) => {
+                if (!activeBranch) return
+                setSelected({ label: activeBranch, sha: c.sha })
+              }}
+              onQueryChange={setBranchQuery}
+              query={branchQuery}
+              selectedSha={selected?.sha ?? null}
+            />
+          ) : (
+            <CommitList
+              commits={branchCommits}
+              current={
+                current?.release?.tag ?? current?.release?.committish ?? null
+              }
+              isLoading={commitsLoading}
+              onSelect={(c) =>
+                setSelected({ label: defaultBranchName, sha: c.sha })
+              }
+              selectedSha={selected?.sha ?? null}
+            />
+          )}
+        </section>
+
+        {/* Diff summary */}
+        {selected && current?.release ? (
+          <DiffSummary
+            base={current.release.committish}
+            head={selected.label ?? selected.sha}
+            orgSlug={orgSlug}
+            projectId={projectId}
+          />
+        ) : null}
+      </div>
 
       {/* Footer */}
       <div className="border-tertiary bg-secondary/30 -mx-6 mt-2 -mb-4 flex items-center justify-end gap-2 border-t px-6 py-4">
@@ -630,15 +646,36 @@ function PickerToggle({
 
 function TagList({
   current,
+  isLoading,
   onSelect,
   selectedSha,
   tags,
 }: {
   current: null | string
+  isLoading: boolean
   onSelect: (tag: DeploymentRef) => void
   selectedSha: null | string
   tags: DeploymentRef[]
 }) {
+  if (isLoading)
+    return (
+      <ul
+        aria-busy="true"
+        aria-label="Loading tags"
+        className="border-secondary rounded-md border"
+      >
+        {Array.from({ length: 5 }, (_, i) => (
+          <li
+            aria-hidden="true"
+            className="border-tertiary flex items-center gap-3 border-b px-3 py-2 last:border-b-0"
+            key={i}
+          >
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-12" />
+          </li>
+        ))}
+      </ul>
+    )
   if (tags.length === 0)
     return (
       <p className="border-secondary text-tertiary rounded-md border p-3 text-sm">
