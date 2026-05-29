@@ -40,11 +40,7 @@ export function NewDocumentMenu({
   orgSlug,
   projectTypeSlugs,
 }: Props) {
-  const {
-    data: templates = [],
-    error,
-    isLoading,
-  } = useQuery<DocumentTemplate[]>({
+  const { data: templates = [], isLoading } = useQuery<DocumentTemplate[]>({
     enabled: !!orgSlug,
     queryFn: ({ signal }) => listDocumentTemplates(orgSlug, signal),
     queryKey: ['documentTemplates', orgSlug],
@@ -56,7 +52,8 @@ export function NewDocumentMenu({
   )
 
   // Nothing to choose between — keep the fast path as a plain button.
-  if (!isLoading && !error && visibleTemplates.length === 0) {
+  // (On error we get no templates, so degrade rather than show an empty menu.)
+  if (!isLoading && visibleTemplates.length === 0) {
     return (
       <Button
         className={cn('gap-1.5', className)}
