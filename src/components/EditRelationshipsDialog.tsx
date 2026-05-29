@@ -134,13 +134,22 @@ export function EditRelationshipsDialog({
   const mutation = useMutation({
     // The bulk PUT was retired in favor of per-target edges, so apply the
     // diff as individual POST (add) / DELETE (remove) calls in parallel.
-    mutationFn: () =>
-      Promise.all([
+    mutationFn: async () => {
+      const results = await Promise.allSettled([
         ...added.map((id) => addProjectRelationship(orgSlug, projectId, id)),
         ...removed.map((id) =>
           removeProjectRelationship(orgSlug, projectId, id),
         ),
-      ]),
+      ])
+
+      const failures = results.filter(
+        (result): result is PromiseRejectedResult =>
+          result.status === 'rejected',
+      )
+      if (failures.length > 0) {
+        throw failures[0].reason
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['project-relationships', orgSlug, projectId],
