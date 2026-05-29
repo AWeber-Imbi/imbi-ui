@@ -428,7 +428,7 @@ function AdminTableRow<T>({
         >
           {href && colIndex === 0 && (
             <Link
-              aria-label={`Edit ${label}`}
+              aria-label={label ? `Open ${label}` : 'Open item'}
               className="focus-visible:ring-ring absolute inset-0 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
               to={href}
             />
