@@ -240,17 +240,16 @@ export function Dashboard({
   )
 
   const [selectedWidgets, setSelectedWidgets] = useState<WidgetId[]>(() => {
-    const stored = localStorage.getItem(WIDGET_STORAGE_KEY)
-    if (stored) {
-      try {
+    try {
+      const stored = localStorage.getItem(WIDGET_STORAGE_KEY)
+      if (stored) {
         const parsed: unknown = JSON.parse(stored)
         if (Array.isArray(parsed)) {
           return Array.from(new Set(parsed.filter(isWidgetId)))
         }
-        return defaultWidgets
-      } catch {
-        return defaultWidgets
       }
+    } catch {
+      // Blocked/unavailable storage or malformed value — fall back.
     }
     return defaultWidgets
   })
@@ -303,7 +302,11 @@ export function Dashboard({
 
   // Persist selections
   useEffect(() => {
-    localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify(selectedWidgets))
+    try {
+      localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify(selectedWidgets))
+    } catch {
+      // Ignore persistence failures (blocked/quota-limited storage)
+    }
   }, [selectedWidgets])
 
   useEffect(() => {
