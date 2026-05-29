@@ -131,6 +131,10 @@ export function ProjectDetail({
     entries: LifecyclePreviewEntry[]
     slugs: string[]
   }>(null)
+  // Tracks the in-flight lifecycle-preview request so a later commit can
+  // cancel an earlier one and we can ignore superseded responses (which
+  // would otherwise reopen the dialog with stale slugs).
+  const previewRequestRef = useRef<AbortController | null>(null)
   const navigate = useNavigate()
   const { copied: copiedProjectId, copy: copyProjectId } = useClipboard()
 
@@ -648,14 +652,14 @@ export function ProjectDetail({
         await patch('/project_type_slugs', v)
         return
       }
-      let relocating: LifecyclePreviewEntry[] = []
-      try {
-        const preview = await previewProjectLifecycle(orgSlug, project.id, v)
-        relocating = preview.previews.filter((p) => p.would_relocate)
-      } catch {
-        // Preview is a best-effort affordance; on failure fall back to a
-        // metadata-only type change (the relocate opt-in isn't offered).
-      }
+      const relocating = await previewRelocations(
+        previewRequestRef,
+        orgSlug,
+        project.id,
+        v,
+      )
+      // Superseded by a newer commit → that call owns the outcome; bail.
+      if (relocating === null) return
       // Nothing would move → plain metadata change, no confirmation needed.
       if (relocating.length === 0) {
         await patch('/project_type_slugs', v)
@@ -669,10 +673,13 @@ export function ProjectDetail({
     async (transfer: boolean) => {
       const decision = relocatePreview
       if (!decision) return
-      setRelocatePreview(null)
+      // Keep the dialog mounted during the patch so it can render its
+      // pending state, and so a failure preserves the user's preview and
+      // transfer choice instead of silently dropping them.
       await patch('/project_type_slugs', decision.slugs, {
         transferRepository: transfer,
       })
+      setRelocatePreview(null)
     },
     [relocatePreview, patch],
   )
@@ -1310,6 +1317,37 @@ function fmtAttributeValue(value: unknown): string {
   return isFinite(n) && String(value).trim() !== ''
     ? String(Math.round(n))
     : String(value)
+}
+
+// Run the lifecycle preview for a proposed project-type change and return the
+// plugins that would relocate. Returns null when this request was superseded
+// by a newer commit (its in-flight fetch is aborted so the slower response
+// can't reopen the dialog with stale slugs); returns [] when the preview
+// merely failed, so the caller falls back to a metadata-only change. The
+// abort/supersede handling is irreducibly a few branches for correct request
+// cancellation, hence the complexity suppression.
+// fallow-ignore-next-line complexity
+async function previewRelocations(
+  requestRef: { current: AbortController | null },
+  orgSlug: string,
+  projectId: string,
+  slugs: string[],
+): Promise<LifecyclePreviewEntry[] | null> {
+  requestRef.current?.abort()
+  const controller = new AbortController()
+  requestRef.current = controller
+  try {
+    const preview = await previewProjectLifecycle(
+      orgSlug,
+      projectId,
+      slugs,
+      controller.signal,
+    )
+    return preview.previews.filter((p) => p.would_relocate)
+  } catch {
+    if (controller.signal.aborted) return null
+    return []
+  }
 }
 
 function ScoreBreakdownDetail({
