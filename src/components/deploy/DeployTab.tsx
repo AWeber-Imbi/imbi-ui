@@ -26,6 +26,7 @@ import type {
 } from '@/types'
 
 import { BranchList, CommitList, TagList } from './lists'
+import { useBranchPicker } from './useBranchPicker'
 
 interface DeployTabProps {
   environments: Environment[]
@@ -138,51 +139,23 @@ export function DeployTab({
   // Phase 1.5 picker: on Testing the user can swap from the flat
   // default-branch commit list into a "Branches" pane that lists every
   // branch (filterable) and pulls commits for the chosen one on demand.
-  const [pickerMode, setPickerMode] = useState<'branches' | 'default'>(
-    'default',
-  )
-  const [branchQuery, setBranchQuery] = useState('')
-  const [activeBranch, setActiveBranch] = useState<null | string>(null)
-  useEffect(() => {
-    setPickerMode('default')
-    setActiveBranch(null)
-    setBranchQuery('')
-  }, [envSlug])
-
-  const showBranchPane = isFirstEnv && pickerMode === 'branches'
   const {
-    data: branchRefs = [],
-    isError: branchesError,
-    isLoading: branchesLoading,
-    refetch: branchesRefetch,
-  } = useQuery<DeploymentRef[]>({
-    enabled: open && showBranchPane,
-    queryFn: ({ signal }) =>
-      listDeploymentRefs(orgSlug, projectId, { kind: 'branch' }, signal),
-    queryKey: ['deploymentRefs', orgSlug, projectId, 'branch'],
-  })
-  const filteredBranches = useMemo(() => {
-    const q = branchQuery.trim().toLowerCase()
-    if (!q) return branchRefs
-    return branchRefs.filter((b) => b.name.toLowerCase().includes(q))
-  }, [branchRefs, branchQuery])
-  const {
-    data: activeBranchCommits = [],
-    isError: activeBranchError,
-    isLoading: activeBranchLoading,
-    refetch: activeBranchRefetch,
-  } = useQuery<DeploymentCommit[]>({
-    enabled: open && showBranchPane && !!activeBranch,
-    queryFn: ({ signal }) =>
-      listRefCommits(
-        orgSlug,
-        projectId,
-        activeBranch ?? '',
-        { limit: 25 },
-        signal,
-      ),
-    queryKey: ['refCommits', orgSlug, projectId, activeBranch],
-  })
+    activeBranch,
+    activeBranchCommits,
+    activeBranchError,
+    activeBranchLoading,
+    activeBranchRefetch,
+    branchesError,
+    branchesLoading,
+    branchesRefetch,
+    branchQuery,
+    filteredBranches,
+    pickerMode,
+    setActiveBranch,
+    setBranchQuery,
+    setPickerMode,
+    showBranchPane,
+  } = useBranchPicker({ envSlug, isFirstEnv, open, orgSlug, projectId })
 
   const [selected, setSelected] = useState<null | SelectedVersion>(null)
   useEffect(() => {
