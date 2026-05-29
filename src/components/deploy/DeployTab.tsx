@@ -1,22 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { Loader2, Rocket } from 'lucide-react'
-import { toast } from 'sonner'
 
-import { ApiError } from '@/api/client'
 import {
   compareDeploymentRefs,
   listCurrentReleases,
   listDeploymentRefs,
   listRefCommits,
-  triggerDeployment,
 } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { extractApiErrorDetail } from '@/lib/apiError'
 import { cn, sortEnvironments } from '@/lib/utils'
 import type {
   CurrentReleaseEnvironment,
@@ -27,6 +23,7 @@ import type {
 
 import { BranchList, CommitList, TagList } from './lists'
 import { useBranchPicker } from './useBranchPicker'
+import { useDeployMutation } from './useDeployMutation'
 
 interface DeployTabProps {
   environments: Environment[]
@@ -162,89 +159,17 @@ export function DeployTab({
     setSelected(null)
   }, [envSlug])
 
-  // For first-env (commit-based) deployments, ``selected.label`` is the
-  // branch name (e.g. ``main``), so compare against ``selected.sha`` via
-  // the release's ``committish``. For tag-based envs ``selected.label`` is
-  // the tag and matches ``current.release.tag``.
-  const currentCommittish = current?.release?.committish ?? null
-  const currentTag = current?.release?.tag ?? null
-  const isRedeploy =
-    !!current?.release &&
-    !!selected &&
-    (isFirstEnv
-      ? !!currentCommittish &&
-        (currentCommittish === selected.sha ||
-          selected.sha.startsWith(currentCommittish) ||
-          currentCommittish.startsWith(selected.sha))
-      : currentTag === selected.label)
-
-  const queryClient = useQueryClient()
-  const mutation = useMutation({
-    mutationFn: (payload: SelectedVersion) =>
-      triggerDeployment(orgSlug, projectId, {
-        action: isRedeploy ? 'redeploy' : 'deploy',
-        committish: payload.sha,
-        environment: envSlug,
-        ref_label: payload.label,
-      }),
-    onError: (err) => {
-      toast.error(
-        err instanceof ApiError
-          ? (extractApiErrorDetail(err) ?? err.message)
-          : (err as Error).message,
-      )
-    },
-    onSuccess: (data) => {
-      void queryClient.invalidateQueries({
-        queryKey: ['currentReleases', orgSlug, projectId],
-      })
-      const url = data.run.run_url
-      const envName = env?.name ?? envSlug
-      if (onRunStarted && data.run.run_id) {
-        const toastId = toast.loading(`Deploying to ${envName}…`, {
-          action: url
-            ? {
-                label: 'View run',
-                onClick: () => window.open(url, '_blank', 'noopener'),
-              }
-            : undefined,
-          description: data.run.status
-            ? `status: ${data.run.status}`
-            : undefined,
-          icon: <Loader2 className="size-4 animate-spin" />,
-        })
-        onRunStarted({
-          actionLabel: url ? 'View run' : undefined,
-          actionUrl: url,
-          envName,
-          initialStatus: data.run.status,
-          originOrgSlug: orgSlug,
-          originProjectId: projectId,
-          runId: data.run.run_id,
-          runUrl: url,
-          toastId,
-        })
-      } else {
-        toast.success(
-          `Workflow dispatched to ${envName}`,
-          url
-            ? {
-                action: {
-                  label: 'View run',
-                  onClick: () => window.open(url, '_blank', 'noopener'),
-                },
-              }
-            : undefined,
-        )
-      }
-      onClose()
-    },
+  const { isPending, isRedeploy, onDeploy } = useDeployMutation({
+    current,
+    env,
+    envSlug,
+    isFirstEnv,
+    onClose,
+    onRunStarted,
+    orgSlug,
+    projectId,
+    selected,
   })
-
-  const onDeploy = () => {
-    if (!selected) return
-    mutation.mutate(selected)
-  }
 
   return (
     <div className="flex max-h-[80vh] min-h-121.5 flex-col gap-4">
@@ -387,11 +312,11 @@ export function DeployTab({
           Cancel
         </Button>
         <Button
-          disabled={!selected || mutation.isPending}
+          disabled={!selected || isPending}
           onClick={onDeploy}
           type="button"
         >
-          {mutation.isPending ? (
+          {isPending ? (
             <Loader2 className="mr-1 size-4 animate-spin" />
           ) : (
             <Rocket className="mr-1 size-4" />
