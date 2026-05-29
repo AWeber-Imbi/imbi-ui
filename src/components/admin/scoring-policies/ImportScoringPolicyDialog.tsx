@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { type DetectedFormat, detectFormat } from '@/lib/import-format'
 import type {
   AgeScoringPolicyCreate,
+  AnalysisResultScoringPolicyCreate,
   AttributeScoringPolicyCreate,
   LinkPresenceScoringPolicyCreate,
   PresenceScoringPolicyCreate,
@@ -58,10 +59,12 @@ const VALID_CATEGORIES: ScoringPolicyCategory[] = [
   'presence',
   'link_presence',
   'age',
+  'analysis_result',
 ]
 
 const CATEGORY_LABELS: Record<ScoringPolicyCategory, string> = {
   age: 'Age',
+  analysis_result: 'Analysis Result',
   attribute: 'Attribute',
   link_presence: 'Link Presence',
   presence: 'Presence',
@@ -451,9 +454,9 @@ function optionalScore(
 }
 
 function policySubjectKey(policy: ScoringPolicyCreate): string {
-  return policy.category === 'link_presence'
-    ? policy.link_slug
-    : policy.attribute_name
+  if (policy.category === 'link_presence') return policy.link_slug
+  if (policy.category === 'analysis_result') return policy.result_slug
+  return policy.attribute_name
 }
 
 function readScoreMap(
@@ -553,6 +556,42 @@ function validateAgeScoreMap(
   return { ok: true }
 }
 
+function validateAnalysisResultPolicy(
+  obj: Record<string, unknown>,
+  base: PolicyBase,
+): PolicyResult<AnalysisResultScoringPolicyCreate> {
+  const slugCheck = requireString(obj, 'result_slug')
+  if (!slugCheck.ok) return { error: slugCheck.error, valid: false }
+  const rawMap = obj.status_score_map
+  let status_score_map: null | Record<'fail' | 'pass' | 'warn', number> = null
+  if (rawMap !== undefined && rawMap !== null) {
+    if (!isNonEmptyNumberMap(rawMap)) {
+      return {
+        error: '"status_score_map" values must be numbers.',
+        valid: false,
+      }
+    }
+    const allowed = new Set(['fail', 'pass', 'warn'])
+    const invalid = Object.keys(rawMap as object).find((k) => !allowed.has(k))
+    if (invalid) {
+      return {
+        error: `"status_score_map" key ${JSON.stringify(invalid)} must be "pass", "warn", or "fail".`,
+        valid: false,
+      }
+    }
+    status_score_map = rawMap as Record<'fail' | 'pass' | 'warn', number>
+  }
+  return {
+    policy: {
+      ...base,
+      category: 'analysis_result',
+      result_slug: slugCheck.value,
+      status_score_map,
+    },
+    valid: true,
+  }
+}
+
 // fallow-ignore-next-line complexity
 function validateAttributeMaps(obj: Record<string, unknown>):
   | { error: string; ok: false }
@@ -643,6 +682,7 @@ const CATEGORY_VALIDATORS: Record<
   ) => PolicyResult<ScoringPolicyCreate>
 > = {
   age: validateAgePolicy,
+  analysis_result: validateAnalysisResultPolicy,
   attribute: validateAttributePolicy,
   link_presence: validateLinkPresencePolicy,
   presence: validatePresencePolicy,
