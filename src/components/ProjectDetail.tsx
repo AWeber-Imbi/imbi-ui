@@ -28,6 +28,7 @@ import {
   listProjectDocuments,
   listProjectPlugins,
   listScoringPolicies,
+  previewProjectLifecycle,
   type ProjectSchemaResponse,
   type ScoreTrend,
 } from '@/api/endpoints'
@@ -47,6 +48,7 @@ import { ProjectAttributesSection } from '@/components/ProjectAttributesSection'
 import { ProjectEnvironmentsCard } from '@/components/ProjectEnvironmentsCard'
 import { ProjectRelationshipsTab } from '@/components/ProjectRelationshipsTab'
 import { ProjectSettingsTab } from '@/components/ProjectSettingsTab'
+import { RelocatePreviewDialog } from '@/components/RelocatePreviewDialog'
 import { ScoreHistoryTab } from '@/components/ScoreHistoryTab'
 import { Button } from '@/components/ui/button'
 import {
@@ -78,7 +80,7 @@ import { formatDateTime } from '@/lib/formatDate'
 import { getIcon, useIconRegistryVersion } from '@/lib/icons'
 import { formatFieldKey } from '@/lib/project-field-formatting'
 import { sanitizeHttpUrl, sortEnvironments } from '@/lib/utils'
-import type { Project, ScoringPolicy } from '@/types'
+import type { LifecyclePreviewEntry, Project, ScoringPolicy } from '@/types'
 
 interface ProjectDetailProps {
   initialSubAction?: string
@@ -114,6 +116,13 @@ export function ProjectDetail({
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
   const { patch, pendingPath } = useProjectPatch(orgSlug, project.id)
+  // When a project-type change would relocate a backing remote, hold the
+  // pending slugs + the relocating plugins here to drive the opt-in
+  // confirmation dialog (null = no pending relocate decision).
+  const [relocatePreview, setRelocatePreview] = useState<null | {
+    entries: LifecyclePreviewEntry[]
+    slugs: string[]
+  }>(null)
   const navigate = useNavigate()
   const { copied: copiedProjectId, copy: copyProjectId } = useClipboard()
 
@@ -609,8 +618,40 @@ export function ProjectDetail({
     [patch],
   )
   const handleCommitProjectTypeSlugs = useCallback(
-    (v: string[]) => patch('/project_type_slugs', v),
-    [patch],
+    async (v: string[]) => {
+      // No lifecycle plugin assigned → no remote can relocate; commit
+      // directly and skip the preview round-trip.
+      if (!hasLifecyclePlugin) {
+        await patch('/project_type_slugs', v)
+        return
+      }
+      let relocating: LifecyclePreviewEntry[] = []
+      try {
+        const preview = await previewProjectLifecycle(orgSlug, project.id, v)
+        relocating = preview.previews.filter((p) => p.would_relocate)
+      } catch {
+        // Preview is a best-effort affordance; on failure fall back to a
+        // metadata-only type change (the relocate opt-in isn't offered).
+      }
+      // Nothing would move → plain metadata change, no confirmation needed.
+      if (relocating.length === 0) {
+        await patch('/project_type_slugs', v)
+        return
+      }
+      setRelocatePreview({ entries: relocating, slugs: v })
+    },
+    [hasLifecyclePlugin, orgSlug, project.id, patch],
+  )
+  const handleRelocateConfirm = useCallback(
+    async (transfer: boolean) => {
+      const decision = relocatePreview
+      if (!decision) return
+      setRelocatePreview(null)
+      await patch('/project_type_slugs', decision.slugs, {
+        transferRepository: transfer,
+      })
+    },
+    [relocatePreview, patch],
   )
 
   const renderNameValue = useCallback(
@@ -1167,6 +1208,13 @@ export function ProjectDetail({
           toastId={run.toastId}
         />
       ))}
+      <RelocatePreviewDialog
+        entries={relocatePreview?.entries ?? []}
+        onCancel={() => setRelocatePreview(null)}
+        onConfirm={handleRelocateConfirm}
+        open={relocatePreview !== null}
+        pending={pendingPath === '/project_type_slugs'}
+      />
     </div>
   )
 }
