@@ -20,8 +20,7 @@ export interface AnalysisResultScoringPolicy extends ScoringPolicyBase {
   status_score_map?: null | Record<'fail' | 'pass' | 'warn', number>
 }
 
-export interface AnalysisResultScoringPolicyCreate
-  extends ScoringPolicyCreateBase {
+export interface AnalysisResultScoringPolicyCreate extends ScoringPolicyCreateBase {
   category: 'analysis_result'
   result_slug: string
   status_score_map?: null | Record<'fail' | 'pass' | 'warn', number>

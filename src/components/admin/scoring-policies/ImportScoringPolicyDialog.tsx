@@ -265,9 +265,13 @@ export function ImportScoringPolicyDialog({
             <code className="bg-secondary rounded px-1 py-0.5 text-xs">
               link_presence
             </code>
-            , and{' '}
+            ,{' '}
             <code className="bg-secondary rounded px-1 py-0.5 text-xs">
               age
+            </code>
+            , and{' '}
+            <code className="bg-secondary rounded px-1 py-0.5 text-xs">
+              analysis_result
             </code>
             .
           </DialogDescription>
@@ -360,7 +364,9 @@ export function ImportScoringPolicyDialog({
                   <span className="text-tertiary">
                     {parsedPreview.category === 'link_presence'
                       ? 'Link slug: '
-                      : 'Attribute: '}
+                      : parsedPreview.category === 'analysis_result'
+                        ? 'Result slug: '
+                        : 'Attribute: '}
                   </span>
                   <code className="bg-card text-primary rounded px-1 py-0.5 text-xs">
                     {policySubjectKey(parsedPreview)}
@@ -571,11 +577,22 @@ function validateAnalysisResultPolicy(
         valid: false,
       }
     }
-    const allowed = new Set(['fail', 'pass', 'warn'])
-    const invalid = Object.keys(rawMap as object).find((k) => !allowed.has(k))
+    const required = ['fail', 'pass', 'warn'] as const
+    const allowed = new Set<string>(required)
+    const keys = Object.keys(rawMap as object)
+    const invalid = keys.find((k) => !allowed.has(k))
     if (invalid) {
       return {
         error: `"status_score_map" key ${JSON.stringify(invalid)} must be "pass", "warn", or "fail".`,
+        valid: false,
+      }
+    }
+    const missing = required.filter(
+      (k) => !Object.prototype.hasOwnProperty.call(rawMap, k),
+    )
+    if (missing.length > 0) {
+      return {
+        error: `"status_score_map" is missing required key(s): ${missing.join(', ')}.`,
         valid: false,
       }
     }
