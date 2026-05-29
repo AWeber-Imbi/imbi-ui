@@ -86,9 +86,7 @@ export function RelocatePreviewDialog({
         </label>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending} onClick={onCancel}>
-            Cancel
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             disabled={pending}
             onClick={() => onConfirm(transfer)}

@@ -175,9 +175,9 @@ const isWidgetId = (value: unknown): value is WidgetId =>
   typeof value === 'string' && WIDGET_IDS.has(value as WidgetId)
 
 const loadDismissedIntegrations = (): string[] => {
-  const stored = localStorage.getItem(DISMISSED_INTEGRATIONS_KEY)
-  if (!stored) return []
   try {
+    const stored = localStorage.getItem(DISMISSED_INTEGRATIONS_KEY)
+    if (!stored) return []
     const parsed: unknown = JSON.parse(stored)
     return Array.isArray(parsed)
       ? parsed.filter((s): s is string => typeof s === 'string')
@@ -307,10 +307,14 @@ export function Dashboard({
   }, [selectedWidgets])
 
   useEffect(() => {
-    localStorage.setItem(
-      DISMISSED_INTEGRATIONS_KEY,
-      JSON.stringify(dismissedIntegrations),
-    )
+    try {
+      localStorage.setItem(
+        DISMISSED_INTEGRATIONS_KEY,
+        JSON.stringify(dismissedIntegrations),
+      )
+    } catch {
+      // Ignore persistence failures (blocked/quota-limited storage)
+    }
   }, [dismissedIntegrations])
 
   const handleToggleWidget = (widgetId: string) => {
