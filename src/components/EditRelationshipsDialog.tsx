@@ -3,7 +3,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 
-import { getProjects, setProjectRelationships } from '@/api/endpoints'
+import {
+  addProjectRelationship,
+  getProjects,
+  removeProjectRelationship,
+} from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -128,8 +132,15 @@ export function EditRelationshipsDialog({
   const changeCount = added.length + removed.length
 
   const mutation = useMutation({
+    // The bulk PUT was retired in favor of per-target edges, so apply the
+    // diff as individual POST (add) / DELETE (remove) calls in parallel.
     mutationFn: () =>
-      setProjectRelationships(orgSlug, projectId, [...selected]),
+      Promise.all([
+        ...added.map((id) => addProjectRelationship(orgSlug, projectId, id)),
+        ...removed.map((id) =>
+          removeProjectRelationship(orgSlug, projectId, id),
+        ),
+      ]),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['project-relationships', orgSlug, projectId],
