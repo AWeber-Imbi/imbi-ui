@@ -6,7 +6,6 @@ import { Loader2, Rocket } from 'lucide-react'
 
 import {
   compareDeploymentRefs,
-  listCurrentReleases,
   listDeploymentRefs,
   listRefCommits,
 } from '@/api/endpoints'
@@ -14,15 +13,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn, sortEnvironments } from '@/lib/utils'
-import type {
-  CurrentReleaseEnvironment,
-  DeploymentCommit,
-  DeploymentRef,
-  Environment,
-} from '@/types'
+import type { DeploymentCommit, DeploymentRef, Environment } from '@/types'
 
 import { BranchList, CommitList, TagList } from './lists'
 import { useBranchPicker } from './useBranchPicker'
+import { useCurrentRelease } from './useCurrentRelease'
 import { useDeployMutation } from './useDeployMutation'
 
 interface DeployTabProps {
@@ -63,21 +58,10 @@ export function DeployTab({
   const envSlug = env?.slug ?? ''
 
   const {
-    data: currentReleases = [],
+    current,
     isError: currentReleasesError,
     isLoading: currentReleasesLoading,
-  } = useQuery<CurrentReleaseEnvironment[]>({
-    enabled: open && !!orgSlug && !!projectId,
-    queryFn: ({ signal }) => listCurrentReleases(orgSlug, projectId, signal),
-    queryKey: ['currentReleases', orgSlug, projectId],
-  })
-  const current = useMemo(
-    () =>
-      env
-        ? currentReleases.find((r) => r.environment.slug === env.slug)
-        : undefined,
-    [currentReleases, env],
-  )
+  } = useCurrentRelease({ env, open, orgSlug, projectId })
 
   // For the first env (e.g. Testing) we list commits on the default
   // branch.  For staging / production we list tags.
