@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -11,6 +18,7 @@ import {
   Copy,
   Filter,
   Info,
+  RefreshCw,
   Settings2 as SettingsIcon,
   TrendingDown,
 } from 'lucide-react'
@@ -331,6 +339,21 @@ export function ProjectDetail({
       prev.some((r) => r.runId === run.runId) ? prev : [...prev, run],
     )
   }, [])
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    try {
+      // Reload everything scoped to this project (detail, releases,
+      // events, score trends/breakdown, plugins, schema, …) — every
+      // query whose key carries this project id. Org-level lookups
+      // (link defs, scoring policies, identity plugins) are left alone.
+      await queryClient.invalidateQueries({
+        predicate: (q) => q.queryKey.includes(project.id),
+      })
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [queryClient, project.id])
   const handleRunTerminal = useCallback(
     (runId: string) => {
       // Invalidate the originating project's release cache rather than
@@ -891,22 +914,42 @@ export function ProjectDetail({
         <TabsList className="mb-6">
           {tabs.map((tab) =>
             tab.id === 'settings' ? (
-              <TooltipProvider delayDuration={200} key={tab.id}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <TabsTrigger
-                      aria-label="Project Settings"
-                      className="ml-auto"
-                      value={tab.id}
-                    >
-                      <SettingsIcon className="size-4" />
-                    </TabsTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Project Settings</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Fragment key={tab.id}>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        aria-label="Refresh project data"
+                        className="text-muted-foreground hover:text-primary -mb-px ml-auto inline-flex items-center justify-center border-b-2 border-transparent px-1 pt-1 pb-2 transition-colors disabled:opacity-50"
+                        disabled={isRefreshing}
+                        onClick={() => void handleRefresh()}
+                        type="button"
+                      >
+                        <RefreshCw
+                          className={
+                            isRefreshing ? 'size-4 animate-spin' : 'size-4'
+                          }
+                        />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Refresh project data</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TabsTrigger aria-label="Project Settings" value={tab.id}>
+                        <SettingsIcon className="size-4" />
+                      </TabsTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Project Settings</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </Fragment>
             ) : (
               <TabsTrigger key={tab.id} value={tab.id}>
                 {tab.label}
