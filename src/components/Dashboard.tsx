@@ -58,6 +58,8 @@ interface ViewChangeEvent {
 }
 
 const WIDGET_STORAGE_KEY = 'imbi-dashboard-widgets-v4'
+// Plugin slugs whose "connect your account" tile the actor has dismissed.
+const DISMISSED_INTEGRATIONS_KEY = 'imbi-dashboard-dismissed-integrations-v1'
 
 type WidgetId =
   | 'my-pull-request-counts'
@@ -172,6 +174,19 @@ const WIDGET_IDS: ReadonlySet<WidgetId> = new Set<WidgetId>([
 const isWidgetId = (value: unknown): value is WidgetId =>
   typeof value === 'string' && WIDGET_IDS.has(value as WidgetId)
 
+const loadDismissedIntegrations = (): string[] => {
+  const stored = localStorage.getItem(DISMISSED_INTEGRATIONS_KEY)
+  if (!stored) return []
+  try {
+    const parsed: unknown = JSON.parse(stored)
+    return Array.isArray(parsed)
+      ? parsed.filter((s): s is string => typeof s === 'string')
+      : []
+  } catch {
+    return []
+  }
+}
+
 interface SortableWidgetProps {
   children: React.ReactNode
   id: string
@@ -189,9 +204,12 @@ export function Dashboard({
   const [showWidgetSelector, setShowWidgetSelector] = useState(false)
 
   // Identity plugins the actor hasn't connected yet drive the
-  // dashboard's "unconnected integration" widgets.  These can't be
-  // dismissed — they disappear automatically once the connection
-  // becomes active.
+  // dashboard's "unconnected integration" widgets.  They disappear
+  // automatically once the connection becomes active, and the actor can
+  // dismiss one early (persisted by plugin slug in localStorage).
+  const [dismissedIntegrations, setDismissedIntegrations] = useState<string[]>(
+    loadDismissedIntegrations,
+  )
   const pluginsQuery = useQuery<AdminPluginsResponse>({
     queryFn: ({ signal }) => getAdminPlugins(signal),
     queryKey: queryKeys.adminPlugins(),
@@ -215,7 +233,10 @@ export function Dashboard({
     pluginsQuery.data?.installed ?? []
   ).filter(
     (p) =>
-      p.enabled && p.plugin_type === 'identity' && !connectedSlugs.has(p.slug),
+      p.enabled &&
+      p.plugin_type === 'identity' &&
+      !connectedSlugs.has(p.slug) &&
+      !dismissedIntegrations.includes(p.slug),
   )
 
   const [selectedWidgets, setSelectedWidgets] = useState<WidgetId[]>(() => {
@@ -284,6 +305,13 @@ export function Dashboard({
   useEffect(() => {
     localStorage.setItem(WIDGET_STORAGE_KEY, JSON.stringify(selectedWidgets))
   }, [selectedWidgets])
+
+  useEffect(() => {
+    localStorage.setItem(
+      DISMISSED_INTEGRATIONS_KEY,
+      JSON.stringify(dismissedIntegrations),
+    )
+  }, [dismissedIntegrations])
 
   const handleToggleWidget = (widgetId: string) => {
     if (!isWidgetId(widgetId)) return
@@ -416,8 +444,8 @@ export function Dashboard({
         </Button>
       </div>
 
-      {/* Unconnected-integration widgets — non-dismissable; disappear
-          automatically when the matching connection becomes active. */}
+      {/* Unconnected-integration widgets — disappear automatically when
+          the matching connection becomes active, or when dismissed. */}
       {unconnectedIdentityPlugins.length > 0 && (
         <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           {unconnectedIdentityPlugins.map((plugin) => (
@@ -426,6 +454,11 @@ export function Dashboard({
               onConnect={() =>
                 navigate(
                   `/settings/connections?connect=${encodeURIComponent(plugin.slug)}`,
+                )
+              }
+              onDismiss={() =>
+                setDismissedIntegrations((prev) =>
+                  prev.includes(plugin.slug) ? prev : [...prev, plugin.slug],
                 )
               }
               onManage={() => navigate('/settings/connections')}
