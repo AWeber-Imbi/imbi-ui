@@ -243,7 +243,7 @@ export function TagList({
               'flex items-center justify-between border-b border-tertiary px-3 py-2 last:border-b-0',
               active && 'bg-action/5',
             )}
-            key={t.sha}
+            key={t.name}
           >
             <button
               className="flex flex-1 cursor-pointer items-center gap-3 text-left"
