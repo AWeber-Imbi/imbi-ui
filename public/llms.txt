@@ -16,7 +16,9 @@
   `overview`, `dependencies`, `relationships`, `documents`, `configuration`,
   `logs`, and `operations-log`, plus any plugin-provided tabs.
 - `/operations-log`: the global operations log.
-- `/reports` and `/reports/{report_id}`: reports.
+- `/reports` and `/reports/{report_id}`: reports. `report_id` is one of a
+  fixed set of report keys: `monthly-improvement`, `open-pull-requests`,
+  `projects-graph`, `score-history`, and `team-kpi`.
 - `/settings` and `/settings/{tab}`: the current user's settings.
 - `/users/{email}`: a user's profile page.
 - `/admin/{section}`: an admin list view. Sections: `project-types`,
