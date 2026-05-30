@@ -96,6 +96,7 @@ export function CommentComposer({
     if (ref.current) ref.current.style.height = 'auto'
   }
 
+  // fallow-ignore-next-line complexity
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (mentions.onKeyDown(e)) return
     if (e.key === 'Escape') {
