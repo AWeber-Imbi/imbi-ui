@@ -1614,7 +1614,7 @@ export const acknowledgeComment = (
 ) =>
   apiClient.post<Comment>(
     `${documentCommentsPath(orgSlug, projectId, documentId)}/${encodeURIComponent(threadId)}/comments/${encodeURIComponent(commentId)}/acknowledge`,
-    undefined,
+    {},
   )
 
 export const deleteComment = (

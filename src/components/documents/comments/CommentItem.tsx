@@ -112,11 +112,13 @@ export function CommentItem({
 }
 
 function ActionButton({
+  ariaLabel,
   className,
   icon,
   label,
   onClick,
 }: {
+  ariaLabel?: string
   className?: string
   icon: ReactNode
   label: number | string
@@ -124,6 +126,7 @@ function ActionButton({
 }) {
   return (
     <Button
+      aria-label={ariaLabel}
       className={cn('h-7 gap-1 px-2 text-[12px]', className)}
       onClick={onClick}
       size="sm"
@@ -148,6 +151,7 @@ function CommentActions({
   return (
     <div className="text-tertiary flex flex-wrap items-center gap-1">
       <ActionButton
+        ariaLabel={acknowledged ? 'Remove acknowledgement' : 'Acknowledge'}
         className={cn(acknowledged && 'text-action')}
         icon={<ThumbsUp className="size-3" />}
         label={ackCount > 0 ? ackCount : ''}
