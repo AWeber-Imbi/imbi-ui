@@ -474,7 +474,7 @@
 
   /* @mention tokens inside a rendered comment body. */
   .comment-mention {
-    color: color-mix(in srgb, var(--color-primary) 75%, black);
+    color: var(--ds-text-warning);
     font-weight: 500;
     background: color-mix(in srgb, var(--color-primary) 14%, transparent);
     padding: 0 3px;

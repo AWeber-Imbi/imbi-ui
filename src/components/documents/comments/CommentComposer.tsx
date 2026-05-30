@@ -23,6 +23,9 @@ interface Props {
 
 const MAX_HEIGHT = 220
 
+/** Keys the open mention popover consumes; refresh must not undo their effect. */
+const POPOVER_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Enter', 'Escape', 'Tab'])
+
 /**
  * Plain-text comment composer with @mention autocomplete. Typing `@` opens a
  * popover of users (filtered by name/email); ↑/↓ navigate, Enter/Tab select,
@@ -121,7 +124,11 @@ export function CommentComposer({
           mentions.refresh(e.target)
         }}
         onKeyDown={onKeyDown}
-        onKeyUp={(e) => mentions.refresh(e.currentTarget)}
+        onKeyUp={(e) => {
+          // Don't undo the navigation/selection/dismiss the popover just did.
+          if (mentions.open && POPOVER_KEYS.has(e.key)) return
+          mentions.refresh(e.currentTarget)
+        }}
         placeholder={placeholder}
         ref={ref}
         rows={1}

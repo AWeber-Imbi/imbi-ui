@@ -141,7 +141,12 @@ function matchNameAt(
   names: string[],
 ): null | string {
   for (const name of names) {
-    if (body.startsWith(name, from)) return name
+    if (body.startsWith(name, from)) {
+      // Require a boundary so a short name doesn't match inside a longer word
+      // (e.g. known "Ada" must not match "@Adam").
+      const after = body[from + name.length]
+      if (after === undefined || !/[\p{L}\p{N}.-]/u.test(after)) return name
+    }
   }
   return null
 }

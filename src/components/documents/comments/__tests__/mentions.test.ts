@@ -114,6 +114,13 @@ describe('parseBody', () => {
       { text: '@Nobody here', type: 'text' },
     ])
   })
+
+  it('does not match a known name inside a longer word', () => {
+    // "Ada" is known but "@Adam" is a different, unknown handle.
+    expect(parseBody('@Adam said hi', NAMES)).toEqual([
+      { text: '@Adam said hi', type: 'text' },
+    ])
+  })
 })
 
 describe('resolveMentions', () => {
