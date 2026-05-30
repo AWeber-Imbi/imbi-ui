@@ -68,7 +68,11 @@ export function useInlineComments({
   useEffect(() => {
     const article = articleRef.current
     if (!article) return
-    if (!enabled) return
+    if (!enabled) {
+      applyHighlights(article, [])
+      setOrphanedIds(new Set())
+      return
+    }
     const anchored = applyHighlights(article, inlineThreads)
     setOrphanedIds(
       new Set(

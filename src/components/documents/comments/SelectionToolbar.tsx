@@ -30,9 +30,9 @@ export function SelectionToolbar({ onComment, rect }: Props) {
     >
       <Button
         className="h-7 gap-1.5 px-2 text-[12px]"
+        onClick={onComment}
         onMouseDown={(e) => {
           e.preventDefault()
-          onComment()
         }}
         size="sm"
         variant="ghost"
