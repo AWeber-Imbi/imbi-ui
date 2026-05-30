@@ -37,6 +37,7 @@ import {
 
 import { getProjectsSlim, listOperationsLog } from '@/api/endpoints'
 import { Card } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useOrganization } from '@/contexts/OrganizationContext'
 
 // ---------------------------------------------------------------------------
@@ -175,8 +176,12 @@ function useOverviewData(orgSlug: string) {
   return {
     deploysByEnv,
     metrics,
+    metricsError: metricsQuery.isError,
+    metricsLoading: metricsQuery.isLoading,
     projectCount: projectsQuery.data?.length ?? null,
     scores,
+    scoresError: projectsQuery.isError,
+    scoresLoading: projectsQuery.isLoading,
   }
 }
 
@@ -209,8 +214,16 @@ export function AdminOverview() {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug ?? ''
   const orgName = selectedOrganization?.name ?? 'Organization'
-  const { deploysByEnv, metrics, projectCount, scores } =
-    useOverviewData(orgSlug)
+  const {
+    deploysByEnv,
+    metrics,
+    metricsError,
+    metricsLoading,
+    projectCount,
+    scores,
+    scoresError,
+    scoresLoading,
+  } = useOverviewData(orgSlug)
 
   return (
     <div className="max-w-dashboard">
@@ -229,6 +242,8 @@ export function AdminOverview() {
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <MetricTile
               icon={Rocket}
+              isError={metricsError}
+              isLoading={metricsLoading}
               label="Deploys"
               spark={MOCK_DEPLOY_SPARK}
               sub="7 days"
@@ -236,6 +251,8 @@ export function AdminOverview() {
             />
             <MetricTile
               icon={Activity}
+              isError={metricsError}
+              isLoading={metricsLoading}
               label="Events"
               sub="7 days"
               value={metrics?.event_count ?? null}
@@ -248,6 +265,8 @@ export function AdminOverview() {
             />
             <MetricTile
               icon={FolderKanban}
+              isError={scoresError}
+              isLoading={scoresLoading}
               label="Projects"
               sub="in catalog"
               value={projectCount}
@@ -268,6 +287,8 @@ export function AdminOverview() {
               <Card className="p-4">
                 <DeploysByEnv
                   data={deploysByEnv}
+                  isError={metricsError}
+                  isLoading={metricsLoading}
                   total={metrics?.deploys ?? 0}
                 />
               </Card>
@@ -283,7 +304,11 @@ export function AdminOverview() {
                 Project health
               </SectionLabel>
               <Card className="p-4">
-                <ProjectHealth scores={scores} />
+                <ProjectHealth
+                  isError={scoresError}
+                  isLoading={scoresLoading}
+                  scores={scores}
+                />
               </Card>
             </div>
           </section>
@@ -374,11 +399,27 @@ function CatalogGrid({
 
 function DeploysByEnv({
   data,
+  isError,
+  isLoading,
   total,
 }: {
   data: { count: number; label: string; slug: string }[]
+  isError?: boolean
+  isLoading?: boolean
   total: number
 }) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2].map((i) => (
+          <Skeleton className="h-2.5 w-full" key={i} />
+        ))}
+      </div>
+    )
+  }
+  if (isError) {
+    return <p className="text-danger text-sm">Unavailable</p>
+  }
   const max = Math.max(...data.map((d) => d.count), 1)
   if (data.length === 0) {
     return (
@@ -426,14 +467,19 @@ function DeploysByEnv({
   )
 }
 
+// fallow-ignore-next-line complexity
 function MetricTile({
   icon: Icon,
+  isError = false,
+  isLoading = false,
   label,
   spark,
   sub,
   value,
 }: {
   icon: LucideIcon
+  isError?: boolean
+  isLoading?: boolean
   label: string
   spark?: number[]
   sub: string
@@ -449,22 +495,48 @@ function MetricTile({
       </div>
       <div className="flex items-end justify-between gap-2">
         <div>
-          <div className="text-primary text-3xl font-semibold tracking-tight tabular-nums">
-            {value == null ? '—' : nfmt(value)}
-          </div>
+          {isLoading ? (
+            <Skeleton
+              aria-label={`Loading ${label}`}
+              className="h-8 w-20"
+              role="status"
+            />
+          ) : isError ? (
+            <p className="text-danger text-sm">Unavailable</p>
+          ) : (
+            <div className="text-primary text-3xl font-semibold tracking-tight tabular-nums">
+              {value == null ? '—' : nfmt(value)}
+            </div>
+          )}
           <div className="text-tertiary mt-1 text-xs">{sub}</div>
         </div>
-        {spark ? <Sparkbars data={spark} /> : null}
+        {spark && !isLoading && !isError ? <Sparkbars data={spark} /> : null}
       </div>
     </Card>
   )
 }
 
 function ProjectHealth({
+  isError,
+  isLoading,
   scores,
 }: {
+  isError?: boolean
+  isLoading?: boolean
   scores: ReturnType<typeof deriveScores>
 }) {
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-2.5 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    )
+  }
+  if (isError) {
+    return <p className="text-danger text-sm">Unavailable</p>
+  }
   const { average, bands, total } = scores
   return (
     <div>
