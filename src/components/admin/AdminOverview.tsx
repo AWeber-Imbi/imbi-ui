@@ -204,6 +204,7 @@ const ENV_COLORS = [
   'var(--color-status-failed-dot)',
 ]
 
+// fallow-ignore-next-line complexity
 export function AdminOverview() {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug ?? ''
