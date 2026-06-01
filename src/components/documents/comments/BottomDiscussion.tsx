@@ -49,31 +49,6 @@ export function BottomDiscussion({
         </span>
       </h2>
 
-      {threads.length === 0 ? (
-        <div className="text-tertiary text-[13.5px]">No comments yet.</div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {threads.map((thread) => (
-            <CommentThreadView
-              busy={busy}
-              currentUserEmail={currentUserEmail}
-              displayNames={displayNames}
-              key={thread.id}
-              lastVisit={lastVisit}
-              onAcknowledge={(commentId) => onAcknowledge(thread.id, commentId)}
-              onDelete={(commentId) => onDelete(thread.id, commentId)}
-              onEdit={(commentId, body, mentions) =>
-                onEdit(thread.id, commentId, body, mentions)
-              }
-              onReply={(body, mentions) => onReply(thread.id, body, mentions)}
-              onResolve={(resolved) => onResolve(thread.id, resolved)}
-              resolvable={false}
-              thread={thread}
-            />
-          ))}
-        </div>
-      )}
-
       {composing ? (
         <LazyRichComposer
           autoFocus
@@ -98,6 +73,31 @@ export function BottomDiscussion({
             <MessageSquarePlus className="size-3.5" />
             Add a comment
           </Button>
+        </div>
+      )}
+
+      {threads.length === 0 ? (
+        <div className="text-tertiary text-[13.5px]">No comments yet.</div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {threads.map((thread) => (
+            <CommentThreadView
+              busy={busy}
+              currentUserEmail={currentUserEmail}
+              displayNames={displayNames}
+              key={thread.id}
+              lastVisit={lastVisit}
+              onAcknowledge={(commentId) => onAcknowledge(thread.id, commentId)}
+              onDelete={(commentId) => onDelete(thread.id, commentId)}
+              onEdit={(commentId, body, mentions) =>
+                onEdit(thread.id, commentId, body, mentions)
+              }
+              onReply={(body, mentions) => onReply(thread.id, body, mentions)}
+              onResolve={(resolved) => onResolve(thread.id, resolved)}
+              resolvable={false}
+              thread={thread}
+            />
+          ))}
         </div>
       )}
     </section>
