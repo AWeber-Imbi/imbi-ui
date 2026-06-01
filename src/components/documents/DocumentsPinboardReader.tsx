@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { useSearchParams } from 'react-router-dom'
+
 import {
   ArrowLeft,
   CheckCircle2,
@@ -150,6 +152,30 @@ export function DocumentsPinboardReader({
   )
 
   const lastVisit = useCommentLastVisit(orgSlug, projectId, document.id)
+
+  // Deep-link: ?thread=<id> (e.g. from the activity feed) scrolls to and
+  // flashes a page thread, or shows + focuses an inline one.
+  const [searchParams] = useSearchParams()
+  const focusThreadId = searchParams.get('thread')
+  const setFocusedId = inline.setFocusedId
+  // fallow-ignore-next-line complexity
+  useEffect(() => {
+    if (!focusThreadId || comments.length === 0) return
+    if (inlineThreads.some((t) => t.id === focusThreadId)) {
+      setShowComments(true)
+      setFocusedId(focusThreadId)
+      return
+    }
+    const el = window.document.getElementById(`comment-thread-${focusThreadId}`)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el.classList.add('comment-thread-flash')
+    const timer = window.setTimeout(
+      () => el.classList.remove('comment-thread-flash'),
+      1800,
+    )
+    return () => window.clearTimeout(timer)
+  }, [comments.length, focusThreadId, inlineThreads, setFocusedId])
 
   const handleSubmitDraft = (body: string, mentions: string[]) => {
     if (!inline.draft) return

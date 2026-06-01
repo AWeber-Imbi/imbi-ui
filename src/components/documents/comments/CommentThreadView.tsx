@@ -55,7 +55,10 @@ export function CommentThreadView({
     new Date(comment.created_at).getTime() > lastVisit
 
   return (
-    <div className="border-tertiary bg-primary flex flex-col gap-3 rounded-lg border p-4">
+    <div
+      className="border-tertiary bg-primary flex scroll-mt-24 flex-col gap-3 rounded-lg border p-4"
+      id={`comment-thread-${thread.id}`}
+    >
       {resolvable && (
         <ResolveBar
           busy={busy}

@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 
+import { Link } from 'react-router-dom'
+
 import { useQuery } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { History, LoaderCircle } from 'lucide-react'
@@ -38,6 +40,7 @@ interface DocumentCommentPayload extends Record<string, unknown> {
   document_id?: string
   excerpt?: string
   kind?: string
+  thread_id?: string
 }
 
 interface ProjectChangePayload extends Record<string, unknown> {
@@ -161,6 +164,7 @@ export function ProjectActivityLog({ orgSlug, projectId, projectSlug }: Props) {
                       displayNames={displayNames}
                       item={item}
                       key={`event-${item.data.id}-${i}`}
+                      projectId={projectId}
                     />
                   ) : (
                     <OpsEntry
@@ -179,6 +183,18 @@ export function ProjectActivityLog({ orgSlug, projectId, projectSlug }: Props) {
       )}
     </div>
   )
+}
+
+/** Deep-link to a comment's document, focusing the thread via ?thread=. */
+// fallow-ignore-next-line complexity
+function commentHref(projectId: string, payload: unknown): string | undefined {
+  const p: DocumentCommentPayload = isPlainObject(payload) ? payload : {}
+  const documentId = typeof p.document_id === 'string' ? p.document_id : ''
+  if (!documentId) return undefined
+  const base = `/projects/${encodeURIComponent(projectId)}/documents/${encodeURIComponent(documentId)}`
+  return typeof p.thread_id === 'string' && p.thread_id
+    ? `${base}?thread=${encodeURIComponent(p.thread_id)}`
+    : base
 }
 
 function dayKey(d: Date): string {
@@ -223,17 +239,21 @@ function EntryRow({
   avatarColor,
   body,
   email,
+  href,
   name,
   ts,
 }: {
   avatarColor: AvatarColor
   body: React.ReactNode
   email: string
+  href?: string
   name: string
   ts: Date
 }) {
   return (
-    <div className="relative flex gap-3 py-3">
+    <div
+      className={`relative flex gap-3 py-3 ${href ? 'hover:bg-secondary/40 -mx-2 rounded-md px-2' : ''}`}
+    >
       <div className="relative flex w-4 shrink-0 flex-col items-center">
         <div
           className={`ring-primary relative z-10 mt-1.5 size-2 shrink-0 rounded-full ring-2 ${DOT_CLASS[avatarColor]}`}
@@ -251,6 +271,13 @@ function EntryRow({
         </div>
         <div className="text-secondary mt-0.5 text-sm">{body}</div>
       </div>
+      {href && (
+        <Link
+          aria-label="Open comment"
+          className="absolute inset-0"
+          to={href}
+        />
+      )}
     </div>
   )
 }
@@ -271,14 +298,17 @@ function EnvChip({ env }: { env?: Environment }) {
 function EventEntry({
   displayNames,
   item,
+  projectId,
 }: {
   displayNames: Map<string, string>
   item: ActivityItem & { kind: 'event' }
+  projectId: string
 }) {
   const entry = item.data
   const name = getDisplayName(entry.attributed_to, displayNames)
 
   let body: React.ReactNode
+  let href: string | undefined
   if (
     entry.type === 'project-change' &&
     isProjectChangePayload(entry.payload)
@@ -286,6 +316,7 @@ function EventEntry({
     body = renderProjectChangeBody(entry.payload)
   } else if (entry.type === 'document-comment') {
     body = renderDocumentCommentBody(entry.payload)
+    href = commentHref(projectId, entry.payload)
   } else {
     body = renderGenericEventBody(entry)
   }
@@ -295,6 +326,7 @@ function EventEntry({
       avatarColor="info"
       body={body}
       email={entry.attributed_to}
+      href={href}
       name={name}
       ts={item.ts}
     />

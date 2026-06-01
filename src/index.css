@@ -491,6 +491,11 @@
     flex-shrink: 0;
   }
 
+  /* Brief ring when a thread is deep-linked from the activity feed. */
+  .comment-thread-flash {
+    animation: comment-thread-flash 1.8s ease-out;
+  }
+
   /* Theme the mdx-editor rich composer onto the design tokens. Mapping the
      editor's semantic vars to our --ds-* tokens makes it dark-mode aware
      without depending on the editor's own .dark-theme class. */
@@ -536,6 +541,18 @@
   .ds-mdx .mdxeditor [role='toolbar'] {
     padding: 3px;
     min-height: 0;
+  }
+}
+
+@keyframes comment-thread-flash {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  15% {
+    box-shadow: 0 0 0 2px var(--ds-border-accent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
   }
 }
 
