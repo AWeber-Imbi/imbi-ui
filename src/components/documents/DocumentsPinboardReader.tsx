@@ -154,27 +154,46 @@ export function DocumentsPinboardReader({
   const lastVisit = useCommentLastVisit(orgSlug, projectId, document.id)
 
   // Deep-link: ?thread=<id> (e.g. from the activity feed) scrolls to and
-  // flashes a page thread, or shows + focuses an inline one.
+  // flashes a page thread; for an inline one it shows + focuses the reader
+  // and scrolls to the highlight (which only renders once the overlay is on,
+  // hence the rAF retry).
   const [searchParams] = useSearchParams()
   const focusThreadId = searchParams.get('thread')
   const setFocusedId = inline.setFocusedId
   // fallow-ignore-next-line complexity
   useEffect(() => {
     if (!focusThreadId || comments.length === 0) return
-    if (inlineThreads.some((t) => t.id === focusThreadId)) {
+    const isInline = inlineThreads.some((t) => t.id === focusThreadId)
+    if (isInline) {
       setShowComments(true)
       setFocusedId(focusThreadId)
-      return
     }
-    const el = window.document.getElementById(`comment-thread-${focusThreadId}`)
-    if (!el) return
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    el.classList.add('comment-thread-flash')
-    const timer = window.setTimeout(
-      () => el.classList.remove('comment-thread-flash'),
-      1800,
-    )
-    return () => window.clearTimeout(timer)
+    let raf = 0
+    let tries = 0
+    let cleanup: (() => void) | undefined
+    const attempt = () => {
+      const target = isInline
+        ? articleRef.current?.querySelector(
+            `.comment-highlight[data-thread-id="${focusThreadId}"]`,
+          )
+        : window.document.getElementById(`comment-thread-${focusThreadId}`)
+      if (target instanceof HTMLElement) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        target.classList.add('comment-thread-flash')
+        const timer = window.setTimeout(
+          () => target.classList.remove('comment-thread-flash'),
+          1800,
+        )
+        cleanup = () => window.clearTimeout(timer)
+      } else if (tries++ < 30) {
+        raf = requestAnimationFrame(attempt)
+      }
+    }
+    raf = requestAnimationFrame(attempt)
+    return () => {
+      cancelAnimationFrame(raf)
+      cleanup?.()
+    }
   }, [comments.length, focusThreadId, inlineThreads, setFocusedId])
 
   const handleSubmitDraft = (body: string, mentions: string[]) => {

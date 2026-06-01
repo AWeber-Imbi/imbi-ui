@@ -99,9 +99,9 @@ export function RichCommentComposer({
           toolbarPlugin({
             toolbarContents: () => (
               <>
-                <BoldItalicUnderlineToggles />
+                <BoldItalicUnderlineToggles options={['Bold', 'Italic']} />
                 <Separator />
-                <ListsToggle />
+                <ListsToggle options={['bullet', 'number']} />
                 <Separator />
                 <CreateLink />
                 <CodeToggle />
