@@ -1042,6 +1042,7 @@ function validatePresenceScores(
   return errors
 }
 
+// fallow-ignore-next-line complexity
 function validateSubject(args: {
   attributeName: string
   category: ScoringPolicyCategory

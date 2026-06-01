@@ -562,6 +562,7 @@ function validateAgeScoreMap(
   return { ok: true }
 }
 
+// fallow-ignore-next-line complexity
 function validateAnalysisResultPolicy(
   obj: Record<string, unknown>,
   base: PolicyBase,

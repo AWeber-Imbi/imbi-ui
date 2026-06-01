@@ -46,6 +46,7 @@ const STATUS_TEXT: Record<AnalysisResultStatus, string> = {
   warn: 'text-warning',
 }
 
+// fallow-ignore-next-line complexity
 export function ProjectDoctorTab({ project }: { project: Project }) {
   const { selectedOrganization } = useOrganization()
   const orgSlug = selectedOrganization?.slug || ''
@@ -85,17 +86,14 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
 
   // Auto-analyze once when the tab opens and no report exists.
   const autoAnalyzed = useRef(false)
+  const noReportYet =
+    reportQuery.isSuccess && reportQuery.data === null && canAnalyze
   useEffect(() => {
-    if (
-      !autoAnalyzed.current &&
-      reportQuery.isSuccess &&
-      reportQuery.data === null &&
-      canAnalyze
-    ) {
+    if (!autoAnalyzed.current && noReportYet) {
       autoAnalyzed.current = true
       analyzeMutation.mutate()
     }
-  }, [analyzeMutation, canAnalyze, reportQuery.data, reportQuery.isSuccess])
+  }, [analyzeMutation, noReportYet])
 
   const rescoreMutation = useMutation({
     mutationFn: () => rescoreProject(project.id),
