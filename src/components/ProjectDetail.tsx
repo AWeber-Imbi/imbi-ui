@@ -91,6 +91,7 @@ import { useProjectPatch } from '@/hooks/useProjectPatch'
 import { formatDateTime } from '@/lib/formatDate'
 import { getIcon, useIconRegistryVersion } from '@/lib/icons'
 import { formatFieldKey } from '@/lib/project-field-formatting'
+import { treatNotFoundAsNull } from '@/lib/queryHelpers'
 import { sanitizeHttpUrl, sortEnvironments } from '@/lib/utils'
 import type { LifecyclePreviewEntry, Project, ScoringPolicy } from '@/types'
 
@@ -313,21 +314,10 @@ export function ProjectDetail({
   // throwing.
   const { data: doctorReport } = useQuery({
     enabled: !!orgSlug && !!project.id,
-    queryFn: async ({ signal }) => {
-      try {
-        return await getProjectAnalysis(orgSlug, project.id, signal)
-      } catch (err) {
-        if (
-          err &&
-          typeof err === 'object' &&
-          'status' in err &&
-          (err as { status?: number }).status === 404
-        ) {
-          return null
-        }
-        throw err
-      }
-    },
+    queryFn: ({ signal }) =>
+      treatNotFoundAsNull(() =>
+        getProjectAnalysis(orgSlug, project.id, signal),
+      ),
     queryKey: ['projectAnalysis', orgSlug, project.id],
     staleTime: 60 * 1000,
   })

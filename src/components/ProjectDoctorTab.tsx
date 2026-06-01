@@ -25,6 +25,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useProjectDeploymentResync } from '@/hooks/useDeploymentResync'
 import { useProjectPatch } from '@/hooks/useProjectPatch'
 import { extractApiErrorDetail } from '@/lib/apiError'
+import { treatNotFoundAsNull } from '@/lib/queryHelpers'
 import type { Project } from '@/types'
 
 const STATUS_LABEL: Record<AnalysisResultStatus, string> = {
@@ -62,23 +63,12 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
 
   const reportQuery = useQuery({
     enabled: !!orgSlug && !!project.id,
-    queryFn: async ({ signal }): Promise<AnalysisReport | null> => {
-      try {
-        return await getProjectAnalysis(orgSlug, project.id, signal)
-      } catch (err) {
-        // Treat 404 (no report yet) as a normal empty state rather
-        // than a query error.
-        if (
-          err &&
-          typeof err === 'object' &&
-          'status' in err &&
-          (err as { status?: number }).status === 404
-        ) {
-          return null
-        }
-        throw err
-      }
-    },
+    // A 404 means no report has been generated yet — treat it as a
+    // normal empty state rather than a query error.
+    queryFn: ({ signal }): Promise<AnalysisReport | null> =>
+      treatNotFoundAsNull(() =>
+        getProjectAnalysis(orgSlug, project.id, signal),
+      ),
     queryKey: ['projectAnalysis', orgSlug, project.id],
     staleTime: 60 * 1000,
   })
