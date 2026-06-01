@@ -1,10 +1,10 @@
 import type { KeyboardEvent } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Button } from '@/components/ui/button'
 import { Gravatar } from '@/components/ui/gravatar'
 import { Textarea } from '@/components/ui/textarea'
 
+import { ComposerActions, isSubmitChord } from './ComposerActions'
 import type { MentionCandidate } from './mentions'
 import { resolveMentions } from './mentions'
 import { useMentionAutocomplete } from './useMentionAutocomplete'
@@ -143,33 +143,16 @@ export function CommentComposer({
           />
         )}
       </div>
-      <div className="flex items-center justify-between">
-        <span className="text-tertiary text-[11px]">
-          {empty ? '' : 'Cmd + Enter to send · @ to mention'}
-        </span>
-        <div className="flex items-center gap-2">
-          {onCancel && (
-            <Button onClick={onCancel} size="sm" type="button" variant="ghost">
-              Cancel
-            </Button>
-          )}
-          <Button
-            disabled={empty || busy}
-            onClick={submit}
-            size="sm"
-            type="button"
-          >
-            {submitLabel}
-          </Button>
-        </div>
-      </div>
+      <ComposerActions
+        busy={busy}
+        empty={empty}
+        hint="Cmd + Enter to send · @ to mention"
+        onCancel={onCancel}
+        onSubmit={submit}
+        submitLabel={submitLabel}
+      />
     </div>
   )
-}
-
-/** Cmd/Ctrl-Enter submits the composer. */
-function isSubmitChord(e: KeyboardEvent<HTMLTextAreaElement>): boolean {
-  return e.key === 'Enter' && (e.metaKey || e.ctrlKey)
 }
 
 function MentionPopover({
