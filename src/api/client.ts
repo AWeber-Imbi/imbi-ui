@@ -12,9 +12,13 @@ function resolveInjectedApiUrl(): string {
   return import.meta.env.VITE_API_URL
 }
 
-// The configured API URL exactly as injected (absolute in deployment).
-// Used to build the IdP callback URLs an admin registers with a provider.
-export const API_URL = resolveInjectedApiUrl()
+// The configured API URL as injected (absolute in deployment), with any
+// trailing slash trimmed so the callback URLs built from it concatenate
+// cleanly (e.g. `${API_URL}/auth/oauth/.../callback`). A slash-terminated
+// IMBI_API_URL would otherwise yield a `//` that breaks exact OAuth redirect
+// URI matching. Used to build the IdP callback URLs an admin registers with a
+// provider.
+export const API_URL = resolveInjectedApiUrl()?.replace(/\/+$/, '')
 if (!API_URL) {
   throw new Error('IMBI_API_URL (or VITE_API_URL) is required')
 }

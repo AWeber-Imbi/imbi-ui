@@ -26,6 +26,13 @@ describe('api client base URL resolution', () => {
     expect(client.API_URL).toBe('https://imbi.internal/api')
   })
 
+  it('trims a trailing slash from API_URL so callback URLs avoid `//`', async () => {
+    w.__IMBI_API_URL__ = 'https://imbi.internal/api/'
+    vi.resetModules()
+    const client = await import('../client')
+    expect(client.API_URL).toBe('https://imbi.internal/api')
+  })
+
   it('handles a root-mounted API (no prefix) as a same-origin root', async () => {
     w.__IMBI_API_URL__ = 'https://imbi.internal'
     vi.resetModules()
