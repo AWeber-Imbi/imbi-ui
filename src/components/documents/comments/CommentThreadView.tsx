@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button'
 import { UserDisplay } from '@/components/ui/user-display'
 import type { CommentThread } from '@/types/comments'
 
-import { CommentComposer } from './CommentComposer'
 import { CommentItem } from './CommentItem'
+import { LazyRichComposer } from './LazyRichComposer'
 
 interface Props {
   busy?: boolean
@@ -96,7 +96,7 @@ export function CommentThreadView({
       )}
 
       {(!resolvable || !thread.resolved) && (
-        <CommentComposer
+        <LazyRichComposer
           busy={busy}
           displayNames={displayNames}
           onSubmit={onReply}

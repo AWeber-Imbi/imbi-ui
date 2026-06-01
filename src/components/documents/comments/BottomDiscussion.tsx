@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { useState } from 'react'
 
 import { MessageSquarePlus, MessagesSquare } from 'lucide-react'
 
@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/button'
 import type { CommentThread, CommentThreadHandlers } from '@/types/comments'
 
 import { CommentThreadView } from './CommentThreadView'
-
-// Lazy-loaded: the Lexical bundle is only fetched when a composer opens.
-const RichCommentComposer = lazy(() =>
-  import('./RichCommentComposer').then((m) => ({
-    default: m.RichCommentComposer,
-  })),
-)
+import { LazyRichComposer } from './LazyRichComposer'
 
 export type CommentFilter = 'all' | 'open' | 'resolved'
 
@@ -81,24 +75,18 @@ export function BottomDiscussion({
       )}
 
       {composing ? (
-        <Suspense
-          fallback={
-            <div className="text-tertiary text-[13px]">Loading editor…</div>
-          }
-        >
-          <RichCommentComposer
-            autoFocus
-            busy={busy}
-            displayNames={displayNames}
-            onCancel={() => setComposing(false)}
-            onSubmit={(body, mentions) => {
-              onCreateThread(body, mentions)
-              setComposing(false)
-            }}
-            placeholder="Add a comment to the discussion…"
-            submitLabel="Comment"
-          />
-        </Suspense>
+        <LazyRichComposer
+          autoFocus
+          busy={busy}
+          displayNames={displayNames}
+          onCancel={() => setComposing(false)}
+          onSubmit={(body, mentions) => {
+            onCreateThread(body, mentions)
+            setComposing(false)
+          }}
+          placeholder="Add a comment to the discussion…"
+          submitLabel="Comment"
+        />
       ) : (
         <div>
           <Button

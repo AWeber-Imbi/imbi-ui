@@ -514,6 +514,9 @@
     --accentBorder: var(--ds-border-accent);
     --accentSolid: var(--color-primary);
     --accentSolidHover: var(--color-primary);
+    /* White content surface (dark surface in dark mode) so the editor reads
+       as an input field rather than blending into the page. */
+    background: var(--ds-bg-primary);
     border: 0.5px solid var(--ds-border-tertiary);
     border-radius: 0.375rem;
     font-family: inherit;
@@ -523,6 +526,7 @@
     min-height: 76px;
     padding: 6px 10px;
     font-size: 13.5px;
+    background: var(--ds-bg-primary);
   }
 
   /* Compact the toolbar to match the dense UI. */

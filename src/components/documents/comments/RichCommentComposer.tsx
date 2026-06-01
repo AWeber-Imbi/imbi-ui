@@ -21,7 +21,7 @@ import '@mdxeditor/editor/style.css'
 import { ComposerActions, isSubmitChord } from './ComposerActions'
 import { resolveMentions } from './mentions'
 
-interface Props {
+export interface RichCommentComposerProps {
   autoFocus?: boolean
   busy?: boolean
   /** Email → display_name, used to resolve typed @mentions on submit. */
@@ -51,7 +51,7 @@ export function RichCommentComposer({
   onSubmit,
   placeholder = 'Add a comment…',
   submitLabel = 'Comment',
-}: Props) {
+}: RichCommentComposerProps) {
   const ref = useRef<MDXEditorMethods>(null)
   const [text, setText] = useState('')
   const empty = !text.trim()
