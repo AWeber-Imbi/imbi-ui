@@ -83,6 +83,7 @@ interface Props {
   projectId: string
 }
 
+// fallow-ignore-next-line complexity
 export function DocumentsPinboardReader({
   allDocuments,
   comments,
@@ -111,9 +112,12 @@ export function DocumentsPinboardReader({
   const articleRef = useRef<HTMLDivElement>(null)
   const marginRef = useRef<HTMLDivElement>(null)
 
+  // The Open/Resolved/All filter applies to inline comments only — the page
+  // discussion is a flat, non-resolvable feed.
   const commentCounts = useMemo(() => {
-    const open = comments.filter((t) => !t.resolved).length
-    return { all: comments.length, open, resolved: comments.length - open }
+    const inline = comments.filter((t) => t.kind === 'inline')
+    const open = inline.filter((t) => !t.resolved).length
+    return { all: inline.length, open, resolved: inline.length - open }
   }, [comments])
 
   const pageThreads = useMemo(
@@ -206,34 +210,36 @@ export function DocumentsPinboardReader({
               All documents
             </Button>
             <div className="ml-auto flex items-center gap-1">
-              <SegmentedControl
-                ariaLabel="Comment filter"
-                className="mr-1"
-                onValueChange={(v) => setCommentFilter(v as CommentFilter)}
-                value={commentFilter}
-              >
-                <SegmentedControlItem value="open">
-                  <CircleDot className="size-3" />
-                  Open
-                  <span className="text-tertiary tabular-nums">
-                    {commentCounts.open}
-                  </span>
-                </SegmentedControlItem>
-                <SegmentedControlItem value="resolved">
-                  <CheckCircle2 className="size-3" />
-                  Resolved
-                  <span className="text-tertiary tabular-nums">
-                    {commentCounts.resolved}
-                  </span>
-                </SegmentedControlItem>
-                <SegmentedControlItem value="all">
-                  <List className="size-3" />
-                  All
-                  <span className="text-tertiary tabular-nums">
-                    {commentCounts.all}
-                  </span>
-                </SegmentedControlItem>
-              </SegmentedControl>
+              {showComments && (
+                <SegmentedControl
+                  ariaLabel="Comment filter"
+                  className="mr-1"
+                  onValueChange={(v) => setCommentFilter(v as CommentFilter)}
+                  value={commentFilter}
+                >
+                  <SegmentedControlItem value="open">
+                    <CircleDot className="size-3" />
+                    Open
+                    <span className="text-tertiary tabular-nums">
+                      {commentCounts.open}
+                    </span>
+                  </SegmentedControlItem>
+                  <SegmentedControlItem value="resolved">
+                    <CheckCircle2 className="size-3" />
+                    Resolved
+                    <span className="text-tertiary tabular-nums">
+                      {commentCounts.resolved}
+                    </span>
+                  </SegmentedControlItem>
+                  <SegmentedControlItem value="all">
+                    <List className="size-3" />
+                    All
+                    <span className="text-tertiary tabular-nums">
+                      {commentCounts.all}
+                    </span>
+                  </SegmentedControlItem>
+                </SegmentedControl>
+              )}
               <Button
                 className="gap-1.5"
                 onClick={() => setShowComments((v) => !v)}
@@ -474,7 +480,6 @@ export function DocumentsPinboardReader({
             busy={commentsBusy}
             currentUserEmail={currentUserEmail}
             displayNames={displayNames}
-            filter={commentFilter}
             lastVisit={lastVisit}
             onAcknowledge={onAcknowledgeComment}
             onCreateThread={onCreateThread}

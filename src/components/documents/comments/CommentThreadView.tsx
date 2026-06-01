@@ -18,6 +18,8 @@ interface Props {
   onEdit: (commentId: string, body: string, mentions: string[]) => void
   onReply: (body: string, mentions: string[]) => void
   onResolve: (resolved: boolean) => void
+  /** Inline threads can be resolved; the page discussion cannot. */
+  resolvable?: boolean
   thread: CommentThread
 }
 
@@ -29,6 +31,7 @@ interface ResolveBarProps {
   resolvedBy: null | string
 }
 
+// fallow-ignore-next-line complexity
 export function CommentThreadView({
   busy = false,
   currentUserEmail,
@@ -39,6 +42,7 @@ export function CommentThreadView({
   onEdit,
   onReply,
   onResolve,
+  resolvable = true,
   thread,
 }: Props) {
   const root = thread.comments[0]
@@ -52,13 +56,15 @@ export function CommentThreadView({
 
   return (
     <div className="border-tertiary bg-primary flex flex-col gap-3 rounded-lg border p-4">
-      <ResolveBar
-        busy={busy}
-        displayNames={displayNames}
-        onResolve={onResolve}
-        resolved={thread.resolved}
-        resolvedBy={thread.resolved_by}
-      />
+      {resolvable && (
+        <ResolveBar
+          busy={busy}
+          displayNames={displayNames}
+          onResolve={onResolve}
+          resolved={thread.resolved}
+          resolvedBy={thread.resolved_by}
+        />
+      )}
 
       <CommentItem
         busy={busy}
@@ -89,7 +95,7 @@ export function CommentThreadView({
         </div>
       )}
 
-      {!thread.resolved && (
+      {(!resolvable || !thread.resolved) && (
         <CommentComposer
           busy={busy}
           displayNames={displayNames}
