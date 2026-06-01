@@ -107,7 +107,7 @@ export function DocumentsPinboardReader({
 }: Props) {
   const [search, setSearch] = useState('')
   const [commentFilter, setCommentFilter] = useState<CommentFilter>('open')
-  const [showComments, setShowComments] = useState(true)
+  const [showComments, setShowComments] = useState(false)
   const articleRef = useRef<HTMLDivElement>(null)
   const marginRef = useRef<HTMLDivElement>(null)
 
@@ -206,36 +206,34 @@ export function DocumentsPinboardReader({
               All documents
             </Button>
             <div className="ml-auto flex items-center gap-1">
-              {showComments && (
-                <SegmentedControl
-                  ariaLabel="Comment filter"
-                  className="mr-1"
-                  onValueChange={(v) => setCommentFilter(v as CommentFilter)}
-                  value={commentFilter}
-                >
-                  <SegmentedControlItem value="open">
-                    <CircleDot className="size-3" />
-                    Open
-                    <span className="text-tertiary tabular-nums">
-                      {commentCounts.open}
-                    </span>
-                  </SegmentedControlItem>
-                  <SegmentedControlItem value="resolved">
-                    <CheckCircle2 className="size-3" />
-                    Resolved
-                    <span className="text-tertiary tabular-nums">
-                      {commentCounts.resolved}
-                    </span>
-                  </SegmentedControlItem>
-                  <SegmentedControlItem value="all">
-                    <List className="size-3" />
-                    All
-                    <span className="text-tertiary tabular-nums">
-                      {commentCounts.all}
-                    </span>
-                  </SegmentedControlItem>
-                </SegmentedControl>
-              )}
+              <SegmentedControl
+                ariaLabel="Comment filter"
+                className="mr-1"
+                onValueChange={(v) => setCommentFilter(v as CommentFilter)}
+                value={commentFilter}
+              >
+                <SegmentedControlItem value="open">
+                  <CircleDot className="size-3" />
+                  Open
+                  <span className="text-tertiary tabular-nums">
+                    {commentCounts.open}
+                  </span>
+                </SegmentedControlItem>
+                <SegmentedControlItem value="resolved">
+                  <CheckCircle2 className="size-3" />
+                  Resolved
+                  <span className="text-tertiary tabular-nums">
+                    {commentCounts.resolved}
+                  </span>
+                </SegmentedControlItem>
+                <SegmentedControlItem value="all">
+                  <List className="size-3" />
+                  All
+                  <span className="text-tertiary tabular-nums">
+                    {commentCounts.all}
+                  </span>
+                </SegmentedControlItem>
+              </SegmentedControl>
               <Button
                 className="gap-1.5"
                 onClick={() => setShowComments((v) => !v)}
@@ -245,15 +243,15 @@ export function DocumentsPinboardReader({
                 {showComments ? (
                   <>
                     <EyeOff className="size-3" />
-                    Hide comments
+                    Hide inline comments
                   </>
                 ) : (
                   <>
                     <Eye className="size-3" />
-                    Show comments
-                    {commentCounts.all > 0 && (
+                    Show inline comments
+                    {inlineThreads.length > 0 && (
                       <span className="text-tertiary tabular-nums">
-                        {commentCounts.all}
+                        {inlineThreads.length}
                       </span>
                     )}
                   </>
@@ -471,24 +469,22 @@ export function DocumentsPinboardReader({
           )}
         </div>
 
-        {showComments && (
-          <div className="grid grid-cols-[minmax(0,1fr)_260px] gap-5">
-            <BottomDiscussion
-              busy={commentsBusy}
-              currentUserEmail={currentUserEmail}
-              displayNames={displayNames}
-              filter={commentFilter}
-              lastVisit={lastVisit}
-              onAcknowledge={onAcknowledgeComment}
-              onCreateThread={onCreateThread}
-              onDelete={onDeleteComment}
-              onEdit={onEditComment}
-              onReply={onReplyComment}
-              onResolve={onResolveThread}
-              threads={pageThreads}
-            />
-          </div>
-        )}
+        <div className="grid grid-cols-[minmax(0,1fr)_260px] gap-5">
+          <BottomDiscussion
+            busy={commentsBusy}
+            currentUserEmail={currentUserEmail}
+            displayNames={displayNames}
+            filter={commentFilter}
+            lastVisit={lastVisit}
+            onAcknowledge={onAcknowledgeComment}
+            onCreateThread={onCreateThread}
+            onDelete={onDeleteComment}
+            onEdit={onEditComment}
+            onReply={onReplyComment}
+            onResolve={onResolveThread}
+            threads={pageThreads}
+          />
+        </div>
       </div>
 
       <SelectionToolbar
