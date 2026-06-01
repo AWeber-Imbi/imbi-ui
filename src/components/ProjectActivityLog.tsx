@@ -33,6 +33,13 @@ type ActivityItem =
 
 type AvatarColor = keyof typeof DOT_CLASS
 
+interface DocumentCommentPayload extends Record<string, unknown> {
+  action?: string
+  document_id?: string
+  excerpt?: string
+  kind?: string
+}
+
 interface ProjectChangePayload extends Record<string, unknown> {
   field: string
   new: unknown
@@ -277,6 +284,8 @@ function EventEntry({
     isProjectChangePayload(entry.payload)
   ) {
     body = renderProjectChangeBody(entry.payload)
+  } else if (entry.type === 'document-comment') {
+    body = renderDocumentCommentBody(entry.payload)
   } else {
     body = renderGenericEventBody(entry)
   }
@@ -400,6 +409,24 @@ function OpsEntry({
       name={name}
       ts={item.ts}
     />
+  )
+}
+
+// fallow-ignore-next-line complexity
+function renderDocumentCommentBody(payload: unknown): React.ReactNode {
+  const p: DocumentCommentPayload = isPlainObject(payload) ? payload : {}
+  const action =
+    p.action === 'replied'
+      ? 'replied to a comment'
+      : p.kind === 'inline'
+        ? 'added an inline comment'
+        : 'commented on a document'
+  const excerpt = typeof p.excerpt === 'string' ? p.excerpt.trim() : ''
+  return (
+    <span>
+      <span className="text-secondary">{action}</span>
+      {excerpt && <span className="text-tertiary"> — “{excerpt}”</span>}
+    </span>
   )
 }
 
