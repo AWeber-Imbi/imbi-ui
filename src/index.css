@@ -523,7 +523,7 @@
   }
 
   .ds-mdx .ds-mdx-content {
-    min-height: 76px;
+    min-height: 152px;
     padding: 6px 10px;
     font-size: 13.5px;
     background: var(--ds-bg-primary);
