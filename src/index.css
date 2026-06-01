@@ -523,10 +523,13 @@
   }
 
   .ds-mdx .ds-mdx-content {
-    min-height: 152px;
+    min-height: var(--ds-mdx-min-h, 152px);
     padding: 6px 10px;
     font-size: 13.5px;
     background: var(--ds-bg-primary);
+    /* User-adjustable height: drag the bottom-right handle. */
+    resize: vertical;
+    overflow: auto;
   }
 
   /* Compact the toolbar to match the dense UI. */

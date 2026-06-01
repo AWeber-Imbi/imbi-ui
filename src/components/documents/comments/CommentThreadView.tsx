@@ -99,6 +99,7 @@ export function CommentThreadView({
         <LazyRichComposer
           busy={busy}
           displayNames={displayNames}
+          minHeight={76}
           onSubmit={onReply}
           placeholder="Reply…"
           submitLabel="Reply"

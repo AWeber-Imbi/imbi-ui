@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from 'react'
+import type { CSSProperties, KeyboardEvent } from 'react'
 import { useRef, useState } from 'react'
 
 import {
@@ -26,6 +26,8 @@ export interface RichCommentComposerProps {
   busy?: boolean
   /** Email → display_name, used to resolve typed @mentions on submit. */
   displayNames?: Map<string, string>
+  /** Default content height in px; the user can drag to resize from there. */
+  minHeight?: number
   onCancel?: () => void
   onSubmit: (body: string, mentions: string[]) => void
   placeholder?: string
@@ -47,6 +49,7 @@ export function RichCommentComposer({
   autoFocus = false,
   busy = false,
   displayNames,
+  minHeight = 152,
   onCancel,
   onSubmit,
   placeholder = 'Add a comment…',
@@ -79,6 +82,7 @@ export function RichCommentComposer({
     <div
       className="ds-mdx flex flex-col gap-1.5"
       onKeyDownCapture={onKeyDownCapture}
+      style={{ '--ds-mdx-min-h': `${minHeight}px` } as CSSProperties}
     >
       <MDXEditor
         autoFocus={autoFocus}
