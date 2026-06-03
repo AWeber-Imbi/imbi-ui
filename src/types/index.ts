@@ -78,6 +78,12 @@ export interface EnvironmentCreate {
   sort_order?: null | number
 }
 
+// Integration (EXISTS_IN edge) types — a project's relationship to a
+// third-party service: stable identifier + canonical API URL, plus the
+// human dashboard URL (read from / written to the project's links).
+export type Integration = Schemas['ExistsInResponse']
+export type IntegrationCreate = Schemas['ExistsInCreate']
+
 // Per-plugin outcome returned by the archive / unarchive endpoints, one
 // entry per lifecycle plugin assigned to the project. `failed` is the
 // case worth surfacing — e.g. a GitHub repo transfer that left the repo
@@ -227,12 +233,6 @@ export interface Project {
   viewer_closed_pr_count?: number
   viewer_open_pr_count?: number
 }
-
-// Integration (EXISTS_IN edge) types — a project's relationship to a
-// third-party service: stable identifier + canonical API URL, plus the
-// human dashboard URL (read from / written to the project's links).
-export type Integration = Schemas['ExistsInResponse']
-export type IntegrationCreate = Schemas['ExistsInCreate']
 
 // `ProjectCreate` stays hand-written: the UI sends `environment_slugs` (a
 // flat slug list) whereas the generated `ProjectCreate` expects an
