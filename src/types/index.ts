@@ -210,6 +210,10 @@ export interface Project {
     team?: RelationshipLink
   }
   score?: null | number
+  // Read-only EXISTS_IN connections (third-party service relationships).
+  // Maintained via the project-services endpoints / Integrations panel,
+  // not by editing `identifiers`.
+  services?: Integration[]
   slug: string
   team: {
     name: string
@@ -223,6 +227,12 @@ export interface Project {
   viewer_closed_pr_count?: number
   viewer_open_pr_count?: number
 }
+
+// Integration (EXISTS_IN edge) types — a project's relationship to a
+// third-party service: stable identifier + canonical API URL, plus the
+// human dashboard URL (read from / written to the project's links).
+export type Integration = Schemas['ExistsInResponse']
+export type IntegrationCreate = Schemas['ExistsInCreate']
 
 // `ProjectCreate` stays hand-written: the UI sends `environment_slugs` (a
 // flat slug list) whereas the generated `ProjectCreate` expects an
