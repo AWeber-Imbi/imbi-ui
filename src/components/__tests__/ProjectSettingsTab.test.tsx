@@ -5,7 +5,11 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as endpoints from '@/api/endpoints'
-import type { ArchiveProjectResponse, Project } from '@/types'
+import type {
+  ArchiveProjectResponse,
+  PluginAssignmentResponse,
+  Project,
+} from '@/types'
 
 import { ProjectSettingsTab } from '../ProjectSettingsTab'
 
