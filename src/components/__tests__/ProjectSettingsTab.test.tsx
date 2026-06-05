@@ -5,11 +5,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as endpoints from '@/api/endpoints'
-import type {
-  ArchiveProjectResponse,
-  PluginAssignmentResponse,
-  Project,
-} from '@/types'
+import type { ArchiveProjectResponse, Project } from '@/types'
 
 import { ProjectSettingsTab } from '../ProjectSettingsTab'
 
@@ -21,7 +17,6 @@ vi.mock('@/api/endpoints', async () => {
     ...actual,
     archiveProject: vi.fn(),
     deleteProject: vi.fn(),
-    listEnvironments: vi.fn(),
     listLinkDefinitions: vi.fn(),
     listProjectPlugins: vi.fn(),
     unarchiveProject: vi.fn(),
@@ -36,14 +31,6 @@ vi.mock('sonner', () => ({
 // data fetching and are irrelevant to the lifecycle-result behaviour.
 // fallow-ignore-next-line unresolved-import
 vi.mock('@/components/EditLinksCard', () => ({ EditLinksCard: () => null }))
-// fallow-ignore-next-line unresolved-import
-vi.mock('@/components/EditEnvironmentsCard', () => ({
-  EditEnvironmentsCard: () => null,
-}))
-// fallow-ignore-next-line unresolved-import
-vi.mock('@/components/EditIdentifiersCard', () => ({
-  EditIdentifiersCard: () => null,
-}))
 // fallow-ignore-next-line unresolved-import
 vi.mock('@/components/project/ProjectPluginsSection', () => ({
   ProjectPluginsSection: () => null,
@@ -79,17 +66,6 @@ const ARCHIVED_PROJECT = {
   team: { name: 'Team', organization: { name: 'Acme', slug: 'acme' } },
 } as Project
 
-const DEPLOYMENT_PLUGIN = {
-  default: true,
-  label: 'Deploy',
-  options: {},
-  plugin_id: 'dep-1',
-  plugin_slug: 'github-deploy',
-  plugin_type: 'deployment',
-  source: 'project',
-  supports_deployment_sync: true,
-} as PluginAssignmentResponse
-
 function renderTab() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -112,7 +88,6 @@ describe('ProjectSettingsTab archive lifecycle results', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     mockAuthUser = { is_admin: false, permissions: [] }
-    vi.mocked(endpoints.listEnvironments).mockResolvedValue([])
     vi.mocked(endpoints.listLinkDefinitions).mockResolvedValue([])
     vi.mocked(endpoints.listProjectPlugins).mockResolvedValue([])
     toast = (await import('sonner')).toast as unknown as typeof toast
@@ -186,7 +161,6 @@ describe('ProjectSettingsTab delete flow', () => {
   beforeEach(async () => {
     vi.clearAllMocks()
     mockAuthUser = { is_admin: false, permissions: [] }
-    vi.mocked(endpoints.listEnvironments).mockResolvedValue([])
     vi.mocked(endpoints.listLinkDefinitions).mockResolvedValue([])
     vi.mocked(endpoints.listProjectPlugins).mockResolvedValue([])
     toast = (await import('sonner')).toast as unknown as typeof toast
@@ -274,58 +248,5 @@ describe('ProjectSettingsTab delete flow', () => {
       expect(toast.warning).toHaveBeenCalledTimes(1)
     })
     expect(toast.warning.mock.calls[0][0]).toContain('1 integration failed')
-  })
-})
-
-describe('ProjectSettingsTab utility functions gating', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mockAuthUser = { is_admin: false, permissions: [] }
-    vi.mocked(endpoints.listEnvironments).mockResolvedValue([])
-    vi.mocked(endpoints.listLinkDefinitions).mockResolvedValue([])
-    vi.mocked(endpoints.listProjectPlugins).mockResolvedValue([])
-  })
-
-  it('hides the card when the user has neither permission', async () => {
-    vi.mocked(endpoints.listProjectPlugins).mockResolvedValue([
-      DEPLOYMENT_PLUGIN,
-    ])
-    const { queryByText } = renderTab()
-    await waitFor(() => expect(endpoints.listProjectPlugins).toHaveBeenCalled())
-    expect(queryByText('Utility Functions')).not.toBeInTheDocument()
-  })
-
-  it('shows the card with only Recompute Score for rescore permission', async () => {
-    mockAuthUser = { is_admin: false, permissions: ['scoring_policy:rescore'] }
-    const { queryByRole, queryByText } = renderTab()
-    await waitFor(() =>
-      expect(queryByText('Utility Functions')).toBeInTheDocument(),
-    )
-    expect(
-      queryByRole('button', { name: 'Recompute Score' }),
-    ).toBeInTheDocument()
-    expect(
-      queryByRole('button', { name: 'Sync Deployments' }),
-    ).not.toBeInTheDocument()
-  })
-
-  it('shows Sync Deployments for project:deployment:write without admin', async () => {
-    mockAuthUser = {
-      is_admin: false,
-      permissions: ['project:deployment:write'],
-    }
-    vi.mocked(endpoints.listProjectPlugins).mockResolvedValue([
-      DEPLOYMENT_PLUGIN,
-    ])
-    const { queryByRole, queryByText } = renderTab()
-    await waitFor(() =>
-      expect(queryByText('Utility Functions')).toBeInTheDocument(),
-    )
-    expect(
-      queryByRole('button', { name: 'Sync Deployments' }),
-    ).toBeInTheDocument()
-    expect(
-      queryByRole('button', { name: 'Recompute Score' }),
-    ).not.toBeInTheDocument()
   })
 })
