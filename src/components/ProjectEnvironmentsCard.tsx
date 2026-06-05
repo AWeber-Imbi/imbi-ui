@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import {
   CheckCircle2,
   Clock,
@@ -107,7 +109,10 @@ export function ProjectEnvironmentsCard({
   projectId,
   projectSchema,
 }: ProjectEnvironmentsCardProps) {
-  const attrDefs = environmentAttributeDefs(projectSchema)
+  const attrDefs = useMemo(
+    () => environmentAttributeDefs(projectSchema),
+    [projectSchema],
+  )
   const { patch, pendingKey } = useEnvironmentEdgePatch(orgSlug, projectId)
   return (
     <Card>
@@ -124,6 +129,9 @@ export function ProjectEnvironmentsCard({
             const displayUrl = url
               ? url.replace(/^https?:\/\//, '').replace(/\/$/, '')
               : null
+            const urlText = (
+              <span className="text-primary text-sm">{displayUrl}</span>
+            )
             const deployment = deploymentStatus[env.slug]
             const version = deployment
               ? (deployment.tag ?? deployment.committish)
@@ -165,19 +173,13 @@ export function ProjectEnvironmentsCard({
                       {isFieldEditable('url', urlDef) ? (
                         <InlineField
                           def={urlDef}
-                          display={
-                            <span className="text-primary text-sm">
-                              {displayUrl}
-                            </span>
-                          }
+                          display={urlText}
                           onCommit={(v) => patch(env.slug, 'url', v)}
                           pending={pendingKey === `${env.slug}/url`}
                           raw={env.url ?? null}
                         />
                       ) : (
-                        <span className="text-primary text-sm">
-                          {displayUrl}
-                        </span>
+                        urlText
                       )}
                       {url ? (
                         <a
