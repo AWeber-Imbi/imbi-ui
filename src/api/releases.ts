@@ -33,7 +33,10 @@ export const getReleaseHistory = async (
     undefined,
     signal,
   )
-  return Array.isArray(response) ? response : []
+  if (!Array.isArray(response)) {
+    throw new Error('Unexpected release-history response: expected an array')
+  }
+  return response
 }
 
 export const cutRelease = (

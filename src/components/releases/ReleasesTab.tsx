@@ -29,7 +29,11 @@ export function ReleasesTab({ orgSlug, project }: ReleasesTabProps) {
     queryFn: ({ signal }) => getReleaseDrift(orgSlug, project.id, signal),
     queryKey: ['releaseDrift', orgSlug, project.id],
   })
-  const { data: history = [], isLoading: historyLoading } = useQuery({
+  const {
+    data: history = [],
+    error: historyError,
+    isLoading: historyLoading,
+  } = useQuery({
     enabled,
     queryFn: ({ signal }) => getReleaseHistory(orgSlug, project.id, signal),
     queryKey: ['releaseHistory', orgSlug, project.id],
@@ -41,7 +45,7 @@ export function ReleasesTab({ orgSlug, project }: ReleasesTabProps) {
   if (driftLoading || historyLoading) {
     return <LoadingState label="Loading releases…" />
   }
-  if (driftError || !drift) {
+  if (driftError || historyError || !drift) {
     return (
       <div className="border-tertiary text-tertiary rounded-lg border p-6 text-center text-sm">
         Could not load release data for this project.
