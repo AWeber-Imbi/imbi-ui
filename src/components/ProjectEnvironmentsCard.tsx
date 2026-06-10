@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { isFieldEditable } from '@/components/ui/inline-edit/field-policy'
 import { InlineField } from '@/components/ui/inline-edit/InlineField'
+import { UserDisplay } from '@/components/ui/user-display'
 import { useEnvironmentEdgePatch } from '@/hooks/useEnvironmentEdgePatch'
 import { formatFieldKey } from '@/lib/project-field-formatting'
 import { sanitizeHttpUrl } from '@/lib/utils'
@@ -208,7 +209,15 @@ export function ProjectEnvironmentsCard({
                     {deployment?.performedBy ? (
                       <div className="min-w-0">
                         <div className={OVERLINE_CLASS}>Deployed by</div>
-                        <ActorBadge actor={deployment.performedBy} />
+                        {deployment.performedBy.includes('@') ? (
+                          <UserDisplay
+                            email={deployment.performedBy}
+                            linkToProfile={false}
+                            size={28}
+                          />
+                        ) : (
+                          <ActorBadge actor={deployment.performedBy} />
+                        )}
                       </div>
                     ) : null}
 
