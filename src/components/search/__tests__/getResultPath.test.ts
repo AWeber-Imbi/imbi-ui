@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { SearchResult } from '@/api/endpoints'
 
-import { getResultPath } from '../SearchResultsPanel'
+import { getResultPath } from '../getResultPath'
 
 function result(overrides: Partial<SearchResult>): SearchResult {
   return {
@@ -38,6 +38,10 @@ describe('getResultPath', () => {
 
   it('returns null for a Document with no project_id', () => {
     expect(getResultPath(result({ node_label: 'Document' }))).toBeNull()
+  })
+
+  it('returns null for a Release with no project_id', () => {
+    expect(getResultPath(result({ node_label: 'Release' }))).toBeNull()
   })
 
   it('routes admin node types by slug', () => {
