@@ -228,29 +228,9 @@ describe('compareTags', () => {
 })
 
 describe('defaultStageSlug', () => {
-  it('selects the earliest stage with pending work', () => {
+  it('selects the first rendered environment (highest sort order)', () => {
     const stages = buildPipeline(ENVS, CURRENT, HISTORY, COMMITS)
-    expect(defaultStageSlug(stages)).toBe('staging')
-    const noStagingGap = buildPipeline(
-      ENVS,
-      [
-        currentRelease('testing', 'ccc333ccc333', null),
-        currentRelease('staging', 'ccc333ccc333', 'v6.5.2'),
-        currentRelease('production', 'aaa111aaa111', 'v6.5.0'),
-      ],
-      HISTORY,
-      COMMITS,
-    )
-    expect(defaultStageSlug(noStagingGap)).toBe('production')
-  })
-
-  it('falls back to the first environment when nothing is pending', () => {
-    const synced = [
-      currentRelease('testing', 'ccc333ccc333', null),
-      currentRelease('staging', 'ccc333ccc333', 'v6.5.2'),
-      currentRelease('production', 'ccc333ccc333', 'v6.5.2'),
-    ]
-    const stages = buildPipeline(ENVS, synced, HISTORY, COMMITS)
-    expect(defaultStageSlug(stages)).toBe('testing')
+    expect(defaultStageSlug(stages)).toBe('production')
+    expect(defaultStageSlug([])).toBeNull()
   })
 })

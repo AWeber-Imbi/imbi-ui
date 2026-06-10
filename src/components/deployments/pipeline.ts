@@ -43,6 +43,7 @@ export interface PipelineStage {
 
 export type StageKind = 'commit' | 'promote' | 'release'
 
+// Most recent releases offered as rollback targets, regardless of age.
 const ROLLBACK_LIMIT = 10
 
 /**
@@ -136,18 +137,12 @@ export function compareTags(
 }
 
 /**
- * Default selection: the earliest stage with something actionable (the
- * first gap in the train), falling back to the first environment.
+ * Default selection: the first environment as rendered — the sidebar is
+ * descending sort order, so the last stage in pipeline order (e.g.
+ * Production).
  */
 export function defaultStageSlug(stages: PipelineStage[]): null | string {
-  const firstGap = stages.find((stage) =>
-    stage.kind === 'release'
-      ? stage.pendingReleases.length > 0
-      : stage.kind === 'promote'
-        ? stage.pendingCommits.length > 0
-        : false,
-  )
-  return firstGap?.env.slug ?? stages[0]?.env.slug ?? null
+  return stages[stages.length - 1]?.env.slug ?? null
 }
 
 /** SHA-prefix match in either direction (events may record short SHAs). */
