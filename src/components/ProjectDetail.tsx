@@ -49,6 +49,7 @@ import {
   ReleaseModal,
 } from '@/components/deploy/DeploymentModal'
 import { DeploymentRunWatcher } from '@/components/deploy/DeploymentRunWatcher'
+import { DeploymentsTab } from '@/components/deployments/DeploymentsTab'
 import { ProjectDocumentsTab } from '@/components/documents/ProjectDocumentsTab'
 import { OperationsLog } from '@/components/OperationsLog'
 import { ConfigurationTab } from '@/components/project/ConfigurationTab'
@@ -109,6 +110,7 @@ const VALID_TABS = [
   'overview',
   'configuration',
   'dependencies',
+  'deployments',
   'relationships',
   'releases',
   'logs',
@@ -187,7 +189,6 @@ export function ProjectDetail({
   // placeholder for the version slot so versions don't pop in.
   const releasesLoading = releasesPending && !!orgSlug && !!project.id
 
-  // fallow-ignore-next-line complexity
   const deploymentStatus: Record<
     string,
     {
@@ -200,6 +201,7 @@ export function ProjectDetail({
       tag: null | string
       updated: string
     }
+    // fallow-ignore-next-line complexity
   > = useMemo(() => {
     const out: Record<
       string,
@@ -595,6 +597,10 @@ export function ProjectDetail({
   )
   const canTriggerDeployments =
     isDeployable && !!deploymentPlugin && deploymentReadiness === 'connected'
+  // Deployable projects with a pipeline get the Deployments tab — the
+  // counterpart of the release-only "Releases" tab above.
+  const hasDeploymentsTab =
+    isDeployable && !!deploymentPlugin && sortedEnvironments.length > 0
 
   // fallow-ignore-next-line complexity
   const deploymentConnectLabel = (() => {
@@ -637,6 +643,7 @@ export function ProjectDetail({
       (activeTab === 'logs' && !hasLogsPlugin) ||
       (activeTab === 'incidents' && !hasIncidentsPlugin) ||
       (activeTab === 'releases' && !isReleaseOnly) ||
+      (activeTab === 'deployments' && !hasDeploymentsTab) ||
       (activeTab === 'pull-requests' && !hasLifecyclePlugin)
     ) {
       navigate(`/projects/${project.id}`, { replace: true })
@@ -644,6 +651,7 @@ export function ProjectDetail({
   }, [
     activeTab,
     hasConfigurationPlugin,
+    hasDeploymentsTab,
     hasIncidentsPlugin,
     hasLifecyclePlugin,
     hasLogsPlugin,
@@ -769,6 +777,9 @@ export function ProjectDetail({
       ? [{ id: 'configuration' as const, label: 'Configuration' }]
       : []),
     { id: 'dependencies', label: 'Dependencies' },
+    ...(hasDeploymentsTab
+      ? [{ id: 'deployments' as const, label: 'Deployments' }]
+      : []),
     {
       id: 'documents',
       label:
@@ -1314,6 +1325,19 @@ export function ProjectDetail({
         {isReleaseOnly && (
           <TabsContent value="releases">
             <ReleasesTab orgSlug={orgSlug} project={project} />
+          </TabsContent>
+        )}
+        {hasDeploymentsTab && (
+          <TabsContent value="deployments">
+            <DeploymentsTab
+              canTrigger={canTriggerDeployments}
+              connectLabel={deploymentConnectLabel}
+              environments={sortedEnvironments}
+              onRunStarted={handleRunStarted}
+              orgSlug={orgSlug}
+              projectId={project.id}
+              readiness={deploymentReadiness}
+            />
           </TabsContent>
         )}
         {hasLifecyclePlugin && (

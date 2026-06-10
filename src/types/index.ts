@@ -298,6 +298,19 @@ export interface ProjectTypeCreate {
   slug: string
 }
 
+// One adjacent-env promotion gap from /deployments/promotion-options.
+// ``commits_pending`` is the size of the from..to compare; null means the
+// plugin couldn't be asked (e.g. no current release on either side).
+export interface PromotionOption {
+  commits_pending?: null | number
+  from_environment: string
+  from_sha?: null | string
+  from_version?: null | string
+  to_environment: string
+  to_sha?: null | string
+  to_version?: null | string
+}
+
 export interface PullRequest {
   additions: number
   author: string

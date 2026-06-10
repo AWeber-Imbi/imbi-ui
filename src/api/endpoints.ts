@@ -89,6 +89,7 @@ import type {
   ProjectRelationshipsResponse,
   ProjectType,
   ProjectTypeCreate,
+  PromotionOption,
   PullRequestListResponse,
   Release,
   ReleaseDependenciesResponse,
@@ -1902,6 +1903,19 @@ export const compareDeploymentRefs = (
     undefined,
     signal,
   )
+}
+
+export const listPromotionOptions = async (
+  orgSlug: string,
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<PromotionOption[]> => {
+  const response = await apiClient.get<PromotionOption[]>(
+    `${deploymentsBase(orgSlug, projectId)}/promotion-options`,
+    undefined,
+    signal,
+  )
+  return Array.isArray(response) ? response : []
 }
 
 export const triggerDeployment = (
