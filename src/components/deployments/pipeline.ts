@@ -78,11 +78,11 @@ export function buildPipeline(
       env,
       kind,
       pendingCommits:
-        kind === 'promote' && current?.release
+        kind === 'promote' && upstreamCurrent?.release
           ? commitRange(
               commits,
-              upstreamCurrent?.release?.committish ?? null,
-              current.release.committish,
+              upstreamCurrent.release.committish,
+              current?.release?.committish ?? null,
             )
           : [],
       pendingReleases:

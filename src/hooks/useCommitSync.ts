@@ -43,7 +43,7 @@ export function useCommitSync(
   useEffect(() => {
     const data = statusQuery.data
     if (!data) return
-    if (isActive(previous.current) && !isActive(data.status)) {
+    if (!isActive(data.status) && data.status !== previous.current) {
       announceTerminal(data)
       if (data.status === 'success') onCompleteRef.current?.()
     }
