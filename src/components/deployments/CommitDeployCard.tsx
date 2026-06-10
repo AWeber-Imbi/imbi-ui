@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -9,7 +9,11 @@ import {
   Upload,
 } from 'lucide-react'
 
-import { listDeploymentRefs, listRefCommits } from '@/api/endpoints'
+import {
+  listDeploymentRefs,
+  listRefCommits,
+  resolveDeploymentCommit,
+} from '@/api/endpoints'
 import { CiStatusDot } from '@/components/releases/CiStatusDot'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,7 +35,7 @@ interface CommitDeployCardProps {
   stage: PipelineStage
 }
 
-const COMMIT_LIMIT = 10
+const COMMIT_LIMIT = 25
 
 /**
  * The entry environment: tracks raw commits off the default branch.
@@ -79,11 +83,34 @@ export function CommitDeployCard({
   })
 
   const currentSha = stage.current?.release?.committish ?? null
-  const deployedIdx = currentSha
-    ? commits.findIndex(
-        (c) => c.sha.startsWith(currentSha) || currentSha.startsWith(c.sha),
-      )
-    : -1
+  const matchesCurrent = (c: DeploymentCommit) =>
+    !!currentSha &&
+    (c.sha.startsWith(currentSha) || currentSha.startsWith(c.sha))
+
+  // The deployed commit can be older than the recent-commits window (the
+  // branch has moved on). Resolve it so the list still anchors on what's
+  // actually running, pinned below a gap marker.
+  const currentMissing =
+    !!currentSha &&
+    !isLoading &&
+    !isError &&
+    commits.length > 0 &&
+    !commits.some(matchesCurrent)
+  const { data: resolvedCurrent } = useQuery<DeploymentCommit>({
+    enabled: currentMissing,
+    queryFn: ({ signal }) =>
+      resolveDeploymentCommit(orgSlug, projectId, currentSha ?? '', signal),
+    queryKey: ['resolveCommit', orgSlug, projectId, currentSha],
+  })
+  const rows = useMemo(
+    () =>
+      currentMissing && resolvedCurrent
+        ? [...commits, resolvedCurrent]
+        : commits,
+    [commits, currentMissing, resolvedCurrent],
+  )
+  const deployedIdx = rows.findIndex(matchesCurrent)
+  const pinnedCurrent = currentMissing && !!resolvedCurrent
 
   return (
     <StageCardShell
@@ -116,18 +143,26 @@ export function CommitDeployCard({
             No commits available.
           </p>
         ) : (
-          <ul className="border-tertiary rounded-md border">
-            {commits.map((c, idx) => (
-              <CommitRow
-                accent={accent}
-                actionPending={actions.deployPendingSha === c.sha}
-                canTrigger={canTrigger && !actions.deployPending}
-                commit={c}
-                isCurrent={idx === deployedIdx}
-                key={c.sha}
-                onAction={(rollback) => setConfirming({ commit: c, rollback })}
-                rollback={deployedIdx >= 0 && idx > deployedIdx}
-              />
+          <ul className="border-tertiary max-h-120 overflow-y-auto rounded-md border">
+            {rows.map((c, idx) => (
+              <Fragment key={c.sha}>
+                {pinnedCurrent && idx === rows.length - 1 ? (
+                  <li className="border-tertiary text-tertiary border-b px-3 py-1 text-center text-xs italic last:border-b-0">
+                    … older commits not shown
+                  </li>
+                ) : null}
+                <CommitRow
+                  accent={accent}
+                  actionPending={actions.deployPendingSha === c.sha}
+                  canTrigger={canTrigger && !actions.deployPending}
+                  commit={c}
+                  isCurrent={idx === deployedIdx}
+                  onAction={(rollback) =>
+                    setConfirming({ commit: c, rollback })
+                  }
+                  rollback={deployedIdx >= 0 && idx > deployedIdx}
+                />
+              </Fragment>
             ))}
           </ul>
         )}

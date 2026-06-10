@@ -1888,6 +1888,18 @@ export const listRefCommits = async (
   return Array.isArray(response) ? response : []
 }
 
+export const resolveDeploymentCommit = (
+  orgSlug: string,
+  projectId: string,
+  committish: string,
+  signal?: AbortSignal,
+): Promise<DeploymentCommit> =>
+  apiClient.get<DeploymentCommit>(
+    `${deploymentsBase(orgSlug, projectId)}/commits/${encodeURIComponent(committish)}`,
+    undefined,
+    signal,
+  )
+
 export const compareDeploymentRefs = (
   orgSlug: string,
   projectId: string,

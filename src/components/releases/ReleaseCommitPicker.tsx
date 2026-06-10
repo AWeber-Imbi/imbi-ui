@@ -124,7 +124,11 @@ function CommitRow({
           {commit.short_sha}
         </span>
         <span className="min-w-0 flex-1 truncate text-sm">{subject}</span>
-        <CiStatusDot status={commit.ci_status} />
+        {/* ``unknown`` is the API's null-equivalent (e.g. compare results
+            carry no check status) — skip the useless gray dot. */}
+        {commit.ci_status !== 'unknown' ? (
+          <CiStatusDot status={commit.ci_status} />
+        ) : null}
         <Badge variant="neutral">{idx === 0 ? 'tip' : `−${idx}`}</Badge>
       </button>
       {active && body ? (

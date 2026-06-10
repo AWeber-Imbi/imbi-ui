@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
-import { Rocket } from 'lucide-react'
 
 import { listCurrentReleases, listPromotionOptions } from '@/api/endpoints'
 import { getReleaseHistory } from '@/api/releases'
@@ -112,36 +111,30 @@ export function DeploymentsTab({
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="inline-flex items-center gap-2 text-base font-semibold">
-        <Rocket className="text-tertiary size-4" />
-        Deployments
-      </h2>
-      <div className="grid items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
-        <EnvironmentNav
-          connectLabel={connectLabel}
-          isDarkMode={isDarkMode}
-          onSelect={setSelectedSlug}
-          pendingCommitsBySlug={pendingCommitsBySlug}
-          readiness={readiness}
-          selectedSlug={effectiveSlug}
-          stages={stages}
+    <div className="grid items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
+      <EnvironmentNav
+        connectLabel={connectLabel}
+        isDarkMode={isDarkMode}
+        onSelect={setSelectedSlug}
+        pendingCommitsBySlug={pendingCommitsBySlug}
+        readiness={readiness}
+        selectedSlug={effectiveSlug}
+        stages={stages}
+      />
+      {selectedStage ? (
+        <EnvironmentDetail
+          accent={
+            selectedStage.env.label_color
+              ? deriveChipColors(selectedStage.env.label_color, isDarkMode)
+              : null
+          }
+          actions={actions}
+          canTrigger={canTrigger}
+          orgSlug={orgSlug}
+          projectId={projectId}
+          stage={selectedStage}
         />
-        {selectedStage ? (
-          <EnvironmentDetail
-            accent={
-              selectedStage.env.label_color
-                ? deriveChipColors(selectedStage.env.label_color, isDarkMode)
-                : null
-            }
-            actions={actions}
-            canTrigger={canTrigger}
-            orgSlug={orgSlug}
-            projectId={projectId}
-            stage={selectedStage}
-          />
-        ) : null}
-      </div>
+      ) : null}
     </div>
   )
 }

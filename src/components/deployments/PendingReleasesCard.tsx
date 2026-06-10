@@ -322,7 +322,9 @@ function SingleReleaseChanges({
                 <span className="min-w-0 flex-1 truncate text-sm">
                   {c.message.split('\n')[0]}
                 </span>
-                <CiStatusDot status={c.ci_status} />
+                {c.ci_status !== 'unknown' ? (
+                  <CiStatusDot status={c.ci_status} />
+                ) : null}
               </li>
             ))}
           </ul>
