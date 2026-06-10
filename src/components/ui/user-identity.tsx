@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Link } from 'react-router-dom'
 
@@ -163,6 +163,9 @@ function IdentityAvatar({
   name: null | string
 }) {
   const [imgFailed, setImgFailed] = useState(false)
+  useEffect(() => {
+    setImgFailed(false)
+  }, [candidateImage, isBot])
   const tint = colorFor(name)
   const showImage = !isBot && candidateImage != null && !imgFailed
   const style: React.CSSProperties = { height: av, width: av }

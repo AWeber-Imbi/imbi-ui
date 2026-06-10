@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { isBotActor, UserIdentity } from '@/components/ui/user-identity'
 import type { ChipColors } from '@/lib/chip-colors'
 import { formatRelativeDate } from '@/lib/formatDate'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeHttpUrl } from '@/lib/utils'
 import type { ReleaseHistoryEntry } from '@/types'
 
 import { ConfirmActionDialog } from './ConfirmActionDialog'
@@ -45,7 +45,7 @@ export function CurrentlyRunningCard({
   const [openTag, setOpenTag] = useState<null | string>(null)
   const [confirming, setConfirming] = useState<null | ReleaseHistoryEntry>(null)
   const release = stage.current?.release ?? null
-  const envUrl = stage.env.url ?? null
+  const envUrl = sanitizeHttpUrl(stage.env.url ?? null)
 
   return (
     <StageCardShell
@@ -59,7 +59,7 @@ export function CurrentlyRunningCard({
             target="_blank"
           >
             <Globe size={12} />
-            {envUrl.replace(/^https?:\/\//, '')}
+            {envUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')}
           </a>
         ) : undefined
       }
