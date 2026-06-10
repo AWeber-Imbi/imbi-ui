@@ -55,6 +55,7 @@ const STAGE: PipelineStage = {
   current: CURRENT,
   env: ENV,
   kind: 'release',
+  pendingCommits: [],
   pendingReleases: [],
   rollbackTargets: [ROLLBACK],
   upstream: null,

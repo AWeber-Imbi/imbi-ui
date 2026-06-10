@@ -2,24 +2,17 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import * as endpoints from '@/api/endpoints'
 import { render } from '@/test/utils'
 import type {
   CurrentReleaseEnvironment,
   Environment,
+  RecentCommit,
   ReleaseHistoryEntry,
 } from '@/types'
 
 import { PendingReleasesCard } from './PendingReleasesCard'
 import type { PipelineStage } from './pipeline'
 import type { DeploymentActions } from './useDeploymentActions'
-
-// fallow-ignore-next-line unresolved-import
-vi.mock('@/api/endpoints', async () => {
-  const actual =
-    await vi.importActual<typeof import('@/api/endpoints')>('@/api/endpoints')
-  return { ...actual, compareDeploymentRefs: vi.fn() }
-})
 
 const ENV = {
   can_deploy: true,
@@ -75,6 +68,23 @@ const current = (
   },
 })
 
+const RECENT_COMMITS: RecentCommit[] = [
+  {
+    authored_at: '2026-06-01T00:00:00Z',
+    ci_status: 'pass',
+    message: 'the pending change',
+    sha: 'bbb222bbb222',
+    short_sha: 'bbb222b',
+  },
+  {
+    authored_at: '2026-05-20T00:00:00Z',
+    ci_status: 'pass',
+    message: 'the released change',
+    sha: 'aaa111aaa111',
+    short_sha: 'aaa111a',
+  },
+]
+
 const makeActions = (): DeploymentActions => ({
   deploy: vi.fn(),
   deployPending: false,
@@ -83,25 +93,32 @@ const makeActions = (): DeploymentActions => ({
   promotePending: false,
 })
 
-const makeStage = (pending: ReleaseHistoryEntry[]): PipelineStage => ({
-  current: current('production', 'v6.5.0', 'aaa111aaa111'),
+const makeStage = (
+  pending: ReleaseHistoryEntry[],
+  envTag = 'v6.5.0',
+): PipelineStage => ({
+  current: current('production', envTag, 'aaa111aaa111'),
   env: ENV,
   kind: 'release',
+  pendingCommits: [],
   pendingReleases: pending,
   rollbackTargets: [],
   upstream: UPSTREAM,
   upstreamCurrent: current('staging', 'v6.5.2', 'ccc333ccc333'),
 })
 
-const renderCard = (pending: ReleaseHistoryEntry[], actions = makeActions()) =>
+const renderCard = (
+  pending: ReleaseHistoryEntry[],
+  actions = makeActions(),
+  envTag = 'v6.5.0',
+) =>
   render(
     <PendingReleasesCard
       accent={null}
       actions={actions}
       canTrigger
-      orgSlug="org"
-      projectId="p1"
-      stage={makeStage(pending)}
+      recentCommits={RECENT_COMMITS}
+      stage={makeStage(pending, envTag)}
     />,
   )
 
@@ -111,21 +128,12 @@ describe('PendingReleasesCard', () => {
     expect(screen.getByText('Up to date with Staging')).toBeInTheDocument()
   })
 
-  it('renders the single-release confirm with its notes', () => {
-    vi.mocked(endpoints.compareDeploymentRefs).mockResolvedValue({
-      additions: 1,
-      ahead: 1,
-      base_sha: 'aaa',
-      behind: 0,
-      commits: [],
-      deletions: 0,
-      files_changed: 1,
-      head_sha: 'bbb',
-      pr_numbers: [],
-    })
+  it('renders the single-release confirm with notes and synced changes', () => {
     renderCard([entry('v6.5.1', 'bbb222bbb222', 'Cache TTL fix')])
     expect(screen.getByText(/is waiting to go live/)).toBeInTheDocument()
     expect(screen.getByText('notes for v6.5.1')).toBeInTheDocument()
+    // Changes section sliced from the synced commit history.
+    expect(screen.getByText('the pending change')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /Deploy v6\.5\.1 to production/ }),
     ).toBeInTheDocument()
@@ -173,5 +181,21 @@ describe('PendingReleasesCard', () => {
     ).toBeInTheDocument()
     // Row click also expands the release notes accordion.
     expect(screen.getByText('notes for v6.5.1')).toBeInTheDocument()
+  })
+
+  it('warns when the pending release ranks below the running one', () => {
+    // Production runs 2.101.0; staging's 1.102.3 is still deployable but
+    // flagged as a roll back to the older line.
+    renderCard(
+      [entry('1.102.3', 'bbb222bbb222', 'Older line hotfix')],
+      makeActions(),
+      '2.101.0',
+    )
+    expect(
+      screen.getByText(/rolls this environment to the older release line/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Deploy 1\.102\.3 to production/ }),
+    ).toBeInTheDocument()
   })
 })

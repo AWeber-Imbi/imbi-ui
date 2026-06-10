@@ -89,8 +89,8 @@ import type {
   ProjectRelationshipsResponse,
   ProjectType,
   ProjectTypeCreate,
-  PromotionOption,
   PullRequestListResponse,
+  RecentCommit,
   Release,
   ReleaseDependenciesResponse,
   Role,
@@ -1888,17 +1888,26 @@ export const listRefCommits = async (
   return Array.isArray(response) ? response : []
 }
 
-export const resolveDeploymentCommit = (
+// Synced commit history from ClickHouse (newest first) — the Deployments
+// tab reads this instead of the live source host so it reflects imbi's
+// own data; the commit/tag sync keeps it fresh.
+export const listRecentCommits = async (
   orgSlug: string,
   projectId: string,
-  committish: string,
+  params: { limit?: number; ref?: string } = {},
   signal?: AbortSignal,
-): Promise<DeploymentCommit> =>
-  apiClient.get<DeploymentCommit>(
-    `${deploymentsBase(orgSlug, projectId)}/commits/${encodeURIComponent(committish)}`,
+): Promise<RecentCommit[]> => {
+  const search = new URLSearchParams()
+  if (params.limit != null) search.set('limit', String(params.limit))
+  if (params.ref) search.set('ref', params.ref)
+  const query = search.toString()
+  const response = await apiClient.get<RecentCommit[]>(
+    `${deploymentsBase(orgSlug, projectId)}/recent-commits${query ? `?${query}` : ''}`,
     undefined,
     signal,
   )
+  return Array.isArray(response) ? response : []
+}
 
 export const compareDeploymentRefs = (
   orgSlug: string,
@@ -1915,19 +1924,6 @@ export const compareDeploymentRefs = (
     undefined,
     signal,
   )
-}
-
-export const listPromotionOptions = async (
-  orgSlug: string,
-  projectId: string,
-  signal?: AbortSignal,
-): Promise<PromotionOption[]> => {
-  const response = await apiClient.get<PromotionOption[]>(
-    `${deploymentsBase(orgSlug, projectId)}/promotion-options`,
-    undefined,
-    signal,
-  )
-  return Array.isArray(response) ? response : []
 }
 
 export const triggerDeployment = (

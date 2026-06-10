@@ -1,6 +1,5 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useState } from 'react'
 
-import { useQuery } from '@tanstack/react-query'
 import {
   ExternalLink,
   GitCommitHorizontal,
@@ -9,20 +8,15 @@ import {
   Upload,
 } from 'lucide-react'
 
-import {
-  listDeploymentRefs,
-  listRefCommits,
-  resolveDeploymentCommit,
-} from '@/api/endpoints'
 import { CiStatusDot } from '@/components/releases/CiStatusDot'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { LoadingState } from '@/components/ui/loading-state'
 import type { ChipColors } from '@/lib/chip-colors'
-import type { DeploymentCommit, DeploymentRef } from '@/types'
+import type { RecentCommit } from '@/types'
 
 import { ConfirmActionDialog } from './ConfirmActionDialog'
 import type { PipelineStage } from './pipeline'
+import { shaMatch } from './pipeline'
 import { StageCardShell } from './StageCardShell'
 import type { DeploymentActions } from './useDeploymentActions'
 
@@ -30,87 +24,52 @@ interface CommitDeployCardProps {
   accent: ChipColors | null
   actions: DeploymentActions
   canTrigger: boolean
-  orgSlug: string
-  projectId: string
+  /** Synced default-branch commit history, newest first. */
+  recentCommits: RecentCommit[]
   stage: PipelineStage
 }
 
-const COMMIT_LIMIT = 25
+const DISPLAY_LIMIT = 25
 
 /**
- * The entry environment: tracks raw commits off the default branch.
- * Deploy a newer commit forward, or roll back to an older one — no
- * promotion happens here.
+ * The entry environment: tracks raw commits off the default branch
+ * (from imbi's synced history). Deploy a newer commit forward, or roll
+ * back to an older one — no promotion happens here.
  */
 // fallow-ignore-next-line complexity
 export function CommitDeployCard({
   accent,
   actions,
   canTrigger,
-  orgSlug,
-  projectId,
+  recentCommits,
   stage,
 }: CommitDeployCardProps) {
   const [confirming, setConfirming] = useState<null | {
-    commit: DeploymentCommit
+    commit: RecentCommit
     rollback: boolean
   }>(null)
 
-  const { data: refs = [] } = useQuery<DeploymentRef[]>({
-    queryFn: ({ signal }) =>
-      listDeploymentRefs(orgSlug, projectId, { kind: 'default' }, signal),
-    queryKey: ['deploymentRefs', orgSlug, projectId, 'branch'],
-  })
-  const defaultBranchName = useMemo(() => {
-    const def = refs.find((r) => r.is_default)
-    return def?.name ?? 'main'
-  }, [refs])
-
-  const {
-    data: commits = [],
-    isError,
-    isLoading,
-  } = useQuery<DeploymentCommit[]>({
-    queryFn: ({ signal }) =>
-      listRefCommits(
-        orgSlug,
-        projectId,
-        defaultBranchName,
-        { limit: COMMIT_LIMIT },
-        signal,
-      ),
-    queryKey: ['refCommits', orgSlug, projectId, defaultBranchName],
-  })
-
   const currentSha = stage.current?.release?.committish ?? null
-  const matchesCurrent = (c: DeploymentCommit) =>
-    !!currentSha &&
-    (c.sha.startsWith(currentSha) || currentSha.startsWith(c.sha))
+  const matchesCurrent = (c: RecentCommit) =>
+    !!currentSha && shaMatch(c.sha, currentSha)
 
-  // The deployed commit can be older than the recent-commits window (the
-  // branch has moved on). Resolve it so the list still anchors on what's
-  // actually running, pinned below a gap marker.
-  const currentMissing =
-    !!currentSha &&
-    !isLoading &&
-    !isError &&
-    commits.length > 0 &&
-    !commits.some(matchesCurrent)
-  const { data: resolvedCurrent } = useQuery<DeploymentCommit>({
-    enabled: currentMissing,
-    queryFn: ({ signal }) =>
-      resolveDeploymentCommit(orgSlug, projectId, currentSha ?? '', signal),
-    queryKey: ['resolveCommit', orgSlug, projectId, currentSha],
-  })
-  const rows = useMemo(
-    () =>
-      currentMissing && resolvedCurrent
-        ? [...commits, resolvedCurrent]
-        : commits,
-    [commits, currentMissing, resolvedCurrent],
-  )
+  // Show the most recent window; when the deployed commit is older than
+  // it, pull it forward from the rest of the synced history (or pin a
+  // bare-SHA row) so the list always anchors on what's running.
+  const windowRows = recentCommits.slice(0, DISPLAY_LIMIT)
+  const currentInWindow = windowRows.some(matchesCurrent)
+  const pinnedCurrent =
+    !currentInWindow && currentSha && windowRows.length > 0
+      ? (recentCommits.find(matchesCurrent) ?? {
+          authored_at: '',
+          ci_status: 'unknown' as const,
+          message: 'Not in the synced commit history — try a sync',
+          sha: currentSha,
+          short_sha: currentSha.slice(0, 7),
+        })
+      : null
+  const rows = pinnedCurrent ? [...windowRows, pinnedCurrent] : windowRows
   const deployedIdx = rows.findIndex(matchesCurrent)
-  const pinnedCurrent = currentMissing && !!resolvedCurrent
 
   return (
     <StageCardShell
@@ -130,17 +89,11 @@ export function CommitDeployCard({
     >
       <div className="px-4 py-4">
         <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
-          Recent commits on {defaultBranchName}
+          Recent commits
         </p>
-        {isLoading ? (
-          <LoadingState label="Loading commits…" />
-        ) : isError ? (
-          <p className="border-danger bg-danger/10 text-danger rounded-md border px-3 py-2 text-sm">
-            Failed to load commits.
-          </p>
-        ) : commits.length === 0 ? (
+        {rows.length === 0 ? (
           <p className="border-secondary text-tertiary rounded-md border p-3 text-sm">
-            No commits available.
+            No synced commits yet — run a sync from the pipeline sidebar.
           </p>
         ) : (
           <ul className="border-tertiary max-h-120 overflow-y-auto rounded-md border">
@@ -157,6 +110,7 @@ export function CommitDeployCard({
                   canTrigger={canTrigger && !actions.deployPending}
                   commit={c}
                   isCurrent={idx === deployedIdx}
+                  isHead={idx === 0}
                   onAction={(rollback) =>
                     setConfirming({ commit: c, rollback })
                   }
@@ -192,7 +146,7 @@ export function CommitDeployCard({
             action: 'deploy',
             envName: stage.env.name,
             envSlug: stage.env.slug,
-            refLabel: defaultBranchName,
+            refLabel: null,
             rollback: confirming.rollback,
             sha: confirming.commit.sha,
           })
@@ -216,14 +170,16 @@ function CommitRow({
   canTrigger,
   commit,
   isCurrent,
+  isHead,
   onAction,
   rollback,
 }: {
   accent: ChipColors | null
   actionPending: boolean
   canTrigger: boolean
-  commit: DeploymentCommit
+  commit: RecentCommit
   isCurrent: boolean
+  isHead: boolean
   onAction: (rollback: boolean) => void
   rollback: boolean
 }) {
@@ -233,11 +189,13 @@ function CommitRow({
       style={isCurrent && accent ? { backgroundColor: accent.bg } : undefined}
     >
       <span className="shrink-0 font-mono text-xs">{commit.short_sha}</span>
-      {commit.is_head ? <Badge variant="outline">HEAD</Badge> : null}
+      {isHead ? <Badge variant="outline">HEAD</Badge> : null}
       <span className="min-w-0 flex-1 truncate text-sm">
         {commit.message.split('\n')[0]}
       </span>
-      <CiStatusDot status={commit.ci_status} />
+      {commit.ci_status !== 'unknown' ? (
+        <CiStatusDot status={commit.ci_status} />
+      ) : null}
       {commit.author ? (
         <span className="text-tertiary hidden shrink-0 text-xs sm:inline">
           {commit.author}

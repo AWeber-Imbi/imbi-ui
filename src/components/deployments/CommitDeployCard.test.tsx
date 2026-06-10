@@ -1,29 +1,16 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
-import * as endpoints from '@/api/endpoints'
 import { render } from '@/test/utils'
 import type {
   CurrentReleaseEnvironment,
-  DeploymentCommit,
   Environment,
+  RecentCommit,
 } from '@/types'
 
 import { CommitDeployCard } from './CommitDeployCard'
 import type { PipelineStage } from './pipeline'
 import type { DeploymentActions } from './useDeploymentActions'
-
-// fallow-ignore-next-line unresolved-import
-vi.mock('@/api/endpoints', async () => {
-  const actual =
-    await vi.importActual<typeof import('@/api/endpoints')>('@/api/endpoints')
-  return {
-    ...actual,
-    listDeploymentRefs: vi.fn(),
-    listRefCommits: vi.fn(),
-    resolveDeploymentCommit: vi.fn(),
-  }
-})
 
 const ENV = {
   id: 'testing',
@@ -33,10 +20,10 @@ const ENV = {
   sort_order: 1,
 } as unknown as Environment
 
-const commit = (sha: string, message: string): DeploymentCommit => ({
+const commit = (sha: string, message: string): RecentCommit => ({
   author: 'kevin',
+  authored_at: '2026-06-01T00:00:00Z',
   ci_status: 'pass',
-  is_head: false,
   message,
   sha,
   short_sha: sha.slice(0, 7),
@@ -64,6 +51,7 @@ const makeStage = (committish: string): PipelineStage => ({
   current: currentFor(committish),
   env: ENV,
   kind: 'commit',
+  pendingCommits: [],
   pendingReleases: [],
   rollbackTargets: [],
   upstream: null,
@@ -84,51 +72,53 @@ const RECENT = [
   commit('ccc3333ccc3333', 'older change'),
 ]
 
-const setup = (committish: string) => {
-  vi.mocked(endpoints.listDeploymentRefs).mockResolvedValue([
-    {
-      is_default: true,
-      kind: 'default',
-      name: 'main',
-      sha: 'aaa1111aaa1111',
-    },
-  ])
-  vi.mocked(endpoints.listRefCommits).mockResolvedValue(RECENT)
+const setup = (committish: string, recentCommits: RecentCommit[] = RECENT) =>
   render(
     <CommitDeployCard
       accent={null}
       actions={makeActions()}
       canTrigger
-      orgSlug="org"
-      projectId="p1"
+      recentCommits={recentCommits}
       stage={makeStage(committish)}
     />,
   )
-}
 
 describe('CommitDeployCard', () => {
-  it('marks the deployed commit and splits Deploy/Roll back around it', async () => {
+  it('marks the deployed commit and splits Deploy/Roll back around it', () => {
     setup('bbb2222bbb2222')
-    await waitFor(() =>
-      expect(screen.getByText('deployed')).toBeInTheDocument(),
-    )
+    expect(screen.getByText('deployed')).toBeInTheDocument()
+    expect(screen.getByText('HEAD')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /Deploy/ })).toHaveLength(1)
     expect(screen.getAllByRole('button', { name: /Roll back/ })).toHaveLength(1)
-    expect(endpoints.resolveDeploymentCommit).not.toHaveBeenCalled()
   })
 
-  it('pins the deployed commit when it falls outside the recent window', async () => {
-    vi.mocked(endpoints.resolveDeploymentCommit).mockResolvedValue(
-      commit('ddd4444ddd4444', 'the running commit'),
+  it('pulls the deployed commit forward when it is outside the display window', () => {
+    // 30 commits in the synced history; the deployed one is the 28th —
+    // beyond the 25-row display window, so it pins below a gap row.
+    const many = Array.from({ length: 30 }, (_, i) =>
+      commit(`sha${String(i).padStart(4, '0')}aaaa`, `commit ${i}`),
     )
-    setup('ddd4444ddd4444')
-    await waitFor(() =>
-      expect(screen.getByText('deployed')).toBeInTheDocument(),
-    )
-    expect(screen.getByText('the running commit')).toBeInTheDocument()
+    setup('sha0027aaaa', many)
+    expect(screen.getByText('deployed')).toBeInTheDocument()
+    expect(screen.getByText('commit 27')).toBeInTheDocument()
     expect(screen.getByText('… older commits not shown')).toBeInTheDocument()
-    // Everything in the window is newer than the pinned current commit.
-    expect(screen.getAllByRole('button', { name: /Deploy/ })).toHaveLength(3)
     expect(screen.queryByRole('button', { name: /Roll back/ })).toBeNull()
+  })
+
+  it('pins a bare-SHA row when the deployed commit is not synced at all', () => {
+    setup('fff9999fff9999')
+    expect(screen.getByText('deployed')).toBeInTheDocument()
+    expect(
+      screen.getByText('Not in the synced commit history — try a sync'),
+    ).toBeInTheDocument()
+  })
+
+  it('prompts for a sync when no commits are synced', () => {
+    setup('bbb2222bbb2222', [])
+    expect(
+      screen.getByText(
+        'No synced commits yet — run a sync from the pipeline sidebar.',
+      ),
+    ).toBeInTheDocument()
   })
 })

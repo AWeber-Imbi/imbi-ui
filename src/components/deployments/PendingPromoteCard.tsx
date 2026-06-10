@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import {
   ArrowUp,
   Check,
@@ -10,12 +10,11 @@ import {
   Sparkles,
 } from 'lucide-react'
 
-import { compareDeploymentRefs, draftReleaseNotes } from '@/api/endpoints'
+import { draftReleaseNotes } from '@/api/endpoints'
 import { ReleaseCommitPicker } from '@/components/releases/ReleaseCommitPicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { LoadingState } from '@/components/ui/loading-state'
 import { Textarea } from '@/components/ui/textarea'
 import type { ChipColors } from '@/lib/chip-colors'
 import { SEMVER_RE } from '@/lib/semver'
@@ -38,6 +37,7 @@ interface PendingPromoteCardProps {
  * Always-on inline promote form: the upstream environment runs untagged
  * commits, so moving them here cuts a new tag and rolls it out. Pick the
  * newest commit to include, set the tag + notes (AI-drafted), promote.
+ * The commit range comes from imbi's synced history (stage.pendingCommits).
  */
 // fallow-ignore-next-line complexity
 export function PendingPromoteCard({
@@ -51,26 +51,8 @@ export function PendingPromoteCard({
   const upstreamName = stage.upstream?.name ?? 'upstream'
   const lastTag = stage.current?.release?.tag ?? null
   const fromTipSha = stage.upstreamCurrent?.release?.committish ?? null
-
-  const compareEnabled = !!lastTag && !!fromTipSha && lastTag !== fromTipSha
-  const { data: compare, isLoading: compareLoading } = useQuery({
-    enabled: compareEnabled,
-    queryFn: ({ signal }) =>
-      compareDeploymentRefs(
-        orgSlug,
-        projectId,
-        lastTag ?? '',
-        fromTipSha ?? '',
-        undefined,
-        signal,
-      ),
-    queryKey: ['compare', orgSlug, projectId, lastTag, fromTipSha],
-  })
-  // Newest-first for the picker (the API returns oldest-first).
-  const commits = useMemo(
-    () => [...(compare?.commits ?? [])].reverse(),
-    [compare],
-  )
+  // Already newest-first from the synced ClickHouse history.
+  const commits = stage.pendingCommits
 
   const [selectedSha, setSelectedSha] = useState<null | string>(null)
   useEffect(() => {
@@ -117,8 +99,8 @@ export function PendingPromoteCard({
     )
   }
 
-  // Synced: the diff between this env's tag and the upstream tip is empty.
-  if (compareEnabled && !compareLoading && compare && commits.length === 0) {
+  // Synced: nothing newer than this env's release is deployed upstream.
+  if (lastTag && commits.length === 0) {
     return <UpToDateCard upstreamName={upstreamName} />
   }
 
@@ -152,14 +134,11 @@ export function PendingPromoteCard({
       }
     >
       <div className="flex flex-col gap-4 px-4 py-4">
-        {compare ? (
+        {commits.length > 0 ? (
           <div className="text-tertiary flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs">
-            <span>{compare.commits.length} commits</span>
-            <span>{compare.files_changed} files</span>
-            <span className="text-success">+{compare.additions}</span>
-            <span className="text-danger">−{compare.deletions}</span>
+            <span>{commits.length} commits</span>
             <span className="ml-auto">
-              {lastTag} … {fromTipSha.slice(0, 7)}
+              {lastTag ?? '—'} … {fromTipSha.slice(0, 7)}
             </span>
           </div>
         ) : null}
@@ -175,13 +154,9 @@ export function PendingPromoteCard({
               </span>
             ) : null}
           </div>
-          {compareEnabled && compareLoading ? (
-            <LoadingState label="Loading commits…" />
-          ) : !compareEnabled ? (
+          {commits.length === 0 ? (
             <p className="border-secondary text-tertiary rounded-md border p-3 text-sm">
-              {lastTag
-                ? 'No commit delta to compare for this selection.'
-                : `No prior release to compare against — promoting tags ${upstreamName}'s current commit.`}
+              {`No prior release to compare against — promoting tags ${upstreamName}'s current commit.`}
             </p>
           ) : (
             <ReleaseCommitPicker
@@ -236,7 +211,7 @@ export function PendingPromoteCard({
                   {draft.degraded ? ' (AI unavailable)' : ''}
                 </>
               ) : (
-                `${compare?.commits.length ?? 0} commits considered`
+                `${commits.length} commits considered`
               )}
             </span>
             <Button

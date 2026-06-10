@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { listCurrentReleases, listPromotionOptions } from '@/api/endpoints'
+import { listCurrentReleases, listRecentCommits } from '@/api/endpoints'
 import { getReleaseHistory } from '@/api/releases'
 import type { DeploymentRunStarted } from '@/components/deploy/DeploymentModal'
 import { LoadingState } from '@/components/ui/loading-state'
@@ -14,6 +14,7 @@ import { EnvironmentDetail } from './EnvironmentDetail'
 import { EnvironmentNav } from './EnvironmentNav'
 import { buildPipeline, defaultStageSlug } from './pipeline'
 import { useDeploymentActions } from './useDeploymentActions'
+import { useDeploymentSync } from './useDeploymentSync'
 
 interface DeploymentsTabProps {
   canTrigger: boolean
@@ -26,10 +27,18 @@ interface DeploymentsTabProps {
   readiness: 'connected' | 'disconnected' | 'error' | 'loading'
 }
 
+// Synced default-branch commits to consider; covers the realistic gap
+// between the oldest deployed environment and the branch tip.
+const COMMIT_WINDOW = 200
+
 /**
  * Project-detail Deployments tab: an environment sidebar (descending
  * sort order) and a per-environment detail pane for deploying,
  * promoting, and rolling back.
+ *
+ * Reads exclusively from imbi's synced data (graph releases + the
+ * ClickHouse commit/tag history) — never the live source host. The
+ * sidebar's sync action refreshes commits, tags, and releases.
  */
 // fallow-ignore-next-line complexity
 export function DeploymentsTab({
@@ -62,40 +71,36 @@ export function DeploymentsTab({
     queryFn: ({ signal }) => getReleaseHistory(orgSlug, projectId, signal),
     queryKey: ['releaseHistory', orgSlug, projectId],
   })
-  // Adjacent-env commit counts for the sidebar badges; tolerated as
-  // best-effort (the endpoint already degrades per-pair on plugin
-  // failures).
-  const { data: promotionOptions = [] } = useQuery({
+  const {
+    data: recentCommits = [],
+    error: commitsError,
+    isLoading: commitsLoading,
+  } = useQuery({
     enabled,
-    queryFn: ({ signal }) => listPromotionOptions(orgSlug, projectId, signal),
-    queryKey: ['promotionOptions', orgSlug, projectId],
+    queryFn: ({ signal }) =>
+      listRecentCommits(orgSlug, projectId, { limit: COMMIT_WINDOW }, signal),
+    queryKey: ['recentCommits', orgSlug, projectId],
   })
 
   const stages = useMemo(
-    () => buildPipeline(environments, currentReleases, history),
-    [environments, currentReleases, history],
+    () => buildPipeline(environments, currentReleases, history, recentCommits),
+    [environments, currentReleases, history, recentCommits],
   )
-  const pendingCommitsBySlug = useMemo(() => {
-    const out: Record<string, null | number | undefined> = {}
-    for (const option of promotionOptions) {
-      out[option.to_environment] = option.commits_pending
-    }
-    return out
-  }, [promotionOptions])
 
   const [selectedSlug, setSelectedSlug] = useState<null | string>(null)
   const effectiveSlug =
     selectedSlug && stages.some((s) => s.env.slug === selectedSlug)
       ? selectedSlug
-      : defaultStageSlug(stages, pendingCommitsBySlug)
+      : defaultStageSlug(stages)
   const selectedStage = stages.find((s) => s.env.slug === effectiveSlug) ?? null
 
   const actions = useDeploymentActions({ onRunStarted, orgSlug, projectId })
+  const { isSyncing, sync } = useDeploymentSync(orgSlug, projectId)
 
-  if (currentLoading || historyLoading) {
+  if (currentLoading || historyLoading || commitsLoading) {
     return <LoadingState label="Loading deployments…" />
   }
-  if (currentError || historyError) {
+  if (currentError || historyError || commitsError) {
     return (
       <div className="border-tertiary text-tertiary rounded-lg border p-6 text-center text-sm">
         Could not load deployment data for this project.
@@ -115,8 +120,9 @@ export function DeploymentsTab({
       <EnvironmentNav
         connectLabel={connectLabel}
         isDarkMode={isDarkMode}
+        isSyncing={isSyncing}
         onSelect={setSelectedSlug}
-        pendingCommitsBySlug={pendingCommitsBySlug}
+        onSync={sync}
         readiness={readiness}
         selectedSlug={effectiveSlug}
         stages={stages}
@@ -132,6 +138,7 @@ export function DeploymentsTab({
           canTrigger={canTrigger}
           orgSlug={orgSlug}
           projectId={projectId}
+          recentCommits={recentCommits}
           stage={selectedStage}
         />
       ) : null}

@@ -6,6 +6,7 @@ import { render } from '@/test/utils'
 import type {
   CurrentReleaseEnvironment,
   Environment,
+  RecentCommit,
   ReleaseHistoryEntry,
 } from '@/types'
 
@@ -47,11 +48,20 @@ const release = (tag: string): ReleaseHistoryEntry => ({
   tag,
 })
 
+const commit = (sha: string): RecentCommit => ({
+  authored_at: '2026-06-01T00:00:00Z',
+  ci_status: 'pass',
+  message: `change ${sha}`,
+  sha,
+  short_sha: sha.slice(0, 7),
+})
+
 const STAGES: PipelineStage[] = [
   {
     current: current('testing', null, 'ddd444ddd444'),
     env: env('testing', 'Testing', 1),
     kind: 'commit',
+    pendingCommits: [],
     pendingReleases: [],
     rollbackTargets: [],
     upstream: null,
@@ -61,6 +71,7 @@ const STAGES: PipelineStage[] = [
     current: current('staging', 'v6.5.2', 'ccc333ccc333'),
     env: env('staging', 'Staging', 2),
     kind: 'promote',
+    pendingCommits: Array.from({ length: 8 }, (_, i) => commit(`sha${i}aaaa`)),
     pendingReleases: [],
     rollbackTargets: [],
     upstream: env('testing', 'Testing', 1),
@@ -70,6 +81,7 @@ const STAGES: PipelineStage[] = [
     current: current('production', 'v6.5.0', 'aaa111aaa111'),
     env: env('production', 'Production', 3),
     kind: 'release',
+    pendingCommits: [],
     pendingReleases: [release('v6.5.2'), release('v6.5.1')],
     rollbackTargets: [],
     upstream: env('staging', 'Staging', 2),
@@ -77,20 +89,29 @@ const STAGES: PipelineStage[] = [
   },
 ]
 
+const renderNav = (
+  overrides: Partial<Parameters<typeof EnvironmentNav>[0]> = {},
+) =>
+  render(
+    <EnvironmentNav
+      connectLabel="GitHub"
+      isDarkMode={false}
+      isSyncing={false}
+      onSelect={() => {}}
+      onSync={() => {}}
+      readiness="connected"
+      selectedSlug="staging"
+      stages={STAGES}
+      {...overrides}
+    />,
+  )
+
 describe('EnvironmentNav', () => {
   it('renders environments in descending sort order', () => {
-    render(
-      <EnvironmentNav
-        connectLabel="GitHub"
-        isDarkMode={false}
-        onSelect={() => {}}
-        pendingCommitsBySlug={{}}
-        readiness="connected"
-        selectedSlug="staging"
-        stages={STAGES}
-      />,
-    )
-    const buttons = screen.getAllByRole('button')
+    renderNav()
+    const buttons = screen
+      .getAllByRole('button')
+      .filter((b) => /Testing|Staging|Production/.test(b.textContent ?? ''))
     expect(buttons.map((b) => b.textContent)).toEqual([
       expect.stringContaining('Production'),
       expect.stringContaining('Staging'),
@@ -99,17 +120,7 @@ describe('EnvironmentNav', () => {
   })
 
   it('badges pending releases and pending commits', () => {
-    render(
-      <EnvironmentNav
-        connectLabel="GitHub"
-        isDarkMode={false}
-        onSelect={() => {}}
-        pendingCommitsBySlug={{ staging: 8 }}
-        readiness="connected"
-        selectedSlug="staging"
-        stages={STAGES}
-      />,
-    )
+    renderNav()
     // Production shows the newest pending release tag.
     expect(
       screen.getByTitle('Release v6.5.2 is waiting to deploy here'),
@@ -124,33 +135,30 @@ describe('EnvironmentNav', () => {
   it('invokes onSelect with the clicked environment slug', async () => {
     const onSelect = vi.fn()
     const user = userEvent.setup()
-    render(
-      <EnvironmentNav
-        connectLabel="GitHub"
-        isDarkMode={false}
-        onSelect={onSelect}
-        pendingCommitsBySlug={{}}
-        readiness="connected"
-        selectedSlug="staging"
-        stages={STAGES}
-      />,
-    )
+    renderNav({ onSelect })
     await user.click(screen.getByRole('button', { name: /Production/ }))
     expect(onSelect).toHaveBeenCalledWith('production')
   })
 
-  it('shows the connect hint when disconnected', () => {
-    render(
-      <EnvironmentNav
-        connectLabel="GitHub"
-        isDarkMode={false}
-        onSelect={() => {}}
-        pendingCommitsBySlug={{}}
-        readiness="disconnected"
-        selectedSlug={null}
-        stages={STAGES}
-      />,
+  it('triggers the sync action and disables while syncing', async () => {
+    const onSync = vi.fn()
+    const user = userEvent.setup()
+    renderNav({ onSync })
+    await user.click(
+      screen.getByRole('button', { name: 'Sync commits, tags & releases' }),
     )
+    expect(onSync).toHaveBeenCalled()
+  })
+
+  it('disables the sync button while a sync is running', () => {
+    renderNav({ isSyncing: true })
+    expect(
+      screen.getByRole('button', { name: 'Sync commits, tags & releases' }),
+    ).toBeDisabled()
+  })
+
+  it('shows the connect hint when disconnected', () => {
+    renderNav({ readiness: 'disconnected', selectedSlug: null })
     expect(
       screen.getByText('Connect to GitHub to enable deployments'),
     ).toBeInTheDocument()

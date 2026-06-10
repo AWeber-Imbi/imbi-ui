@@ -1,4 +1,5 @@
 import type { ChipColors } from '@/lib/chip-colors'
+import type { RecentCommit } from '@/types'
 
 import { CommitDeployCard } from './CommitDeployCard'
 import { CurrentlyRunningCard } from './CurrentlyRunningCard'
@@ -13,6 +14,8 @@ interface EnvironmentDetailProps {
   canTrigger: boolean
   orgSlug: string
   projectId: string
+  /** Synced default-branch commit history, newest first. */
+  recentCommits: RecentCommit[]
   stage: PipelineStage
 }
 
@@ -28,6 +31,7 @@ export function EnvironmentDetail({
   canTrigger,
   orgSlug,
   projectId,
+  recentCommits,
   stage,
 }: EnvironmentDetailProps) {
   if (stage.kind === 'commit') {
@@ -36,8 +40,7 @@ export function EnvironmentDetail({
         accent={accent}
         actions={actions}
         canTrigger={canTrigger}
-        orgSlug={orgSlug}
-        projectId={projectId}
+        recentCommits={recentCommits}
         stage={stage}
       />
     )
@@ -58,8 +61,7 @@ export function EnvironmentDetail({
           accent={accent}
           actions={actions}
           canTrigger={canTrigger}
-          orgSlug={orgSlug}
-          projectId={projectId}
+          recentCommits={recentCommits}
           stage={stage}
         />
       )}

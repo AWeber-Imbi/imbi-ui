@@ -20,8 +20,12 @@ export function useCommitSync(
   orgSlug: string,
   projectId: string,
   enabled: boolean,
+  /** Invoked when a run completes successfully (e.g. to refresh data). */
+  onComplete?: () => void,
 ) {
   const queryClient = useQueryClient()
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
 
   const statusQuery = useQuery({
     enabled: enabled && !!orgSlug && !!projectId,
@@ -41,6 +45,7 @@ export function useCommitSync(
     if (!data) return
     if (isActive(previous.current) && !isActive(data.status)) {
       announceTerminal(data)
+      if (data.status === 'success') onCompleteRef.current?.()
     }
     previous.current = data.status
   }, [statusQuery.data])

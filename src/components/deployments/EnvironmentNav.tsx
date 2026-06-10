@@ -1,5 +1,19 @@
-import { ArrowUp, Check, GitMerge, Loader2, Plug, PlugZap } from 'lucide-react'
+import {
+  ArrowUp,
+  Check,
+  GitMerge,
+  Loader2,
+  Plug,
+  PlugZap,
+  RefreshCw,
+} from 'lucide-react'
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { deriveChipColors } from '@/lib/chip-colors'
 import { cn } from '@/lib/utils'
 
@@ -8,9 +22,9 @@ import type { PipelineStage } from './pipeline'
 interface EnvironmentNavProps {
   connectLabel: string
   isDarkMode: boolean
+  isSyncing: boolean
   onSelect: (slug: string) => void
-  /** Commits pending per target env slug (promote-kind badge counts). */
-  pendingCommitsBySlug: Record<string, null | number | undefined>
+  onSync: () => void
   readiness: Readiness
   selectedSlug: null | string
   /** Stages in ascending sort order; rendered descending (last env first). */
@@ -23,8 +37,9 @@ type Readiness = 'connected' | 'disconnected' | 'error' | 'loading'
 export function EnvironmentNav({
   connectLabel,
   isDarkMode,
+  isSyncing,
   onSelect,
-  pendingCommitsBySlug,
+  onSync,
   readiness,
   selectedSlug,
   stages,
@@ -71,16 +86,33 @@ export function EnvironmentNav({
                 {version}
               </span>
             </span>
-            <StageBadge
-              accent={accent}
-              pendingCommits={pendingCommitsBySlug[stage.env.slug]}
-              stage={stage}
-            />
+            <StageBadge accent={accent} stage={stage} />
           </button>
         )
       })}
-      <div className="border-tertiary mt-2 border-t px-2 pt-2.5 pb-1">
+      <div className="border-tertiary mt-2 flex items-center justify-between gap-2 border-t px-2 pt-2.5 pb-1">
         <ConnectionStatus connectLabel={connectLabel} readiness={readiness} />
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                aria-label="Sync commits, tags & releases"
+                className="text-tertiary hover:text-primary shrink-0 cursor-pointer rounded p-1 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isSyncing}
+                onClick={onSync}
+                type="button"
+              >
+                <RefreshCw
+                  className={cn(isSyncing && 'animate-spin')}
+                  size={14}
+                />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Sync commits, tags & releases</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </nav>
   )
@@ -122,11 +154,9 @@ function ConnectionStatus({
 // fallow-ignore-next-line complexity
 function StageBadge({
   accent,
-  pendingCommits,
   stage,
 }: {
   accent: null | ReturnType<typeof deriveChipColors>
-  pendingCommits: null | number | undefined
   stage: PipelineStage
 }) {
   if (stage.kind === 'release' && stage.pendingReleases.length > 0) {
@@ -144,17 +174,17 @@ function StageBadge({
       </span>
     )
   }
-  if (stage.kind === 'promote' && (pendingCommits ?? 0) > 0) {
+  if (stage.kind === 'promote' && stage.pendingCommits.length > 0) {
     return (
       <span
         className="bg-secondary inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
         style={
           accent ? { backgroundColor: accent.bg, color: accent.fg } : undefined
         }
-        title={`${pendingCommits} commits waiting to promote here`}
+        title={`${stage.pendingCommits.length} commits waiting to promote here`}
       >
         <ArrowUp size={11} />
-        {pendingCommits}
+        {stage.pendingCommits.length}
       </span>
     )
   }

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { useQuery } from '@tanstack/react-query'
 import {
   Check,
   ChevronDown,
@@ -11,16 +10,16 @@ import {
   Rocket,
 } from 'lucide-react'
 
-import { compareDeploymentRefs } from '@/api/endpoints'
 import { CiStatusDot } from '@/components/releases/CiStatusDot'
 import { Button } from '@/components/ui/button'
 import type { ChipColors } from '@/lib/chip-colors'
 import { formatRelativeDate } from '@/lib/formatDate'
 import { cn } from '@/lib/utils'
-import type { ReleaseHistoryEntry } from '@/types'
+import type { RecentCommit, ReleaseHistoryEntry } from '@/types'
 
 import { UpToDateCard } from './PendingPromoteCard'
 import type { PipelineStage } from './pipeline'
+import { commitRange, compareTags } from './pipeline'
 import { ReleaseNotesMarkdown } from './ReleaseNotesMarkdown'
 import { StageCardShell } from './StageCardShell'
 import type { DeploymentActions } from './useDeploymentActions'
@@ -29,8 +28,8 @@ interface PendingReleasesCardProps {
   accent: ChipColors | null
   actions: DeploymentActions
   canTrigger: boolean
-  orgSlug: string
-  projectId: string
+  /** Synced default-branch commit history, newest first. */
+  recentCommits: RecentCommit[]
   stage: PipelineStage
 }
 
@@ -45,8 +44,7 @@ export function PendingReleasesCard({
   accent,
   actions,
   canTrigger,
-  orgSlug,
-  projectId,
+  recentCommits,
   stage,
 }: PendingReleasesCardProps) {
   const pending = stage.pendingReleases
@@ -63,6 +61,12 @@ export function PendingReleasesCard({
   const rolledUp = pending.slice(activeIdx + 1).map((rel) => rel.tag)
   const stillPending = pending.slice(0, activeIdx).map((rel) => rel.tag)
   const canSubmit = canTrigger && !actions.deployPending
+  // The upstream can legitimately run a release that semver-ranks below
+  // this env's current one (divergent lines / roll-forward of an older
+  // line) — deployable, but worth calling out.
+  const currentTag = stage.current?.release?.tag ?? null
+  const cmp = compareTags(active.tag, currentTag)
+  const isDowngrade = cmp != null && cmp < 0
 
   return (
     <StageCardShell
@@ -133,8 +137,7 @@ export function PendingReleasesCard({
           <>
             <SingleReleaseChanges
               entry={active}
-              orgSlug={orgSlug}
-              projectId={projectId}
+              recentCommits={recentCommits}
               stage={stage}
             />
             <section>
@@ -148,6 +151,18 @@ export function PendingReleasesCard({
             </section>
           </>
         )}
+
+        {isDowngrade ? (
+          <div className="border-warning bg-warning text-warning flex gap-2 rounded-md border px-3 py-2.5">
+            <Info className="mt-0.5 size-3.5 shrink-0" />
+            <span className="text-xs leading-relaxed">
+              <span className="font-mono">{active.tag}</span> ranks below the{' '}
+              <span className="font-mono">{currentTag}</span> currently running
+              in {stage.env.name.toLowerCase()} — deploying it rolls this
+              environment to the older release line.
+            </span>
+          </div>
+        ) : null}
 
         <div className="border-tertiary flex items-center justify-end gap-2 border-t pt-4">
           <Button
@@ -266,70 +281,51 @@ function ReleaseStack({
   )
 }
 
-/** Diff summary + commit list for the single-pending-release case. */
+/**
+ * Commit list for the single-pending-release case, sliced from the
+ * synced history between the env's current release and the pending one.
+ */
 function SingleReleaseChanges({
   entry,
-  orgSlug,
-  projectId,
+  recentCommits,
   stage,
 }: {
   entry: ReleaseHistoryEntry
-  orgSlug: string
-  projectId: string
+  recentCommits: RecentCommit[]
   stage: PipelineStage
 }) {
-  const base = stage.current?.release?.tag ?? null
-  const { data: compare } = useQuery({
-    enabled: !!base && base !== entry.tag,
-    queryFn: ({ signal }) =>
-      compareDeploymentRefs(
-        orgSlug,
-        projectId,
-        base ?? '',
-        entry.sha,
-        undefined,
-        signal,
-      ),
-    queryKey: ['compare', orgSlug, projectId, base, entry.sha],
-  })
-  if (!compare) return null
+  const baseSha = stage.current?.release?.committish ?? null
+  const commits = commitRange(recentCommits, entry.sha, baseSha)
+  if (commits.length === 0) return null
   return (
     <div className="flex flex-col gap-3">
       <div className="text-tertiary flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs">
-        <span>{compare.commits.length} commits</span>
-        <span>{compare.files_changed} files</span>
-        <span className="text-success">+{compare.additions}</span>
-        <span className="text-danger">−{compare.deletions}</span>
+        <span>{commits.length} commits</span>
         <span className="ml-auto">
-          {base} … {entry.tag}
+          {stage.current?.release?.tag ?? '—'} … {entry.tag}
         </span>
       </div>
-      {compare.commits.length > 0 ? (
-        <section>
-          <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
-            Changes in{' '}
-            <span className="font-mono normal-case">{entry.tag}</span>
-          </p>
-          <ul className="border-tertiary max-h-60 overflow-y-auto rounded-md border">
-            {[...compare.commits].reverse().map((c) => (
-              <li
-                className="border-tertiary flex min-w-0 items-center gap-3 border-b px-3 py-1.5 last:border-b-0"
-                key={c.sha}
-              >
-                <span className="shrink-0 font-mono text-xs">
-                  {c.short_sha}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm">
-                  {c.message.split('\n')[0]}
-                </span>
-                {c.ci_status !== 'unknown' ? (
-                  <CiStatusDot status={c.ci_status} />
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <section>
+        <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
+          Changes in <span className="font-mono normal-case">{entry.tag}</span>
+        </p>
+        <ul className="border-tertiary max-h-60 overflow-y-auto rounded-md border">
+          {commits.map((c) => (
+            <li
+              className="border-tertiary flex min-w-0 items-center gap-3 border-b px-3 py-1.5 last:border-b-0"
+              key={c.sha}
+            >
+              <span className="shrink-0 font-mono text-xs">{c.short_sha}</span>
+              <span className="min-w-0 flex-1 truncate text-sm">
+                {c.message.split('\n')[0]}
+              </span>
+              {c.ci_status !== 'unknown' ? (
+                <CiStatusDot status={c.ci_status} />
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   )
 }
