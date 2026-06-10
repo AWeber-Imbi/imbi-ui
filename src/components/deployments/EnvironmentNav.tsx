@@ -8,6 +8,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
+import { EntityIcon } from '@/components/ui/entity-icon'
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +28,9 @@ interface EnvironmentNavProps {
   onSync: () => void
   readiness: Readiness
   selectedSlug: null | string
+  /** Third-party service powering the deployment plugin. */
+  serviceIcon: null | string
+  serviceLabel: null | string
   /** Stages in ascending sort order; rendered descending (last env first). */
   stages: PipelineStage[]
 }
@@ -42,6 +46,8 @@ export function EnvironmentNav({
   onSync,
   readiness,
   selectedSlug,
+  serviceIcon,
+  serviceLabel,
   stages,
 }: EnvironmentNavProps) {
   return (
@@ -91,7 +97,12 @@ export function EnvironmentNav({
         )
       })}
       <div className="border-tertiary mt-2 flex items-center justify-between gap-2 border-t px-2 pt-2.5 pb-1">
-        <ConnectionStatus connectLabel={connectLabel} readiness={readiness} />
+        <ConnectionStatus
+          connectLabel={connectLabel}
+          readiness={readiness}
+          serviceIcon={serviceIcon}
+          serviceLabel={serviceLabel}
+        />
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -121,15 +132,23 @@ export function EnvironmentNav({
 function ConnectionStatus({
   connectLabel,
   readiness,
+  serviceIcon,
+  serviceLabel,
 }: {
   connectLabel: string
   readiness: Readiness
+  serviceIcon: null | string
+  serviceLabel: null | string
 }) {
   if (readiness === 'connected') {
     return (
       <span className="text-success inline-flex items-center gap-1.5 text-xs">
-        <PlugZap size={13} />
-        {connectLabel} connected
+        {serviceIcon ? (
+          <EntityIcon className="size-3.5" icon={serviceIcon} />
+        ) : (
+          <PlugZap size={13} />
+        )}
+        {serviceLabel ?? connectLabel}
       </span>
     )
   }

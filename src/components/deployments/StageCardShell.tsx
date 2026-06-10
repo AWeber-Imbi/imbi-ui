@@ -6,6 +6,8 @@ import type { ChipColors } from '@/lib/chip-colors'
 
 interface StageCardShellProps {
   accent: ChipColors | null
+  /** Right-aligned element in the header strip (e.g. an environment URL). */
+  aside?: ReactNode
   children: ReactNode
   icon: LucideIcon
   subtitle?: ReactNode
@@ -18,6 +20,7 @@ interface StageCardShellProps {
  */
 export function StageCardShell({
   accent,
+  aside,
   children,
   icon: Icon,
   subtitle,
@@ -25,7 +28,7 @@ export function StageCardShell({
 }: StageCardShellProps) {
   return (
     <div
-      className="border-tertiary overflow-hidden rounded-lg border"
+      className="border-tertiary bg-primary overflow-hidden rounded-lg border"
       style={accent ? { borderColor: accent.border } : undefined}
     >
       <div
@@ -57,6 +60,7 @@ export function StageCardShell({
             </div>
           ) : null}
         </div>
+        {aside ? <div className="shrink-0">{aside}</div> : null}
       </div>
       {children}
     </div>

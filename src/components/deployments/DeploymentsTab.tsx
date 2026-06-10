@@ -25,6 +25,9 @@ interface DeploymentsTabProps {
   orgSlug: string
   projectId: string
   readiness: 'connected' | 'disconnected' | 'error' | 'loading'
+  /** Third-party service powering the deployment plugin. */
+  serviceIcon: null | string
+  serviceLabel: null | string
 }
 
 // Synced default-branch commits to consider; covers the realistic gap
@@ -49,6 +52,8 @@ export function DeploymentsTab({
   orgSlug,
   projectId,
   readiness,
+  serviceIcon,
+  serviceLabel,
 }: DeploymentsTabProps) {
   const { isDarkMode } = useTheme()
   const enabled = !!orgSlug && !!projectId
@@ -125,6 +130,8 @@ export function DeploymentsTab({
         onSync={sync}
         readiness={readiness}
         selectedSlug={effectiveSlug}
+        serviceIcon={serviceIcon}
+        serviceLabel={serviceLabel}
         stages={stages}
       />
       {selectedStage ? (

@@ -66,6 +66,7 @@ export function EnvironmentDetail({
         />
       )}
       <CurrentlyRunningCard
+        accent={accent}
         actions={actions}
         canTrigger={canTrigger}
         stage={stage}

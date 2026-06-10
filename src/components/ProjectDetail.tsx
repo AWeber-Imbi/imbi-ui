@@ -1204,6 +1204,8 @@ export function ProjectDetail({
               orgSlug={orgSlug}
               projectId={project.id}
               readiness={deploymentReadiness}
+              serviceIcon={deploymentPlugin?.service_icon ?? null}
+              serviceLabel={deploymentPlugin?.service_name ?? null}
             />
           </TabsContent>
         )}

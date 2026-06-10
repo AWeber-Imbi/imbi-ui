@@ -73,7 +73,12 @@ const makeActions = (): DeploymentActions => ({
 describe('CurrentlyRunningCard', () => {
   it('shows the running version, deployer, and environment URL', () => {
     render(
-      <CurrentlyRunningCard actions={makeActions()} canTrigger stage={STAGE} />,
+      <CurrentlyRunningCard
+        accent={null}
+        actions={makeActions()}
+        canTrigger
+        stage={STAGE}
+      />,
     )
     expect(screen.getByText('v6.5.0')).toBeInTheDocument()
     expect(screen.getByText('gavin')).toBeInTheDocument()
@@ -83,7 +88,12 @@ describe('CurrentlyRunningCard', () => {
   it('expands a recent release into its notes', async () => {
     const user = userEvent.setup()
     render(
-      <CurrentlyRunningCard actions={makeActions()} canTrigger stage={STAGE} />,
+      <CurrentlyRunningCard
+        accent={null}
+        actions={makeActions()}
+        canTrigger
+        stage={STAGE}
+      />,
     )
     await user.click(screen.getByRole('button', { name: /v6\.4\.0/ }))
     expect(screen.getByText('old fix')).toBeInTheDocument()
@@ -92,7 +102,14 @@ describe('CurrentlyRunningCard', () => {
   it('rolls back through the confirm dialog', async () => {
     const actions = makeActions()
     const user = userEvent.setup()
-    render(<CurrentlyRunningCard actions={actions} canTrigger stage={STAGE} />)
+    render(
+      <CurrentlyRunningCard
+        accent={null}
+        actions={actions}
+        canTrigger
+        stage={STAGE}
+      />,
+    )
     await user.click(screen.getByRole('button', { name: 'Roll back' }))
     await user.click(
       screen.getByRole('button', { name: 'Roll back to v6.4.0' }),

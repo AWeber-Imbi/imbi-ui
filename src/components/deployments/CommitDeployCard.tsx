@@ -11,6 +11,7 @@ import {
 import { CiStatusDot } from '@/components/releases/CiStatusDot'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { isBotActor, UserIdentity } from '@/components/ui/user-identity'
 import type { ChipColors } from '@/lib/chip-colors'
 import type { RecentCommit } from '@/types'
 
@@ -197,8 +198,13 @@ function CommitRow({
         <CiStatusDot status={commit.ci_status} />
       ) : null}
       {commit.author ? (
-        <span className="text-tertiary hidden shrink-0 text-xs sm:inline">
-          {commit.author}
+        <span className="hidden shrink-0 sm:inline">
+          <UserIdentity
+            email={commit.author_email}
+            kind={isBotActor(commit.author) ? 'bot' : 'user'}
+            name={commit.author}
+            size="small"
+          />
         </span>
       ) : null}
       {commit.url ? (

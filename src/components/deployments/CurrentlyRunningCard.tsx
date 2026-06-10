@@ -4,15 +4,16 @@ import { formatDistanceToNow } from 'date-fns'
 import {
   ChevronDown,
   ChevronRight,
+  CircleDot,
   Clock,
-  ExternalLink,
   Globe,
   RotateCcw,
-  User,
 } from 'lucide-react'
 
 import { CiStatusDot } from '@/components/releases/CiStatusDot'
 import { Button } from '@/components/ui/button'
+import { isBotActor, UserIdentity } from '@/components/ui/user-identity'
+import type { ChipColors } from '@/lib/chip-colors'
 import { formatRelativeDate } from '@/lib/formatDate'
 import { cn } from '@/lib/utils'
 import type { ReleaseHistoryEntry } from '@/types'
@@ -20,9 +21,11 @@ import type { ReleaseHistoryEntry } from '@/types'
 import { ConfirmActionDialog } from './ConfirmActionDialog'
 import type { PipelineStage } from './pipeline'
 import { ReleaseNotesMarkdown } from './ReleaseNotesMarkdown'
+import { StageCardShell } from './StageCardShell'
 import type { DeploymentActions } from './useDeploymentActions'
 
 interface CurrentlyRunningCardProps {
+  accent: ChipColors | null
   actions: DeploymentActions
   canTrigger: boolean
   stage: PipelineStage
@@ -34,6 +37,7 @@ interface CurrentlyRunningCardProps {
  */
 // fallow-ignore-next-line complexity
 export function CurrentlyRunningCard({
+  accent,
   actions,
   canTrigger,
   stage,
@@ -44,41 +48,25 @@ export function CurrentlyRunningCard({
   const envUrl = stage.env.url ?? null
 
   return (
-    <div className="border-tertiary rounded-lg border px-4 py-3.5">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-tertiary text-xs tracking-wider uppercase">
-          Currently running
-        </p>
-        {envUrl ? (
+    <StageCardShell
+      accent={accent}
+      aside={
+        envUrl ? (
           <a
-            className="text-tertiary hover:text-primary inline-flex items-center gap-1.5 text-xs"
+            className="inline-flex items-center gap-1.5 text-xs hover:underline"
             href={envUrl}
             rel="noopener noreferrer"
             target="_blank"
           >
-            <Globe size={13} />
+            <Globe size={12} />
             {envUrl.replace(/^https?:\/\//, '')}
           </a>
-        ) : null}
-      </div>
-
-      {release ? (
-        <>
-          <div className="mt-2 flex items-baseline gap-2.5">
-            <span className="font-mono text-xl font-semibold">
-              {release.tag ?? release.committish.slice(0, 7)}
-            </span>
-            {release.tag ? (
-              <span className="text-tertiary font-mono text-xs">
-                {release.committish.slice(0, 7)}
-              </span>
-            ) : null}
-            {stage.current?.ci_status &&
-            stage.current.ci_status !== 'unknown' ? (
-              <CiStatusDot status={stage.current.ci_status} />
-            ) : null}
-          </div>
-          <div className="text-tertiary mt-2 flex flex-wrap items-center gap-4 text-xs">
+        ) : undefined
+      }
+      icon={CircleDot}
+      subtitle={
+        release ? (
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {stage.current?.last_event_at ? (
               <span className="inline-flex items-center gap-1.5">
                 <Clock size={13} />
@@ -89,38 +77,66 @@ export function CurrentlyRunningCard({
               </span>
             ) : null}
             {stage.current?.performed_by ? (
-              <span className="inline-flex items-center gap-1.5">
-                <User size={13} />
-                {stage.current.performed_by}
-              </span>
+              <>
+                <span aria-hidden="true">·</span>
+                <UserIdentity
+                  email={stage.current.performed_by_email}
+                  kind={isBotActor(stage.current.performed_by) ? 'bot' : 'user'}
+                  name={stage.current.performed_by}
+                  size="small"
+                />
+              </>
             ) : null}
-          </div>
-        </>
-      ) : (
-        <p className="text-tertiary mt-2 text-sm italic">
-          Nothing deployed yet.
-        </p>
-      )}
+          </span>
+        ) : undefined
+      }
+      title={
+        <span className="flex items-baseline gap-2.5">
+          Currently running
+          {release ? (
+            <>
+              <span className="font-mono text-base">
+                {release.tag ?? release.committish.slice(0, 7)}
+              </span>
+              {release.tag ? (
+                <span className="text-tertiary font-mono text-xs font-normal">
+                  {release.committish.slice(0, 7)}
+                </span>
+              ) : null}
+              {stage.current?.ci_status &&
+              stage.current.ci_status !== 'unknown' ? (
+                <CiStatusDot status={stage.current.ci_status} />
+              ) : null}
+            </>
+          ) : null}
+        </span>
+      }
+    >
+      <div className="px-4 py-4">
+        {release ? null : (
+          <p className="text-tertiary text-sm italic">Nothing deployed yet.</p>
+        )}
 
-      {stage.rollbackTargets.length > 0 ? (
-        <div className="border-tertiary mt-3 border-t pt-3">
-          <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
-            Recent releases
-          </p>
-          {stage.rollbackTargets.map((rel) => (
-            <RollbackRow
-              canTrigger={canTrigger}
-              isOpen={openTag === rel.tag}
-              key={rel.tag}
-              onRollback={() => setConfirming(rel)}
-              onToggle={() =>
-                setOpenTag((o) => (o === rel.tag ? null : rel.tag))
-              }
-              rel={rel}
-            />
-          ))}
-        </div>
-      ) : null}
+        {stage.rollbackTargets.length > 0 ? (
+          <div>
+            <p className="text-tertiary mb-2 text-xs tracking-wider uppercase">
+              Recent releases
+            </p>
+            {stage.rollbackTargets.map((rel) => (
+              <RollbackRow
+                canTrigger={canTrigger}
+                isOpen={openTag === rel.tag}
+                key={rel.tag}
+                onRollback={() => setConfirming(rel)}
+                onToggle={() =>
+                  setOpenTag((o) => (o === rel.tag ? null : rel.tag))
+                }
+                rel={rel}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
 
       <ConfirmActionDialog
         confirmLabel={
@@ -153,7 +169,7 @@ export function CurrentlyRunningCard({
         open={confirming !== null}
         title={`Roll back ${stage.env.name}?`}
       />
-    </div>
+    </StageCardShell>
   )
 }
 
@@ -179,7 +195,7 @@ function RollbackRow({
     >
       <div className="hover:bg-secondary flex items-center gap-3 rounded-md px-2 py-1">
         <button
-          className="grid flex-1 cursor-pointer grid-cols-[auto_auto_auto_1fr] items-center gap-3 text-left"
+          className="grid flex-1 cursor-pointer grid-cols-[0.8rem_8rem_1rem_4.5rem_1fr] items-center gap-3 text-left"
           onClick={onToggle}
           type="button"
         >
@@ -188,10 +204,8 @@ function RollbackRow({
           ) : (
             <ChevronRight className="text-tertiary size-3.5" />
           )}
-          <span className="flex items-center gap-2">
-            <span className="font-mono text-sm font-semibold">{rel.tag}</span>
-            <CiStatusDot size={13} status={rel.ci_status} />
-          </span>
+          <span className="font-mono text-sm font-semibold">{rel.tag}</span>
+          <CiStatusDot size={13} status={rel.ci_status} />
           <span className="text-tertiary font-mono text-xs">
             {rel.short_sha}
           </span>
@@ -200,37 +214,31 @@ function RollbackRow({
           </span>
         </button>
         <Button
+          className="h-7 px-2.5 text-xs"
           disabled={!canTrigger}
           onClick={onRollback}
           size="sm"
           type="button"
-          variant="ghost"
+          variant="outline"
         >
           <RotateCcw className="mr-1 size-3.5" />
           Roll back
         </Button>
       </div>
       {isOpen ? (
-        <div className="px-2 pb-3 pl-[2.1rem]">
+        <div className="px-2 pb-3 pl-8">
           <ReleaseNotesMarkdown notes={rel.notes_markdown} />
-          <div className="mt-2 flex flex-wrap items-center gap-4">
-            {rel.author ? (
-              <span className="text-tertiary text-xs">
-                released by {rel.author}
-              </span>
-            ) : null}
-            {(rel.release_url ?? rel.tag_url) ? (
-              <a
-                className="text-tertiary hover:text-primary inline-flex items-center gap-1 text-xs"
-                href={(rel.release_url ?? rel.tag_url) as string}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <ExternalLink size={12} />
-                {rel.release_url ? 'Release notes' : 'View tag'}
-              </a>
-            ) : null}
-          </div>
+          {rel.author ? (
+            <div className="text-tertiary mt-2 inline-flex items-center gap-1.5 text-xs">
+              released by
+              <UserIdentity
+                email={rel.author_email}
+                kind={isBotActor(rel.author) ? 'bot' : 'user'}
+                name={rel.author}
+                size="small"
+              />
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

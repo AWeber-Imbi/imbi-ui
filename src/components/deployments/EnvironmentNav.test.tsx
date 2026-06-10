@@ -94,13 +94,15 @@ const renderNav = (
 ) =>
   render(
     <EnvironmentNav
-      connectLabel="GitHub"
+      connectLabel="Example Identity"
       isDarkMode={false}
       isSyncing={false}
       onSelect={() => {}}
       onSync={() => {}}
       readiness="connected"
       selectedSlug="staging"
+      serviceIcon={null}
+      serviceLabel="Example Service"
       stages={STAGES}
       {...overrides}
     />,
@@ -129,7 +131,8 @@ describe('EnvironmentNav', () => {
     expect(
       screen.getByTitle('8 commits waiting to promote here'),
     ).toBeInTheDocument()
-    expect(screen.getByText('GitHub connected')).toBeInTheDocument()
+    // Connected state names the service powering the deployment plugin.
+    expect(screen.getByText('Example Service')).toBeInTheDocument()
   })
 
   it('invokes onSelect with the clicked environment slug', async () => {
@@ -160,7 +163,7 @@ describe('EnvironmentNav', () => {
   it('shows the connect hint when disconnected', () => {
     renderNav({ readiness: 'disconnected', selectedSlug: null })
     expect(
-      screen.getByText('Connect to GitHub to enable deployments'),
+      screen.getByText('Connect to Example Identity to enable deployments'),
     ).toBeInTheDocument()
   })
 })
