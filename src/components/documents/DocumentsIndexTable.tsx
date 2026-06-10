@@ -54,7 +54,7 @@ export function DocumentsIndexTable({
             className="border-tertiary bg-secondary text-overline text-tertiary grid items-center gap-3.5 border-b px-3.5 py-2 uppercase"
             style={{ gridTemplateColumns: GRID_COLUMNS }}
           >
-            <span>Project</span>
+            <span>Attached to</span>
             <span>Document</span>
             <span>Tags</span>
             <span>Author</span>

@@ -64,7 +64,7 @@ export function NewDocumentMenu({
     context === 'project'
       ? filterTemplatesByProjectType(templates, projectTypeSlugs)
       : context === 'org'
-        ? templates.filter((t) => t.type && t.type !== 'project')
+        ? templates.filter((t) => t.type !== 'project')
         : templates
 
   // Nothing to choose between — keep the fast path as a plain button.
