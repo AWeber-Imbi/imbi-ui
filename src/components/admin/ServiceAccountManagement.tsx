@@ -122,6 +122,7 @@ export function ServiceAccountManagement() {
     return (
       <ServiceAccountForm
         account={selectedAccount}
+        editingSlug={viewMode === 'edit' ? selectedAccountSlug : null}
         error={createMutation.error || updateMutation.error}
         isLoading={createMutation.isPending || updateMutation.isPending}
         key={selectedAccount?.slug ?? 'new'}
@@ -157,8 +158,6 @@ export function ServiceAccountManagement() {
           </SelectContent>
         </Select>
       }
-      isLoading={isLoading}
-      loadingLabel="Loading service accounts..."
       onCreate={goToCreate}
       onSearchChange={setSearchQuery}
       search={searchQuery}
@@ -235,6 +234,7 @@ export function ServiceAccountManagement() {
         getRowHref={(account) => editPath(account.slug)}
         getRowKey={(account) => account.slug}
         isDeleting={deleteMutation.isPending}
+        loading={isLoading}
         onDelete={handleDelete}
         rows={filteredAccounts}
       />
