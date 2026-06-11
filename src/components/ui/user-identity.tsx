@@ -70,8 +70,7 @@ export function isBotActor(name: null | string): boolean {
  * Canonical identity widget — a person or actor anywhere they appear in Imbi
  * (deploy attribution, ops-log rows, currently-running footers, activity
  * feeds). Avatar resolution: a photo when one loads, a bot glyph for
- * automation actors, otherwise initials on a name-hashed tint. See
- * `docs/useridentity.html`.
+ * automation actors, otherwise initials on a name-hashed tint.
  */
 export function UserIdentity({
   className,
