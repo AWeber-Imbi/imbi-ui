@@ -1,14 +1,33 @@
-import { LoadingState } from '@/components/ui/loading-state'
 import { Sk } from '@/components/ui/skeleton'
 
 /**
  * Initial-load skeleton for {@link DocumentsTab}. The pinboard view gets a
  * footprint-matched skeleton; a `renderList` consumer (e.g. the org-wide
- * feed) provides its own layout, so it keeps the neutral loading affordance.
+ * feed) gets a stacked-row feed skeleton.
  */
 export function DocumentsTabSkeleton({ feed }: { feed?: boolean }) {
-  if (feed) return <LoadingState label="Loading documents…" />
+  if (feed) return <DocumentsFeedSkeleton />
   return <DocumentsPinboardSkeleton />
+}
+
+function DocumentsFeedSkeleton() {
+  return (
+    <div aria-busy className="space-y-3">
+      {Array.from({ length: 6 }, (_, i) => (
+        <div
+          className="border-tertiary bg-primary flex flex-col gap-2 rounded-lg border p-4"
+          key={i}
+        >
+          <Sk line w="45%" />
+          <Sk line w="90%" />
+          <div className="mt-1 flex items-center gap-2">
+            <Sk circle h={16} w={16} />
+            <Sk line w={120} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 /**

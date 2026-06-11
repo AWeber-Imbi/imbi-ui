@@ -30,7 +30,6 @@ import {
   searchProjectLogs,
 } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
-import { LoadingState } from '@/components/ui/loading-state'
 import {
   Popover,
   PopoverContent,
@@ -1003,11 +1002,7 @@ export function LogsTab({
           }}
         >
           {isFetching && failureCount > 0 && displayEntries.length === 0 ? (
-            <div className="py-10 text-center">
-              <LoadingState
-                label={`Retrying… (attempt ${failureCount + 1} of 4)`}
-              />
-            </div>
+            <LogTableSkeleton rows={4} />
           ) : isFetching && displayEntries.length === 0 ? (
             <LogTableSkeleton />
           ) : logError && displayEntries.length === 0 ? (
@@ -1059,8 +1054,8 @@ export function LogsTab({
               })}
               <div style={{ height: botPad }} />
               {logResult?.next_cursor && (
-                <div className="py-3 text-center" ref={loadTriggerRef}>
-                  {isFetching && <LoadingState label="Loading more…" />}
+                <div ref={loadTriggerRef}>
+                  {isFetching && <LogTableSkeleton rows={3} />}
                 </div>
               )}
             </>
