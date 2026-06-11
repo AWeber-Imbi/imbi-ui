@@ -3,7 +3,7 @@ import { Sk } from '@/components/ui/skeleton'
 /** A stack of `count` result-card skeletons. */
 export function SearchResultsSkeleton({ count = 5 }: { count?: number }) {
   return (
-    <div className="flex-1 overflow-hidden">
+    <div aria-hidden className="flex-1 overflow-hidden">
       {Array.from({ length: count }, (_, i) => (
         <ResultCardSkeleton key={i} />
       ))}

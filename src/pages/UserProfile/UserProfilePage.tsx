@@ -181,7 +181,10 @@ export function UserProfilePage() {
 
 function MembershipsSkeleton() {
   return (
-    <section className="border-tertiary bg-primary rounded-md border p-4">
+    <section
+      aria-hidden
+      className="border-tertiary bg-primary rounded-md border p-4"
+    >
       <Sk className="mb-3" h={14} w={110} />
       <div className="space-y-2">
         {[200, 170, 150].map((w, i) => (
@@ -197,7 +200,10 @@ function MembershipsSkeleton() {
 
 function ProfileHeaderSkeleton() {
   return (
-    <header className="border-secondary flex flex-col gap-4 border-b pb-6 md:flex-row md:items-start md:gap-6">
+    <header
+      aria-hidden
+      className="border-secondary flex flex-col gap-4 border-b pb-6 md:flex-row md:items-start md:gap-6"
+    >
       <Sk h={96} r={6} w={96} />
       <div className="flex-1 space-y-2">
         <Sk h={28} w={220} />
@@ -214,7 +220,7 @@ function ProfileHeaderSkeleton() {
 
 function StatisticsSkeleton() {
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <section aria-hidden className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {[0, 1, 2].map((i) => (
         <div className="border-tertiary rounded-md border p-4" key={i}>
           <Sk h={12} w={110} />

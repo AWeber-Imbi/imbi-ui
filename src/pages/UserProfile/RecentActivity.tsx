@@ -68,7 +68,7 @@ export function RecentActivity({ email }: RecentActivityProps) {
 
 function ActivityRowsSkeleton({ rows }: { rows: number }) {
   return (
-    <div className="divide-tertiary divide-y">
+    <div aria-hidden className="divide-tertiary divide-y">
       {Array.from({ length: rows }).map((_, i) => (
         <div className="flex items-start gap-3 py-2" key={i}>
           <Sk circle h={16} w={16} />

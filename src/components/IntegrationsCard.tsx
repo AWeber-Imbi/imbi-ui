@@ -304,10 +304,10 @@ function IntegrationsSkeleton() {
     <div className="flex flex-col gap-3">
       {[0, 1, 2].map((i) => (
         <div className="flex items-center gap-4" key={i}>
-          <Sk className="flex-1" h={14} w="20%" />
-          <Sk className="flex-1" h={14} w="18%" />
-          <Sk className="flex-1" h={14} w="30%" />
-          <Sk className="flex-1" h={14} w="30%" />
+          <Sk className="flex-none" h={14} w="20%" />
+          <Sk className="flex-none" h={14} w="18%" />
+          <Sk className="flex-none" h={14} w="30%" />
+          <Sk className="flex-none" h={14} w="30%" />
           <Sk h={16} w={16} />
         </div>
       ))}

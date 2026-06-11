@@ -144,7 +144,7 @@ export function RecentActivity({
 
 function ActivityFeedSkeleton({ rows }: { rows: number }) {
   return (
-    <div className="space-y-4">
+    <div aria-hidden className="space-y-4">
       {Array.from({ length: rows }).map((_, i) => (
         <div
           className="border-tertiary flex gap-3 border-b pb-4 last:border-0 last:pb-0"
