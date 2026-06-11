@@ -504,6 +504,7 @@ export function RoleDetail({ onBack, onEdit, slug }: RoleDetailProps) {
                         className="min-w-0"
                         displayName={user.display_name}
                         email={user.email}
+                        linkToProfile={false}
                         size="medium"
                       />
                       <div className="flex items-center gap-2">
