@@ -22,6 +22,7 @@ import {
 import { matchSorter } from 'match-sorter'
 
 import { getProjectsSlim, type ProjectListItem } from '@/api/endpoints'
+import { UserIdentity } from '@/components/ui/user-identity'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useAuth } from '@/hooks/useAuth'
@@ -763,16 +764,7 @@ function DeploymentCards({
               <p className="flex items-center gap-2 font-mono text-base leading-tight">
                 <ReleaseLabel release={release} />
               </p>
-              <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
-                {release ? (
-                  <>
-                    <span>{release.performed_by ?? ''}</span>
-                    <span>{formatRelativeDate(release.deployed_at)}</span>
-                  </>
-                ) : (
-                  <span className="invisible">—</span>
-                )}
-              </p>
+              <ReleaseStamp release={release} />
             </span>
           </span>
         )
@@ -911,16 +903,7 @@ function EnvDeploymentHover({
               <CircleCheck className="text-success size-4 shrink-0" />
             )}
           </p>
-          <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
-            {release ? (
-              <>
-                <span>{release.performed_by ?? ''}</span>
-                <span>{formatRelativeDate(release.deployed_at)}</span>
-              </>
-            ) : (
-              <span className="invisible">—</span>
-            )}
-          </p>
+          <ReleaseStamp release={release} />
         </div>
       </HoverCardContent>
     </HoverCard>
@@ -1115,6 +1098,34 @@ function ReleaseLabel({
         <span className="text-tertiary text-sm font-normal">Not deployed</span>
       )}
     </span>
+  )
+}
+
+// Deployment attribution footer shared by the grid card and the hover card.
+function ReleaseStamp({
+  release,
+}: {
+  release?: null | { deployed_at: string; performed_by?: null | string }
+}) {
+  return (
+    <p className="text-tertiary mt-1 flex items-center justify-between text-xs">
+      {release ? (
+        <>
+          <span className="min-w-0">
+            {release.performed_by ? (
+              <UserIdentity
+                actor={release.performed_by}
+                linkToProfile={false}
+                size="small"
+              />
+            ) : null}
+          </span>
+          <span>{formatRelativeDate(release.deployed_at)}</span>
+        </>
+      ) : (
+        <span className="invisible">—</span>
+      )}
+    </p>
   )
 }
 

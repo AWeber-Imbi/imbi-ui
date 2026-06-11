@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { UserDisplay } from '@/components/ui/user-display'
+import { UserIdentity } from '@/components/ui/user-identity'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useLoginToEmail } from '@/hooks/useLoginToEmail'
 import { useProjectsSlimMap } from '@/hooks/useProjectsSlimMap'
@@ -261,11 +261,12 @@ function PrAuthorCell({ info }: { info: AuthorInfo }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="inline-flex">
-              <UserDisplay
+              <UserIdentity
                 displayNames={info.displayNamesForUser}
                 email={info.emailOrAuthor}
                 hideName
                 linkToProfile={info.linkToProfile}
+                size="small"
                 title=""
               />
             </span>

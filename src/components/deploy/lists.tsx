@@ -3,6 +3,7 @@ import { Check, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { UserIdentity } from '@/components/ui/user-identity'
 import { cn } from '@/lib/utils'
 import type { DeploymentCommit, DeploymentRef } from '@/types'
 
@@ -158,7 +159,14 @@ export function CommitList({
               <span className="min-w-0 flex-1 truncate text-sm">
                 {c.message}
               </span>
-              <span className="text-tertiary shrink-0 text-xs">{c.author}</span>
+              {c.author ? (
+                <UserIdentity
+                  actor={c.author}
+                  className="shrink-0"
+                  linkToProfile={false}
+                  size="small"
+                />
+              ) : null}
               {c.is_head ? <Badge variant="outline">HEAD</Badge> : null}
               {isCurrent ? <Badge variant="neutral">current</Badge> : null}
               {active ? <Check className="text-action size-4" /> : null}
