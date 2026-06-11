@@ -9,6 +9,7 @@ import {
   type AnalysisReport,
   type AnalysisResult,
   type AnalysisResultStatus,
+  applyProjectBlueprintDefaults,
   getProjectAnalysis,
   rescoreProject,
   runProjectAnalysis,
@@ -113,8 +114,33 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
   // deployment plugin (eligibility) plus a connected commit-sync plugin.
   const commitSync = useCommitSync(orgSlug, project.id, canResyncDeployments)
 
+  const applyDefaultsMutation = useMutation({
+    mutationFn: () => applyProjectBlueprintDefaults(orgSlug, project.id),
+    onError: (err) =>
+      toast.error(`Apply defaults failed: ${extractApiErrorDetail(err)}`),
+    onSuccess: (res) => {
+      const n = res.properties_updated
+      toast.success(
+        n === 0
+          ? 'No defaults to apply — all properties are already set'
+          : `Applied ${n} blueprint default${n === 1 ? '' : 's'}`,
+      )
+      if (n > 0) {
+        void analyzeMutation.mutateAsync()
+      }
+    },
+  })
+
   const report = reportQuery.data
   const results = report?.results ?? []
+  const hasBlueprintIssues =
+    report !== null &&
+    report !== undefined &&
+    results.some(
+      (r) =>
+        r.plugin_slug === 'blueprint-compliance' &&
+        (r.status === 'fail' || r.status === 'warn'),
+    )
 
   return (
     <div className="space-y-6">
@@ -162,6 +188,20 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
                 variant="outline"
               >
                 {commitSync.isSyncing ? 'Syncing...' : 'Sync Commits & Tags'}
+              </Button>
+            )}
+            {canAnalyze && hasBlueprintIssues && (
+              <Button
+                disabled={
+                  applyDefaultsMutation.isPending || analyzeMutation.isPending
+                }
+                onClick={() => applyDefaultsMutation.mutate()}
+                size="sm"
+                variant="outline"
+              >
+                {applyDefaultsMutation.isPending
+                  ? 'Applying...'
+                  : 'Apply Blueprint Defaults'}
               </Button>
             )}
           </CardContent>
