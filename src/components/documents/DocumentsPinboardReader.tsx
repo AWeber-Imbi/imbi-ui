@@ -479,6 +479,7 @@ export function DocumentsPinboardReader({
                         <UserIdentity
                           displayNames={displayNames}
                           email={r.created_by}
+                          linkToProfile={false}
                           size="small"
                         />
                         <span>· {formatUpdated(r)}</span>

@@ -30,6 +30,7 @@ import { relTime } from '@/lib/formatDate'
 import type { PullRequest } from '@/types'
 
 interface AuthorInfo {
+  actor: string | undefined
   displayNamesForUser: Map<string, string> | undefined
   emailOrAuthor: string
   linkToProfile: boolean
@@ -262,8 +263,9 @@ function PrAuthorCell({ info }: { info: AuthorInfo }) {
           <TooltipTrigger asChild>
             <span className="inline-flex">
               <UserIdentity
+                actor={info.actor}
                 displayNames={info.displayNamesForUser}
-                email={info.emailOrAuthor}
+                email={info.actor ? undefined : info.emailOrAuthor}
                 hideName
                 linkToProfile={info.linkToProfile}
                 size="small"
@@ -550,6 +552,7 @@ function resolveAuthorInfo(
   const email = loginToEmail.get(author)
   if (!email) {
     return {
+      actor: author,
       displayNamesForUser: undefined,
       emailOrAuthor: author,
       linkToProfile: false,
@@ -557,6 +560,7 @@ function resolveAuthorInfo(
     }
   }
   return {
+    actor: undefined,
     displayNamesForUser: displayNames,
     emailOrAuthor: email,
     linkToProfile: true,

@@ -210,14 +210,18 @@ function DeploymentRow({
             </div>
             <div className="text-tertiary flex items-center gap-1.5 text-xs">
               {performer ? (
-                <UserIdentity
-                  actor={performer}
-                  email={performer.includes('@') ? performer : undefined}
-                  linkToProfile={false}
-                  size="small"
-                />
-              ) : null}
-              <span>• {formatRelativeDate(d.occurred_at)}</span>
+                <>
+                  <UserIdentity
+                    actor={performer}
+                    email={performer.includes('@') ? performer : undefined}
+                    linkToProfile={false}
+                    size="small"
+                  />
+                  <span>• {formatRelativeDate(d.occurred_at)}</span>
+                </>
+              ) : (
+                <span>{formatRelativeDate(d.occurred_at)}</span>
+              )}
             </div>
           </div>
         </div>

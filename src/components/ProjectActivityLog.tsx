@@ -236,20 +236,24 @@ function diffObjects(
 }
 
 function EntryRow({
+  actor,
   avatarColor,
   body,
-  email,
   href,
   name,
   ts,
 }: {
+  actor: string
   avatarColor: AvatarColor
   body: React.ReactNode
-  email: string
   href?: string
   name: string
   ts: Date
 }) {
+  // Only a real email drives Gravatar/profile resolution; a bare actor login
+  // is routed via the actor prop so bot detection works and we skip a doomed
+  // Gravatar lookup.
+  const email = actor.includes('@') ? actor : undefined
   return (
     <div
       className={`relative flex gap-3 py-3 ${href ? 'hover:bg-secondary/40 -mx-2 rounded-md px-2' : ''}`}
@@ -260,6 +264,7 @@ function EntryRow({
         />
       </div>
       <UserIdentity
+        actor={actor}
         displayName={name}
         email={email}
         hideName
@@ -325,9 +330,9 @@ function EventEntry({
 
   return (
     <EntryRow
+      actor={entry.attributed_to}
       avatarColor="info"
       body={body}
-      email={entry.attributed_to}
       href={href}
       name={name}
       ts={item.ts}
@@ -437,9 +442,9 @@ function OpsEntry({
 
   return (
     <EntryRow
+      actor={actor}
       avatarColor={color}
       body={body}
-      email={actor}
       name={name}
       ts={item.ts}
     />
