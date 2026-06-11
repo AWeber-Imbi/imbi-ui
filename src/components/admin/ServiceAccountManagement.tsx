@@ -121,6 +121,7 @@ export function ServiceAccountManagement() {
     return (
       <ServiceAccountForm
         account={selectedAccount}
+        editingSlug={viewMode === 'edit' ? selectedAccountSlug : null}
         error={createMutation.error || updateMutation.error}
         isLoading={createMutation.isPending || updateMutation.isPending}
         key={selectedAccount?.slug ?? 'new'}
