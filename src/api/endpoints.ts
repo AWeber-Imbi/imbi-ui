@@ -984,7 +984,7 @@ export const applyProjectBlueprintDefaults = (
   orgSlug: string,
   projectId: string,
 ) =>
-  apiClient.post<{ properties_updated: number }>(
+  apiClient.post<{ properties_removed: number; properties_updated: number }>(
     `/organizations/${encodeURIComponent(orgSlug)}/projects/${encodeURIComponent(projectId)}/analysis/apply-blueprint-defaults`,
   )
 

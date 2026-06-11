@@ -119,15 +119,14 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
     onError: (err) =>
       toast.error(`Apply defaults failed: ${extractApiErrorDetail(err)}`),
     onSuccess: (res) => {
-      const n = res.properties_updated
+      const removed = res.properties_removed ?? 0
+      const total = res.properties_updated + removed
       toast.success(
-        n === 0
-          ? 'No defaults to apply — all properties are already set'
-          : `Applied ${n} blueprint default${n === 1 ? '' : 's'}`,
+        total > 0
+          ? `Blueprint sync: applied ${res.properties_updated}, removed ${removed}`
+          : 'All blueprint properties are already in sync',
       )
-      if (n > 0) {
-        void analyzeMutation.mutateAsync()
-      }
+      if (total > 0) void analyzeMutation.mutateAsync()
     },
   })
 
@@ -201,7 +200,7 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
               >
                 {applyDefaultsMutation.isPending
                   ? 'Applying...'
-                  : 'Apply Blueprint Defaults'}
+                  : 'Apply Blueprint Fixes'}
               </Button>
             )}
           </CardContent>
