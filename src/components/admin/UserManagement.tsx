@@ -250,8 +250,6 @@ export function UserManagement() {
           </Select>
         </>
       }
-      isLoading={isLoading}
-      loadingLabel="Loading users..."
       onCreate={goToCreate}
       onSearchChange={setSearchQuery}
       search={searchQuery}
@@ -342,6 +340,7 @@ export function UserManagement() {
         }
         getRowHref={(user) => editPath(user.email)}
         getRowKey={(user) => user.email}
+        loading={isLoading}
         rows={filteredUsers}
       />
     </AdminSection>
