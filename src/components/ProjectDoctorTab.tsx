@@ -126,7 +126,7 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
           ? `Blueprint sync: applied ${res.properties_updated}, removed ${removed}`
           : 'All blueprint properties are already in sync',
       )
-      if (total > 0) void analyzeMutation.mutateAsync()
+      void analyzeMutation.mutateAsync()
     },
   })
 
