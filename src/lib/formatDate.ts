@@ -11,7 +11,9 @@ interface DateFormatOptions {
  */
 export function absTime(iso: number | string): string {
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    const d = new Date(iso)
+    if (!Number.isFinite(d.getTime())) return '—'
+    return d.toLocaleString(undefined, {
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
