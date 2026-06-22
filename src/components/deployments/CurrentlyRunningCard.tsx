@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { formatDistanceToNow } from 'date-fns'
 import {
   ChevronDown,
   ChevronRight,
@@ -71,9 +70,10 @@ export function CurrentlyRunningCard({
               <span className="inline-flex items-center gap-1.5">
                 <Clock size={13} />
                 Deployed{' '}
-                {formatDistanceToNow(new Date(stage.current.last_event_at), {
-                  addSuffix: true,
-                })}
+                <RelativeTime
+                  value={stage.current.last_event_at}
+                  variant="long"
+                />
               </span>
             ) : null}
             {stage.current?.performed_by ? (
