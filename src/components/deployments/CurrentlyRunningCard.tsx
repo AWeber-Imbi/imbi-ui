@@ -12,9 +12,9 @@ import {
 
 import { CiStatusDot } from '@/components/releases/CiStatusDot'
 import { Button } from '@/components/ui/button'
+import { RelativeTime } from '@/components/ui/RelativeTime'
 import { UserIdentity } from '@/components/ui/user-identity'
 import type { ChipColors } from '@/lib/chip-colors'
-import { formatRelativeDate } from '@/lib/formatDate'
 import { cn, sanitizeHttpUrl } from '@/lib/utils'
 import type { ReleaseHistoryEntry } from '@/types'
 
@@ -224,9 +224,11 @@ function RollbackRow({
           <span className="text-tertiary font-mono text-xs">
             {rel.short_sha}
           </span>
-          <span className="text-tertiary text-xs">
-            {formatRelativeDate(rel.published_at)}
-          </span>
+          <RelativeTime
+            className="text-tertiary text-xs"
+            tooltip={false}
+            value={rel.published_at}
+          />
         </button>
         <Button
           className="h-7 px-2.5 text-xs"
