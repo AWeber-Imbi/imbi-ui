@@ -60,7 +60,9 @@ export function ProfileHeader({ identities, user }: ProfileHeaderProps) {
           {user.last_login && (
             <div>
               <dt className="text-tertiary inline">Last active </dt>
-              <RelativeTime className="inline" value={user.last_login} />
+              <dd className="inline">
+                <RelativeTime value={user.last_login} />
+              </dd>
             </div>
           )}
         </dl>
