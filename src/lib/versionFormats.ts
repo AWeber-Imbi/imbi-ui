@@ -1,14 +1,26 @@
 import type { TagFormat } from '@/types'
 
+// A row in the version-format editor: a `TagFormat` plus display metadata and
+// UI state (`enabled`, `builtin`, a stable `id`).
+export interface FormatRow {
+  builtin: boolean
+  description: string
+  enabled: boolean
+  example: string
+  id: string
+  label: string
+  pattern: string
+}
+
 // Built-in presets surfaced as toggleable rows in the version-format editor.
 // Only `label`/`pattern` are persisted (as `TagFormat`); `description` and
 // `example` are display-only metadata that lives here in the UI.
-export interface BuiltinFormat extends TagFormat {
+interface BuiltinFormat extends TagFormat {
   description: string
   example: string
 }
 
-export const BUILTIN_FORMATS: BuiltinFormat[] = [
+const BUILTIN_FORMATS: BuiltinFormat[] = [
   {
     description:
       'MAJOR.MINOR.PATCH with optional pre-release and build metadata.',
@@ -39,8 +51,38 @@ export const BUILTIN_FORMATS: BuiltinFormat[] = [
 
 const BUILTIN_BY_PATTERN = new Map(BUILTIN_FORMATS.map((f) => [f.pattern, f]))
 
-export function builtinForPattern(pattern: string): BuiltinFormat | undefined {
-  return BUILTIN_BY_PATTERN.get(pattern)
+let rowSeq = 0
+
+/**
+ * Build the editor's working rows from a persisted `TagFormat[]`: every
+ * built-in preset appears (toggled on when its pattern is present), and any
+ * persisted pattern that isn't a built-in is appended as an enabled custom row.
+ */
+export function buildRows(formats: TagFormat[]): FormatRow[] {
+  const enabled = new Set(formats.map((f) => f.pattern))
+  const rows: FormatRow[] = BUILTIN_FORMATS.map((b) => ({
+    builtin: true,
+    description: b.description,
+    enabled: enabled.has(b.pattern),
+    example: b.example,
+    id: nextRowId(),
+    label: b.label,
+    pattern: b.pattern,
+  }))
+  for (const f of formats) {
+    if (!builtinForPattern(f.pattern)) {
+      rows.push({
+        builtin: false,
+        description: 'Custom version format.',
+        enabled: true,
+        example: '',
+        id: nextRowId(),
+        label: f.label,
+        pattern: f.pattern,
+      })
+    }
+  }
+  return rows
 }
 
 /**
@@ -65,4 +107,24 @@ export function isValidPattern(pattern: string): boolean {
   } catch {
     return false
   }
+}
+
+export function nextRowId(): string {
+  rowSeq += 1
+  return `vf-${rowSeq}`
+}
+
+/** The enabled rows reduced to the persisted `TagFormat[]` shape. */
+export function toFormats(rows: FormatRow[]): TagFormat[] {
+  return rows
+    .filter((r) => r.enabled)
+    .map(({ label, pattern }) => ({ label, pattern }))
+}
+
+export function toggleAriaLabel(row: FormatRow): string {
+  return row.enabled ? `Disable ${row.label}` : `Enable ${row.label}`
+}
+
+function builtinForPattern(pattern: string): BuiltinFormat | undefined {
+  return BUILTIN_BY_PATTERN.get(pattern)
 }
