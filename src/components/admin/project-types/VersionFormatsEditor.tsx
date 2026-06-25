@@ -239,6 +239,7 @@ function OverridePanel({
           initialExample={editing?.example}
           initialName={editing?.label}
           initialPattern={editing?.pattern}
+          key={editing?.id ?? 'new'}
           onCancel={close}
           onSave={save}
           title={editing ? 'Edit custom format' : 'Add custom format'}

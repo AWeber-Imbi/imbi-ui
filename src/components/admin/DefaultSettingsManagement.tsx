@@ -33,7 +33,10 @@ export function DefaultSettingsManagement() {
   const [rows, setRows] = useState<FormatRow[]>(() => buildRows(baseFormats))
   const [editorOpen, setEditorOpen] = useState(false)
   const [editing, setEditing] = useState<FormatRow | null>(null)
-  const baseline = useRef(JSON.stringify(baseFormats))
+  // Normalize through buildRows/toFormats so the baseline matches the editor's
+  // canonical ordering (built-ins first); otherwise a differently-ordered
+  // baseFormats reads as dirty on mount.
+  const baseline = useRef(JSON.stringify(toFormats(buildRows(baseFormats))))
 
   const mutation = useMutation({
     mutationFn: (operations: PatchOperation[]) =>
@@ -140,6 +143,7 @@ export function DefaultSettingsManagement() {
           initialExample={editing?.example}
           initialName={editing?.label}
           initialPattern={editing?.pattern}
+          key={editing?.id ?? 'new'}
           onCancel={closeEditor}
           onSave={saveFormat}
           title={editing ? 'Edit custom format' : 'Add custom format'}

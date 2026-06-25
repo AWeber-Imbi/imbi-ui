@@ -59,8 +59,11 @@ function VersionTesterResults({
   return (
     <>
       <div className="mt-4 flex max-w-md flex-col gap-2.5">
-        {results.map((r) => (
-          <div className="flex items-center justify-between" key={r.label}>
+        {results.map((r, i) => (
+          <div
+            className="flex items-center justify-between"
+            key={`${i}-${r.label}`}
+          >
             <span className="text-secondary text-sm">{r.label}</span>
             {r.matched ? (
               <Badge variant="success">Match</Badge>

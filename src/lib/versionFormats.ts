@@ -92,8 +92,7 @@ export function buildRows(formats: TagFormat[]): FormatRow[] {
  */
 export function fullMatch(pattern: string, value: string): boolean {
   try {
-    const match = new RegExp(pattern).exec(value)
-    return match !== null && match.index === 0 && match[0] === value
+    return new RegExp(`^(?:${pattern})$`).test(value)
   } catch {
     return false
   }
