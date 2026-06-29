@@ -5,6 +5,12 @@ import { toast } from 'sonner'
 const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000
 
 let notified = false
+// Flipped true only once registerSW resolves with a registration, so the SW is
+// actually owning updates for this tab. Feature detection alone is not enough:
+// the browser can support service workers while registration/import has not
+// happened yet (first load) or has failed, and in those cases the version.json
+// poll must remain the update source.
+let swRegistered = false
 // Default reload for environments without an active SW (older browsers, the
 // useVersionCheck fallback). Replaced with the Workbox updater once the SW
 // registers — a plain reload would NOT activate a `waiting` SW under the
@@ -37,6 +43,7 @@ export async function registerPwa(): Promise<void> {
     },
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return
+      swRegistered = true
       const check = () => {
         if (!document.hidden) void registration.update()
       }
@@ -49,7 +56,17 @@ export async function registerPwa(): Promise<void> {
   applyUpdate = () => void updateSW(true)
 }
 
-/** True when the service worker (not the version.json poll) owns updates. */
-export function serviceWorkerSupported(): boolean {
+/**
+ * True once the service worker has registered and is the source of update
+ * truth for this tab. Until then (or if registration failed) the version.json
+ * poll must run, so useVersionCheck gates its fallback on this, not on mere
+ * browser capability.
+ */
+export function serviceWorkerActive(): boolean {
+  return swRegistered
+}
+
+/** True when the browser supports service workers and we're not in DEV. */
+function serviceWorkerSupported(): boolean {
   return !import.meta.env.DEV && 'serviceWorker' in navigator
 }
