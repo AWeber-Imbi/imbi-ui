@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { MutableRefObject } from 'react'
 
-import { toast } from 'sonner'
+import { notifyNewVersion, serviceWorkerSupported } from '@/lib/pwa'
 
 const DEFAULT_INTERVAL_MS = 5 * 60 * 1000
 const CURRENT_VERSION = __APP_VERSION__
@@ -12,6 +12,10 @@ export function useVersionCheck(intervalMs = DEFAULT_INTERVAL_MS) {
 
   useEffect(() => {
     if (import.meta.env.DEV) return
+    // When a service worker is active it is the single source of update
+    // truth (see src/lib/pwa.ts); skip the /version.json poll to avoid a
+    // second prompt. This poll remains the fallback for browsers without SW.
+    if (serviceWorkerSupported()) return
 
     const check = async () => {
       if (!shouldCheck(notifiedRef, inFlightRef)) return
@@ -49,16 +53,6 @@ async function fetchRemoteVersion(): Promise<null | string> {
 
 function isStale(remote: null | string): boolean {
   return remote !== null && remote !== CURRENT_VERSION
-}
-
-function notifyNewVersion() {
-  toast('A new version of Imbi is available', {
-    action: {
-      label: 'Reload',
-      onClick: () => window.location.reload(),
-    },
-    duration: Infinity,
-  })
 }
 
 async function runCheck(notifiedRef: MutableRefObject<boolean>): Promise<void> {
