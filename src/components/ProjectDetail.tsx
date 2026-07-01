@@ -1521,7 +1521,10 @@ function ScoreBreakdownDetail({
     const maxPts = totalWeight > 0 ? (c.weight / totalWeight) * 100 : 0
     return {
       contribution: c,
-      isPerfect: c.mapped_score >= 100,
+      isPerfect:
+        c.category === 'condition'
+          ? c.condition_result === true
+          : c.mapped_score >= 100,
       maxPts,
       policy: policyBySlug.get(c.policy_slug),
     }
@@ -1598,7 +1601,9 @@ function ScoreBreakdownDetail({
                       <p>
                         {policy?.description || 'Condition'}{' '}
                         <span className="text-danger font-medium">
-                          · not met
+                          {c.condition_result === false
+                            ? '· not met'
+                            : '· not evaluated'}
                         </span>
                       </p>
                       {c.matched_neighbours &&

@@ -306,7 +306,7 @@ function SidebarProjectRow({ rel }: { rel: ProjectRelationship }) {
         <span className={`shrink-0 text-[10px] ${muted}`}>{typeSlug}</span>
       )}
       {rel.project.deprecated && (
-        <span className="bg-danger text-danger shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
+        <span className="bg-danger/10 text-danger shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium">
           Deprecated
         </span>
       )}

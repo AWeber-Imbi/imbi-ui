@@ -680,6 +680,60 @@ function validateBaseShape(obj: Record<string, unknown>):
   }
 }
 
+const CONDITION_OPS = new Set([
+  'absent',
+  'eq',
+  'ge',
+  'gt',
+  'le',
+  'lt',
+  'ne',
+  'present',
+])
+
+const RELATIONSHIP_QUANTIFIERS = new Set(['all', 'any', 'none'])
+
+function isValidAttributeNode(node: Record<string, unknown>): boolean {
+  return (
+    typeof node.attribute === 'string' &&
+    node.attribute.length > 0 &&
+    CONDITION_OPS.has(node.op as string)
+  )
+}
+
+function isValidCombinator(
+  node: Record<string, unknown>,
+  key: 'all' | 'any',
+): boolean {
+  const list = node[key]
+  return (
+    Array.isArray(list) && list.length > 0 && list.every(isValidConditionNode)
+  )
+}
+
+// fallow-ignore-next-line complexity
+function isValidConditionNode(node: unknown): boolean {
+  if (!isPlainObject(node)) return false
+  if ('all' in node) return isValidCombinator(node, 'all')
+  if ('any' in node) return isValidCombinator(node, 'any')
+  if ('not' in node) return isValidConditionNode(node.not)
+  if ('relationship' in node) return isValidRelationshipNode(node)
+  if ('attribute' in node) return isValidAttributeNode(node)
+  return false
+}
+
+// fallow-ignore-next-line complexity
+function isValidRelationshipNode(node: Record<string, unknown>): boolean {
+  const r = node.relationship
+  if (!isPlainObject(r)) return false
+  return (
+    r.direction === 'outgoing' &&
+    r.edge === 'DEPENDS_ON' &&
+    RELATIONSHIP_QUANTIFIERS.has(r.quantifier as string) &&
+    isValidConditionNode(r.where)
+  )
+}
+
 // fallow-ignore-next-line complexity
 function validateConditionPolicy(
   obj: Record<string, unknown>,
@@ -687,6 +741,9 @@ function validateConditionPolicy(
 ): PolicyResult<ConditionScoringPolicyCreate> {
   if (!isPlainObject(obj.condition)) {
     return { error: '"condition" must be an object.', valid: false }
+  }
+  if (!isValidConditionNode(obj.condition)) {
+    return { error: '"condition" is not a valid condition tree.', valid: false }
   }
   const trueScore = optionalScore(obj.true_score, 'true_score')
   if (!trueScore.ok) return { error: trueScore.error, valid: false }

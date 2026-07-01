@@ -167,7 +167,7 @@ export function ConditionBuilder({
   const onJsonChange = (text: string) => {
     setJsonDraft(text)
     try {
-      const parsed = JSON.parse(text) as Condition
+      const parsed = normalizeCondition(JSON.parse(text) as Condition)
       setJsonError('')
       onChange(parsed)
     } catch (e) {
