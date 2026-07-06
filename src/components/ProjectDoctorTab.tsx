@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import Markdown from 'react-markdown'
 import { toast } from 'sonner'
@@ -124,8 +129,16 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
   const setReport = (report: AnalysisReport) =>
     queryClient.setQueryData(['projectAnalysis', orgSlug, project.id], report)
 
+  // Shared key for every remediation mutation (fix-all and per-finding)
+  // targeting this report. Both write a full report snapshot into the
+  // same query cache, so we gate them behind a single in-flight guard to
+  // stop concurrent responses from clobbering each other.
+  const remediateKey = ['remediate', orgSlug, project.id]
+  const isRemediating = useIsMutating({ mutationKey: remediateKey }) > 0
+
   const remediateAllMutation = useMutation({
     mutationFn: () => remediateAllAnalysisFindings(orgSlug, project.id),
+    mutationKey: remediateKey,
     onError: (err) =>
       toast.error(`Fix all failed: ${extractApiErrorDetail(err)}`),
     onSuccess: (res) => {
@@ -211,9 +224,7 @@ export function ProjectDoctorTab({ project }: { project: Project }) {
             )}
             {canAnalyze && hasFixableFindings && (
               <Button
-                disabled={
-                  remediateAllMutation.isPending || analyzeMutation.isPending
-                }
+                disabled={isRemediating || analyzeMutation.isPending}
                 onClick={() => remediateAllMutation.mutate()}
                 size="sm"
                 variant="outline"
@@ -309,6 +320,11 @@ function FixControls({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const offer = result.remediation
 
+  // Shares the report-wide remediation guard: any fix (this one, another
+  // finding's, or fix-all) writing the same report cache blocks the rest.
+  const remediateKey = ['remediate', orgSlug, projectId]
+  const isRemediating = useIsMutating({ mutationKey: remediateKey }) > 0
+
   const fixMutation = useMutation({
     mutationFn: () =>
       remediateAnalysisFinding(orgSlug, projectId, {
@@ -316,6 +332,7 @@ function FixControls({
         plugin_id: result.plugin_id,
         remediation_id: offer?.id ?? '',
       }),
+    mutationKey: remediateKey,
     onError: (err) => toast.error(`Fix failed: ${extractApiErrorDetail(err)}`),
     onSuccess: (res) => {
       onReport(res.report)
@@ -332,7 +349,7 @@ function FixControls({
   return (
     <div className="mt-2">
       <Button
-        disabled={fixMutation.isPending}
+        disabled={isRemediating}
         onClick={() =>
           offer.destructive ? setConfirmOpen(true) : fixMutation.mutate()
         }
