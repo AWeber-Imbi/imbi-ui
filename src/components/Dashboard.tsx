@@ -23,18 +23,19 @@ import { useQuery } from '@tanstack/react-query'
 import { GitPullRequest, Settings } from 'lucide-react'
 
 import {
-  getAdminPlugins,
   getMyIdentities,
   getOrgPullRequests,
   getProjects,
+  listPluginPackages,
 } from '@/api/endpoints'
+import { pluginIsIdentity } from '@/components/plugin-packages'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sk } from '@/components/ui/skeleton'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useRecentDeployments } from '@/hooks/useRecentDeployments'
 import { queryKeys } from '@/lib/queryKeys'
-import type { AdminPluginsResponse, IdentityConnectionResponse } from '@/types'
+import type { IdentityConnectionResponse, PluginPackage } from '@/types'
 
 import { MyPullRequestCountsWidget } from './dashboard/widgets/MyPullRequestCountsWidget'
 import { MyPullRequestsWidget } from './dashboard/widgets/MyPullRequestsWidget'
@@ -210,9 +211,9 @@ export function Dashboard({
   const [dismissedIntegrations, setDismissedIntegrations] = useState<string[]>(
     loadDismissedIntegrations,
   )
-  const pluginsQuery = useQuery<AdminPluginsResponse>({
-    queryFn: ({ signal }) => getAdminPlugins(signal),
-    queryKey: queryKeys.adminPlugins(),
+  const pluginsQuery = useQuery<PluginPackage[]>({
+    queryFn: ({ signal }) => listPluginPackages(signal),
+    queryKey: queryKeys.pluginPackages(),
     staleTime: 60 * 1000,
   })
   const identitiesQuery = useQuery<IdentityConnectionResponse[]>({
@@ -229,12 +230,10 @@ export function Dashboard({
       .filter((c) => c.status === 'active')
       .map((c) => c.plugin_slug),
   )
-  const unconnectedIdentityPlugins = (
-    pluginsQuery.data?.installed ?? []
-  ).filter(
+  const unconnectedIdentityPlugins = (pluginsQuery.data ?? []).filter(
     (p) =>
       p.enabled &&
-      p.plugin_type === 'identity' &&
+      pluginIsIdentity(p) &&
       !connectedSlugs.has(p.slug) &&
       !dismissedIntegrations.includes(p.slug),
   )

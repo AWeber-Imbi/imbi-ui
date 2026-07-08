@@ -8,11 +8,12 @@ import { toast } from 'sonner'
 
 import {
   disconnectMyIdentity,
-  getAdminPlugins,
   getMyIdentities,
+  listPluginPackages,
   refreshMyIdentity,
   startMyIdentity,
 } from '@/api/endpoints'
+import { pluginIsIdentity } from '@/components/plugin-packages'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -27,15 +28,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { extractApiErrorDetail } from '@/lib/apiError'
-import { getIcon, iconRegistry, useIconRegistryVersion } from '@/lib/icons'
-import type { IconComponent } from '@/lib/icons'
 import { queryKeys } from '@/lib/queryKeys'
 import type {
-  AdminPluginsResponse,
   IdentityConnectionResponse,
   IdentityConnectionStatus,
   IdentityPollingDescriptor,
-  InstalledPlugin,
+  PluginPackage,
 } from '@/types'
 
 import { DeviceCodePollingDialog } from './DeviceCodePollingDialog'
@@ -50,7 +48,7 @@ interface ConnectionActionsProps {
 
 interface ConnectionRow {
   connection: IdentityConnectionResponse | null
-  plugin: InstalledPlugin
+  plugin: PluginPackage
 }
 
 interface DevicePoll {
@@ -177,9 +175,9 @@ export function SettingsConnections() {
     return () => window.removeEventListener('message', handler)
   }, [queryClient])
 
-  const pluginsQuery = useQuery<AdminPluginsResponse>({
-    queryFn: ({ signal }) => getAdminPlugins(signal),
-    queryKey: queryKeys.adminPlugins(),
+  const pluginsQuery = useQuery<PluginPackage[]>({
+    queryFn: ({ signal }) => listPluginPackages(signal),
+    queryKey: queryKeys.pluginPackages(),
     staleTime: 60 * 1000,
   })
 
@@ -269,7 +267,7 @@ export function SettingsConnections() {
   useEffect(() => {
     if (!autoConnectSlug || autoConnectFiredRef.current) return
     if (pluginsQuery.isLoading) return
-    const plugin = (pluginsQuery.data?.installed ?? []).find(
+    const plugin = (pluginsQuery.data ?? []).find(
       (p) => p.slug === autoConnectSlug && p.enabled,
     )
     autoConnectFiredRef.current = true
@@ -316,8 +314,8 @@ export function SettingsConnections() {
     )
   }
 
-  const identityPlugins = (pluginsQuery.data?.installed ?? []).filter(
-    (p) => p.enabled && p.plugin_type === 'identity',
+  const identityPlugins = (pluginsQuery.data ?? []).filter(
+    (p) => p.enabled && pluginIsIdentity(p),
   )
 
   if (identityPlugins.length === 0) {
@@ -610,36 +608,12 @@ function formatRelative(value: null | string): string {
   return ts.toLocaleString()
 }
 
-function ProviderCell({ plugin }: { plugin: InstalledPlugin }) {
-  const version = useIconRegistryVersion()
-  const iconValue = plugin.icon ?? null
-
-  // Lazy-load whichever icon set owns this value, so the brand glyph
-  // resolves on first render even if the set wasn't pre-loaded.
-  useEffect(() => {
-    if (iconValue) {
-      void iconRegistry.loadSetFor(iconValue)
-    }
-  }, [iconValue])
-
-  // ``getIcon`` returns null while the owning set is still in-flight;
-  // re-derive on every registry version bump so the icon swaps in
-  // once the chunk lands.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const ResolvedIcon: IconComponent | null = iconValue
-    ? getIcon(iconValue, null)
-    : null
-  // Reference ``version`` so React treats this cell as dependent on
-  // registry changes (cheap; no hook needed beyond useIconRegistryVersion).
-  void version
-
+// v3 PluginPackage carries no brand glyph, so the provider cell falls back
+// to the generic Plug icon (the v2 InstalledPlugin.icon had no v3 source).
+function ProviderCell({ plugin }: { plugin: PluginPackage }) {
   return (
     <div className="flex items-center gap-3">
-      {ResolvedIcon ? (
-        <ResolvedIcon className="text-secondary size-6 shrink-0" />
-      ) : (
-        <Plug className="text-tertiary size-6 shrink-0" />
-      )}
+      <Plug className="text-tertiary size-6 shrink-0" />
       <div className="font-medium">{plugin.name}</div>
     </div>
   )

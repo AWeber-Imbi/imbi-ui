@@ -1,14 +1,11 @@
-import { useEffect } from 'react'
-
 import { Lock, Plug, X } from 'lucide-react'
 
 import logoDark from '@/assets/logo-dark.svg'
 import logoLight from '@/assets/logo-light.svg'
+import { pluginWidgetText } from '@/components/plugin-packages'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/contexts/ThemeContext'
-import { getIcon, iconRegistry, useIconRegistryVersion } from '@/lib/icons'
-import type { IconComponent } from '@/lib/icons'
-import type { InstalledPlugin } from '@/types'
+import type { PluginPackage } from '@/types'
 
 interface UnconnectedIntegrationWidgetProps {
   onConnect: () => void
@@ -17,7 +14,7 @@ interface UnconnectedIntegrationWidgetProps {
   onDismiss?: () => void
   onManage: () => void
   pending: boolean
-  plugin: InstalledPlugin
+  plugin: PluginPackage
 }
 
 // Dashboard "sales pitch" tile rendered for an enabled identity plugin
@@ -32,21 +29,11 @@ export function UnconnectedIntegrationWidget({
   plugin,
 }: UnconnectedIntegrationWidgetProps) {
   const { isDarkMode } = useTheme()
-  const version = useIconRegistryVersion()
-  const iconValue = plugin.icon ?? null
 
-  useEffect(() => {
-    if (iconValue) void iconRegistry.loadSetFor(iconValue)
-  }, [iconValue])
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const ResolvedIcon: IconComponent | null = iconValue
-    ? getIcon(iconValue, null)
-    : null
-  void version
-
+  // v3 PluginPackage carries no brand glyph, so this tile falls back to the
+  // generic Plug icon everywhere it previously showed the plugin's icon.
   const body =
-    plugin.widget_text ||
+    pluginWidgetText(plugin) ||
     plugin.description ||
     `Imbi can act on your behalf in ${plugin.name} once you link your account.`
 
@@ -107,11 +94,7 @@ export function UnconnectedIntegrationWidget({
             disabled={pending}
             onClick={onConnect}
           >
-            {ResolvedIcon ? (
-              <ResolvedIcon className="size-3.5" />
-            ) : (
-              <Plug className="size-3.5" />
-            )}
+            <Plug className="size-3.5" />
             Connect {plugin.name}
           </Button>
           <Button
@@ -145,11 +128,7 @@ export function UnconnectedIntegrationWidget({
               <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--text-color-tertiary) [animation-delay:0.45s]" />
             </div>
             <div className="border-border bg-card text-primary grid size-11.5 place-items-center rounded-xl border opacity-50 shadow-sm grayscale-[0.4]">
-              {ResolvedIcon ? (
-                <ResolvedIcon className="size-[22px]" />
-              ) : (
-                <Plug className="size-[22px]" />
-              )}
+              <Plug className="size-[22px]" />
             </div>
           </div>
         </div>
