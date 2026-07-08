@@ -61,6 +61,10 @@ export interface CredentialField {
   label: string
   name: string
   required: boolean
+  // Whether the value is sensitive. Non-secret fields (e.g. a GitHub App id)
+  // render as plain text instead of a masked password input. Defaults to
+  // secret when the backend omits it.
+  secret?: boolean
 }
 
 // GET /organizations/{org}/integrations → IntegrationResponse.
@@ -79,7 +83,7 @@ export interface Integration {
   service_url?: null | string
   slug: string
   status: string
-  team?: null | Record<string, unknown>
+  used_as_login?: boolean
   vendor?: null | string
 }
 
@@ -97,7 +101,6 @@ export interface IntegrationCreate {
   service_url?: null | string
   slug: string
   status?: IntegrationStatus
-  team_slug?: null | string
   vendor?: null | string
 }
 
@@ -118,7 +121,6 @@ export interface IntegrationUpdate {
   options?: null | Record<string, unknown>
   service_url?: null | string
   status?: IntegrationStatus | null
-  team_slug?: null | string
   vendor?: null | string
 }
 

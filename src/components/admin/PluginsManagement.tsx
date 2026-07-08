@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { IconTooltip } from '@/components/ui/tooltip'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { capabilityMeta } from '@/lib/capabilities'
@@ -173,9 +174,11 @@ export function PluginsManagement() {
                                 if (!meta) return null
                                 const Icon = meta.icon
                                 return (
-                                  <span key={cap.kind} title={cap.label}>
-                                    <Icon className="size-4" />
-                                  </span>
+                                  <IconTooltip key={cap.kind} label={cap.label}>
+                                    <span aria-label={cap.label}>
+                                      <Icon className="size-4" />
+                                    </span>
+                                  </IconTooltip>
                                 )
                               })
                             )}

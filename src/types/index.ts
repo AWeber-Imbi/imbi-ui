@@ -991,59 +991,6 @@ export interface LogHistogramBucket {
   timestamp: string
 }
 
-export interface LoginProviderCreate {
-  allowed_domains?: string[]
-  client_id: string
-  client_secret: string
-  description?: null | string
-  issuer_url?: null | string
-  // name/slug/org_slug/third_party_service_slug are derived server-side
-  // from oauth_app_type when omitted; the auth-providers admin UI
-  // doesn't expose them.
-  name?: string
-  oauth_app_type: OAuthAppType
-  org_slug?: string
-  scopes?: string[]
-  slug?: string
-  third_party_service_slug?: string
-  usage: 'both' | 'login'
-}
-
-export interface LoginProviderRead {
-  allowed_domains: string[]
-  authorization_endpoint: null | string
-  callback_url: string
-  client_id: null | string
-  description: null | string
-  has_secret: boolean
-  issuer_url: null | string
-  name: string
-  oauth_app_type: null | OAuthAppType
-  organization_name: null | string
-  organization_slug: null | string
-  revoke_endpoint: null | string
-  scopes: string[]
-  slug: string
-  status: string
-  third_party_service_name: null | string
-  third_party_service_slug: null | string
-  token_endpoint: null | string
-  usage: 'both' | 'login'
-}
-
-export interface LoginProviderUpdate {
-  allowed_domains?: string[]
-  // Empty string preserves existing secret on the server.
-  client_id: string
-  client_secret?: null | string
-  description?: null | string
-  issuer_url?: null | string
-  name: string
-  oauth_app_type: OAuthAppType
-  scopes?: string[]
-  usage: 'both' | 'login'
-}
-
 export interface LoginRequest {
   email: string
   password: string
@@ -1129,10 +1076,6 @@ export interface MCPServerTestResult {
 }
 
 export type MCPServerUpdate = Partial<MCPServerCreate>
-
-// Auth provider types — mirror the consolidated `ServiceApplication`-backed
-// shape in imbi_api/endpoints/auth_providers.py.
-export type OAuthAppType = 'github' | 'google' | 'oidc'
 
 export type OperationsLogEntryType = (typeof OPERATIONS_LOG_ENTRY_TYPES)[number]
 

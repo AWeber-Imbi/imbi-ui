@@ -55,9 +55,6 @@ import type {
   LinkDefinitionCreate,
   LocalAuthConfig,
   LogHistogramBucket,
-  LoginProviderCreate,
-  LoginProviderRead,
-  LoginProviderUpdate,
   LoginRequest,
   LogResultResponse,
   MCPServer,
@@ -1608,32 +1605,18 @@ export const testMcpServer = (id: string) =>
 export const testMcpServerConfig = (data: MCPServerTestConfig) =>
   apiClient.post<MCPServerTestResult>('/mcp-servers/test', data)
 
-// Admin - Auth Providers (login-eligible service applications)
-export const listAuthProviders = async (
-  signal?: AbortSignal,
-): Promise<LoginProviderRead[]> => {
-  const response = await apiClient.get<unknown>(
-    '/admin/auth-providers',
-    undefined,
-    signal,
+// Admin - Auth Providers. In v3, login providers are Integrations whose
+// plugin declares a login-capable identity capability; this promotes or
+// demotes one as the organization's SSO login provider (at most one per org).
+export const setIntegrationLoginProvider = (
+  orgSlug: string,
+  slug: string,
+  usedAsLogin: boolean,
+) =>
+  apiClient.put<Integration>(
+    `/organizations/${encodeURIComponent(orgSlug)}/integrations/${encodeURIComponent(slug)}/login-provider`,
+    { used_as_login: usedAsLogin },
   )
-  if (!Array.isArray(response)) {
-    throw new Error('Invalid auth providers response')
-  }
-  return response as LoginProviderRead[]
-}
-
-export const createAuthProvider = (data: LoginProviderCreate) =>
-  apiClient.post<LoginProviderRead>('/admin/auth-providers', data)
-
-export const updateAuthProvider = (slug: string, data: LoginProviderUpdate) =>
-  apiClient.put<LoginProviderRead>(
-    `/admin/auth-providers/${encodeURIComponent(slug)}`,
-    data,
-  )
-
-export const deleteAuthProvider = (slug: string) =>
-  apiClient.delete<void>(`/admin/auth-providers/${encodeURIComponent(slug)}`)
 
 export const getLocalAuthConfig = (signal?: AbortSignal) =>
   apiClient.get<LocalAuthConfig>('/admin/local-auth', undefined, signal)

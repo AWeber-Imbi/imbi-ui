@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { IconTooltip } from '@/components/ui/tooltip'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAdminNav } from '@/hooks/useAdminNav'
 import { extractApiErrorDetail } from '@/lib/apiError'
@@ -168,6 +169,8 @@ export function IntegrationsManagement() {
     },
     {
       header: 'Capabilities',
+      // Stack above the full-row link overlay so the icon tooltips get hover.
+      interactive: true,
       key: 'capabilities',
       render: (i) => {
         const kinds = enabledCapabilities(i)
@@ -175,19 +178,17 @@ export function IntegrationsManagement() {
           return <span className="text-tertiary text-sm">—</span>
         }
         return (
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="text-tertiary flex flex-wrap items-center gap-2.5">
             {kinds.map((kind) => {
               const meta = capabilityMeta(kind)
               if (!meta) return null
               const Icon = meta.icon
               return (
-                <span
-                  className="text-tertiary inline-flex"
-                  key={kind}
-                  title={meta.label}
-                >
-                  <Icon className="size-4" />
-                </span>
+                <IconTooltip key={kind} label={meta.label}>
+                  <span aria-label={meta.label}>
+                    <Icon className="size-4" />
+                  </span>
+                </IconTooltip>
               )
             })}
           </div>

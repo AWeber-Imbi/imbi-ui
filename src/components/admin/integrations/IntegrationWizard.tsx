@@ -12,7 +12,6 @@ import {
 import {
   createIntegration,
   listProjectTypes,
-  listTeams,
   replaceCapabilityAssignments,
 } from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
@@ -41,8 +40,7 @@ import type {
 } from '@/types'
 
 import { CapabilityRow } from './CapabilityRow'
-
-const NO_TEAM = '__none__'
+import { FieldDescription } from './FieldDescription'
 
 interface CapabilityState {
   assigned: string[]
@@ -75,7 +73,6 @@ export function IntegrationWizard({
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
-  const [teamSlug, setTeamSlug] = useState(NO_TEAM)
   const [options, setOptions] = useState<Record<string, unknown>>({})
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [caps, setCaps] = useState<Record<string, CapabilityState>>({})
@@ -86,12 +83,6 @@ export function IntegrationWizard({
     () => plugins.find((p) => p.slug === pluginSlug) ?? null,
     [plugins, pluginSlug],
   )
-
-  const { data: teams = [] } = useQuery({
-    enabled: !!orgSlug,
-    queryFn: ({ signal }) => listTeams(orgSlug!, signal),
-    queryKey: orgSlug ? queryKeys.teams(orgSlug) : ['teams'],
-  })
 
   const { data: projectTypes = [] } = useQuery({
     enabled: !!orgSlug,
@@ -124,7 +115,6 @@ export function IntegrationWizard({
         options,
         plugin: plugin.slug,
         slug: slug.trim(),
-        team_slug: teamSlug === NO_TEAM ? null : teamSlug,
       })
       // Project-type assignments are set through a separate endpoint. Only
       // narrowed (non-empty) assignments need writing; zero = all types.
@@ -264,25 +254,6 @@ export function IntegrationWizard({
                   {errors.slug && <FieldError>{errors.slug}</FieldError>}
                 </div>
               </div>
-              <div className="flex max-w-[50%] flex-col gap-1.5">
-                <Label htmlFor="int-team">
-                  Team ownership{' '}
-                  <span className="text-tertiary font-normal">(optional)</span>
-                </Label>
-                <Select onValueChange={setTeamSlug} value={teamSlug}>
-                  <SelectTrigger id="int-team">
-                    <SelectValue placeholder="No team" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NO_TEAM}>No team</SelectItem>
-                    {teams.map((t) => (
-                      <SelectItem key={t.slug} value={t.slug}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </CardContent>
           </Card>
 
@@ -314,6 +285,7 @@ export function IntegrationWizard({
                     Write-only, never echoed back
                   </span>
                 </div>
+                {/* fallow-ignore-next-line complexity */}
                 {requiredCreds.map((cred) => (
                   <div className="flex flex-col gap-1.5" key={cred.name}>
                     <Label htmlFor={`cred-${cred.name}`}>
@@ -329,13 +301,11 @@ export function IntegrationWizard({
                           [cred.name]: e.target.value,
                         }))
                       }
-                      type="password"
+                      type={cred.secret === false ? 'text' : 'password'}
                       value={credentials[cred.name] ?? ''}
                     />
                     {cred.description && (
-                      <span className="text-tertiary text-xs">
-                        {cred.description}
-                      </span>
+                      <FieldDescription text={cred.description} />
                     )}
                     {errors[`cred:${cred.name}`] && (
                       <FieldError>{errors[`cred:${cred.name}`]}</FieldError>
@@ -369,13 +339,11 @@ export function IntegrationWizard({
                                 [cred.name]: e.target.value,
                               }))
                             }
-                            type="password"
+                            type={cred.secret === false ? 'text' : 'password'}
                             value={credentials[cred.name] ?? ''}
                           />
                           {cred.description && (
-                            <span className="text-tertiary text-xs">
-                              {cred.description}
-                            </span>
+                            <FieldDescription text={cred.description} />
                           )}
                         </div>
                       ))}
@@ -464,7 +432,6 @@ export function IntegrationWizard({
           plugin={plugin}
           projectTypes={projectTypes}
           slug={slug}
-          teamName={teams.find((t) => t.slug === teamSlug)?.name ?? 'No team'}
         />
       )}
 
@@ -538,35 +505,35 @@ function OptionField({
 }) {
   if (option.choices && option.choices.length > 0) {
     return (
-      <div className="flex max-w-90 flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5">
         <Label>{option.label}</Label>
-        <Select
-          onValueChange={onChange}
-          value={typeof value === 'string' ? value : undefined}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select…" />
-          </SelectTrigger>
-          <SelectContent>
-            {option.choices.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {option.description && (
-          <span className="text-tertiary text-xs">{option.description}</span>
-        )}
+        <div className="max-w-90">
+          <Select
+            onValueChange={onChange}
+            value={typeof value === 'string' ? value : undefined}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select…" />
+            </SelectTrigger>
+            <SelectContent>
+              {option.choices.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {option.description && <FieldDescription text={option.description} />}
         {error && <FieldError>{error}</FieldError>}
       </div>
     )
   }
   return (
-    <div className="flex max-w-90 flex-col gap-1.5">
+    <div className="flex flex-col gap-1.5">
       <Label>{option.label}</Label>
       <Input
-        className={option.type === 'string' ? undefined : 'font-mono'}
+        className={cn('max-w-90', option.type !== 'string' && 'font-mono')}
         onChange={(e) =>
           onChange(
             option.type === 'integer'
@@ -579,9 +546,7 @@ function OptionField({
         type={option.type === 'integer' ? 'number' : 'text'}
         value={value === null || value === undefined ? '' : String(value)}
       />
-      {option.description && (
-        <span className="text-tertiary text-xs">{option.description}</span>
-      )}
+      {option.description && <FieldDescription text={option.description} />}
       {error && <FieldError>{error}</FieldError>}
     </div>
   )
@@ -648,9 +613,10 @@ function PluginStep({
                 )}
               </div>
               {p.description && (
-                <div className="text-secondary text-[13px] leading-snug">
-                  {p.description}
-                </div>
+                <FieldDescription
+                  className="text-secondary text-[13px] leading-snug"
+                  text={p.description}
+                />
               )}
               <div className="text-tertiary flex gap-2">
                 {p.capabilities.map((cap) => {
@@ -679,7 +645,6 @@ function ReviewStep({
   plugin,
   projectTypes,
   slug,
-  teamName,
 }: {
   caps: Record<string, CapabilityState>
   credentialLabels: string[]
@@ -687,13 +652,11 @@ function ReviewStep({
   plugin: PluginPackage
   projectTypes: { name: string; slug: string }[]
   slug: string
-  teamName: string
 }) {
   const rows: { k: string; v: string }[] = [
     { k: 'Plugin', v: plugin.name },
     { k: 'Name', v: name },
     { k: 'Slug', v: slug },
-    { k: 'Team', v: teamName },
     {
       k: 'Credentials',
       v: credentialLabels.length

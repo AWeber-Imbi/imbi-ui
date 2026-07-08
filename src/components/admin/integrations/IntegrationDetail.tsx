@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import {
   useMutation,
@@ -24,33 +24,18 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { ErrorBanner } from '@/components/ui/error-banner'
+import { InlineDisplay } from '@/components/ui/inline-edit/InlineDisplay'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Sk, Swap } from '@/components/ui/skeleton'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useInlineEdit } from '@/hooks/useInlineEdit'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { queryKeys } from '@/lib/queryKeys'
 import { statusBadgeVariant } from '@/lib/status-colors'
 import type { CapabilityKind, Integration, PluginPackage } from '@/types'
 
 import { CapabilityRow } from './CapabilityRow'
-
-interface CredentialsDialogProps {
-  credentials: PluginPackage['credentials']
-  integrationName: string
-  isSaving: boolean
-  onClose: () => void
-  onSave: (values: Record<string, null | string>) => Promise<void>
-  open: boolean
-}
 
 interface IntegrationDetailProps {
   onBack: () => void
@@ -171,10 +156,28 @@ export function IntegrationDetail({
   })
 
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [editingCreds, setEditingCreds] = useState(false)
+  const [pendingCred, setPendingCred] = useState<null | string>(null)
 
   if (error && !integration) {
     return <ErrorBanner error={error} title="Failed to load integration" />
+  }
+
+  // Write-only, per-field credential replacement: committing a single field
+  // sends just that value; blank fields are never submitted, so untouched
+  // credentials keep their current server value.
+  const saveCredential = async (name: string, value: string) => {
+    if (!orgSlug) return
+    setPendingCred(name)
+    try {
+      await updateIntegrationCredentials(orgSlug, slug, { [name]: value })
+      toast.success('Credentials updated')
+      invalidate()
+    } catch (err) {
+      toast.error(`Save failed: ${extractApiErrorDetail(err)}`)
+      throw err
+    } finally {
+      setPendingCred(null)
+    }
   }
 
   const patchCapability = (
@@ -236,18 +239,10 @@ export function IntegrationDetail({
               {/* Connection */}
               <Card>
                 <CardContent className="p-5">
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4">
                     <h2 className="text-primary text-[17px] font-semibold">
                       Connection
                     </h2>
-                    <Button
-                      disabled={!editable}
-                      onClick={() => setEditingCreds(true)}
-                      size="sm"
-                      variant="secondary"
-                    >
-                      Replace credentials
-                    </Button>
                   </div>
 
                   {plugin && plugin.options.length > 0 && (
@@ -265,34 +260,16 @@ export function IntegrationDetail({
                   <div className="text-tertiary mt-4 mb-1 text-xs font-semibold tracking-wide uppercase">
                     Credentials
                   </div>
-                  {(plugin?.credentials ?? []).map((cred) => {
-                    const isSet = integration.credential_fields.includes(
-                      cred.name,
-                    )
-                    return (
-                      <div
-                        className="border-tertiary flex items-center justify-between gap-4 border-b py-2.5 last:border-b-0"
-                        key={cred.name}
-                      >
-                        <span className="text-secondary flex items-center gap-2 text-[13px]">
-                          {cred.label}
-                          {!cred.required && (
-                            <span className="text-tertiary text-xs">
-                              optional
-                            </span>
-                          )}
-                        </span>
-                        <span className="text-tertiary inline-flex items-center gap-1.5 text-sm">
-                          <Lock className="size-3" />
-                          {isSet ? (
-                            <span className="text-success">set</span>
-                          ) : (
-                            'not set'
-                          )}
-                        </span>
-                      </div>
-                    )
-                  })}
+                  {(plugin?.credentials ?? []).map((cred) => (
+                    <CredentialRow
+                      cred={cred}
+                      isSet={integration.credential_fields.includes(cred.name)}
+                      key={cred.name}
+                      onSave={(value) => saveCredential(cred.name, value)}
+                      pending={pendingCred === cred.name}
+                      readOnly={!editable}
+                    />
+                  ))}
                   {(plugin?.credentials.length ?? 0) === 0 && (
                     <div className="text-tertiary text-sm">
                       This plugin requires no credentials.
@@ -412,23 +389,6 @@ export function IntegrationDetail({
               </Card>
             </div>
 
-            {plugin && (
-              <CredentialsDialog
-                credentials={plugin.credentials}
-                integrationName={integration.name}
-                isSaving={false}
-                onClose={() => setEditingCreds(false)}
-                onSave={async (values) => {
-                  if (!orgSlug) return
-                  await updateIntegrationCredentials(orgSlug, slug, values)
-                  toast.success('Credentials updated')
-                  setEditingCreds(false)
-                  invalidate()
-                }}
-                open={editingCreds}
-              />
-            )}
-
             <ConfirmDialog
               confirmLabel="Delete"
               description={`Delete "${integration.name}"? This removes its credentials and unlinks connected projects. This cannot be undone.`}
@@ -456,86 +416,73 @@ function ConnectionRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-// Write-only credential replacement. Only fields the operator types into are
-// sent (empty fields are left untouched on the server).
-function CredentialsDialog({
-  credentials,
-  integrationName,
-  onClose,
+// One credential field, click-to-edit inline. The stored secret is never read
+// back, so editing starts from an empty draft; committing a non-empty value
+// replaces it, and an empty commit is a no-op that keeps the current value.
+// fallow-ignore-next-line complexity
+function CredentialRow({
+  cred,
+  isSet,
   onSave,
-  open,
-}: CredentialsDialogProps) {
-  const [values, setValues] = useState<Record<string, string>>({})
-  const [saving, setSaving] = useState(false)
+  pending,
+  readOnly,
+}: {
+  cred: PluginPackage['credentials'][number]
+  isSet: boolean
+  onSave: (value: string) => Promise<void>
+  pending: boolean
+  readOnly: boolean
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const edit = useInlineEdit<string>({
+    initial: '',
+    onCommit: async (next) => {
+      if (next.trim()) await onSave(next)
+    },
+  })
 
-  const submit = async () => {
-    const payload: Record<string, null | string> = {}
-    for (const [name, value] of Object.entries(values)) {
-      if (value.trim()) payload[name] = value
-    }
-    setSaving(true)
-    try {
-      await onSave(payload)
-      setValues({})
-    } finally {
-      setSaving(false)
-    }
-  }
+  useEffect(() => {
+    if (edit.isEditing) inputRef.current?.focus()
+  }, [edit.isEditing])
 
   return (
-    <Dialog
-      onOpenChange={(next) => {
-        if (!next) {
-          setValues({})
-          onClose()
-        }
-      }}
-      open={open}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Replace credentials — {integrationName}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 p-6 pt-2">
-          <p className="text-tertiary text-xs">
-            Leave a field blank to keep the current value. Entered values are
-            write-only and never shown again.
-          </p>
-          {credentials.map((cred) => (
-            <div className="flex flex-col gap-1.5" key={cred.name}>
-              <Label htmlFor={`replace-${cred.name}`}>
-                {cred.label}
-                {!cred.required && (
-                  <span className="text-tertiary ml-1 text-xs">optional</span>
-                )}
-              </Label>
-              <Input
-                className="font-mono"
-                id={`replace-${cred.name}`}
-                onChange={(e) =>
-                  setValues((v) => ({ ...v, [cred.name]: e.target.value }))
-                }
-                placeholder="••••••••"
-                type="password"
-                value={values[cred.name] ?? ''}
-              />
-            </div>
-          ))}
-        </div>
-        <DialogFooter>
-          <Button onClick={onClose} variant="secondary">
-            Cancel
-          </Button>
-          <Button
-            className="bg-action text-action-foreground hover:bg-action-hover"
-            disabled={saving || Object.keys(values).length === 0}
-            onClick={submit}
-          >
-            Save credentials
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <div className="border-tertiary flex items-center justify-between gap-4 border-b py-2.5 last:border-b-0">
+      <span className="text-secondary flex items-center gap-2 text-[13px]">
+        {cred.label}
+        {!cred.required && (
+          <span className="text-tertiary text-xs">optional</span>
+        )}
+      </span>
+      {edit.isEditing ? (
+        <span className="flex flex-col items-end">
+          <Input
+            className="h-7 w-56 py-1 font-mono"
+            onBlur={edit.handleBlur}
+            onChange={(e) => edit.setDraft(e.target.value)}
+            onKeyDown={edit.handleKeyDown}
+            placeholder={cred.secret === false ? '' : '••••••••'}
+            ref={inputRef}
+            type={cred.secret === false ? 'text' : 'password'}
+            value={edit.draft}
+          />
+          {edit.error && (
+            <span className="mt-1 text-xs text-red-600">{edit.error}</span>
+          )}
+        </span>
+      ) : (
+        <InlineDisplay
+          hasValue
+          onClick={edit.enter}
+          pending={pending}
+          readOnly={readOnly}
+        >
+          <span className="text-tertiary inline-flex items-center gap-1.5 text-sm">
+            {cred.secret !== false && <Lock className="size-3" />}
+            {isSet ? <span className="text-success">set</span> : 'not set'}
+          </span>
+        </InlineDisplay>
+      )}
+    </div>
   )
 }
 

@@ -27,6 +27,8 @@ import { capabilityMeta } from '@/lib/capabilities'
 import { cn } from '@/lib/utils'
 import type { PluginOption } from '@/types'
 
+import { FieldDescription } from './FieldDescription'
+
 export interface CapabilityProjectType {
   name: string
   slug: string
@@ -138,9 +140,10 @@ export function CapabilityRow({
             </span>
           </div>
           {description && (
-            <div className="text-secondary mt-1 text-[13px] leading-snug">
-              {description}
-            </div>
+            <FieldDescription
+              className="text-secondary mt-1 text-[13px] leading-snug"
+              text={description}
+            />
           )}
         </div>
         {enabled && hasPanel && (
@@ -176,31 +179,16 @@ export function CapabilityRow({
 
           {projectScoped && (
             <div>
-              <div className="text-tertiary mb-2 text-xs font-semibold tracking-wide uppercase">
-                Applies to
-              </div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                {assignedTypeSlugs.length === 0 ? (
-                  <span className="bg-amber-bg text-amber-text inline-flex h-6.5 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium">
-                    <Layers className="size-3.5" />
-                    All project types
-                  </span>
-                ) : (
-                  projectTypes
-                    .filter((t) => assignedTypeSlugs.includes(t.slug))
-                    .map((t) => (
-                      <span
-                        className="border-secondary bg-secondary text-primary inline-flex h-6.5 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium"
-                        key={t.slug}
-                      >
-                        <Box className="text-tertiary size-3" />
-                        {t.name}
-                      </span>
-                    ))
-                )}
+              <div className="mb-2 flex items-center gap-2">
+                <div className="text-tertiary text-xs font-semibold tracking-wide uppercase">
+                  Applies to
+                </div>
                 {editable && (
                   <Button
-                    className={cn(assignMode && 'bg-amber-bg text-amber-text')}
+                    className={cn(
+                      'ml-auto',
+                      assignMode && 'bg-amber-bg text-amber-text',
+                    )}
                     onClick={() => setAssignMode((a) => !a)}
                     size="sm"
                     variant="ghost"
@@ -210,12 +198,12 @@ export function CapabilityRow({
                     ) : (
                       <Pencil className="size-3.5" />
                     )}
-                    Edit
+                    {assignMode ? 'Done' : 'Edit'}
                   </Button>
                 )}
               </div>
-              {assignMode && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+              {assignMode ? (
+                <div className="flex flex-wrap items-center gap-2">
                   {projectTypes.map((t) => {
                     const selected = assignedTypeSlugs.includes(t.slug)
                     return (
@@ -245,6 +233,27 @@ export function CapabilityRow({
                       <X className="size-3.5" />
                       Clear all
                     </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {assignedTypeSlugs.length === 0 ? (
+                    <span className="bg-amber-bg text-amber-text inline-flex h-6.5 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium">
+                      <Layers className="size-3.5" />
+                      All project types
+                    </span>
+                  ) : (
+                    projectTypes
+                      .filter((t) => assignedTypeSlugs.includes(t.slug))
+                      .map((t) => (
+                        <span
+                          className="border-secondary bg-secondary text-primary inline-flex h-6.5 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium"
+                          key={t.slug}
+                        >
+                          <Box className="text-tertiary size-3" />
+                          {t.name}
+                        </span>
+                      ))
                   )}
                 </div>
               )}
@@ -322,37 +331,38 @@ function CapabilityOptionField({
 
   if (option.choices && option.choices.length > 0) {
     return (
-      <div className="max-w-90">
+      <div>
         {labelNode}
-        <Select
-          disabled={disabled}
-          onValueChange={(v) => onChange(v)}
-          value={typeof value === 'string' ? value : undefined}
-        >
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder="Select…" />
-          </SelectTrigger>
-          <SelectContent>
-            {option.choices.map((choice) => (
-              <SelectItem key={choice} value={choice}>
-                {choice}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="max-w-90">
+          <Select
+            disabled={disabled}
+            onValueChange={(v) => onChange(v)}
+            value={typeof value === 'string' ? value : undefined}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Select…" />
+            </SelectTrigger>
+            <SelectContent>
+              {option.choices.map((choice) => (
+                <SelectItem key={choice} value={choice}>
+                  {choice}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {option.description && (
-          <div className="text-tertiary mt-1.5 text-xs">
-            {option.description}
-          </div>
+          <FieldDescription className="mt-1.5" text={option.description} />
         )}
       </div>
     )
   }
 
   return (
-    <div className="max-w-90">
+    <div>
       {labelNode}
       <Input
+        className="max-w-90"
         disabled={disabled}
         onChange={(e) =>
           onChange(
@@ -373,7 +383,7 @@ function CapabilityOptionField({
         value={value === null || value === undefined ? '' : String(value)}
       />
       {option.description && (
-        <div className="text-tertiary mt-1.5 text-xs">{option.description}</div>
+        <FieldDescription className="mt-1.5" text={option.description} />
       )}
     </div>
   )
