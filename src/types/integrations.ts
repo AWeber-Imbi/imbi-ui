@@ -52,7 +52,7 @@ export interface CapabilityToggle {
 }
 
 // ---------------------------------------------------------------------------
-// Plugin manifest (drives the connection + capability forms)
+// Integrations (leads with the plugin credential field they configure)
 // ---------------------------------------------------------------------------
 
 // A write-only credential field declared once per plugin (manifest level).
@@ -123,7 +123,7 @@ export interface IntegrationUpdate {
 }
 
 // ---------------------------------------------------------------------------
-// Integrations
+// Plugin manifest (drives the connection + capability forms)
 // ---------------------------------------------------------------------------
 
 // A capability as declared by a plugin manifest.
@@ -184,7 +184,7 @@ export interface PluginPackage extends PluginManifest {
 }
 
 // ---------------------------------------------------------------------------
-// Project ↔ integration link (EXISTS_IN edge)
+// Project-level integration assignments (per-capability USES override)
 // ---------------------------------------------------------------------------
 
 export interface ProjectIntegrationAssignment {
@@ -201,7 +201,7 @@ export interface ProjectIntegrationsUpdate {
 }
 
 // ---------------------------------------------------------------------------
-// Project-level integration assignments (per-capability USES override)
+// Project ↔ integration link (EXISTS_IN edge)
 // ---------------------------------------------------------------------------
 
 // A project's EXISTS_IN edge to an Integration (v3). Served by

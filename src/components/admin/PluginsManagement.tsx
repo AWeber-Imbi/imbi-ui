@@ -3,7 +3,6 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Package } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -12,13 +11,7 @@ import {
   setPluginPackageEnabled,
 } from '@/api/endpoints'
 import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Sk } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -236,20 +229,6 @@ export function PluginsManagement() {
               </TableBody>
             </Table>
           </CardContent>
-        </Card>
-      )}
-
-      {plugins.length === 0 && !isLoading && !isError && (
-        <Card>
-          <CardHeader className="px-6 py-4">
-            <CardTitle className="flex items-center gap-2">
-              <Package className="size-4" />
-              No plugins installed
-            </CardTitle>
-            <CardDescription>
-              Plugin packages are deployed with the server.
-            </CardDescription>
-          </CardHeader>
         </Card>
       )}
 
