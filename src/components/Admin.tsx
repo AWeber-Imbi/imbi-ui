@@ -129,6 +129,13 @@ export function Admin() {
 
   const orgAdminSections: SectionDef[] = [
     {
+      description: 'Operations metrics and system health at a glance',
+      icon: LayoutDashboard,
+      id: 'overview',
+      label: 'Overview',
+      scope: 'org',
+    },
+    {
       description: 'Configure metadata templates',
       icon: FileJson,
       id: 'blueprints',
@@ -168,13 +175,6 @@ export function Admin() {
       icon: Link2,
       id: 'link-definitions',
       label: 'Link Definitions',
-      scope: 'org',
-    },
-    {
-      description: 'Operations metrics and system health at a glance',
-      icon: LayoutDashboard,
-      id: 'overview',
-      label: 'Overview',
       scope: 'org',
     },
     {
