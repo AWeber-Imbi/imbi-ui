@@ -129,13 +129,6 @@ export function Admin() {
 
   const orgAdminSections: SectionDef[] = [
     {
-      description: 'Operations metrics and system health at a glance',
-      icon: LayoutDashboard,
-      id: 'overview',
-      label: 'Overview',
-      scope: 'org',
-    },
-    {
       description: 'Configure metadata templates',
       icon: FileJson,
       id: 'blueprints',
@@ -150,10 +143,24 @@ export function Admin() {
       scope: 'org',
     },
     {
+      description: 'Manage reusable document templates',
+      icon: StickyNote,
+      id: 'document-templates',
+      label: 'Document Templates',
+      scope: 'org',
+    },
+    {
       description: 'Manage environments',
       icon: Layers,
       id: 'environments',
       label: 'Environments',
+      scope: 'org',
+    },
+    {
+      description: 'Connect external platforms',
+      icon: Blocks,
+      id: 'integrations',
+      label: 'Integrations',
       scope: 'org',
     },
     {
@@ -164,10 +171,10 @@ export function Admin() {
       scope: 'org',
     },
     {
-      description: 'Manage reusable document templates',
-      icon: StickyNote,
-      id: 'document-templates',
-      label: 'Document Templates',
+      description: 'Operations metrics and system health at a glance',
+      icon: LayoutDashboard,
+      id: 'overview',
+      label: 'Overview',
       scope: 'org',
     },
     {
@@ -175,13 +182,6 @@ export function Admin() {
       icon: FolderTree,
       id: 'project-types',
       label: 'Project Types',
-      scope: 'org',
-    },
-    {
-      description: 'Manage teams',
-      icon: UsersRound,
-      id: 'teams',
-      label: 'Teams',
       scope: 'org',
     },
     {
@@ -193,17 +193,10 @@ export function Admin() {
       scope: 'org',
     },
     {
-      description: 'Connect external platforms',
-      icon: Blocks,
-      id: 'integrations',
-      label: 'Integrations',
-      scope: 'org',
-    },
-    {
-      description: 'Configure inbound webhook processing',
-      icon: Webhook,
-      id: 'webhooks',
-      label: 'Webhooks',
+      description: 'Manage teams',
+      icon: UsersRound,
+      id: 'teams',
+      label: 'Teams',
       scope: 'org',
     },
     {
@@ -214,16 +207,16 @@ export function Admin() {
       label: 'Webhook History',
       scope: 'org',
     },
+    {
+      description: 'Configure inbound webhook processing',
+      icon: Webhook,
+      id: 'webhooks',
+      label: 'Webhooks',
+      scope: 'org',
+    },
   ]
 
   const systemAdminSections: SectionDef[] = [
-    {
-      description: 'Manage organizational units and access',
-      icon: Building2,
-      id: 'organizations',
-      label: 'Organizations',
-      scope: 'system',
-    },
     {
       description: 'Configure the AI assistant and its MCP servers',
       icon: Sparkles,
@@ -243,6 +236,13 @@ export function Admin() {
       icon: Network,
       id: 'graph-query',
       label: 'Graph Query',
+      scope: 'system',
+    },
+    {
+      description: 'Manage organizational units and access',
+      icon: Building2,
+      id: 'organizations',
+      label: 'Organizations',
       scope: 'system',
     },
     {
