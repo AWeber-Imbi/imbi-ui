@@ -41,6 +41,9 @@ import { DeviceCodePollingDialog } from './DeviceCodePollingDialog'
 
 interface ConnectionActionsProps {
   connection: IdentityConnectionResponse | null
+  // No connectable integration for this plugin (e.g. legacy integration
+  // without a stable id) — the Connect action is unavailable.
+  disabled?: boolean
   onConnect: () => void
   onDisconnect: () => void
   onRefresh: () => void
@@ -49,12 +52,15 @@ interface ConnectionActionsProps {
 
 interface ConnectionRow {
   connection: IdentityConnectionResponse | null
+  // The org integration backing this provider; null when the plugin has
+  // no configured (identity-enabled) integration the actor can connect to.
+  integrationId: null | string
   plugin: PluginPackage
 }
 
 interface DevicePoll {
+  integrationId: string
   pluginLabel: string
-  pluginSlug: string
   polling: IdentityPollingDescriptor
   state: string
 }
@@ -195,8 +201,10 @@ export function SettingsConnections() {
   })
 
   const startMutation = useMutation({
-    mutationFn: (variables: { pluginLabel: string; pluginSlug: string }) =>
-      startMyIdentity(variables.pluginSlug, {
+    // Identity connections target an Integration by its id (the host's
+    // start endpoint matches on Integration.id), not the plugin slug.
+    mutationFn: (variables: { integrationId: string; pluginLabel: string }) =>
+      startMyIdentity(variables.integrationId, {
         return_to: '/settings/connections',
       }).then((data) => ({ data, ...variables })),
     onError: (err) => {
@@ -206,7 +214,7 @@ export function SettingsConnections() {
         extractApiErrorDetail(err) ?? 'Failed to start the connect flow',
       )
     },
-    onSuccess: ({ data, pluginLabel, pluginSlug }) => {
+    onSuccess: ({ data, integrationId, pluginLabel }) => {
       const popup = pendingAuthWindowRef.current
       pendingAuthWindowRef.current = null
       if (popup) {
@@ -225,8 +233,8 @@ export function SettingsConnections() {
         verificationWindowRef.current = popup
         setPokeNonce(0)
         setDevicePoll({
+          integrationId,
           pluginLabel,
-          pluginSlug,
           polling: data.polling,
           state: data.state,
         })
@@ -235,7 +243,7 @@ export function SettingsConnections() {
   })
 
   const refreshMutation = useMutation({
-    mutationFn: (pluginId: string) => refreshMyIdentity(pluginId),
+    mutationFn: (integrationId: string) => refreshMyIdentity(integrationId),
     onError: (err) => {
       toast.error(extractApiErrorDetail(err) ?? 'Failed to refresh connection')
     },
@@ -248,7 +256,7 @@ export function SettingsConnections() {
   })
 
   const disconnectMutation = useMutation({
-    mutationFn: (pluginId: string) => disconnectMyIdentity(pluginId),
+    mutationFn: (integrationId: string) => disconnectMyIdentity(integrationId),
     onError: (err) => {
       toast.error(extractApiErrorDetail(err) ?? 'Failed to disconnect')
     },
@@ -284,13 +292,25 @@ export function SettingsConnections() {
       { replace: true },
     )
     if (!plugin) return
+    const integration = (integrationsQuery.data ?? []).find(
+      (i) => i.plugin === plugin.slug && i.capabilities?.identity?.enabled,
+    )
+    if (!integration?.id) {
+      toast.error(`No connectable ${plugin.name} integration is configured`)
+      return
+    }
     pendingAuthWindowRef.current = window.open('', '_blank')
     startMutation.mutate({
+      integrationId: integration.id,
       pluginLabel: plugin.name,
-      pluginSlug: plugin.slug,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoConnectSlug, pluginsQuery.isLoading, pluginsQuery.data])
+  }, [
+    autoConnectSlug,
+    pluginsQuery.isLoading,
+    pluginsQuery.data,
+    integrationsQuery.data,
+  ])
 
   if (
     pluginsQuery.isLoading ||
@@ -347,20 +367,33 @@ export function SettingsConnections() {
     )
   }
 
-  // Phase 1: a Plugin row's id isn't surfaced on the admin/plugins
-  // catalog (which is keyed on slug), so we join connections to plugins
-  // by slug.  The host's start endpoint accepts either the node id or
-  // the slug; the latter is unambiguous when only one Plugin exists per
-  // slug, which matches the Phase-1 catalog.
-  const connectionsByPluginSlug = new Map<string, IdentityConnectionResponse>()
+  // The identity-enabled integration backing each plugin, keyed by plugin
+  // slug; the connect flow targets its id. Connections join to their
+  // integration by id.
+  const integrationByPluginSlug = new Map<string, string>()
+  for (const i of integrationsQuery.data ?? []) {
+    if (i.capabilities?.identity?.enabled && i.id) {
+      integrationByPluginSlug.set(i.plugin, i.id)
+    }
+  }
+  const connectionsByIntegrationId = new Map<
+    string,
+    IdentityConnectionResponse
+  >()
   for (const c of connectionsQuery.data ?? []) {
-    connectionsByPluginSlug.set(c.plugin_slug, c)
+    connectionsByIntegrationId.set(c.integration_id, c)
   }
 
-  const rows: ConnectionRow[] = identityPlugins.map((plugin) => ({
-    connection: connectionsByPluginSlug.get(plugin.slug) ?? null,
-    plugin,
-  }))
+  const rows: ConnectionRow[] = identityPlugins.map((plugin) => {
+    const integrationId = integrationByPluginSlug.get(plugin.slug) ?? null
+    return {
+      connection: integrationId
+        ? (connectionsByIntegrationId.get(integrationId) ?? null)
+        : null,
+      integrationId,
+      plugin,
+    }
+  })
 
   return (
     <div className="space-y-4">
@@ -388,7 +421,7 @@ export function SettingsConnections() {
             </TableHeader>
             <TableBody>
               {/* fallow-ignore-next-line complexity */}
-              {rows.map(({ connection, plugin }) => {
+              {rows.map(({ connection, integrationId, plugin }) => {
                 const status: 'not_connected' | IdentityConnectionStatus =
                   connection?.status ?? 'not_connected'
                 return (
@@ -407,7 +440,9 @@ export function SettingsConnections() {
                     <TableCell className="text-right">
                       <ConnectionActions
                         connection={connection}
+                        disabled={!integrationId}
                         onConnect={() => {
+                          if (!integrationId) return
                           // Open the auth tab synchronously inside the
                           // click handler so the browser treats it as a
                           // user-initiated popup; the URL is filled in
@@ -420,12 +455,16 @@ export function SettingsConnections() {
                             '_blank',
                           )
                           startMutation.mutate({
+                            integrationId,
                             pluginLabel: plugin.name,
-                            pluginSlug: plugin.slug,
                           })
                         }}
-                        onDisconnect={() => setPendingDisconnectId(plugin.slug)}
-                        onRefresh={() => refreshMutation.mutate(plugin.slug)}
+                        onDisconnect={() =>
+                          integrationId && setPendingDisconnectId(integrationId)
+                        }
+                        onRefresh={() =>
+                          integrationId && refreshMutation.mutate(integrationId)
+                        }
                         pending={
                           startMutation.isPending ||
                           refreshMutation.isPending ||
@@ -479,7 +518,7 @@ export function SettingsConnections() {
         }}
         open={devicePoll !== null}
         pluginLabel={devicePoll?.pluginLabel ?? ''}
-        pluginSlug={devicePoll?.pluginSlug ?? ''}
+        pluginSlug={devicePoll?.integrationId ?? ''}
         pokeNonce={pokeNonce}
         polling={devicePoll?.polling ?? null}
         state={devicePoll?.state ?? ''}
@@ -488,8 +527,10 @@ export function SettingsConnections() {
   )
 }
 
+// fallow-ignore-next-line complexity
 function ConnectionActions({
   connection,
+  disabled,
   onConnect,
   onDisconnect,
   onRefresh,
@@ -498,7 +539,7 @@ function ConnectionActions({
   if (!connection) {
     return (
       <Button
-        disabled={pending}
+        disabled={pending || disabled}
         onClick={onConnect}
         size="sm"
         variant="outline"
@@ -539,7 +580,7 @@ function ConnectionActions({
   return (
     <div className="flex justify-end gap-2">
       <Button
-        disabled={pending}
+        disabled={pending || disabled}
         onClick={onConnect}
         size="sm"
         variant="outline"

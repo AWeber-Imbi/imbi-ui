@@ -30,7 +30,7 @@ export function useGithubLogin() {
 function githubLoginFromIdentities(
   identities: IdentityConnectionResponse[],
 ): string | undefined {
-  const conn = identities.find((i) => i.plugin_slug === GITHUB_PR_PLUGIN_SLUG)
+  const conn = identities.find((i) => i.plugin === GITHUB_PR_PLUGIN_SLUG)
   if (!conn) return undefined
   const login = conn.metadata?.login
   return typeof login === 'string' && login ? login : undefined

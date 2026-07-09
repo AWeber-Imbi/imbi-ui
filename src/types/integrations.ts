@@ -74,6 +74,9 @@ export interface Integration {
   credential_fields: string[]
   description?: null | string
   icon?: null | string
+  // Stable node id; null only for legacy integrations created before ids
+  // were persisted. The identity connect flow targets this.
+  id?: null | string
   identifiers: Record<string, unknown>
   links: Record<string, unknown>
   name: string

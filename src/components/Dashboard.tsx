@@ -210,7 +210,8 @@ export function Dashboard({
   const [dismissedIntegrations, setDismissedIntegrations] = useState<string[]>(
     loadDismissedIntegrations,
   )
-  const { connectableSlugs, pluginsQuery } = useConnectableIdentities(orgSlug)
+  const { connectableSlugs, integrationsQuery, pluginsQuery } =
+    useConnectableIdentities(orgSlug)
   const identitiesQuery = useQuery<IdentityConnectionResponse[]>({
     queryFn: ({ signal }) => getMyIdentities(signal),
     queryKey: ['me-identities'],
@@ -220,11 +221,19 @@ export function Dashboard({
     staleTime: 5 * 60 * 1000,
   })
 
+  // Connections key off the integration id; map back to the plugin slug so
+  // an active connection hides that plugin's "connect" tile.
+  const pluginByIntegrationId = new Map<string, string>()
+  for (const i of integrationsQuery.data ?? []) {
+    if (i.id) pluginByIntegrationId.set(i.id, i.plugin)
+  }
   // Slugs already connected (active) or dismissed by the actor — either
   // way, don't prompt to connect them.
   const hiddenSlugs = new Set<string>(dismissedIntegrations)
   for (const c of identitiesQuery.data ?? []) {
-    if (c.status === 'active') hiddenSlugs.add(c.plugin_slug)
+    if (c.status !== 'active') continue
+    const slug = pluginByIntegrationId.get(c.integration_id)
+    if (slug) hiddenSlugs.add(slug)
   }
   // Only offer to connect identity plugins that actually have a configured
   // integration in this org — a login provider (org-less) or a merely

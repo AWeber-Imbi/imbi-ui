@@ -916,14 +916,15 @@ export interface IdentityConnectionPollResponse {
 }
 
 export interface IdentityConnectionResponse {
-  connects_users_to: null | string
   expires_at: null | string
   id: string
+  integration_id: string
+  integration_name: null | string
+  integration_slug: string
   last_used_at: null | string
   metadata: Record<string, unknown>
-  plugin_id: string
-  plugin_label: null | string
-  plugin_slug: string
+  // Slug of the plugin backing the integration; for plugin-level joins.
+  plugin: null | string
   scopes: string[]
   status: IdentityConnectionStatus
   subject: string
