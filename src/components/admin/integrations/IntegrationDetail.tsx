@@ -9,6 +9,7 @@ import {
 import { ArrowLeft, Lock, Package } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { API_URL } from '@/api/client'
 import {
   deleteIntegration,
   getIntegration,
@@ -323,9 +324,21 @@ export function IntegrationDetail({
                       const toggle = integration.capabilities[cap.kind]
                       const enabled = toggle?.enabled ?? false
                       const options = toggle?.options ?? {}
+                      // OAuth-redirect identity plugins need their callback URL
+                      // registered with the provider (e.g. the GitHub App). It
+                      // mirrors the backend's `_build_redirect_uri`. Device-flow
+                      // identities (AWS IAM IC) use no redirect_uri, so omit it.
+                      const callbackUrl =
+                        cap.kind === 'identity' &&
+                        integration.id &&
+                        (plugin?.auth_type === 'oauth2' ||
+                          plugin?.auth_type === 'oidc')
+                          ? `${API_URL}/me/identities/${integration.id}/callback`
+                          : undefined
                       return (
                         <CapabilityRow
                           assignedTypeSlugs={assignmentsByKind[cap.kind] ?? []}
+                          callbackUrl={callbackUrl}
                           description={cap.description}
                           editable={editable}
                           enabled={enabled}
