@@ -27,14 +27,27 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ErrorBanner } from '@/components/ui/error-banner'
 import { InlineDisplay } from '@/components/ui/inline-edit/InlineDisplay'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Sk, Swap } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useInlineEdit } from '@/hooks/useInlineEdit'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { queryKeys } from '@/lib/queryKeys'
 import { statusBadgeVariant } from '@/lib/status-colors'
-import type { CapabilityKind, Integration, PluginPackage } from '@/types'
+import type {
+  CapabilityKind,
+  Integration,
+  PluginOption,
+  PluginPackage,
+} from '@/types'
 
 import { CapabilityRow } from './CapabilityRow'
 
@@ -158,6 +171,7 @@ export function IntegrationDetail({
 
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [pendingCred, setPendingCred] = useState<null | string>(null)
+  const [pendingOpt, setPendingOpt] = useState<null | string>(null)
 
   if (error && !integration) {
     return <ErrorBanner error={error} title="Failed to load integration" />
@@ -187,6 +201,18 @@ export function IntegrationDetail({
     options: Record<string, unknown>,
   ) => {
     patchMutation.mutate({ capabilities: { [kind]: { enabled, options } } })
+  }
+
+  // Integration-level options (host, flavor, …) are merged server-side, so
+  // a single-field patch leaves the rest untouched.
+  const saveOption = async (name: string, value: unknown) => {
+    setPendingOpt(name)
+    try {
+      await patchMutation.mutateAsync({ options: { [name]: value } })
+      toast.success('Connection updated')
+    } finally {
+      setPendingOpt(null)
+    }
   }
 
   return (
@@ -249,10 +275,13 @@ export function IntegrationDetail({
                   {plugin && plugin.options.length > 0 && (
                     <div className="mb-2">
                       {plugin.options.map((opt) => (
-                        <ConnectionRow
+                        <OptionRow
                           key={opt.name}
-                          label={opt.label}
-                          value={formatValue(integration.options[opt.name])}
+                          onSave={(value) => saveOption(opt.name, value)}
+                          option={opt}
+                          pending={pendingOpt === opt.name}
+                          readOnly={!editable}
+                          value={integration.options[opt.name]}
                         />
                       ))}
                     </div>
@@ -409,15 +438,6 @@ export function IntegrationDetail({
   )
 }
 
-function ConnectionRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-tertiary flex items-center justify-between gap-4 border-b py-2.5 last:border-b-0">
-      <span className="text-secondary text-[13px]">{label}</span>
-      <span className="text-primary font-mono text-sm">{value}</span>
-    </div>
-  )
-}
-
 // One credential field, click-to-edit inline. The stored secret is never read
 // back, so editing starts from an empty draft; committing a non-empty value
 // replaces it, and an empty commit is a no-op that keeps the current value.
@@ -518,4 +538,125 @@ function formatValue(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—'
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   return String(value)
+}
+
+// One integration-level option (host, flavor, …), click-to-edit inline and
+// saved on commit. Choices render a Select; booleans a Switch; everything
+// else a text/number input.
+// fallow-ignore-next-line complexity
+function OptionRow({
+  onSave,
+  option,
+  pending,
+  readOnly,
+  value,
+}: {
+  onSave: (value: unknown) => Promise<void> | void
+  option: PluginOption
+  pending: boolean
+  readOnly: boolean
+  value: unknown
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const current = value === null || value === undefined ? '' : String(value)
+  const edit = useInlineEdit<string>({
+    initial: current,
+    onCommit: async (next) => {
+      const trimmed = next.trim()
+      if (trimmed === current) return
+      await onSave(
+        option.type === 'integer'
+          ? trimmed === ''
+            ? null
+            : Number(trimmed)
+          : trimmed,
+      )
+    },
+  })
+
+  useEffect(() => {
+    if (edit.isEditing) inputRef.current?.focus()
+  }, [edit.isEditing])
+
+  const label = (
+    <span className="text-secondary text-[13px]">{option.label}</span>
+  )
+  const rowClass =
+    'border-tertiary flex items-center justify-between gap-4 border-b py-2.5 last:border-b-0'
+
+  if (option.type === 'boolean') {
+    return (
+      <div className={rowClass}>
+        {label}
+        <Switch
+          checked={value === true}
+          disabled={readOnly || pending}
+          onCheckedChange={(checked) => onSave(checked)}
+        />
+      </div>
+    )
+  }
+
+  if (option.choices && option.choices.length > 0) {
+    return (
+      <div className={rowClass}>
+        {label}
+        {readOnly ? (
+          <span className="text-primary font-mono text-sm">
+            {formatValue(value)}
+          </span>
+        ) : (
+          <Select
+            disabled={pending}
+            onValueChange={(v) => onSave(v)}
+            value={typeof value === 'string' ? value : undefined}
+          >
+            <SelectTrigger className="h-7 w-56">
+              <SelectValue placeholder="Select…" />
+            </SelectTrigger>
+            <SelectContent>
+              {option.choices.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className={rowClass}>
+      {label}
+      {edit.isEditing ? (
+        <span className="flex flex-col items-end">
+          <Input
+            className="h-7 w-56 py-1 font-mono"
+            onBlur={edit.handleBlur}
+            onChange={(e) => edit.setDraft(e.target.value)}
+            onKeyDown={edit.handleKeyDown}
+            ref={inputRef}
+            type={option.type === 'integer' ? 'number' : 'text'}
+            value={edit.draft}
+          />
+          {edit.error && (
+            <span className="mt-1 text-xs text-red-600">{edit.error}</span>
+          )}
+        </span>
+      ) : (
+        <InlineDisplay
+          hasValue
+          onClick={edit.enter}
+          pending={pending}
+          readOnly={readOnly}
+        >
+          <span className="text-primary font-mono text-sm">
+            {formatValue(value)}
+          </span>
+        </InlineDisplay>
+      )}
+    </div>
+  )
 }
