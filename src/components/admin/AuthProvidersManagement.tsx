@@ -71,7 +71,11 @@ export function AuthProvidersManagement() {
   // that don't already have a provider can back a new one — login providers
   // are one-per-plugin (name/slug derive from the plugin).
   const addablePlugins = useMemo(() => {
-    const configured = new Set((providers ?? []).map((p) => p.plugin))
+    // Until the providers query resolves we can't tell which plugins are
+    // already configured, so expose none rather than offering an Add action
+    // that could create a duplicate.
+    if (!providers) return []
+    const configured = new Set(providers.map((p) => p.plugin))
     return plugins.filter((p) => {
       if (!p.enabled || configured.has(p.slug)) return false
       const identity = p.capabilities.find((c) => c.kind === 'identity')
@@ -163,12 +167,6 @@ export function AuthProvidersManagement() {
     },
   })
 
-  if (providersError) {
-    return (
-      <ErrorBanner error={providersError} title="Failed to load providers" />
-    )
-  }
-
   return (
     <div className="max-w-4xl space-y-5">
       {!canManageLocalAuth && !canManageProviders && (
@@ -245,83 +243,97 @@ export function AuthProvidersManagement() {
             organization is selected.
           </p>
 
-          <Swap
-            ready={!!providers}
-            skeleton={
-              <div className="space-y-2">
-                <Sk h={56} r={8} />
-                <Sk h={56} r={8} />
-              </div>
-            }
-          >
-            {(providers ?? []).length === 0 ? (
-              <div className="border-input text-tertiary rounded-lg border border-dashed p-4 text-sm">
-                {addablePlugins.length > 0
-                  ? `No login providers configured yet. Use “Add auth provider” to create one.`
-                  : `No login-capable plugins are enabled. Enable one (e.g. Google, GitHub, OIDC) under Admin → Plugins first.`}
-              </div>
-            ) : (
-              <div className="divide-tertiary border-tertiary divide-y rounded-lg border">
-                {(providers ?? []).map((provider) => (
-                  <div
-                    className="flex items-center justify-between gap-4 p-3"
-                    key={provider.slug}
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      {pluginIconBySlug.get(provider.plugin) && (
-                        <EntityIcon
-                          className="text-tertiary size-4 shrink-0"
-                          icon={pluginIconBySlug.get(provider.plugin)!}
-                        />
-                      )}
-                      <span className="text-primary truncate text-sm font-medium">
-                        {provider.name}
-                      </span>
-                      <Badge variant={statusBadgeVariant(provider.status)}>
-                        {provider.status}
-                      </Badge>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2.5">
-                      <span className="text-tertiary text-xs">
-                        {provider.used_as_login
-                          ? 'Used for sign-in'
-                          : 'Not used'}
-                      </span>
-                      <Switch
-                        aria-label={`Use ${provider.name} for sign-in`}
-                        checked={!!provider.used_as_login}
-                        disabled={
-                          !canManageProviders || loginProviderMutation.isPending
-                        }
-                        onCheckedChange={(checked) =>
-                          loginProviderMutation.mutate({
-                            slug: provider.slug,
-                            usedAsLogin: checked,
-                          })
-                        }
-                      />
-                      {canManageProviders && (
-                        <Button
-                          aria-label={`Delete ${provider.name}`}
-                          disabled={deleteMutation.isPending}
-                          onClick={() =>
-                            setPendingDelete({
-                              name: provider.name,
-                              slug: provider.slug,
-                            })
+          {providersError ? (
+            <ErrorBanner
+              error={providersError}
+              title="Failed to load providers"
+            />
+          ) : (
+            <Swap
+              ready={!!providers}
+              skeleton={
+                <div className="space-y-2">
+                  <Sk h={56} r={8} />
+                  <Sk h={56} r={8} />
+                </div>
+              }
+            >
+              {(providers ?? []).length === 0 ? (
+                <div className="border-input text-tertiary rounded-lg border border-dashed p-4 text-sm">
+                  {addablePlugins.length > 0
+                    ? `No login providers configured yet. Use “Add auth provider” to create one.`
+                    : `No login-capable plugins are enabled. Enable one (e.g. Google, GitHub, OIDC) under Admin → Plugins first.`}
+                </div>
+              ) : (
+                <div className="divide-tertiary border-tertiary divide-y rounded-lg border">
+                  {(providers ?? []).map((provider) => (
+                    <div
+                      className="flex items-center justify-between gap-4 p-3"
+                      key={provider.slug}
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        {pluginIconBySlug.get(provider.plugin) && (
+                          <EntityIcon
+                            className="text-tertiary size-4 shrink-0"
+                            icon={pluginIconBySlug.get(provider.plugin)!}
+                          />
+                        )}
+                        <span className="text-primary truncate text-sm font-medium">
+                          {provider.name}
+                        </span>
+                        <Badge variant={statusBadgeVariant(provider.status)}>
+                          {provider.status}
+                        </Badge>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2.5">
+                        <span className="text-tertiary text-xs">
+                          {provider.used_as_login
+                            ? 'Used for sign-in'
+                            : 'Not used'}
+                        </span>
+                        <Switch
+                          aria-label={`Use ${provider.name} for sign-in`}
+                          checked={!!provider.used_as_login}
+                          disabled={
+                            !canManageProviders ||
+                            loginProviderMutation.isPending ||
+                            // Block promoting an inactive provider (it can't
+                            // serve sign-in and would lock users out); still
+                            // allow demoting one that's already in use.
+                            (provider.status !== 'active' &&
+                              !provider.used_as_login)
                           }
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <Trash2 className="text-danger size-4" />
-                        </Button>
-                      )}
+                          onCheckedChange={(checked) => {
+                            if (checked && provider.status !== 'active') return
+                            loginProviderMutation.mutate({
+                              slug: provider.slug,
+                              usedAsLogin: checked,
+                            })
+                          }}
+                        />
+                        {canManageProviders && (
+                          <Button
+                            aria-label={`Delete ${provider.name}`}
+                            disabled={deleteMutation.isPending}
+                            onClick={() =>
+                              setPendingDelete({
+                                name: provider.name,
+                                slug: provider.slug,
+                              })
+                            }
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <Trash2 className="text-danger size-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Swap>
+                  ))}
+                </div>
+              )}
+            </Swap>
+          )}
         </CardContent>
       </Card>
 

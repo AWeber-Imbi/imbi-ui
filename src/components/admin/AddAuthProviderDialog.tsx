@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { toast } from 'sonner'
 
@@ -65,6 +65,25 @@ export function AddAuthProviderDialog({
     setOptions(seeded)
     setCredentials({})
   }
+
+  // Reset to a fresh form on each open: seed the first plugin's option
+  // defaults (so an untouched submit still carries manifest defaults) and
+  // clear any draft carried over from a previous open. Guarded on the
+  // open transition so a background plugins refetch can't wipe live input.
+  const wasOpen = useRef(false)
+  useEffect(() => {
+    if (open && !wasOpen.current) {
+      const first = plugins[0]
+      setPluginSlug(first?.slug ?? '')
+      const seeded: Record<string, unknown> = {}
+      for (const opt of first?.options ?? [])
+        seeded[opt.name] = optionDefault(opt)
+      setOptions(seeded)
+      setCredentials({})
+      setUseForSignIn(true)
+    }
+    wasOpen.current = open
+  }, [open, plugins])
 
   const missingRequired =
     !plugin ||

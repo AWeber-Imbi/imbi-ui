@@ -27,7 +27,7 @@ export function FieldDescription({ className, text }: FieldDescriptionProps) {
     >
       <Markdown
         components={{
-          a: (props) => (
+          a: ({ node: _node, ...props }) => (
             <a {...props} rel="noopener noreferrer" target="_blank" />
           ),
           p: ({ children }) => <>{children}</>,
