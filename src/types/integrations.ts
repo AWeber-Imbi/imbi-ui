@@ -59,11 +59,13 @@ export interface CapabilityToggle {
 export interface CredentialField {
   description?: null | string
   label: string
+  // Whether the value is multi-line (e.g. a PEM private key) → textarea.
+  multiline?: boolean
   name: string
   required: boolean
   // Whether the value is sensitive. Non-secret fields (e.g. a GitHub App id)
-  // render as plain text instead of a masked password input. Defaults to
-  // secret when the backend omits it.
+  // render as plain text instead of a masked password input and their value
+  // is echoed back for display. Defaults to secret when the backend omits it.
   secret?: boolean
 }
 
@@ -72,6 +74,8 @@ export interface Integration {
   capabilities: Record<string, CapabilityToggle>
   category?: null | string
   credential_fields: string[]
+  // Values of populated, non-secret credential fields (for display).
+  credential_values?: Record<string, string>
   description?: null | string
   icon?: null | string
   // Stable node id; null only for legacy integrations created before ids

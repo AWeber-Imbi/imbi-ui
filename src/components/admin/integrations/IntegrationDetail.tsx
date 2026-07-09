@@ -28,6 +28,7 @@ import { ErrorBanner } from '@/components/ui/error-banner'
 import { InlineDisplay } from '@/components/ui/inline-edit/InlineDisplay'
 import { Input } from '@/components/ui/input'
 import { Sk, Swap } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useInlineEdit } from '@/hooks/useInlineEdit'
 import { extractApiErrorDetail } from '@/lib/apiError'
@@ -268,6 +269,7 @@ export function IntegrationDetail({
                       onSave={(value) => saveCredential(cred.name, value)}
                       pending={pendingCred === cred.name}
                       readOnly={!editable}
+                      value={integration.credential_values?.[cred.name]}
                     />
                   ))}
                   {(plugin?.credentials.length ?? 0) === 0 && (
@@ -420,24 +422,32 @@ function ConnectionRow({ label, value }: { label: string; value: string }) {
 // back, so editing starts from an empty draft; committing a non-empty value
 // replaces it, and an empty commit is a no-op that keeps the current value.
 // fallow-ignore-next-line complexity
+// fallow-ignore-next-line complexity
 function CredentialRow({
   cred,
   isSet,
   onSave,
   pending,
   readOnly,
+  value,
 }: {
   cred: PluginPackage['credentials'][number]
   isSet: boolean
   onSave: (value: string) => Promise<void>
   pending: boolean
   readOnly: boolean
+  // Current value for non-secret fields (echoed back by the API); secret
+  // values are never sent, so undefined for those.
+  value?: string
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const isSecret = cred.secret !== false
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
+  // Non-secret fields edit from their current value; secret fields start
+  // blank (the stored value is never read back).
   const edit = useInlineEdit<string>({
-    initial: '',
+    initial: value ?? '',
     onCommit: async (next) => {
-      if (next.trim()) await onSave(next)
+      if (next.trim() && next !== value) await onSave(next)
     },
   })
 
@@ -455,16 +465,25 @@ function CredentialRow({
       </span>
       {edit.isEditing ? (
         <span className="flex flex-col items-end">
-          <Input
-            className="h-7 w-56 py-1 font-mono"
-            onBlur={edit.handleBlur}
-            onChange={(e) => edit.setDraft(e.target.value)}
-            onKeyDown={edit.handleKeyDown}
-            placeholder={cred.secret === false ? '' : '••••••••'}
-            ref={inputRef}
-            type={cred.secret === false ? 'text' : 'password'}
-            value={edit.draft}
-          />
+          {cred.multiline ? (
+            <Textarea
+              className="min-h-32 w-96 py-1 font-mono text-xs"
+              onBlur={edit.handleBlur}
+              onChange={(e) => edit.setDraft(e.target.value)}
+              ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+              value={edit.draft}
+            />
+          ) : (
+            <Input
+              className="h-7 w-56 py-1 font-mono"
+              onBlur={edit.handleBlur}
+              onChange={(e) => edit.setDraft(e.target.value)}
+              onKeyDown={edit.handleKeyDown}
+              ref={inputRef as React.RefObject<HTMLInputElement>}
+              type={isSecret ? 'password' : 'text'}
+              value={edit.draft}
+            />
+          )}
           {edit.error && (
             <span className="mt-1 text-xs text-red-600">{edit.error}</span>
           )}
@@ -477,8 +496,16 @@ function CredentialRow({
           readOnly={readOnly}
         >
           <span className="text-tertiary inline-flex items-center gap-1.5 text-sm">
-            {cred.secret !== false && <Lock className="size-3" />}
-            {isSet ? <span className="text-success">set</span> : 'not set'}
+            {isSecret && <Lock className="size-3" />}
+            {!isSecret && value ? (
+              <span className="text-primary max-w-72 truncate font-mono">
+                {value}
+              </span>
+            ) : isSet ? (
+              <span className="text-success">set</span>
+            ) : (
+              'not set'
+            )}
           </span>
         </InlineDisplay>
       )}
