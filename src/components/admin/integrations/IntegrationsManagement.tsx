@@ -13,6 +13,7 @@ import { AdminTable, type AdminTableColumn } from '@/components/ui/admin-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import {
   Select,
   SelectContent,
@@ -72,6 +73,12 @@ export function IntegrationsManagement() {
     () => new Set(plugins.filter((p) => p.enabled).map((p) => p.slug)),
     [plugins],
   )
+
+  const pluginIconBySlug = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const p of plugins) if (p.icon) map.set(p.slug, p.icon)
+    return map
+  }, [plugins])
 
   const deleteMutation = useMutation({
     mutationFn: (integration: Integration) =>
@@ -149,8 +156,17 @@ export function IntegrationsManagement() {
       key: 'name',
       render: (i) => {
         const unavailable = !enabledPluginSlugs.has(i.plugin)
+        const icon = pluginIconBySlug.get(i.plugin)
         return (
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 items-center gap-3">
+            {icon ? (
+              <EntityIcon
+                className="text-tertiary size-5 shrink-0"
+                icon={icon}
+              />
+            ) : (
+              <Blocks className="text-tertiary size-5 shrink-0" />
+            )}
             <span
               className={cn(
                 'truncate font-semibold',
@@ -158,10 +174,6 @@ export function IntegrationsManagement() {
               )}
             >
               {i.name}
-            </span>
-            <span className="text-tertiary inline-flex w-fit items-center gap-1 font-mono text-xs">
-              <Package className="size-3" />
-              {i.plugin}
             </span>
           </div>
         )
