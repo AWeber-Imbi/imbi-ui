@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import { Sk } from '@/components/ui/skeleton'
 import {
   Table,
@@ -625,7 +626,14 @@ function formatRelative(value: null | string): string {
 function ProviderCell({ plugin }: { plugin: PluginPackage }) {
   return (
     <div className="flex items-center gap-3">
-      <Plug className="text-tertiary size-6 shrink-0" />
+      {plugin.icon ? (
+        <EntityIcon
+          className="text-tertiary size-6 shrink-0"
+          icon={plugin.icon}
+        />
+      ) : (
+        <Plug className="text-tertiary size-6 shrink-0" />
+      )}
       <div className="font-medium">{plugin.name}</div>
     </div>
   )

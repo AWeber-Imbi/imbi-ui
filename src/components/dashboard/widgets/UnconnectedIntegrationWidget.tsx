@@ -4,6 +4,7 @@ import logoDark from '@/assets/logo-dark.svg'
 import logoLight from '@/assets/logo-light.svg'
 import { pluginWidgetText } from '@/components/plugin-packages'
 import { Button } from '@/components/ui/button'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { PluginPackage } from '@/types'
 
@@ -30,8 +31,6 @@ export function UnconnectedIntegrationWidget({
 }: UnconnectedIntegrationWidgetProps) {
   const { isDarkMode } = useTheme()
 
-  // v3 PluginPackage carries no brand glyph, so this tile falls back to the
-  // generic Plug icon everywhere it previously showed the plugin's icon.
   const body =
     pluginWidgetText(plugin) ||
     plugin.description ||
@@ -128,7 +127,11 @@ export function UnconnectedIntegrationWidget({
               <i className="block size-1.25 animate-[imbi-bridge-travel_1.6s_ease-in-out_infinite] rounded-full bg-(--text-color-tertiary) [animation-delay:0.45s]" />
             </div>
             <div className="border-border bg-card text-primary grid size-11.5 place-items-center rounded-xl border opacity-50 shadow-sm grayscale-[0.4]">
-              <Plug className="size-[22px]" />
+              {plugin.icon ? (
+                <EntityIcon className="size-[22px]" icon={plugin.icon} />
+              ) : (
+                <Plug className="size-[22px]" />
+              )}
             </div>
           </div>
         </div>

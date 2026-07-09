@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Blocks } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -13,6 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import { Sk } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -150,16 +152,28 @@ export function PluginsManagement() {
                     return (
                       <TableRow key={plugin.slug}>
                         <TableCell>
-                          <div className="text-primary font-semibold">
-                            {plugin.name}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-tertiary font-mono text-xs">
-                              {plugin.slug}
-                            </span>
-                            <span className="text-muted-foreground font-mono text-xs">
-                              {plugin.package_version}
-                            </span>
+                          <div className="flex items-center gap-3">
+                            {plugin.icon ? (
+                              <EntityIcon
+                                className="text-tertiary size-6 shrink-0"
+                                icon={plugin.icon}
+                              />
+                            ) : (
+                              <Blocks className="text-tertiary size-6 shrink-0" />
+                            )}
+                            <div>
+                              <div className="text-primary font-semibold">
+                                {plugin.name}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-tertiary font-mono text-xs">
+                                  {plugin.slug}
+                                </span>
+                                <span className="text-muted-foreground font-mono text-xs">
+                                  {plugin.package_version}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>

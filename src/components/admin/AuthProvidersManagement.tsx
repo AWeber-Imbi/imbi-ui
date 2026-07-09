@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { EntityIcon } from '@/components/ui/entity-icon'
 import { ErrorBanner } from '@/components/ui/error-banner'
 import { Sk, Swap } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
@@ -77,6 +78,13 @@ export function AuthProvidersManagement() {
       return !!identity?.hints?.login_capable
     })
   }, [plugins, providers])
+
+  // Plugin brand icons, keyed by slug, for the provider rows.
+  const pluginIconBySlug = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const p of plugins) if (p.icon) map.set(p.slug, p.icon)
+    return map
+  }, [plugins])
 
   const [addOpen, setAddOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<null | {
@@ -260,6 +268,12 @@ export function AuthProvidersManagement() {
                     key={provider.slug}
                   >
                     <div className="flex min-w-0 items-center gap-2">
+                      {pluginIconBySlug.get(provider.plugin) && (
+                        <EntityIcon
+                          className="text-tertiary size-4 shrink-0"
+                          icon={pluginIconBySlug.get(provider.plugin)!}
+                        />
+                      )}
                       <span className="text-primary truncate text-sm font-medium">
                         {provider.name}
                       </span>

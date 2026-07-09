@@ -150,6 +150,9 @@ export interface PluginManifest {
   data_types: Record<string, unknown>[]
   description?: null | string
   edge_labels: Record<string, unknown>[]
+  // Brand/display icon in `library-icon-name` form (e.g. `si-github`,
+  // `tabler-aws`, or a Lucide name); null falls back to a generic glyph.
+  icon?: null | string
   name: string
   options: PluginOption[]
   slug: string
