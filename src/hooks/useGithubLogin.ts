@@ -3,7 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { getMyIdentities } from '@/api/endpoints'
 import type { IdentityConnectionResponse } from '@/types'
 
-const GITHUB_PR_PLUGIN_SLUG = 'github-enterprise-cloud'
+// The GitHub package ships a single unified plugin (slug ``github``) in the
+// v3 architecture — the per-flavor ``github-enterprise-cloud`` slug no longer
+// exists, so an identity connection's ``plugin`` is always ``github``.
+const GITHUB_PR_PLUGIN_SLUG = 'github'
 
 // fallow-ignore-next-line complexity
 export function useGithubLogin() {
