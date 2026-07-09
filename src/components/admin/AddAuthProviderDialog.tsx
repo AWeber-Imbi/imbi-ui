@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { extractApiErrorDetail } from '@/lib/apiError'
-import { slugify } from '@/lib/utils'
 import type { PluginOption, PluginPackage } from '@/types'
 
 import { FieldDescription } from './integrations/FieldDescription'
@@ -48,9 +47,6 @@ export function AddAuthProviderDialog({
   plugins,
 }: AddAuthProviderDialogProps) {
   const [pluginSlug, setPluginSlug] = useState(plugins[0]?.slug ?? '')
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
-  const [slugEdited, setSlugEdited] = useState(false)
   const [credentials, setCredentials] = useState<Record<string, string>>({})
   const [options, setOptions] = useState<Record<string, unknown>>({})
   const [useForSignIn, setUseForSignIn] = useState(true)
@@ -70,15 +66,9 @@ export function AddAuthProviderDialog({
     setCredentials({})
   }
 
-  const setName_ = (value: string) => {
-    setName(value)
-    if (!slugEdited) setSlug(slugify(value))
-  }
-
   const missingRequired =
-    !name.trim() ||
-    !slug.trim() ||
-    (plugin?.credentials ?? []).some(
+    !plugin ||
+    (plugin.credentials ?? []).some(
       (c) => c.required && !credentials[c.name]?.trim(),
     )
 
@@ -90,13 +80,15 @@ export function AddAuthProviderDialog({
     }
     setSaving(true)
     try {
+      // Login providers are one-per-plugin, so name/slug derive from the
+      // plugin rather than being entered by hand.
       const created = await createLoginProvider({
         capabilities: { identity: { enabled: true, options: {} } },
         credentials: creds,
-        name: name.trim(),
+        name: plugin.name,
         options,
         plugin: plugin.slug,
-        slug: slug.trim(),
+        slug: plugin.slug,
         status: 'active',
       })
       if (useForSignIn) {
@@ -143,28 +135,6 @@ export function AddAuthProviderDialog({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="provider-name">Name</Label>
-            <Input
-              id="provider-name"
-              onChange={(e) => setName_(e.target.value)}
-              value={name}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="provider-slug">Slug</Label>
-            <Input
-              className="font-mono"
-              id="provider-slug"
-              onChange={(e) => {
-                setSlugEdited(true)
-                setSlug(e.target.value)
-              }}
-              value={slug}
-            />
           </div>
 
           {(plugin?.credentials ?? []).map((cred) => (

@@ -66,15 +66,17 @@ export function AuthProvidersManagement() {
   })
 
   // A plugin can back a login provider when it declares an `identity`
-  // capability flagged `login_capable` in the manifest. Only enabled ones
-  // can back a new provider created here.
+  // capability flagged `login_capable` in the manifest. Only enabled plugins
+  // that don't already have a provider can back a new one — login providers
+  // are one-per-plugin (name/slug derive from the plugin).
   const addablePlugins = useMemo(() => {
+    const configured = new Set((providers ?? []).map((p) => p.plugin))
     return plugins.filter((p) => {
-      if (!p.enabled) return false
+      if (!p.enabled || configured.has(p.slug)) return false
       const identity = p.capabilities.find((c) => c.kind === 'identity')
       return !!identity?.hints?.login_capable
     })
-  }, [plugins])
+  }, [plugins, providers])
 
   const [addOpen, setAddOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<null | {
