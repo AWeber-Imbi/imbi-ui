@@ -2,7 +2,10 @@ import { useMemo, useState } from 'react'
 
 import { toast } from 'sonner'
 
-import { createIntegration, setIntegrationLoginProvider } from '@/api/endpoints'
+import {
+  createLoginProvider,
+  setLoginProviderUsedAsLogin,
+} from '@/api/endpoints'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -31,19 +34,17 @@ interface AddAuthProviderDialogProps {
   onClose: () => void
   onCreated: () => void
   open: boolean
-  orgSlug: string
   plugins: PluginPackage[]
 }
 
-// Create a login-provider integration and (optionally) promote it as the
-// org's SSO provider — all from the Auth Providers screen, skipping the
-// separate Integrations create flow.
+// Create a global login-provider integration and (optionally) promote it as
+// the instance's SSO provider — all from the Auth Providers screen, skipping
+// the separate Integrations create flow.
 // fallow-ignore-next-line complexity
 export function AddAuthProviderDialog({
   onClose,
   onCreated,
   open,
-  orgSlug,
   plugins,
 }: AddAuthProviderDialogProps) {
   const [pluginSlug, setPluginSlug] = useState(plugins[0]?.slug ?? '')
@@ -89,7 +90,7 @@ export function AddAuthProviderDialog({
     }
     setSaving(true)
     try {
-      const created = await createIntegration(orgSlug, {
+      const created = await createLoginProvider({
         capabilities: { identity: { enabled: true, options: {} } },
         credentials: creds,
         name: name.trim(),
@@ -99,7 +100,7 @@ export function AddAuthProviderDialog({
         status: 'active',
       })
       if (useForSignIn) {
-        await setIntegrationLoginProvider(orgSlug, created.slug, true)
+        await setLoginProviderUsedAsLogin(created.slug, true)
       }
       toast.success('Auth provider created')
       onCreated()
@@ -125,7 +126,7 @@ export function AddAuthProviderDialog({
         <div className="flex flex-col gap-4 p-6 pt-2">
           <p className="text-tertiary text-xs">
             Configure a login provider. The integration is created and, when
-            enabled below, set as this organization's sign-in provider.
+            enabled below, set as the instance's sign-in provider.
           </p>
 
           <div className="flex flex-col gap-1.5">

@@ -5,11 +5,11 @@ import type { Integration, PluginPackage } from '@/types'
 
 // fallow-ignore-next-line unresolved-import
 vi.mock('@/api/endpoints', () => ({
-  createIntegration: vi.fn(),
+  createLoginProvider: vi.fn(),
   getLocalAuthConfig: vi.fn(),
-  listIntegrations: vi.fn(),
+  listLoginProviders: vi.fn(),
   listPluginPackages: vi.fn(),
-  setIntegrationLoginProvider: vi.fn(),
+  setLoginProviderUsedAsLogin: vi.fn(),
   updateLocalAuthConfig: vi.fn(),
 }))
 
@@ -17,13 +17,6 @@ vi.mock('@/api/endpoints', () => ({
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({
     user: { is_admin: true, permissions: ['auth_providers:write'] },
-  }),
-}))
-
-// fallow-ignore-next-line unresolved-import
-vi.mock('@/contexts/OrganizationContext', () => ({
-  useOrganization: () => ({
-    selectedOrganization: { name: 'AWeber', slug: 'aweber' },
   }),
 }))
 
@@ -58,7 +51,7 @@ describe('AuthProvidersManagement', () => {
       updated_at: '2026-04-01T00:00:00Z',
     })
     vi.mocked(endpoints.listPluginPackages).mockResolvedValue([loginPlugin()])
-    vi.mocked(endpoints.listIntegrations).mockResolvedValue([])
+    vi.mocked(endpoints.listLoginProviders).mockResolvedValue([])
   })
 
   it('renders the local auth card', async () => {
@@ -70,9 +63,9 @@ describe('AuthProvidersManagement', () => {
     )
   })
 
-  it('lists login-capable integrations as providers', async () => {
+  it('lists global login providers', async () => {
     const endpoints = await import('@/api/endpoints')
-    vi.mocked(endpoints.listIntegrations).mockResolvedValue([
+    vi.mocked(endpoints.listLoginProviders).mockResolvedValue([
       integration({ used_as_login: true }),
     ])
     const { AuthProvidersManagement } =
@@ -82,15 +75,12 @@ describe('AuthProvidersManagement', () => {
     expect(screen.getByText('Used for sign-in')).toBeInTheDocument()
   })
 
-  it('shows an empty state when no integration is login-capable', async () => {
+  it('shows an empty state when no plugin is login-capable', async () => {
     const endpoints = await import('@/api/endpoints')
-    // An integration whose plugin lacks a login-capable identity capability.
     vi.mocked(endpoints.listPluginPackages).mockResolvedValue([
       loginPlugin({ capabilities: [], slug: 'jira' }),
     ])
-    vi.mocked(endpoints.listIntegrations).mockResolvedValue([
-      integration({ plugin: 'jira', slug: 'jira-cloud' }),
-    ])
+    vi.mocked(endpoints.listLoginProviders).mockResolvedValue([])
     const { AuthProvidersManagement } =
       await import('../AuthProvidersManagement')
     render(<AuthProvidersManagement />)

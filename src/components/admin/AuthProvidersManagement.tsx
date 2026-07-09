@@ -8,24 +8,26 @@ import {
   Lock,
   Plus,
   Power,
+  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
+  deleteLoginProvider,
   getLocalAuthConfig,
-  listIntegrations,
+  listLoginProviders,
   listPluginPackages,
-  setIntegrationLoginProvider,
+  setLoginProviderUsedAsLogin,
   updateLocalAuthConfig,
 } from '@/api/endpoints'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ErrorBanner } from '@/components/ui/error-banner'
 import { Sk, Swap } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAuth } from '@/hooks/useAuth'
 import { extractApiErrorDetail } from '@/lib/apiError'
 import { queryKeys } from '@/lib/queryKeys'
@@ -38,9 +40,6 @@ import { AddAuthProviderDialog } from './AddAuthProviderDialog'
 export function AuthProvidersManagement() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
-  const { selectedOrganization } = useOrganization()
-  const orgSlug = selectedOrganization?.slug
-  const orgName = selectedOrganization?.name ?? orgSlug ?? ''
 
   const canManageLocalAuth =
     !!user?.is_admin ||
@@ -59,35 +58,29 @@ export function AuthProvidersManagement() {
     staleTime: 60 * 1000,
   })
 
-  const { data: integrations, error: integrationsError } = useQuery({
-    enabled: !!orgSlug,
-    queryFn: ({ signal }) => listIntegrations(orgSlug!, signal),
-    queryKey: orgSlug ? queryKeys.integrations(orgSlug) : ['integrations'],
+  // Login providers are global (org-less): authentication happens before any
+  // organization context exists.
+  const { data: providers, error: providersError } = useQuery({
+    queryFn: ({ signal }) => listLoginProviders(signal),
+    queryKey: queryKeys.loginProviders(),
   })
 
   // A plugin can back a login provider when it declares an `identity`
-  // capability flagged `login_capable` in the manifest.
-  const loginCapablePlugins = useMemo(() => {
-    const slugs = new Set<string>()
-    for (const p of plugins) {
+  // capability flagged `login_capable` in the manifest. Only enabled ones
+  // can back a new provider created here.
+  const addablePlugins = useMemo(() => {
+    return plugins.filter((p) => {
+      if (!p.enabled) return false
       const identity = p.capabilities.find((c) => c.kind === 'identity')
-      if (identity?.hints?.login_capable) slugs.add(p.slug)
-    }
-    return slugs
+      return !!identity?.hints?.login_capable
+    })
   }, [plugins])
 
-  const providers = useMemo(
-    () => (integrations ?? []).filter((i) => loginCapablePlugins.has(i.plugin)),
-    [integrations, loginCapablePlugins],
-  )
-
-  // Only enabled login-capable plugins can back a new provider created here.
-  const addablePlugins = useMemo(
-    () => plugins.filter((p) => p.enabled && loginCapablePlugins.has(p.slug)),
-    [plugins, loginCapablePlugins],
-  )
-
   const [addOpen, setAddOpen] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<null | {
+    name: string
+    slug: string
+  }>(null)
 
   const localAuthMutation = useMutation({
     mutationFn: (enabled: boolean) => updateLocalAuthConfig({ enabled }),
@@ -119,8 +112,8 @@ export function AuthProvidersManagement() {
     },
   })
 
-  // Promote (or demote) an integration as the org's SSO login provider. The
-  // server enforces at most one per org, so a full refetch reflects any
+  // Promote (or demote) a login provider as the instance-wide SSO provider.
+  // The server enforces at most one active, so a full refetch reflects any
   // sibling that was demoted as a side effect.
   const loginProviderMutation = useMutation({
     mutationFn: ({
@@ -129,17 +122,13 @@ export function AuthProvidersManagement() {
     }: {
       slug: string
       usedAsLogin: boolean
-    }) => setIntegrationLoginProvider(orgSlug!, slug, usedAsLogin),
+    }) => setLoginProviderUsedAsLogin(slug, usedAsLogin),
     onError: (err) =>
       toast.error(
         `Failed to update login provider: ${extractApiErrorDetail(err)}`,
       ),
     onSuccess: (_data, { usedAsLogin }) => {
-      if (orgSlug) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.integrations(orgSlug),
-        })
-      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.loginProviders() })
       queryClient.invalidateQueries({
         queryKey: queryKeys.publicAuthProviders(),
       })
@@ -149,9 +138,24 @@ export function AuthProvidersManagement() {
     },
   })
 
-  if (integrationsError) {
+  const deleteMutation = useMutation({
+    mutationFn: (slug: string) => deleteLoginProvider(slug),
+    onError: (err) =>
+      toast.error(
+        `Failed to delete login provider: ${extractApiErrorDetail(err)}`,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.loginProviders() })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.publicAuthProviders(),
+      })
+      toast.success('Login provider deleted')
+    },
+  })
+
+  if (providersError) {
     return (
-      <ErrorBanner error={integrationsError} title="Failed to load providers" />
+      <ErrorBanner error={providersError} title="Failed to load providers" />
     )
   }
 
@@ -209,116 +213,136 @@ export function AuthProvidersManagement() {
         </CardContent>
       </Card>
 
-      {/* SSO login provider (per organization) */}
+      {/* SSO login provider (global) */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center gap-2">
             <KeyRound className="text-secondary size-5" />
             <CardTitle>SSO Login Provider</CardTitle>
           </div>
-          <div className="flex items-center gap-2">
-            {orgName && <Badge variant="secondary">{orgName}</Badge>}
-            {canManageProviders && !!orgSlug && addablePlugins.length > 0 && (
-              <Button onClick={() => setAddOpen(true)} size="sm">
-                <Plus className="size-4" />
-                Add auth provider
-              </Button>
-            )}
-          </div>
+          {canManageProviders && addablePlugins.length > 0 && (
+            <Button onClick={() => setAddOpen(true)} size="sm">
+              <Plus className="size-4" />
+              Add auth provider
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-tertiary text-xs">
-            Choose which integration users sign in through. Only integrations
-            whose plugin provides a login-capable identity are eligible, and at
-            most one can be active per organization.
+            Choose which integration users sign in through. Only plugins that
+            provide a login-capable identity are eligible, and at most one can
+            be active. Login providers are global — sign-in happens before any
+            organization is selected.
           </p>
 
-          {!orgSlug ? (
-            <Alert variant="info">
-              Select an organization to manage its login provider.
-            </Alert>
-          ) : (
-            <Swap
-              ready={!!integrations}
-              skeleton={
-                <div className="space-y-2">
-                  <Sk h={56} r={8} />
-                  <Sk h={56} r={8} />
-                </div>
-              }
-            >
-              {providers.length === 0 ? (
-                <div className="border-input text-tertiary rounded-lg border border-dashed p-4 text-sm">
-                  {addablePlugins.length > 0
-                    ? `No login providers configured for ${orgName} yet. Use “Add auth provider” to create one.`
-                    : `No login-capable plugins are enabled. Enable one (e.g. Google, GitHub, OIDC) under Admin → Plugins first.`}
-                </div>
-              ) : (
-                <div className="divide-tertiary border-tertiary divide-y rounded-lg border">
-                  {providers.map((provider) => (
-                    <div
-                      className="flex items-center justify-between gap-4 p-3"
-                      key={provider.slug}
-                    >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-primary truncate text-sm font-medium">
-                            {provider.name}
-                          </span>
-                          <Badge variant={statusBadgeVariant(provider.status)}>
-                            {provider.status}
-                          </Badge>
-                        </div>
-                        <div className="text-tertiary truncate font-mono text-xs">
-                          {provider.plugin}
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2.5">
-                        <span className="text-tertiary text-xs">
-                          {provider.used_as_login
-                            ? 'Used for sign-in'
-                            : 'Not used'}
+          <Swap
+            ready={!!providers}
+            skeleton={
+              <div className="space-y-2">
+                <Sk h={56} r={8} />
+                <Sk h={56} r={8} />
+              </div>
+            }
+          >
+            {(providers ?? []).length === 0 ? (
+              <div className="border-input text-tertiary rounded-lg border border-dashed p-4 text-sm">
+                {addablePlugins.length > 0
+                  ? `No login providers configured yet. Use “Add auth provider” to create one.`
+                  : `No login-capable plugins are enabled. Enable one (e.g. Google, GitHub, OIDC) under Admin → Plugins first.`}
+              </div>
+            ) : (
+              <div className="divide-tertiary border-tertiary divide-y rounded-lg border">
+                {(providers ?? []).map((provider) => (
+                  <div
+                    className="flex items-center justify-between gap-4 p-3"
+                    key={provider.slug}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-primary truncate text-sm font-medium">
+                          {provider.name}
                         </span>
-                        <Switch
-                          aria-label={`Use ${provider.name} for sign-in`}
-                          checked={!!provider.used_as_login}
-                          disabled={
-                            !canManageProviders ||
-                            loginProviderMutation.isPending
-                          }
-                          onCheckedChange={(checked) =>
-                            loginProviderMutation.mutate({
-                              slug: provider.slug,
-                              usedAsLogin: checked,
-                            })
-                          }
-                        />
+                        <Badge variant={statusBadgeVariant(provider.status)}>
+                          {provider.status}
+                        </Badge>
+                      </div>
+                      <div className="text-tertiary truncate font-mono text-xs">
+                        {provider.plugin}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </Swap>
-          )}
+                    <div className="flex shrink-0 items-center gap-2.5">
+                      <span className="text-tertiary text-xs">
+                        {provider.used_as_login
+                          ? 'Used for sign-in'
+                          : 'Not used'}
+                      </span>
+                      <Switch
+                        aria-label={`Use ${provider.name} for sign-in`}
+                        checked={!!provider.used_as_login}
+                        disabled={
+                          !canManageProviders || loginProviderMutation.isPending
+                        }
+                        onCheckedChange={(checked) =>
+                          loginProviderMutation.mutate({
+                            slug: provider.slug,
+                            usedAsLogin: checked,
+                          })
+                        }
+                      />
+                      {canManageProviders && (
+                        <Button
+                          aria-label={`Delete ${provider.name}`}
+                          disabled={deleteMutation.isPending}
+                          onClick={() =>
+                            setPendingDelete({
+                              name: provider.name,
+                              slug: provider.slug,
+                            })
+                          }
+                          size="icon"
+                          variant="ghost"
+                        >
+                          <Trash2 className="text-danger size-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Swap>
         </CardContent>
       </Card>
 
-      {orgSlug && (
-        <AddAuthProviderDialog
-          onClose={() => setAddOpen(false)}
-          onCreated={() => {
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.integrations(orgSlug),
-            })
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.publicAuthProviders(),
-            })
-          }}
-          open={addOpen}
-          orgSlug={orgSlug}
-          plugins={addablePlugins}
-        />
-      )}
+      <AddAuthProviderDialog
+        onClose={() => setAddOpen(false)}
+        onCreated={() => {
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.loginProviders(),
+          })
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.publicAuthProviders(),
+          })
+        }}
+        open={addOpen}
+        plugins={addablePlugins}
+      />
+
+      <ConfirmDialog
+        confirmLabel="Delete"
+        description={
+          pendingDelete
+            ? `Delete "${pendingDelete.name}"? This removes its credentials and stops it being available for sign-in. This cannot be undone.`
+            : ''
+        }
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete) deleteMutation.mutate(pendingDelete.slug)
+          setPendingDelete(null)
+        }}
+        open={!!pendingDelete}
+        title="Delete login provider"
+      />
     </div>
   )
 }

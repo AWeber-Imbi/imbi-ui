@@ -1605,18 +1605,37 @@ export const testMcpServer = (id: string) =>
 export const testMcpServerConfig = (data: MCPServerTestConfig) =>
   apiClient.post<MCPServerTestResult>('/mcp-servers/test', data)
 
-// Admin - Auth Providers. In v3, login providers are Integrations whose
-// plugin declares a login-capable identity capability; this promotes or
-// demotes one as the organization's SSO login provider (at most one per org).
-export const setIntegrationLoginProvider = (
-  orgSlug: string,
+// Admin - Auth Providers (global). Login providers are org-less
+// Integrations backed by a login-capable identity plugin. Authentication
+// happens before any organization context exists, so they are managed
+// globally (not under /organizations/{org}/integrations) and at most one
+// may be flagged used_as_login across the whole instance.
+export const listLoginProviders = async (
+  signal?: AbortSignal,
+): Promise<Integration[]> => {
+  const response = await apiClient.get<Integration[]>(
+    '/login-providers/',
+    undefined,
+    signal,
+  )
+  return Array.isArray(response) ? response : []
+}
+
+export const createLoginProvider = (data: IntegrationCreate) =>
+  apiClient.post<Integration>('/login-providers/', data)
+
+// Promote/demote a login provider as the instance-wide SSO provider.
+export const setLoginProviderUsedAsLogin = (
   slug: string,
   usedAsLogin: boolean,
 ) =>
   apiClient.put<Integration>(
-    `/organizations/${encodeURIComponent(orgSlug)}/integrations/${encodeURIComponent(slug)}/login-provider`,
+    `/login-providers/${encodeURIComponent(slug)}/used-as-login`,
     { used_as_login: usedAsLogin },
   )
+
+export const deleteLoginProvider = (slug: string) =>
+  apiClient.delete<void>(`/login-providers/${encodeURIComponent(slug)}`)
 
 export const getLocalAuthConfig = (signal?: AbortSignal) =>
   apiClient.get<LocalAuthConfig>('/admin/local-auth', undefined, signal)
