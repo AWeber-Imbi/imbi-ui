@@ -26,16 +26,15 @@ import {
   getMyIdentities,
   getOrgPullRequests,
   getProjects,
-  listPluginPackages,
 } from '@/api/endpoints'
 import { pluginIsIdentity } from '@/components/plugin-packages'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Sk } from '@/components/ui/skeleton'
 import { useOrganization } from '@/contexts/OrganizationContext'
+import { useConnectableIdentities } from '@/hooks/useConnectableIdentities'
 import { useRecentDeployments } from '@/hooks/useRecentDeployments'
-import { queryKeys } from '@/lib/queryKeys'
-import type { IdentityConnectionResponse, PluginPackage } from '@/types'
+import type { IdentityConnectionResponse } from '@/types'
 
 import { MyPullRequestCountsWidget } from './dashboard/widgets/MyPullRequestCountsWidget'
 import { MyPullRequestsWidget } from './dashboard/widgets/MyPullRequestsWidget'
@@ -211,11 +210,7 @@ export function Dashboard({
   const [dismissedIntegrations, setDismissedIntegrations] = useState<string[]>(
     loadDismissedIntegrations,
   )
-  const pluginsQuery = useQuery<PluginPackage[]>({
-    queryFn: ({ signal }) => listPluginPackages(signal),
-    queryKey: queryKeys.pluginPackages(),
-    staleTime: 60 * 1000,
-  })
+  const { connectableSlugs, pluginsQuery } = useConnectableIdentities(orgSlug)
   const identitiesQuery = useQuery<IdentityConnectionResponse[]>({
     queryFn: ({ signal }) => getMyIdentities(signal),
     queryKey: ['me-identities'],
@@ -225,17 +220,21 @@ export function Dashboard({
     staleTime: 5 * 60 * 1000,
   })
 
-  const connectedSlugs = new Set(
-    (identitiesQuery.data ?? [])
-      .filter((c) => c.status === 'active')
-      .map((c) => c.plugin_slug),
-  )
+  // Slugs already connected (active) or dismissed by the actor — either
+  // way, don't prompt to connect them.
+  const hiddenSlugs = new Set<string>(dismissedIntegrations)
+  for (const c of identitiesQuery.data ?? []) {
+    if (c.status === 'active') hiddenSlugs.add(c.plugin_slug)
+  }
+  // Only offer to connect identity plugins that actually have a configured
+  // integration in this org — a login provider (org-less) or a merely
+  // installed-but-unconfigured plugin isn't something the actor connects to.
   const unconnectedIdentityPlugins = (pluginsQuery.data ?? []).filter(
     (p) =>
       p.enabled &&
       pluginIsIdentity(p) &&
-      !connectedSlugs.has(p.slug) &&
-      !dismissedIntegrations.includes(p.slug),
+      connectableSlugs.has(p.slug) &&
+      !hiddenSlugs.has(p.slug),
   )
 
   const [selectedWidgets, setSelectedWidgets] = useState<WidgetId[]>(() => {

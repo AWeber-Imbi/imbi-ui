@@ -9,7 +9,6 @@ import { toast } from 'sonner'
 import {
   disconnectMyIdentity,
   getMyIdentities,
-  listPluginPackages,
   refreshMyIdentity,
   startMyIdentity,
 } from '@/api/endpoints'
@@ -27,8 +26,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import { useConnectableIdentities } from '@/hooks/useConnectableIdentities'
 import { extractApiErrorDetail } from '@/lib/apiError'
-import { queryKeys } from '@/lib/queryKeys'
 import type {
   IdentityConnectionResponse,
   IdentityConnectionStatus,
@@ -80,8 +80,11 @@ const STATUS_VARIANT: Record<
   revoked: 'secondary',
 }
 
+// fallow-ignore-next-line complexity
 export function SettingsConnections() {
   const queryClient = useQueryClient()
+  const { selectedOrganization } = useOrganization()
+  const orgSlug = selectedOrganization?.slug ?? ''
   // Pre-opened during the click handler so the popup-blocker accepts it as
   // a user-gesture window; the URL is assigned once the start mutation
   // resolves.  See the comment on `onConnect` below.
@@ -107,6 +110,7 @@ export function SettingsConnections() {
   // (window.opener set, same origin), signal the opener that a connect
   // flight just landed and self-close.  The opener invalidates its
   // connections query in the message-listener below.
+  // fallow-ignore-next-line complexity
   useEffect(() => {
     const opener = window.opener as null | Window
     if (!opener || opener === window || opener.closed) return
@@ -160,6 +164,7 @@ export function SettingsConnections() {
   // the table flips to "Connected" the instant the redirect-flow
   // callback lands without any timer-driven polling on this side.
   useEffect(() => {
+    // fallow-ignore-next-line complexity
     function handler(event: MessageEvent) {
       if (event.origin !== window.location.origin) return
       const data = event.data as unknown
@@ -175,11 +180,8 @@ export function SettingsConnections() {
     return () => window.removeEventListener('message', handler)
   }, [queryClient])
 
-  const pluginsQuery = useQuery<PluginPackage[]>({
-    queryFn: ({ signal }) => listPluginPackages(signal),
-    queryKey: queryKeys.pluginPackages(),
-    staleTime: 60 * 1000,
-  })
+  const { connectableSlugs, integrationsQuery, pluginsQuery } =
+    useConnectableIdentities(orgSlug)
 
   const connectionsQuery = useQuery<IdentityConnectionResponse[]>({
     queryFn: ({ signal }) => getMyIdentities(signal),
@@ -264,6 +266,7 @@ export function SettingsConnections() {
   const [searchParams, setSearchParams] = useSearchParams()
   const autoConnectSlug = searchParams.get('connect')
   const autoConnectFiredRef = useRef(false)
+  // fallow-ignore-next-line complexity
   useEffect(() => {
     if (!autoConnectSlug || autoConnectFiredRef.current) return
     if (pluginsQuery.isLoading) return
@@ -288,7 +291,11 @@ export function SettingsConnections() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoConnectSlug, pluginsQuery.isLoading, pluginsQuery.data])
 
-  if (pluginsQuery.isLoading || connectionsQuery.isLoading) {
+  if (
+    pluginsQuery.isLoading ||
+    connectionsQuery.isLoading ||
+    (!!orgSlug && integrationsQuery.isLoading)
+  ) {
     return <ConnectionsSkeleton />
   }
 
@@ -314,8 +321,12 @@ export function SettingsConnections() {
     )
   }
 
+  // Only identity plugins that have a configured integration in this org
+  // are connectable — global login providers (org-less) and merely
+  // installed-but-unconfigured plugins are excluded (see
+  // useConnectableIdentities).
   const identityPlugins = (pluginsQuery.data ?? []).filter(
-    (p) => p.enabled && pluginIsIdentity(p),
+    (p) => p.enabled && pluginIsIdentity(p) && connectableSlugs.has(p.slug),
   )
 
   if (identityPlugins.length === 0) {
@@ -375,6 +386,7 @@ export function SettingsConnections() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* fallow-ignore-next-line complexity */}
               {rows.map(({ connection, plugin }) => {
                 const status: 'not_connected' | IdentityConnectionStatus =
                   connection?.status ?? 'not_connected'

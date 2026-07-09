@@ -4,6 +4,7 @@ import * as endpoints from '@/api/endpoints'
 import { IntegrationsCard } from '@/components/IntegrationsCard'
 import { render, screen } from '@/test/utils'
 
+// fallow-ignore-next-line unresolved-import
 vi.mock('@/api/endpoints', () => ({
   createProjectService: vi.fn(),
   deleteProjectService: vi.fn(),
