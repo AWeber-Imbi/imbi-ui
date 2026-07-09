@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { capabilityMeta } from '@/lib/capabilities'
 import { queryKeys } from '@/lib/queryKeys'
@@ -292,16 +293,11 @@ export function IntegrationWizard({
                       {cred.label}{' '}
                       <span className="text-danger text-xs">required</span>
                     </Label>
-                    <Input
-                      className="font-mono"
-                      id={`cred-${cred.name}`}
-                      onChange={(e) =>
-                        setCredentials((c) => ({
-                          ...c,
-                          [cred.name]: e.target.value,
-                        }))
+                    <CredentialInput
+                      cred={cred}
+                      onChange={(v) =>
+                        setCredentials((c) => ({ ...c, [cred.name]: v }))
                       }
-                      type={cred.secret === false ? 'text' : 'password'}
                       value={credentials[cred.name] ?? ''}
                     />
                     {cred.description && (
@@ -330,16 +326,11 @@ export function IntegrationWizard({
                               optional
                             </span>
                           </Label>
-                          <Input
-                            className="font-mono"
-                            id={`cred-${cred.name}`}
-                            onChange={(e) =>
-                              setCredentials((c) => ({
-                                ...c,
-                                [cred.name]: e.target.value,
-                              }))
+                          <CredentialInput
+                            cred={cred}
+                            onChange={(v) =>
+                              setCredentials((c) => ({ ...c, [cred.name]: v }))
                             }
-                            type={cred.secret === false ? 'text' : 'password'}
                             value={credentials[cred.name] ?? ''}
                           />
                           {cred.description && (
@@ -461,6 +452,38 @@ export function IntegrationWizard({
         )}
       </div>
     </div>
+  )
+}
+
+// A credential input: a textarea for multi-line values (e.g. a PEM private
+// key), otherwise a single-line input masked for secret fields.
+function CredentialInput({
+  cred,
+  onChange,
+  value,
+}: {
+  cred: PluginPackage['credentials'][number]
+  onChange: (value: string) => void
+  value: string
+}) {
+  if (cred.multiline) {
+    return (
+      <Textarea
+        className="min-h-32 font-mono text-xs"
+        id={`cred-${cred.name}`}
+        onChange={(e) => onChange(e.target.value)}
+        value={value}
+      />
+    )
+  }
+  return (
+    <Input
+      className="font-mono"
+      id={`cred-${cred.name}`}
+      onChange={(e) => onChange(e.target.value)}
+      type={cred.secret === false ? 'text' : 'password'}
+      value={value}
+    />
   )
 }
 
