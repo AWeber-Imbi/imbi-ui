@@ -259,18 +259,13 @@ export function AuthProvidersManagement() {
                     className="flex items-center justify-between gap-4 p-3"
                     key={provider.slug}
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-primary truncate text-sm font-medium">
-                          {provider.name}
-                        </span>
-                        <Badge variant={statusBadgeVariant(provider.status)}>
-                          {provider.status}
-                        </Badge>
-                      </div>
-                      <div className="text-tertiary truncate font-mono text-xs">
-                        {provider.plugin}
-                      </div>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="text-primary truncate text-sm font-medium">
+                        {provider.name}
+                      </span>
+                      <Badge variant={statusBadgeVariant(provider.status)}>
+                        {provider.status}
+                      </Badge>
                     </div>
                     <div className="flex shrink-0 items-center gap-2.5">
                       <span className="text-tertiary text-xs">
