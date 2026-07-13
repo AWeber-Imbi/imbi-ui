@@ -73,12 +73,15 @@ export function usePRSync(
       previous.current = 'queued'
       if (res.enqueued) {
         toast.success('PR sync started')
-        void queryClient.invalidateQueries({
-          queryKey: ['prSyncStatus', orgSlug, projectId],
-        })
       } else {
         toast.info('A PR sync is already in progress')
       }
+      // Refresh even when joining an existing run: a stale cached 'idle'
+      // status would otherwise keep refetchInterval off and this client
+      // would never observe the run finishing.
+      void queryClient.invalidateQueries({
+        queryKey: ['prSyncStatus', orgSlug, projectId],
+      })
     },
   })
 

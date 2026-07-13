@@ -207,6 +207,42 @@ describe('useCommitSync', () => {
     )
   })
 
+  it('refetches and toasts a joined run despite a stale idle status', async () => {
+    vi.mocked(endpoints.getProjectCommitSyncStatus)
+      // Stale cache: the poll hasn't seen the foreign run yet.
+      .mockResolvedValueOnce(status())
+      // The post-join invalidation observes the run in flight.
+      .mockResolvedValueOnce(status({ status: 'running' }))
+      .mockResolvedValue(
+        status({ commits_synced: 4, status: 'success', tags_synced: 1 }),
+      )
+    vi.mocked(endpoints.syncProjectCommitsAndTags).mockResolvedValue({
+      enqueued: false,
+    })
+    const client = makeClient()
+    const { result } = renderHook(() => useCommitSync('acme', 'p1', true), {
+      wrapper: makeWrapper(client),
+    })
+    await waitFor(() =>
+      expect(endpoints.getProjectCommitSyncStatus).toHaveBeenCalled(),
+    )
+    await act(async () => {
+      result.current.sync()
+    })
+    // Joining must invalidate too, or the idle cache never starts polling.
+    await waitFor(() => expect(result.current.isSyncing).toBe(true))
+    await act(async () => {
+      await client.invalidateQueries({
+        queryKey: ['commitSyncStatus', 'acme', 'p1'],
+      })
+    })
+    await waitFor(() =>
+      expect(toast.success).toHaveBeenCalledWith(
+        'Synced 4 commit(s) and 1 tag(s)',
+      ),
+    )
+  })
+
   it('invokes onComplete without a toast for an unwatched run', async () => {
     vi.mocked(endpoints.getProjectCommitSyncStatus)
       .mockResolvedValueOnce(status({ status: 'running' }))

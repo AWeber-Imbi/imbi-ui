@@ -73,12 +73,15 @@ export function useCommitSync(
       previous.current = 'queued'
       if (res.enqueued) {
         toast.success('Commit & tag sync started')
-        void queryClient.invalidateQueries({
-          queryKey: ['commitSyncStatus', orgSlug, projectId],
-        })
       } else {
         toast.info('A commit & tag sync is already in progress')
       }
+      // Refresh even when joining an existing run: a stale cached 'idle'
+      // status would otherwise keep refetchInterval off and this client
+      // would never observe the run finishing.
+      void queryClient.invalidateQueries({
+        queryKey: ['commitSyncStatus', orgSlug, projectId],
+      })
     },
   })
 
