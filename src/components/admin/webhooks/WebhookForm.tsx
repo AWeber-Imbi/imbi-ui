@@ -172,7 +172,7 @@ export function WebhookForm({
     }
   }
 
-  const handleServiceChange = (newIntegration: string) => {
+  const handleIntegrationChange = (newIntegration: string) => {
     setIntegrationSlug(newIntegration)
     if (!newIntegration) {
       setIdentifierSelector('')
@@ -429,7 +429,7 @@ export function WebhookForm({
               project resolution.{' '}
               {isEditing && (
                 <span className="text-tertiary text-xs">
-                  Changing the service will auto-regenerate the slug.
+                  Changing the integration will auto-regenerate the slug.
                 </span>
               )}
             </p>
@@ -447,7 +447,7 @@ export function WebhookForm({
                 <Select
                   disabled={isLoading}
                   onValueChange={(v) =>
-                    handleServiceChange(v === 'none' ? '' : v)
+                    handleIntegrationChange(v === 'none' ? '' : v)
                   }
                   value={integrationSlug || 'none'}
                 >

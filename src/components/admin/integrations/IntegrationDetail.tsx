@@ -169,7 +169,8 @@ export function IntegrationDetail({
     initial: integration?.name ?? '',
     onCommit: async (next) => {
       const trimmed = next.trim()
-      if (!trimmed || trimmed === integration?.name) return
+      if (trimmed === integration?.name) return
+      if (!trimmed) throw new Error('Name is required')
       setSavingName(true)
       try {
         await patchMutation.mutateAsync({ name: trimmed })
