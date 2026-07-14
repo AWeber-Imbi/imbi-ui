@@ -162,7 +162,7 @@ export function IntegrationsCard({
           <IntegrationsSkeleton />
         ) : services.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            This project is not connected to any third-party services.
+            This project is not connected to any integrations.
           </p>
         ) : (
           <Table>
