@@ -2209,7 +2209,10 @@ export const syncProjectLifecycle = (
 // Identity Plugins (org-scoped)
 export interface IdentityPluginRef {
   label: string
-  plugin_id: string
+  // Integration id, or null for legacy integrations created before ids were
+  // persisted. Matched by strict equality against a deployment binding's
+  // `identity_plugin_id`; the slug-based fallback still resolves these.
+  plugin_id: null | string
   plugin_slug: string
 }
 
@@ -2228,7 +2231,7 @@ export const listIdentityPlugins = async (
     .filter((integration) => integration.capabilities?.identity?.enabled)
     .map((integration) => ({
       label: integration.name,
-      plugin_id: integration.id ?? '',
+      plugin_id: integration.id ?? null,
       plugin_slug: integration.plugin,
     }))
 }
