@@ -136,7 +136,12 @@ export function CapabilityRow({
       void navigator.clipboard.writeText(url).catch(() => {})
     }
     setCopiedWebhook(url)
-    window.setTimeout(() => setCopiedWebhook(null), 1600)
+    // Only clear if this URL is still the one showing "Copied" — a stale
+    // timer from an earlier copy must not clear a newer indicator.
+    window.setTimeout(
+      () => setCopiedWebhook((current) => (current === url ? null : current)),
+      1600,
+    )
   }
 
   return (
