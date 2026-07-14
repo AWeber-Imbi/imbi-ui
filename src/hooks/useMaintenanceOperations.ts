@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -50,6 +50,14 @@ export function useMaintenanceOperations() {
   const invalidate = () =>
     void queryClient.invalidateQueries({ queryKey: QUERY_KEY })
 
+  // Pending slugs are tracked per call (not via mutation.variables, which
+  // only reflects the latest call) so overlapping runs on different rows
+  // each keep their own button disabled until their request settles.
+  const [pendingRuns, setPendingRuns] = useState<ReadonlySet<string>>(new Set())
+  const [pendingCancels, setPendingCancels] = useState<ReadonlySet<string>>(
+    new Set(),
+  )
+
   const runMutation = useMutation({
     mutationFn: (slug: string) => runMaintenanceOperation(slug),
     onError: (err) => {
@@ -62,6 +70,9 @@ export function useMaintenanceOperations() {
         )
       }
     },
+    onMutate: (slug) => setPendingRuns((prev) => new Set(prev).add(slug)),
+    onSettled: (_res, _err, slug) =>
+      setPendingRuns((prev) => withoutSlug(prev, slug)),
     onSuccess: (res) => {
       toast.success(`Operation started for ${res.total} project(s)`)
       invalidate()
@@ -74,6 +85,9 @@ export function useMaintenanceOperations() {
       toast.error(
         extractApiErrorDetail(err) ?? 'Failed to cancel the operation',
       ),
+    onMutate: (slug) => setPendingCancels((prev) => new Set(prev).add(slug)),
+    onSettled: (_res, _err, slug) =>
+      setPendingCancels((prev) => withoutSlug(prev, slug)),
     onSuccess: () => {
       toast.info('Operation cancelled')
       invalidate()
@@ -82,15 +96,13 @@ export function useMaintenanceOperations() {
 
   return {
     cancel: cancelMutation.mutate,
-    cancelingSlug: cancelMutation.isPending
-      ? cancelMutation.variables
-      : undefined,
+    cancelingSlugs: pendingCancels,
     error: query.error,
     isError: query.isError,
     isLoading: query.isLoading,
     operations: query.data ?? [],
     run: runMutation.mutate,
-    runningSlug: runMutation.isPending ? runMutation.variables : undefined,
+    runningSlugs: pendingRuns,
   }
 }
 
@@ -105,4 +117,13 @@ function announceTerminal(op: MaintenanceOperation): void {
   } else if (op.state === 'abandoned') {
     toast.error(`${op.label} was abandoned before completing`)
   }
+}
+
+function withoutSlug(
+  set: ReadonlySet<string>,
+  slug: string,
+): ReadonlySet<string> {
+  const next = new Set(set)
+  next.delete(slug)
+  return next
 }

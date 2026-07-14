@@ -17,13 +17,13 @@ import { formatRelativeDate } from '@/lib/formatDate'
 export function MaintenanceManagement() {
   const {
     cancel,
-    cancelingSlug,
+    cancelingSlugs,
     error,
     isError,
     isLoading,
     operations,
     run,
-    runningSlug,
+    runningSlugs,
   } = useMaintenanceOperations()
   const [confirming, setConfirming] = useState<MaintenanceOperation | null>(
     null,
@@ -71,12 +71,12 @@ export function MaintenanceManagement() {
             ) : (
               operations.map((op) => (
                 <OperationRow
-                  canceling={cancelingSlug === op.slug}
+                  canceling={cancelingSlugs.has(op.slug)}
                   key={op.slug}
                   onCancel={() => cancel(op.slug)}
                   onRun={() => setConfirming(op)}
                   op={op}
-                  starting={runningSlug === op.slug}
+                  starting={runningSlugs.has(op.slug)}
                 />
               ))
             )}
