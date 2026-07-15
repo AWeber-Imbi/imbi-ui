@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 import { listWebhooks } from '@/api/endpoints'
+import { Sk, Swap } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { useAdminNav } from '@/hooks/useAdminNav'
@@ -60,11 +61,15 @@ export function Webhooks() {
       <TabsList className="mb-6">
         <TabsTrigger value="endpoints">
           Endpoints
-          {webhooks !== undefined && (
-            <span className="bg-secondary text-secondary ml-2 rounded-full px-2 py-0.5 font-mono text-xs">
-              {webhooks.length}
+          <Swap
+            className="ml-2 inline-flex"
+            ready={webhooks !== undefined}
+            skeleton={<Sk h={18} r={9999} w={22} />}
+          >
+            <span className="bg-secondary text-secondary rounded-full px-2 py-0.5 font-mono text-xs">
+              {webhooks?.length}
             </span>
-          )}
+          </Swap>
         </TabsTrigger>
         <TabsTrigger value="history">Delivery history</TabsTrigger>
       </TabsList>
