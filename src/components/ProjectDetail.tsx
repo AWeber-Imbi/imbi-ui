@@ -304,12 +304,13 @@ export function ProjectDetail({
 
   // Org integrations supply the name/icon for integration dashboard links in
   // the header bar; shares IntegrationsCard's cache key.
-  const { data: orgIntegrations = [] } = useQuery({
-    enabled: !!orgSlug,
-    queryFn: ({ signal }) => listIntegrations(orgSlug, signal),
-    queryKey: ['integrations', orgSlug],
-    staleTime: 60 * 1000,
-  })
+  const { data: orgIntegrations = [], isPending: orgIntegrationsPending } =
+    useQuery({
+      enabled: !!orgSlug,
+      queryFn: ({ signal }) => listIntegrations(orgSlug, signal),
+      queryKey: ['integrations', orgSlug],
+      staleTime: 60 * 1000,
+    })
 
   // Overview-tab-only queries: skip when the user lands on a deeper tab
   // (e.g. /projects/:id/logs via deep link) — the overview cards that
@@ -906,7 +907,7 @@ export function ProjectDetail({
         {externalLinks.length > 0 && (
           <Swap
             className="mt-3"
-            ready={!linkDefsPending}
+            ready={!linkDefsPending && !orgIntegrationsPending}
             skeleton={<LinksSkeleton count={externalLinks.length} />}
           >
             <div className="flex flex-wrap items-center gap-3">
