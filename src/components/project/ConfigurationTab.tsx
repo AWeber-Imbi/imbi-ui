@@ -1042,7 +1042,8 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 // runs a per-environment query, so distinguish that from a project whose
 // environments simply have no keys yet.
 function emptyStateLabel(filter: string, hasEnvironments: boolean): string {
-  if (filter) return `No parameters match "${filter}"`
+  const normalizedFilter = filter.trim()
+  if (normalizedFilter) return `No parameters match "${normalizedFilter}"`
   if (!hasEnvironments) {
     return 'No environments are configured for this project, so there is nothing to read.'
   }
