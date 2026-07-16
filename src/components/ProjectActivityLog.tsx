@@ -110,7 +110,7 @@ export function ProjectActivityLog({ orgSlug, projectId, projectSlug }: Props) {
     return m
   }, [environments])
 
-  const { data: integrations = [] } = useQuery({
+  const { data: integrations = [], isPending: integrationsPending } = useQuery({
     enabled: Boolean(orgSlug),
     queryFn: ({ signal }) => listIntegrations(orgSlug, signal),
     queryKey: ['integrations', orgSlug],
@@ -123,7 +123,11 @@ export function ProjectActivityLog({ orgSlug, projectId, projectSlug }: Props) {
     return m
   }, [integrations])
 
-  const isPending = eventsPending || opsPending
+  // Include integrations: the feed is one region with one footprint-matched
+  // skeleton, and rows resolve their identity (name/avatar) from the
+  // integration map. Gating on it too keeps unattributed rows from flashing a
+  // raw slug or unknown avatar before their identity resolves.
+  const isPending = eventsPending || opsPending || integrationsPending
 
   const merged: ActivityItem[] = useMemo(() => {
     const events: ActivityItem[] = (eventsPage?.entries ?? []).map((e) => ({
@@ -427,7 +431,8 @@ function EventEntry({
   const integration = entry.integration
     ? integrationMap.get(entry.integration)
     : undefined
-  const integrationLabel = integration?.name ?? entry.integration
+  const integrationLabel =
+    integration?.name || entry.integration || 'Unknown integration'
 
   // Attribution first (a real actor), then fall back to the integration's own
   // identity so a webhook row is never a nameless "?" bubble.
@@ -444,7 +449,11 @@ function EventEntry({
     <EntryRow
       actor={actor}
       avatarColor="info"
-      avatarIcon={hasActor ? undefined : integrationAvatarIcon(integration)}
+      avatarIcon={
+        hasActor
+          ? undefined
+          : integrationAvatarIcon(integration) || 'lucide-webhook'
+      }
       body={body}
       href={href}
       name={hasActor ? getDisplayName(actor, displayNames) : integrationLabel}
@@ -645,7 +654,14 @@ function renderEventBody(
       body: renderWebhookBody(entry, hasActor ? integrationLabel : undefined),
     }
   }
-  return { body: renderGenericEventBody(entry, integrationLabel) }
+  // Match the webhook branch: only append "via <integration>" when the row is
+  // attributed to an actor; otherwise the integration is already the identity.
+  return {
+    body: renderGenericEventBody(
+      entry,
+      hasActor ? integrationLabel : undefined,
+    ),
+  }
 }
 
 function renderGenericEventBody(
