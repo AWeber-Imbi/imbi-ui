@@ -259,7 +259,7 @@ export function IntegrationsCard({
 
       <Dialog
         onOpenChange={(open) => {
-          if (!open) closeDialog()
+          if (!open && !submitting) closeDialog()
         }}
         open={dialogOpen}
       >
@@ -336,7 +336,11 @@ export function IntegrationsCard({
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={closeDialog} variant="outline">
+            <Button
+              disabled={submitting}
+              onClick={closeDialog}
+              variant="outline"
+            >
               Cancel
             </Button>
             <Button

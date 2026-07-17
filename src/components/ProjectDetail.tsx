@@ -695,8 +695,8 @@ export function ProjectDetail({
       (project.services || []).map((svc) => svc.integration_slug),
     )
     const defLinks = Object.entries(project.links || {})
+      .filter(([key]) => !serviceSlugs.has(key))
       .map(([key, url]) => {
-        if (serviceSlugs.has(key)) return null
         const def = linkDefMap[key]
         if (!def) return null
         const safeUrl = sanitizeHttpUrl(url)
