@@ -42,14 +42,16 @@ describe('ProjectEnvironmentsCard URL rendering', () => {
     expect(link).toHaveAttribute('href', 'https://prod.example.com/')
   })
 
-  it('preserves non-http URI schemes and links them', () => {
-    renderCard([env('db', 'postgresql://db.example.cloud/prod')])
+  it('preserves non-http URI schemes verbatim, including a trailing slash', () => {
+    renderCard([env('db', 'postgresql://db.example.cloud/prod/')])
 
+    // Non-http schemes are shown as-is: the trailing slash is NOT stripped
+    // (that shortening applies only to http(s) links).
     expect(
-      screen.getByText('postgresql://db.example.cloud/prod'),
+      screen.getByText('postgresql://db.example.cloud/prod/'),
     ).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'Open URL' })
-    expect(link).toHaveAttribute('href', 'postgresql://db.example.cloud/prod')
+    expect(link).toHaveAttribute('href', 'postgresql://db.example.cloud/prod/')
   })
 
   it('shows blocked schemes as-is without an anchor', () => {

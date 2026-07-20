@@ -218,9 +218,12 @@ export function ProjectEnvironmentsCard({
             const linkUrl = sanitizeUri(env.url)
             // Protocol/trailing-slash stripped for a shorter on-screen value on
             // http(s) links; other schemes (postgresql://, etc.) shown as-is.
-            const displayUrl = linkUrl
-              ? linkUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
-              : rawUrl
+            let displayUrl = rawUrl
+            if (linkUrl) {
+              displayUrl = /^https?:\/\//.test(linkUrl)
+                ? linkUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+                : linkUrl
+            }
             const urlText = (
               <span className="text-primary text-sm">{displayUrl}</span>
             )
