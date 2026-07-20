@@ -65,6 +65,27 @@ export function sanitizeHttpUrl(raw: unknown): null | string {
   return null
 }
 
+// Schemes that are unsafe to expose as a clickable link ``href``.
+const UNSAFE_URI_SCHEMES = new Set(['data:', 'javascript:', 'vbscript:'])
+
+/**
+ * Parse an arbitrary value as a URL of any scheme (http, postgresql, ssh,
+ * mailto, …). Returns the canonical URL string if valid, else null. Blocks
+ * the XSS-dangerous javascript:/data:/vbscript: schemes.
+ */
+export function sanitizeUri(raw: unknown): null | string {
+  if (typeof raw !== 'string' || raw === '') return null
+  try {
+    const parsed = new URL(raw)
+    if (!UNSAFE_URI_SCHEMES.has(parsed.protocol)) {
+      return parsed.toString()
+    }
+  } catch {
+    // not a valid URL
+  }
+  return null
+}
+
 /**
  * Generate a URL-safe slug from a display name.
  */
