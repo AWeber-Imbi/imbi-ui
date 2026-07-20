@@ -18,6 +18,7 @@ export function ProjectActivityWidget({
     data: activityData,
     fetchNextPage,
     hasNextPage,
+    isError,
     isFetchingNextPage,
     isLoading,
   } = useInfiniteActivityFeed(orgSlug)
@@ -30,6 +31,7 @@ export function ProjectActivityWidget({
     <div className="h-full">
       <ProjectActivityFeed
         activities={activityData?.activities ?? []}
+        isError={isError}
         isLoading={isLoading}
         isLoadingMore={isFetchingNextPage}
         onLoadMore={hasNextPage ? () => fetchNextPage() : undefined}

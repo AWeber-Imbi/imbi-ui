@@ -22,8 +22,8 @@ import {
   entryClusterKey,
   entryTimeIso,
   entryTimeMs,
-  entryTone,
 } from './activityFeed/entryAdapters'
+import { expandableRowProps } from './activityFeed/expandableRow'
 import { sectionByDay } from './activityFeed/grouping'
 import type { ActivityCluster } from './activityFeed/grouping'
 import { renderActivityTemplate } from './activityFeed/renderActivityTemplate'
@@ -260,7 +260,7 @@ function ClusterRow({
         <StatusDot tone={tone} />
         <div
           className={`flex items-start gap-2.5 ${isGroup ? 'cursor-pointer' : ''}`}
-          onClick={isGroup ? onToggle : undefined}
+          {...expandableRowProps(isGroup, expanded, onToggle)}
         >
           <UserIdentity
             displayName={lead.display_name}
@@ -325,7 +325,7 @@ function isExpanded(
   state: Record<string, boolean>,
 ): boolean {
   if (cluster.key in state) return state[cluster.key]
-  return cluster.items.length > 1 && entryTone(cluster.items[0]) === 'danger'
+  return cluster.items.length > 1 && clusterView(cluster).tone === 'danger'
 }
 
 function OpsLogActivityLine({

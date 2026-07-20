@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 
 import { RelativeTime } from '@/components/ui/RelativeTime'
-import { Sk } from '@/components/ui/skeleton'
+import { Sk, Swap } from '@/components/ui/skeleton'
 import { UserIdentity } from '@/components/ui/user-identity'
 import { swatchForName } from '@/lib/chip-colors'
 import type { ActivityFeedEntry } from '@/types'
@@ -24,6 +24,7 @@ import {
   entryTimeMs,
 } from './entryAdapters'
 import type { ClusterMeta } from './entryAdapters'
+import { expandableRowProps } from './expandableRow'
 import { clusterConsecutive } from './grouping'
 import type { ActivityCluster } from './grouping'
 import { StatusChip, StatusDot } from './StatusChip'
@@ -31,6 +32,8 @@ import type { Tone } from './tone'
 
 interface ProjectActivityFeedProps {
   activities: ActivityFeedEntry[]
+  /** Query failed — render a placeholder instead of an empty feed. */
+  isError?: boolean
   isLoading?: boolean
   isLoadingMore?: boolean
   onLoadMore?: () => void
@@ -50,6 +53,7 @@ interface ProjectFeedBodyProps {
   clusters: ActivityCluster<ActivityFeedEntry>[]
   expanded: Record<string, boolean>
   hasActivities: boolean
+  isError?: boolean
   isLoading?: boolean
   isLoadingMore?: boolean
   onLoadMore?: () => void
@@ -64,6 +68,7 @@ interface ProjectFeedBodyProps {
  */
 export function ProjectActivityFeed({
   activities,
+  isError,
   isLoading,
   isLoadingMore,
   onLoadMore,
@@ -105,6 +110,7 @@ export function ProjectActivityFeed({
           clusters={clusters}
           expanded={expanded}
           hasActivities={activities.length > 0}
+          isError={isError}
           isLoading={isLoading}
           isLoadingMore={isLoadingMore}
           onLoadMore={onLoadMore}
@@ -166,7 +172,7 @@ function ProjectClusterRow({
         <StatusDot size={11} tone={tone} />
         <div
           className={`min-w-0 ${isGroup ? 'cursor-pointer' : ''}`}
-          onClick={isGroup ? onToggle : undefined}
+          {...expandableRowProps(isGroup, expanded, onToggle)}
         >
           <ProjectRowHeader entry={lead} onProjectSelect={onProjectSelect} />
           <ProjectActorLine
@@ -202,18 +208,36 @@ function ProjectClusterRow({
   )
 }
 
+function ProjectFeedBody({ isLoading, ...rest }: ProjectFeedBodyProps) {
+  return (
+    <Swap
+      delay={50}
+      ready={!isLoading}
+      skeleton={<ProjectFeedSkeleton rows={5} />}
+    >
+      <ProjectFeedContent {...rest} />
+    </Swap>
+  )
+}
+
 // fallow-ignore-next-line complexity
-function ProjectFeedBody({
+function ProjectFeedContent({
   clusters,
   expanded,
   hasActivities,
-  isLoading,
+  isError,
   isLoadingMore,
   onLoadMore,
   onProjectSelect,
   onToggle,
-}: ProjectFeedBodyProps) {
-  if (isLoading) return <ProjectFeedSkeleton rows={5} />
+}: Omit<ProjectFeedBodyProps, 'isLoading'>) {
+  if (isError) {
+    return (
+      <div className="text-tertiary py-10 text-center text-sm">
+        Activity unavailable
+      </div>
+    )
+  }
   if (clusters.length === 0) {
     return (
       <div className="text-tertiary py-10 text-center text-sm">
@@ -252,15 +276,20 @@ function ProjectFeedBody({
   )
 }
 
+/** Footprint mirrors ProjectClusterRow: dot · header/actor/summary · time. */
 function ProjectFeedSkeleton({ rows }: { rows: number }) {
   return (
     <div aria-hidden className="space-y-3 py-2">
       {Array.from({ length: rows }).map((_, i) => (
-        <div className="flex gap-3" key={i}>
+        <div className="grid grid-cols-[18px_1fr_auto] gap-x-3" key={i}>
           <Sk circle h={11} w={11} />
-          <div className="flex-1 space-y-1.5">
-            <Sk h={13} w="60%" />
-            <Sk h={11} w="40%" />
+          <div className="min-w-0 space-y-1.5">
+            <Sk h={13} w="45%" />
+            <div className="flex items-center gap-2">
+              <Sk circle h={16} w={16} />
+              <Sk h={11} w="30%" />
+            </div>
+            <Sk h={11} w="60%" />
           </div>
           <Sk h={11} w={28} />
         </div>
