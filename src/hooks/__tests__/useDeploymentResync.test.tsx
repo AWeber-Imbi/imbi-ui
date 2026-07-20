@@ -87,9 +87,11 @@ describe('useProjectDeploymentResync', () => {
     )
   })
 
-  it('shows an info toast when a resync is already running', async () => {
+  it('shows an info toast when the resync was not enqueued', async () => {
+    // A stale persisted terminal status must not read as this request's
+    // outcome when nothing was enqueued (debounced or queue unavailable).
     vi.mocked(endpoints.getProjectDeploymentSyncStatus).mockResolvedValue(
-      status(),
+      status({ events_recorded: 5, status: 'success' }),
     )
     vi.mocked(endpoints.resyncProjectDeployments).mockResolvedValue({
       enqueued: false,
@@ -102,6 +104,8 @@ describe('useProjectDeploymentResync', () => {
       result.current.sync()
     })
     await waitFor(() => expect(toast.info).toHaveBeenCalled())
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(toast.warning).not.toHaveBeenCalled()
   })
 
   it('reports isSyncing while the status is active', async () => {

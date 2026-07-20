@@ -72,14 +72,22 @@ export function useProjectDeploymentResync(
       // The user asked for this run (or joined the one already in
       // progress), so watch for its terminal result.
       watching.current = true
-      // The POST returning means the backend flipped the run to queued;
-      // prime `previous` so a fast job whose first refetch already reads
-      // a terminal status still counts as an active → terminal transition.
-      previous.current = 'queued'
       if (res.enqueued) {
+        // The POST returning means the backend flipped the run to queued;
+        // prime `previous` so a fast job whose first refetch already reads
+        // a terminal status still counts as an active → terminal transition.
+        previous.current = 'queued'
         toast.success('Deployment resync started')
       } else {
-        toast.info('A deployment resync is already in progress')
+        // enqueued:false is ambiguous — debounced (a run really is
+        // active) or queueing unavailable (nothing running). Don't prime
+        // `previous`: a stale persisted terminal status must not read as
+        // an active → terminal transition, and a genuinely active run
+        // will be observed by the poll before it finishes.
+        toast.info(
+          'Deployment resync could not be started — it may already be ' +
+            'running, or the queue is temporarily unavailable',
+        )
       }
       // Refresh even when joining an existing run: a stale cached 'idle'
       // status would otherwise keep refetchInterval off and this client
