@@ -53,16 +53,13 @@ export function parseFilterFromBlueprint(
  * in user-supplied link values.
  */
 export function sanitizeHttpUrl(raw: unknown): null | string {
-  if (typeof raw !== 'string' || raw === '') return null
-  try {
-    const parsed = new URL(raw)
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-      return parsed.toString()
-    }
-  } catch {
-    // not a valid URL
-  }
-  return null
+  // Reuse sanitizeUri for input validation, parsing, canonicalization, and
+  // unsafe-scheme filtering, then narrow to the HTTP-only contract so the two
+  // helpers cannot drift.
+  const sanitized = sanitizeUri(raw)
+  if (sanitized === null) return null
+  const { protocol } = new URL(sanitized)
+  return protocol === 'http:' || protocol === 'https:' ? sanitized : null
 }
 
 // Schemes that are unsafe to expose as a clickable link ``href``.
